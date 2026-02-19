@@ -1002,6 +1002,8 @@ struct DockContext
         ImVec2 size = dock.size;
         pos.y += tabbar_height + GetStyle().WindowPadding.y;
         size.y -= tabbar_height + GetStyle().WindowPadding.y;
+        pos.x += 4.0f;
+        size.x -= 4.0f;
 
         SetCursorScreenPos(pos);
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |

@@ -4,6 +4,7 @@
 #include "Log.h"
 
 #include "imgui.h"
+#include "imgui_dock.h"
 
 #include <algorithm>
 
@@ -353,6 +354,20 @@ void EditorUIHookManager::InitializeHooks()
         mgr->mOnAssetSaved.push_back({hookId, cb, userData});
     };
 
+    // ===== Asset Open Events =====
+
+    mHooks.RegisterOnAssetOpen = [](HookId hookId, StringEventCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnAssetOpen.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterOnAssetOpened = [](HookId hookId, StringEventCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnAssetOpened.push_back({hookId, cb, userData});
+    };
+
     // ===== Undo/Redo =====
 
     mHooks.RegisterOnUndoRedo = [](HookId hookId, EventCallback cb, void* userData) {
@@ -420,14 +435,16 @@ void EditorUIHookManager::DrawWindows()
     {
         if (win.mIsOpen)
         {
-            if (ImGui::Begin(win.mWindowName.c_str(), &win.mIsOpen))
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+            if (ImGui::BeginDock(win.mWindowName.c_str(), &win.mIsOpen))
             {
                 if (win.mDrawFunc)
                 {
                     win.mDrawFunc(win.mUserData);
                 }
             }
-            ImGui::End();
+            ImGui::EndDock();
+            ImGui::PopStyleColor();
         }
     }
 }
@@ -591,6 +608,8 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mOnAssetImported);
     removeByHookId(mOnAssetDeleted);
     removeByHookId(mOnAssetSaved);
+    removeByHookId(mOnAssetOpen);
+    removeByHookId(mOnAssetOpened);
     removeByHookId(mOnUndoRedo);
     removeByHookId(mOnAssetDropHierarchy);
     removeByHookId(mOnAssetDropViewport);
@@ -737,6 +756,22 @@ void EditorUIHookManager::FireOnAssetSaved(const char* assetPath)
     for (const auto& entry : mOnAssetSaved)
     {
         if (entry.mCallback) entry.mCallback(assetPath, entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::FireOnAssetOpen(const char* assetName)
+{
+    for (const auto& entry : mOnAssetOpen)
+    {
+        if (entry.mCallback) entry.mCallback(assetName, entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::FireOnAssetOpened(const char* assetName)
+{
+    for (const auto& entry : mOnAssetOpened)
+    {
+        if (entry.mCallback) entry.mCallback(assetName, entry.mUserData);
     }
 }
 

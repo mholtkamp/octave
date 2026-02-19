@@ -41,6 +41,7 @@
 #include "Assets/MaterialInstance.h"
 #include "Assets/MaterialLite.h"
 #include "Assets/Timeline.h"
+#include "Assets/Font.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -111,7 +112,23 @@ static const char* GetNodeIcon(Node* node)
     if (node->IsSceneLinked())                return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
     if (node->IsNode3D())                     return ICON_PH_SPHERE;
     if (node->IsWidget())                     return ICON_UIWIDGET;
-    return ICON_SCENE;
+    return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+}
+
+static const char* GetAssetIcon(TypeId type)
+{
+    if (type == StaticMesh::GetStaticType())       return ICON_STATIC_MESH;
+    if (type == SkeletalMesh::GetStaticType())      return ICON_SKELETON;
+    if (type == Texture::GetStaticType())            return ICON_TDESIGN_IMAGE_FILLED;
+    if (type == Scene::GetStaticType())              return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+    if (type == SoundWave::GetStaticType())          return ICON_RIVET_ICONS_AUDIO_SOLID;
+    if (type == MaterialLite::GetStaticType())       return ICON_HUGEICONS_MATERIAL_AND_TEXTURE;
+    if (type == MaterialBase::GetStaticType())       return ICON_HUGEICONS_MATERIAL_AND_TEXTURE;
+    if (type == MaterialInstance::GetStaticType())   return ICON_HUGEICONS_MATERIAL_AND_TEXTURE;
+    if (type == ParticleSystem::GetStaticType())     return ICON_FIREWORK;
+    if (type == Timeline::GetStaticType())           return ICON_TIMELINE;
+    if (type == Font::GetStaticType())               return ICON_TEXTMESH;
+    return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
 }
 
 struct FileBrowserDirEntry
@@ -388,6 +405,13 @@ static void DrawDockspace()
     }
     ImGui::EndDock();
     ImGui::PopStyleColor();
+
+    // Draw plugin/addon dockable windows
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr)
+    {
+        hookMgr->DrawWindows();
+    }
 
     ImGui::EndDockspace();
     ImGui::End();
@@ -3725,7 +3749,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
             // Parent Dir (..)
             if (currentDir->mParentDir != nullptr)
             {
-                if (ImGui::Selectable("..", true))
+                if (ImGui::Selectable(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "...", false))
                 {
                     GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
                 }
@@ -3736,7 +3760,8 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
             {
                 AssetDir* childDir = currentDir->mChildDirs[i];
 
-                if (ImGui::Selectable(childDir->mName.c_str(), true))
+                std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + "  " + childDir->mName;
+                if (ImGui::Selectable(dirLabel.c_str(), false))
                 {
                     GetEditorState()->SetAssetDirectory(childDir, true);
                 }
@@ -3774,7 +3799,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
             glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
 
-            std::string assetDispText = stub->mName;
+            std::string assetDispText = std::string(GetAssetIcon(stub->mType)) + "  " + stub->mName;
             if (stub && stub->mAsset && stub->mAsset->GetDirtyFlag())
             {
                 assetDispText = "*" + assetDispText;
@@ -3800,6 +3825,8 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
 
                 if (ImGui::IsMouseDoubleClicked(0))
                 {
+                    EditorUIHookManager::Get()->FireOnAssetOpen(stub->mName.c_str());
+
                     if (stub->mAsset == nullptr)
                         AssetManager::Get()->LoadAsset(*stub);
 
@@ -3807,7 +3834,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                     {
                         Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
                         if (scene)
-                            GetEditorState()->OpenEditScene(scene);
+                            ActionManager::Get()->OpenScene(scene);
                     }
                     else if (stub->mType == Timeline::GetStaticType())
                     {
@@ -3822,6 +3849,8 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
                         if (stub->mAsset)
                             GetEditorState()->InspectObject(stub->mAsset);
                     }
+
+                    EditorUIHookManager::Get()->FireOnAssetOpened(stub->mName.c_str());
                 }
             }
 

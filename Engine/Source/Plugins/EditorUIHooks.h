@@ -337,6 +337,14 @@ struct EditorUIHooks
     /** @brief Register callback for when an asset is saved. Receives asset path. */
     void (*RegisterOnAssetSaved)(HookId hookId, StringEventCallback cb, void* userData);
 
+    // ===== Asset Open Events =====
+
+    /** @brief Register callback for when an asset is about to be opened (double-clicked). Receives asset name. */
+    void (*RegisterOnAssetOpen)(HookId hookId, StringEventCallback cb, void* userData);
+
+    /** @brief Register callback for after an asset has been opened (loaded and displayed). Receives asset name. */
+    void (*RegisterOnAssetOpened)(HookId hookId, StringEventCallback cb, void* userData);
+
     // ===== Undo/Redo =====
 
     /** @brief Register callback for when an undo or redo operation is performed. */

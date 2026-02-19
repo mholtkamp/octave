@@ -253,6 +253,8 @@ public:
     void FireOnAssetImported(const char* assetPath);
     void FireOnAssetDeleted(const char* assetPath);
     void FireOnAssetSaved(const char* assetPath);
+    void FireOnAssetOpen(const char* assetName);
+    void FireOnAssetOpened(const char* assetName);
     void FireOnUndoRedo();
     void FireOnAssetDropHierarchy(const char* assetName);
     void FireOnAssetDropViewport(const char* assetName);
@@ -293,6 +295,8 @@ private:
     std::vector<RegisteredStringEventCallback> mOnAssetImported;
     std::vector<RegisteredStringEventCallback> mOnAssetDeleted;
     std::vector<RegisteredStringEventCallback> mOnAssetSaved;
+    std::vector<RegisteredStringEventCallback> mOnAssetOpen;
+    std::vector<RegisteredStringEventCallback> mOnAssetOpened;
     std::vector<RegisteredEventCallback> mOnUndoRedo;
     std::vector<RegisteredStringEventCallback> mOnAssetDropHierarchy;
     std::vector<RegisteredStringEventCallback> mOnAssetDropViewport;

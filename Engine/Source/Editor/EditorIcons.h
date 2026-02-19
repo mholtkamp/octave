@@ -1,6 +1,6 @@
 // =============================================================================
 // EditorIcons.h — Generated from selection.icomoon.json
-// Font: OctaveIcons.ttf | 159 icons | Range: U+F000..U+F09E
+// Font: OctaveIcons.ttf | 160 icons | Range: U+F000..U+F09F
 // =============================================================================
 #pragma once
 
@@ -10,9 +10,9 @@
 // Glyph range
 // ---------------------------------------------------------------------------
 static constexpr ImWchar kIconMin = 0xF000;
-static constexpr ImWchar kIconMax = 0xF09E;
+static constexpr ImWchar kIconMax = 0xF09F;
 
-static const ImWchar kIconRanges[] = { 0xF000, 0xF09E, 0 };
+static const ImWchar kIconRanges[] = { 0xF000, 0xF09F, 0 };
 
 // ---------------------------------------------------------------------------
 // Icon definitions (sorted alphabetically by identifier)
@@ -96,6 +96,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF09E, 0 };
 #define ICON_MATERIAL_SYMBOLS_CLOUD_OUTLINE                         u8"\uF08F"
 #define ICON_MATERIAL_SYMBOLS_FILE_COPY_SHARP                       u8"\uF022"
 #define ICON_MATERIAL_SYMBOLS_FLAG                                  u8"\uF093"
+#define ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP                     u8"\uF09F"
 #define ICON_MATERIAL_SYMBOLS_FOLDER_SHARP                          u8"\uF021"
 #define ICON_MATERIAL_SYMBOLS_LIGHT_FAST_FORWARD                    u8"\uF015"
 #define ICON_MATERIAL_SYMBOLS_LIGHT_FAST_FORWARD_1                  u8"\uF014"
