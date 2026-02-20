@@ -849,6 +849,32 @@ void EditorUIHookManager::InitializeHooks()
         mgr->mOnEditorModeChanged.push_back({hookId, cb, userData});
     };
 
+    // ===== Game Preview Resolution Presets =====
+
+    mHooks.AddGamePreviewResolution = [](HookId hookId, const char* name, uint32_t width, uint32_t height) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredGamePreviewResolution preset;
+        preset.mHookId = hookId;
+        preset.mName = name ? name : "";
+        preset.mWidth = width;
+        preset.mHeight = height;
+
+        mgr->mGamePreviewResolutions.push_back(preset);
+    };
+
+    mHooks.RemoveGamePreviewResolution = [](HookId hookId, const char* name) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string n = name ? name : "";
+        mgr->mGamePreviewResolutions.erase(std::remove_if(mgr->mGamePreviewResolutions.begin(), mgr->mGamePreviewResolutions.end(),
+            [hookId, &n](const RegisteredGamePreviewResolution& preset) {
+                return preset.mHookId == hookId && preset.mName == n;
+            }), mgr->mGamePreviewResolutions.end());
+    };
+
     mHooks.RegisterGizmoTool = [](HookId hookId, const char* toolName, const char* iconText,
                                    const char* tooltip, GizmoToolDrawCallback drawFunc, void* userData) {
         EditorUIHookManager* mgr = EditorUIHookManager::Get();
@@ -1150,6 +1176,7 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mOnPostBuild);
     removeByHookId(mOnEditorModeChanged);
     removeByHookId(mGizmoTools);
+    removeByHookId(mGamePreviewResolutions);
 }
 
 // ===== Top-Level Menus and Toolbar Drawing =====

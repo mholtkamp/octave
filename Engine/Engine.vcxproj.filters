@@ -135,6 +135,9 @@
     <Filter Include="Source Files\Editor\SecondScreenPreview">
       <UniqueIdentifier>{b4c6d8e0-2a3f-4b5c-8d7e-f9a1b3c5d7e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\GamePreview">
+      <UniqueIdentifier>{c5d7e9f1-3b5a-4c8d-9e0f-a2b4c6d8e0f2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Editor\Timeline">
       <UniqueIdentifier>{a7c3e1b5-9d2f-4e6a-8b0c-f1d4a6e8c2b7}</UniqueIdentifier>
     </Filter>
@@ -667,6 +670,9 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp">
       <Filter>Source Files\Editor\SecondScreenPreview</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\GamePreview\GamePreview.cpp">
+      <Filter>Source Files\Editor\GamePreview</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\EditorImgui.cpp">
       <Filter>Source Files\Editor</Filter>
@@ -1568,6 +1574,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h">
       <Filter>Source Files\Editor\SecondScreenPreview</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\GamePreview\GamePreview.h">
+      <Filter>Source Files\Editor\GamePreview</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorImgui.h">
       <Filter>Source Files\Editor</Filter>

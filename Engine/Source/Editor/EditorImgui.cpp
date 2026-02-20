@@ -94,6 +94,7 @@
 #include <Nodes/Widgets/ArrayWidget.h>
 
 #include "SecondScreenPreview/SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 
 
 static const char* GetNodeIcon(Node* node)
@@ -490,6 +491,18 @@ static void DrawDockspace()
     ImGui::EndDock();
     ImGui::PopStyleColor();
 
+    // --- Game Preview dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_IX_VIDEO_CAMERA_FILLED "  Game Preview", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    {
+        GetGamePreview()->DrawPanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
     // Draw plugin/addon dockable windows
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr)
@@ -517,6 +530,7 @@ static void DrawDockspace()
             ImGui::DockTo("EditorDock", ICON_STREAMLINE_LOG_SOLID "  Debug Log", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_VIEWPORT3D "  Viewport", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_CIB_NINTENDO_3DS "  3DS Preview", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
+            ImGui::DockTo("EditorDock", ICON_IX_VIDEO_CAMERA_FILLED "  Game Preview", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
 
             // Defer activating the Viewport tab — docks call setActive() on their
             // first BeginDock frame, so we need to wait a couple frames for all
@@ -5612,6 +5626,9 @@ static void DrawMainMenuBar()
             if (ImGui::MenuItem("3DS Preview"))
                 GetEditorState()->mShow3DSPreview = !GetEditorState()->mShow3DSPreview;
 
+            if (ImGui::MenuItem("Game Preview"))
+                GetEditorState()->mShowGamePreview = !GetEditorState()->mShowGamePreview;
+
             ImGui::Separator();
             if (ImGui::MenuItem("Reset Layout"))
                 sDockResetRequested = true;
@@ -5981,7 +5998,8 @@ static void DrawMainMenuBar()
         // -- Right-aligned buttons: [Addon Toolbar Items] [Hammer] [Play ▾] --
         {
             enum class PlayTarget { PlayInEditor, Dolphin, Azahar, Standalone, Send3dsLink, Count };
-            static PlayTarget sPlayTarget = PlayTarget::PlayInEditor;
+            int32_t& playTargetRef = GetEditorState()->mPlayTarget;
+            PlayTarget currentPlayTarget = (PlayTarget)playTargetRef;
 
             const char* playTargetLabels[] = {
                 "Play In Editor",
@@ -5997,7 +6015,7 @@ static void DrawMainMenuBar()
             bool inPie = IsPlayingInEditor();
 
             // Build the play button label: "icon TargetName"
-            const char* targetLabel = playTargetLabels[(int)sPlayTarget];
+            const char* targetLabel = playTargetLabels[(int)currentPlayTarget];
             char playBtnLabel[128];
             snprintf(playBtnLabel, sizeof(playBtnLabel), "%s %s", inPie ? ICON_IC_BASELINE_STOP : ICON_MDI_PLAY, inPie ? "Stop" : targetLabel);
 
@@ -6048,7 +6066,7 @@ static void DrawMainMenuBar()
                 }
                 else
                 {
-                    switch (sPlayTarget)
+                    switch (currentPlayTarget)
                     {
                     case PlayTarget::PlayInEditor:
                         GetEditorState()->BeginPlayInEditor();
@@ -6115,7 +6133,7 @@ static void DrawMainMenuBar()
 
                 for (const PlayTargetInfo& item : items)
                 {
-                    bool isSelected = (sPlayTarget == item.target);
+                    bool isSelected = (currentPlayTarget == item.target);
 
                     if (!item.enabled)
                     {
@@ -6124,7 +6142,7 @@ static void DrawMainMenuBar()
 
                     if (ImGui::Selectable(item.label, isSelected))
                     {
-                        sPlayTarget = item.target;
+                        playTargetRef = (int32_t)item.target;
                     }
 
                     if (!item.enabled)

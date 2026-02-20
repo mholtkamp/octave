@@ -166,6 +166,12 @@ struct EditorState
     // 3DS Preview Panel state
     bool mShow3DSPreview = false;
 
+    // Game Preview Panel state
+    bool mShowGamePreview = false;
+
+    // Play target (shared between viewport toolbar and Game Preview)
+    int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=Dolphin, 2=Azahar, 3=Standalone, 4=Send3dsLink
+
     // Timeline Panel state
     bool mShowTimelinePanel = false;
     TimelineRef mEditedTimelineRef;

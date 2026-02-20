@@ -808,6 +808,24 @@ struct EditorUIHooks
     /** @brief Unregister a custom gizmo tool. */
     void (*UnregisterGizmoTool)(HookId hookId, const char* toolName);
 
+    // ===== Game Preview Resolution Presets =====
+
+    /**
+     * @brief Add a custom resolution preset to the Game Preview panel.
+     * @param hookId Unique identifier for this hook
+     * @param name Display name for the resolution preset (e.g., "Steam Deck 1280x800")
+     * @param width Resolution width in pixels
+     * @param height Resolution height in pixels
+     */
+    void (*AddGamePreviewResolution)(HookId hookId, const char* name, uint32_t width, uint32_t height);
+
+    /**
+     * @brief Remove a custom resolution preset from the Game Preview panel.
+     * @param hookId Hook identifier used during registration
+     * @param name Name of the preset to remove
+     */
+    void (*RemoveGamePreviewResolution)(HookId hookId, const char* name);
+
     // ===== Cleanup =====
 
     /**

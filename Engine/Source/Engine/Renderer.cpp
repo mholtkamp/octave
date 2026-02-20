@@ -27,6 +27,7 @@
 #include "Viewport2d.h"
 #include "PaintManager.h"
 #include "SecondScreenPreview/SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 #endif
 
 // TEMPORARY!
@@ -1413,6 +1414,11 @@ void Renderer::Render(World* world, int32_t screenIndex)
         if (GetSecondScreenPreview()->IsEnabled())
         {
             GetSecondScreenPreview()->Render();
+        }
+
+        if (GetGamePreview()->IsEnabled())
+        {
+            GetGamePreview()->Render();
         }
 #endif
 

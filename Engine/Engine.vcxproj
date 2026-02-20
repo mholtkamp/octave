@@ -641,6 +641,7 @@
     <ClCompile Include="Source\Editor\CustomImgui.cpp" />
     <ClCompile Include="Source\Editor\DebugLog\DebugLogWindow.cpp" />
     <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp" />
+    <ClCompile Include="Source\Editor\GamePreview\GamePreview.cpp" />
     <ClCompile Include="Source\Editor\EditorImgui.cpp" />
     <ClCompile Include="Source\Editor\EditorMain.cpp" />
     <ClCompile Include="Source\Editor\EditorState.cpp" />
@@ -935,6 +936,7 @@
     <ClInclude Include="Source\Editor\CustomImgui.h" />
     <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h" />
     <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h" />
+    <ClInclude Include="Source\Editor\GamePreview\GamePreview.h" />
     <ClInclude Include="Source\Editor\EditorConstants.h" />
     <ClInclude Include="Source\Editor\EditorIcons.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />

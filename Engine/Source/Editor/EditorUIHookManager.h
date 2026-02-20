@@ -304,6 +304,17 @@ struct RegisteredSimpleContextItem
 };
 
 /**
+ * @brief Registered Game Preview resolution preset.
+ */
+struct RegisteredGamePreviewResolution
+{
+    HookId mHookId;
+    std::string mName;
+    uint32_t mWidth;
+    uint32_t mHeight;
+};
+
+/**
  * @brief Registered play target.
  */
 struct RegisteredPlayTarget
@@ -531,6 +542,10 @@ public:
     void DrawPlayTargets();
     bool HasPlayTargets() const;
 
+    // ===== Game Preview Resolution Presets =====
+
+    const std::vector<RegisteredGamePreviewResolution>& GetGamePreviewResolutions() const { return mGamePreviewResolutions; }
+
     // ===== Batch 9: Drag-Drop & Asset Pipeline =====
 
     bool HandleDragDrop(const char* targetArea, const char* payloadType, const void* payloadData, int32_t payloadSize);
@@ -638,6 +653,9 @@ private:
     std::vector<RegisteredHierarchyItemGUI> mHierarchyItemGUI;
     std::vector<RegisteredAssetItemGUI> mAssetItemGUI;
     std::vector<RegisteredHierarchyChangedCallback> mOnHierarchyChanged;
+
+    // Game Preview resolution presets
+    std::vector<RegisteredGamePreviewResolution> mGamePreviewResolutions;
 
     // Batch 8: Additional context menus
     std::vector<RegisteredSimpleContextItem> mSceneTabContextItems;
