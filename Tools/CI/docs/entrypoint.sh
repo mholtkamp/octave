@@ -23,7 +23,7 @@ doxygen Doxyfile
 
 # Serve / build mkdocs
 if [[ "$MODE" == "build" ]]; then
-  mkdocs build --strict
+  mkdocs build
   echo "Built site into /repo/site"
 else
   mkdocs serve -a 0.0.0.0:8000

@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# Install MkDocs + Material
+# Install MkDocs + Material (pin mkdocs <2 for Material compatibility)
 RUN pip install --no-cache-dir -U pip \
- && pip install --no-cache-dir mkdocs mkdocs-material
+ && pip install --no-cache-dir "mkdocs>=1.6,<2" mkdocs-material
 
 # Install doxybook2 (precompiled)
 RUN curl -L -o /tmp/doxybook2.zip \
@@ -23,7 +23,7 @@ RUN curl -L -o /tmp/doxybook2.zip \
 
 WORKDIR /repo
 RUN pip install --no-cache-dir -U pip \
- && pip install --no-cache-dir mkdocs mkdocs-material mkdocs-include-markdown-plugin
+ && pip install --no-cache-dir "mkdocs>=1.6,<2" mkdocs-material mkdocs-include-markdown-plugin
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
