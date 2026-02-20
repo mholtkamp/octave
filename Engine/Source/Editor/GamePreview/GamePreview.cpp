@@ -223,6 +223,13 @@ void GamePreview::Render()
     if (!mEnabled)
         return;
 
+    // Lazy-create render targets (needed when mEnabled defaults to true)
+    if (mColorTarget == nullptr || mDepthTarget == nullptr)
+    {
+        ResolutionPreset preset = GetCurrentPreset();
+        CreateRenderTargets(preset.mWidth, preset.mHeight);
+    }
+
     World* world = GetWorld(0);
     if (world == nullptr || mColorTarget == nullptr || mDepthTarget == nullptr)
         return;

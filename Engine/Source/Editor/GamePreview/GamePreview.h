@@ -34,7 +34,7 @@ public:
     const std::vector<ResolutionPreset>& GetAddonPresets() const { return mAddonPresets; }
 
 private:
-    bool mEnabled = false;
+    bool mEnabled = true;
     int32_t mSelectedPresetIndex = 0;
     int32_t mSelectedCameraIndex = 0;
     bool mShowGizmos = true;

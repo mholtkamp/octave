@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Nodes/Node.h"
 #include "Assets/Scene.h"
+#include "EditorState.h"
 
 #include "imgui.h"
 
@@ -209,17 +210,32 @@ void SecondScreenPreview::Render()
     if (!mEnabled)
         return;
 
+    // Temporarily override the editor viewport dimensions so that
+    // Camera3D::ComputeMatrices() picks up the render target's aspect ratio
+    // instead of the editor viewport's aspect ratio.
+    EditorState* edState = GetEditorState();
+    uint32_t prevVpW = edState->mViewportWidth;
+    uint32_t prevVpH = edState->mViewportHeight;
+
     if (mTop.mWorld != nullptr && mTop.mColorTarget != nullptr)
     {
+        edState->mViewportWidth = kTopWidth;
+        edState->mViewportHeight = kTopHeight;
         Renderer::Get()->RenderSecondScreen(mTop.mWorld, mTop.mColorTarget, mTop.mDepthTarget,
                                             kTopWidth, kTopHeight);
     }
 
     if (mBottom.mWorld != nullptr && mBottom.mColorTarget != nullptr)
     {
+        edState->mViewportWidth = kBottomWidth;
+        edState->mViewportHeight = kBottomHeight;
         Renderer::Get()->RenderSecondScreen(mBottom.mWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
                                             kBottomWidth, kBottomHeight);
     }
+
+    // Restore original viewport dimensions
+    edState->mViewportWidth = prevVpW;
+    edState->mViewportHeight = prevVpH;
 }
 
 static void DrawScreenImage(ImTextureID texId, uint32_t nativeW, uint32_t nativeH, float maxW)
