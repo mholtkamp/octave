@@ -28,7 +28,7 @@ Instructions for building from source below.
    - devkitPPC for GameCube/Wii development
    - devkitARM for 3DS development
    - Instructions for installing the devkitPro toolchains can be found in the devkitPro wiki [here](https://devkitpro.org/wiki/Getting_Started)
-2. GameCube packaging currently only works on Linux or Docker. We recommend building GameCube games on Windows with Docker see instructions below. But if you want to try to get them to package on Windows:
+2. Install devkitPro:
    - Open your Start Menu and launch `devkitPro > MSys2`
    - `pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
    - `pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`

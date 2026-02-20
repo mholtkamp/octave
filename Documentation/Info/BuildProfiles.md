@@ -57,9 +57,6 @@ To send games directly to your 3DS:
 3. When you Build & Run, ensure your 3DS has Homebrew Launcher open and ready
 
 ## Docker Builds
-
-Docker is required for building console games (GameCube, Wii, 3DS) on Windows because the necessary toolchains (devkitPro) only work reliably on Linux.
-
 ### Requirements
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
@@ -83,6 +80,7 @@ Docker is required for building console games (GameCube, Wii, 3DS) on Windows be
 
 **"Docker image not found"**
 - Build the Docker image first (see Docker.md)
+- Try `wsl docker ...`
 
 ## Profile Storage
 
