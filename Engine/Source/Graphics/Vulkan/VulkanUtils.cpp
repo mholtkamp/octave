@@ -837,7 +837,12 @@ void EndDebugLabel()
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform)
 {
+    if (world == nullptr)
+        return;
+
     Camera3D* camera = world->GetActiveCamera();
+    if (camera == nullptr)
+        return;
 
     outData.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
     outData.mWorldMatrix = transform;

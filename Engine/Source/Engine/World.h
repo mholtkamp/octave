@@ -36,6 +36,7 @@ public:
     Node3D* GetAudioReceiver();
 
     void SetActiveCamera(Camera3D* activeCamera);
+    void SetCameraOverride(Camera3D* camera) { mCameraOverride = camera; }
     void SetAudioReceiver(Node3D* newReceiver);
 
     Node* SpawnNode(TypeId actorType, glm::vec3 position = {});
@@ -212,6 +213,7 @@ private:
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;
     Camera3D* mActiveCamera;
+    Camera3D* mCameraOverride = nullptr;
     Node3D* mAudioReceiver;
     bool mPendingClear = false;
 

@@ -995,10 +995,16 @@ Camera3D* World::GetMainCamera()
 
 Camera3D* World::GetActiveCamera()
 {
+    // Camera override bypasses all editor logic (used by 3DS preview worlds).
+    if (mCameraOverride != nullptr)
+    {
+        return mCameraOverride;
+    }
+
 #if EDITOR
     // When in editor, the active camera is the EditorCamera unless
     // we are playing in editor (and not ejected).
-    if (!GetEditorState()->mPlayInEditor || 
+    if (!GetEditorState()->mPlayInEditor ||
         GetEditorState()->mEjected)
     {
         Camera3D* editorCam = GetEditorState()->GetEditorCamera();

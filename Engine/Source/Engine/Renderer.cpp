@@ -1483,10 +1483,34 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     mCurrentWorld = world;
     mScreenIndex = 1;
 
+    // Find the scene's own camera. Prefer the one marked "Main Camera",
+    // fall back to the first Camera3D found.
+    Camera3D* camera = nullptr;
+    {
+        std::vector<Camera3D*> cameras;
+        world->FindNodes(cameras);
+        Camera3D* firstCam = nullptr;
+        for (Camera3D* cam : cameras)
+        {
+            if (firstCam == nullptr)
+                firstCam = cam;
+            if (cam->GetIsMainCamera())
+            {
+                camera = cam;
+                break;
+            }
+        }
+        if (camera == nullptr)
+            camera = firstCam;
+    }
+
+    // Set camera override so GetActiveCamera() returns this camera
+    // instead of the editor camera. This ensures global uniforms use the right VP matrices.
+    world->SetCameraOverride(camera);
+
     // Gather draw data and lighting
     GatherDrawData(world);
 
-    Camera3D* camera = world->GetActiveCamera();
     if (camera != nullptr)
     {
         camera->ComputeMatrices();
@@ -1501,6 +1525,10 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 
     GFX_SetFog(world->GetFogSettings());
 
+    // Update global uniforms with the preview camera's VP matrices and lighting
+    GetVulkanContext()->UpdateGlobalUniformData();
+    GetVulkanContext()->UpdateGlobalDescriptorSet();
+
     GFX_SetViewport(0, 0, width, height, false);
     GFX_SetScissor(0, 0, width, height, false);
 
@@ -1513,7 +1541,7 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         rpSetup.mDepthStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         rpSetup.mDebugName = "3DS Preview Forward";
 
@@ -1560,14 +1588,19 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         GFX_EndRenderPass();
     }
 
+    // Clear the camera override
+    world->SetCameraOverride(nullptr);
+
     // Restore state
     mCurrentWorld = prevWorld;
     mScreenIndex = prevScreenIndex;
 
-    // Restore fog for main world
+    // Restore global uniforms and fog for main world
     if (mCurrentWorld != nullptr)
     {
         GFX_SetFog(mCurrentWorld->GetFogSettings());
+        GetVulkanContext()->UpdateGlobalUniformData();
+        GetVulkanContext()->UpdateGlobalDescriptorSet();
     }
 }
 #endif
