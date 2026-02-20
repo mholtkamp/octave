@@ -233,7 +233,7 @@ static ImGuiWindow* sViewportDockWindow = nullptr;
 // A known dock label that must exist in a valid layout.
 // If imgui.ini has dock data but this label is missing, the layout is stale.
 // Update kDockLayoutVersion when dock panel names change to force a reset.
-static constexpr uint32_t kDockLayoutVersion = 5;
+static constexpr uint32_t kDockLayoutVersion = 6;
 
 static void ValidateDockLayoutIni()
 {
