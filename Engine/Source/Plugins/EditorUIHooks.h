@@ -227,6 +227,18 @@ typedef void (*GizmoToolDrawCallback)(void* selectedNode, void* userData);
 typedef void (*PlayTargetCallback)(void* userData);
 
 /**
+ * @brief Callback for custom scene type creation.
+ *
+ * Called when a plugin-registered scene type is selected in the "New Scene" dialog.
+ * The plugin should create child nodes under the provided root node.
+ *
+ * @param sceneName The asset name entered by user
+ * @param rootNode Pointer to root Node* to populate (plugin creates children under it)
+ * @param userData User data from registration
+ */
+typedef void (*SceneCreationCallback)(const char* sceneName, void* rootNode, void* userData);
+
+/**
  * @brief Unique identifier for tracking hooks.
  *
  * Use GenerateHookId() to create from addon ID or Lua script UUID.
@@ -575,6 +587,24 @@ struct EditorUIHooks
      * @param userData User data passed to drawFunc
      */
     void (*AddSpawnBasicWidgetItems)(HookId hookId, MenuSectionDrawCallback drawFunc, void* userData);
+
+    // ===== Scene Type Registration =====
+
+    /**
+     * @brief Register a custom scene type for the "New Scene" dialog.
+     *
+     * Adds a new radio button option in the scene creation dialog.
+     * When selected, the createFunc is called to populate the scene root.
+     *
+     * @param hookId Unique identifier for this hook
+     * @param typeName Display name for the scene type (e.g., "Isometric", "Top-Down")
+     * @param createFunc Function called to populate the root node
+     * @param userData User data passed to createFunc
+     */
+    void (*RegisterSceneType)(HookId hookId, const char* typeName, SceneCreationCallback createFunc, void* userData);
+
+    /** @brief Unregister a custom scene type. */
+    void (*UnregisterSceneType)(HookId hookId, const char* typeName);
 
     // ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
 

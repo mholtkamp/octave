@@ -163,6 +163,9 @@ static const ImVec4 kToggledColor = ImVec4(0.7f, 0.2f, 0.2f, 1.0f);
 constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
+static int sNewSceneType = 1;        // 0=2D, 1=3D
+static bool sNewSceneCreateCamera = true;
+
 static bool sNodesDiscovered = false;
 static bool showTheming = false;
 static std::vector<std::string> sNode3dNames;
@@ -1291,6 +1294,73 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
     {
         AssetManager::Get()->SaveAsset(*stub);
     }
+}
+
+static void CreateNewScene(const char* sceneName, int sceneType, bool createCamera)
+{
+    AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+    if (currentDir == nullptr)
+        return;
+
+    // Check if this is a plugin-registered scene type
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr && sceneType >= 2)
+    {
+        const auto& sceneTypes = hookMgr->GetSceneTypes();
+        int hookIndex = sceneType - 2;
+        if (hookIndex >= 0 && hookIndex < (int)sceneTypes.size())
+        {
+            AssetStub* stub = EditorAddUniqueAsset(sceneName, currentDir, Scene::GetStaticType(), true);
+            if (stub == nullptr)
+                return;
+
+            // Create a temporary root for plugin to populate
+            NodePtr root = Node::Construct<Node3D>();
+            root->SetName("Root");
+
+            sceneTypes[hookIndex].mCreateFunc(sceneName, root.Get(), sceneTypes[hookIndex].mUserData);
+
+            Scene* scene = (Scene*)stub->mAsset;
+            scene->Capture(root.Get());
+            AssetManager::Get()->SaveAsset(*stub);
+            return;
+        }
+    }
+
+    // Built-in scene types (0=2D, 1=3D)
+    AssetStub* stub = EditorAddUniqueAsset(sceneName, currentDir, Scene::GetStaticType(), true);
+    if (stub == nullptr)
+        return;
+
+    if (sceneType == 1) // 3D
+    {
+        NodePtr root = Node::Construct<Node3D>();
+        root->SetName("Root");
+
+        if (createCamera)
+        {
+            Camera3D* cam = root->CreateChild<Camera3D>("Camera3D");
+            cam->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+        }
+
+        Scene* scene = (Scene*)stub->mAsset;
+        scene->Capture(root.Get());
+    }
+    else // 2D
+    {
+        NodePtr root = Node::Construct<Widget>();
+        root->SetName("Root");
+
+        if (createCamera)
+        {
+            root->CreateChild<Widget>("Canvas");
+        }
+
+        Scene* scene = (Scene*)stub->mAsset;
+        scene->Capture(root.Get());
+    }
+
+    AssetManager::Get()->SaveAsset(*stub);
 }
 
 static void AssignAssetToProperty(Object* owner, PropertyOwnerType ownerType, Property& prop, uint32_t index, Asset* newAsset)
@@ -3659,8 +3729,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             }
             if (ImGui::Selectable("Scene", false, ImGuiSelectableFlags_DontClosePopups))
             {
-                sNewAssetType = Scene::GetStaticType();
-                showPopup = true;
+                ImGui::OpenPopup("New Scene");
+                sPopupInputBuffer[0] = '\0';
+                sNewSceneType = 1;  // Default to 3D
+                sNewSceneCreateCamera = true;
+                setTextInputFocus = true;
             }
             if (ImGui::Selectable("Timeline", false, ImGuiSelectableFlags_DontClosePopups))
             {
@@ -3829,8 +3902,6 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                     assetName = "MI_Material";
                 else if (sNewAssetType == ParticleSystem::GetStaticType())
                     assetName = "P_Particle";
-                else if (sNewAssetType == Scene::GetStaticType())
-                    assetName = "SC_Scene";
                 else if (sNewAssetType == Timeline::GetStaticType())
                     assetName = "TL_Timeline";
             }
@@ -3839,6 +3910,50 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             {
                 CreateNewAsset(sNewAssetType, assetName.c_str());
             }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("New Scene"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize);
+
+        ImGui::RadioButton("2D", &sNewSceneType, 0);
+        ImGui::SameLine();
+        ImGui::RadioButton("3D", &sNewSceneType, 1);
+
+        // Plugin-registered scene types
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                const auto& sceneTypes = hookMgr->GetSceneTypes();
+                for (int i = 0; i < (int)sceneTypes.size(); ++i)
+                {
+                    ImGui::SameLine();
+                    ImGui::RadioButton(sceneTypes[i].mTypeName.c_str(), &sNewSceneType, 2 + i);
+                }
+            }
+        }
+
+        ImGui::Checkbox("Create Camera", &sNewSceneCreateCamera);
+
+        if (ImGui::Button("Create"))
+        {
+            std::string sceneName = sPopupInputBuffer;
+            if (sceneName.empty())
+                sceneName = "SC_Scene";
+
+            CreateNewScene(sceneName.c_str(), sNewSceneType, sNewSceneCreateCamera);
 
             ImGui::CloseCurrentPopup();
             closeContextPopup = true;

@@ -500,6 +500,33 @@ void EditorUIHookManager::InitializeHooks()
         mgr->mSpawnBasicWidgetItems.push_back(item);
     };
 
+    // ===== Scene Type Registration =====
+
+    mHooks.RegisterSceneType = [](HookId hookId, const char* typeName,
+                                   SceneCreationCallback createFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredSceneType sceneType;
+        sceneType.mHookId = hookId;
+        sceneType.mTypeName = typeName ? typeName : "";
+        sceneType.mCreateFunc = createFunc;
+        sceneType.mUserData = userData;
+
+        mgr->mSceneTypes.push_back(sceneType);
+    };
+
+    mHooks.UnregisterSceneType = [](HookId hookId, const char* typeName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string name = typeName ? typeName : "";
+        mgr->mSceneTypes.erase(std::remove_if(mgr->mSceneTypes.begin(), mgr->mSceneTypes.end(),
+            [hookId, &name](const RegisteredSceneType& st) {
+                return st.mHookId == hookId && st.mTypeName == name;
+            }), mgr->mSceneTypes.end());
+    };
+
     // ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
 
     mHooks.AddViewportContextItem = [](HookId hookId, const char* itemPath,
@@ -1098,6 +1125,7 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     // New hook types
     removeByHookId(mMenuItemsEx);
     removeByHookId(mNodeMenuItems);
+    removeByHookId(mSceneTypes);
     removeByHookId(mCreateAssetItems);
     removeByHookId(mSpawnBasic3dItems);
     removeByHookId(mSpawnBasicWidgetItems);
@@ -1253,6 +1281,20 @@ void EditorUIHookManager::DrawSpawnBasicWidgetItems(void* parentNode)
         {
             ImGui::Separator();
             item.mDrawFunc(parentNode, item.mUserData);
+        }
+    }
+}
+
+// ===== Scene Type Registration =====
+
+void EditorUIHookManager::FireSceneCreation(const std::string& typeName, const char* sceneName, void* rootNode)
+{
+    for (const RegisteredSceneType& st : mSceneTypes)
+    {
+        if (st.mTypeName == typeName && st.mCreateFunc)
+        {
+            st.mCreateFunc(sceneName, rootNode, st.mUserData);
+            return;
         }
     }
 }

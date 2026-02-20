@@ -187,6 +187,17 @@ struct RegisteredSpawnItems
 };
 
 /**
+ * @brief Registered custom scene type for the "New Scene" dialog.
+ */
+struct RegisteredSceneType
+{
+    HookId mHookId;
+    std::string mTypeName;
+    SceneCreationCallback mCreateFunc;
+    void* mUserData;
+};
+
+/**
  * @brief Registered viewport context menu item.
  */
 struct RegisteredViewportContextItem
@@ -480,6 +491,11 @@ public:
     void DrawSpawnBasic3dItems(void* parentNode);
     void DrawSpawnBasicWidgetItems(void* parentNode);
 
+    // ===== Scene Type Registration =====
+
+    const std::vector<RegisteredSceneType>& GetSceneTypes() const { return mSceneTypes; }
+    void FireSceneCreation(const std::string& typeName, const char* sceneName, void* rootNode);
+
     // ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
 
     void DrawViewportContextItems();
@@ -601,6 +617,9 @@ private:
     std::vector<RegisteredCreateAssetItems> mCreateAssetItems;
     std::vector<RegisteredSpawnItems> mSpawnBasic3dItems;
     std::vector<RegisteredSpawnItems> mSpawnBasicWidgetItems;
+
+    // Scene type registration
+    std::vector<RegisteredSceneType> mSceneTypes;
 
     // Batch 3: Viewport context + overlays
     std::vector<RegisteredViewportContextItem> mViewportContextItems;

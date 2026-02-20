@@ -33,6 +33,9 @@ nav:
       - Mesh Instancing: Development/MeshInstancing.md
       - Packaging Flow: Development/PackagingFlow.md
       - Themes / CSS: Development/ThemesCss.md
+      - 3DS:
+          - Overview: Development/Platforms/3DS/Overview.md
+          - Screens: Development/Platforms/3DS/Screens.md
       - Timeline:
           - Overview: Development/Timeline/Overview.md
           - TimelinePlayer: Development/Timeline/TimelinePlayer.md
@@ -71,6 +74,7 @@ nav:
               - Project Lifecycle: Development/NativeAddon/Examples/Editor/ProjectLifecycle.md
               - Property Drawer: Development/NativeAddon/Examples/Editor/PropertyDrawer.md
               - Scene Lifecycle: Development/NativeAddon/Examples/Editor/SceneLifecycle.md
+              - Scene Type Registration: Development/NativeAddon/Examples/Editor/SceneTypeRegistration.md
               - Selection Handler: Development/NativeAddon/Examples/Editor/SelectionHandler.md
               - Toolbar Extension: Development/NativeAddon/Examples/Editor/ToolbarExtension.md
               - Top Level Menu: Development/NativeAddon/Examples/Editor/TopLevelMenu.md
