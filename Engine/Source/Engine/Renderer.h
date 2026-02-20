@@ -38,6 +38,10 @@ public:
     static Renderer* Get();
 
     void Render(World* world, int32_t screenIndex);
+#if EDITOR
+    void RenderSecondScreen(World* world, class Image* colorTarget, class Image* depthTarget,
+                            uint32_t width, uint32_t height);
+#endif
     ~Renderer();
     void Initialize();
 

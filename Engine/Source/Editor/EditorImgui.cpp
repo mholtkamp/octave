@@ -93,6 +93,8 @@
 #include <Nodes/Widgets/Console.h>
 #include <Nodes/Widgets/ArrayWidget.h>
 
+#include "SecondScreenPreview/SecondScreenPreview.h"
+
 
 static const char* GetNodeIcon(Node* node)
 {
@@ -230,7 +232,7 @@ static ImGuiWindow* sViewportDockWindow = nullptr;
 // A known dock label that must exist in a valid layout.
 // If imgui.ini has dock data but this label is missing, the layout is stale.
 // Update kDockLayoutVersion when dock panel names change to force a reset.
-static constexpr uint32_t kDockLayoutVersion = 4;
+static constexpr uint32_t kDockLayoutVersion = 5;
 
 static void ValidateDockLayoutIni()
 {
@@ -476,6 +478,18 @@ static void DrawDockspace()
     ImGui::EndDock();
     ImGui::PopStyleColor();
 
+    // --- 3DS Preview dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_CIB_NINTENDO_3DS "  3DS Preview", nullptr))
+    {
+        GetSecondScreenPreview()->DrawPanel();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
     // Draw plugin/addon dockable windows
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr)
@@ -502,6 +516,7 @@ static void DrawDockspace()
             ImGui::DockTo("EditorDock", ICON_IX_CODE "  Scripts", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_STREAMLINE_LOG_SOLID "  Debug Log", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_VIEWPORT3D "  Viewport", ImGuiDockSlot_Tab);
+            ImGui::DockTo("EditorDock", ICON_CIB_NINTENDO_3DS "  3DS Preview", ICON_ASSETS "  Assets", ImGuiDockSlot_Tab);
 
             // Defer activating the Viewport tab — docks call setActive() on their
             // first BeginDock frame, so we need to wait a couple frames for all
@@ -1315,7 +1330,7 @@ static void CreateNewScene(const char* sceneName, int sceneType, bool createCame
                 return;
 
             // Create a temporary root for plugin to populate
-            NodePtr root = Node::Construct<Node3D>();
+            SharedPtr<Node3D> root = Node::Construct<Node3D>();
             root->SetName("Root");
 
             sceneTypes[hookIndex].mCreateFunc(sceneName, root.Get(), sceneTypes[hookIndex].mUserData);
@@ -1334,7 +1349,7 @@ static void CreateNewScene(const char* sceneName, int sceneType, bool createCame
 
     if (sceneType == 1) // 3D
     {
-        NodePtr root = Node::Construct<Node3D>();
+        SharedPtr<Node3D> root = Node::Construct<Node3D>();
         root->SetName("Root");
 
         if (createCamera)
@@ -1348,7 +1363,7 @@ static void CreateNewScene(const char* sceneName, int sceneType, bool createCame
     }
     else // 2D
     {
-        NodePtr root = Node::Construct<Widget>();
+        SharedPtr<Widget> root = Node::Construct<Widget>();
         root->SetName("Root");
 
         if (createCamera)
@@ -5593,6 +5608,9 @@ static void DrawMainMenuBar()
 
             if (ImGui::MenuItem("Timeline"))
                 GetEditorState()->mShowTimelinePanel = !GetEditorState()->mShowTimelinePanel;
+
+            if (ImGui::MenuItem("3DS Preview"))
+                GetEditorState()->mShow3DSPreview = !GetEditorState()->mShow3DSPreview;
 
             ImGui::Separator();
             if (ImGui::MenuItem("Reset Layout"))

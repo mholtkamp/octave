@@ -26,6 +26,7 @@
 #include "EditorState.h"
 #include "Viewport2d.h"
 #include "PaintManager.h"
+#include "SecondScreenPreview/SecondScreenPreview.h"
 #endif
 
 // TEMPORARY!
@@ -1408,6 +1409,13 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
         END_FRAME_STAT("Render");
 
+#if EDITOR
+        if (GetSecondScreenPreview()->IsEnabled())
+        {
+            GetSecondScreenPreview()->Render();
+        }
+#endif
+
         {
 #if SYNC_ON_END_FRAME
             SCOPED_FRAME_STAT("Vsync");
@@ -1460,6 +1468,109 @@ void Renderer::RenderSelectedGeometry(World* world)
     }
 #endif
 }
+
+#if EDITOR
+void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depthTarget,
+                                   uint32_t width, uint32_t height)
+{
+    if (world == nullptr || colorTarget == nullptr || depthTarget == nullptr)
+        return;
+
+    // Save current state
+    World* prevWorld = mCurrentWorld;
+    uint32_t prevScreenIndex = mScreenIndex;
+
+    mCurrentWorld = world;
+    mScreenIndex = 1;
+
+    // Gather draw data and lighting
+    GatherDrawData(world);
+
+    Camera3D* camera = world->GetActiveCamera();
+    if (camera != nullptr)
+    {
+        camera->ComputeMatrices();
+    }
+
+    GatherLightData(world);
+
+    if (mFrustumCulling && camera != nullptr)
+    {
+        FrustumCull(camera);
+    }
+
+    GFX_SetFog(world->GetFogSettings());
+
+    GFX_SetViewport(0, 0, width, height, false);
+    GFX_SetScissor(0, 0, width, height, false);
+
+    // Forward pass targeting offscreen images
+    {
+        RenderPassSetup rpSetup;
+        rpSetup.mColorImages[0] = colorTarget;
+        rpSetup.mDepthImage = depthTarget;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mDepthStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mDebugName = "3DS Preview Forward";
+
+        GetVulkanContext()->BeginVkRenderPass(rpSetup, true, GetClearColor());
+
+        if (GetDebugMode() != DEBUG_WIREFRAME)
+        {
+            GFX_EnableMaterials(true);
+
+            GFX_SetPipelineState(PipelineConfig::Forward);
+            RenderDraws(mOpaqueDraws);
+            RenderDraws(mSimpleShadowDraws);
+            GFX_SetPipelineState(PipelineConfig::Forward);
+            RenderDraws(mPostShadowOpaqueDraws);
+            RenderDraws(mTranslucentDraws);
+            RenderDebugDraws(mDebugDraws);
+
+            GFX_EnableMaterials(false);
+        }
+
+        RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
+        RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
+
+        GFX_DrawLines(world->GetLines());
+
+        GFX_EndRenderPass();
+    }
+
+    // UI pass for widgets
+    {
+        RenderPassSetup rpSetup;
+        rpSetup.mColorImages[0] = colorTarget;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mDebugName = "3DS Preview UI";
+
+        GetVulkanContext()->BeginVkRenderPass(rpSetup, true);
+
+        GFX_SetViewport(0, 0, width, height, false);
+        RenderDraws(mWidgetDraws);
+
+        GFX_EndRenderPass();
+    }
+
+    // Restore state
+    mCurrentWorld = prevWorld;
+    mScreenIndex = prevScreenIndex;
+
+    // Restore fog for main world
+    if (mCurrentWorld != nullptr)
+    {
+        GFX_SetFog(mCurrentWorld->GetFogSettings());
+    }
+}
+#endif
 
 void Renderer::UpdateDebugDraws()
 {

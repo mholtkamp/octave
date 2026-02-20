@@ -184,6 +184,8 @@ public:
     void SetScene(Scene* scene);
     Scene* GetScene();
 
+    uint8_t GetTargetScreen() const { return mTargetScreen; }
+
     std::vector<NetDatum>& GetReplicatedData();
 
     void SetNetId(NetId id);
@@ -467,6 +469,7 @@ protected:
 
     // Merged from Actor
     SceneRef mScene;
+    uint8_t mTargetScreen = 0; // 0 = Top Screen, 1 = Bottom Screen
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
     uint64_t mPersistentUuid = 0;

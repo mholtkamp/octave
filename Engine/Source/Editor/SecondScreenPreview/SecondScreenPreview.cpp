@@ -1,0 +1,293 @@
+#if EDITOR
+
+#include "SecondScreenPreview.h"
+#include "World.h"
+#include "Renderer.h"
+#include "Engine.h"
+#include "Log.h"
+#include "Nodes/Node.h"
+#include "Assets/Scene.h"
+
+#include "imgui.h"
+
+#if API_VULKAN
+#include "Graphics/Vulkan/Image.h"
+#include "Graphics/Vulkan/DestroyQueue.h"
+#include "Graphics/Vulkan/VulkanUtils.h"
+#include "backends/imgui_impl_vulkan.h"
+#endif
+
+static SecondScreenPreview sSecondScreenPreview;
+
+SecondScreenPreview* GetSecondScreenPreview()
+{
+    return &sSecondScreenPreview;
+}
+
+void SecondScreenPreview::Enable()
+{
+    if (mEnabled)
+        return;
+
+    // Top screen
+    mTop.mWorld = new World();
+    mTop.mWorld->SpawnDefaultRoot();
+    mTop.mWorld->SpawnDefaultCamera();
+    CreateScreenTargets(mTop, kTopWidth, kTopHeight, "3DS Top");
+
+    // Bottom screen
+    mBottom.mWorld = new World();
+    mBottom.mWorld->SpawnDefaultRoot();
+    mBottom.mWorld->SpawnDefaultCamera();
+    CreateScreenTargets(mBottom, kBottomWidth, kBottomHeight, "3DS Bottom");
+
+    mEnabled = true;
+
+    LogDebug("3DS Preview enabled");
+}
+
+void SecondScreenPreview::Disable()
+{
+    if (!mEnabled)
+        return;
+
+    mEnabled = false;
+
+#if API_VULKAN
+    DeviceWaitIdle();
+
+    if (mTop.mImGuiTexId != 0)
+    {
+        ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)mTop.mImGuiTexId);
+        mTop.mImGuiTexId = 0;
+    }
+    if (mBottom.mImGuiTexId != 0)
+    {
+        ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)mBottom.mImGuiTexId);
+        mBottom.mImGuiTexId = 0;
+    }
+#endif
+
+    DestroyScreenTargets(mTop);
+    DestroyScreenTargets(mBottom);
+
+    if (mTop.mWorld != nullptr)
+    {
+        mTop.mWorld->Destroy();
+        delete mTop.mWorld;
+        mTop.mWorld = nullptr;
+    }
+    if (mBottom.mWorld != nullptr)
+    {
+        mBottom.mWorld->Destroy();
+        delete mBottom.mWorld;
+        mBottom.mWorld = nullptr;
+    }
+
+    mTop.mCurrentScene = nullptr;
+    mBottom.mCurrentScene = nullptr;
+
+    LogDebug("3DS Preview disabled");
+}
+
+void SecondScreenPreview::CreateScreenTargets(ScreenState& screen, uint32_t width, uint32_t height, const char* debugName)
+{
+#if API_VULKAN
+    // Color render target
+    {
+        ImageDesc desc;
+        desc.mWidth = width;
+        desc.mHeight = height;
+        desc.mFormat = VK_FORMAT_B8G8R8A8_UNORM;
+        desc.mUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+        SamplerDesc sampDesc;
+        sampDesc.mAddressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+        screen.mColorTarget = new Image(desc, sampDesc, debugName);
+        screen.mColorTarget->Transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    // Depth render target
+    {
+        ImageDesc desc;
+        desc.mWidth = width;
+        desc.mHeight = height;
+        desc.mFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+        desc.mUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+        screen.mDepthTarget = new Image(desc, SamplerDesc(), debugName);
+        screen.mDepthTarget->Transition(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    }
+
+    // Create ImGui texture descriptor
+    screen.mImGuiTexId = (ImTextureID)ImGui_ImplVulkan_AddTexture(
+        screen.mColorTarget->GetSampler(),
+        screen.mColorTarget->GetView(),
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    DeviceWaitIdle();
+#endif
+}
+
+void SecondScreenPreview::DestroyScreenTargets(ScreenState& screen)
+{
+#if API_VULKAN
+    if (screen.mColorTarget != nullptr)
+    {
+        GetDestroyQueue()->Destroy(screen.mColorTarget);
+        screen.mColorTarget = nullptr;
+    }
+
+    if (screen.mDepthTarget != nullptr)
+    {
+        GetDestroyQueue()->Destroy(screen.mDepthTarget);
+        screen.mDepthTarget = nullptr;
+    }
+#endif
+}
+
+Scene* SecondScreenPreview::FindSceneForScreen(uint8_t targetScreen)
+{
+    World* mainWorld = GetWorld(0);
+    if (mainWorld == nullptr)
+        return nullptr;
+
+    Node* root = mainWorld->GetRootNode();
+    if (root == nullptr)
+        return nullptr;
+
+    const std::vector<NodePtr>& children = root->GetChildren();
+    for (uint32_t i = 0; i < children.size(); ++i)
+    {
+        Node* child = children[i].Get();
+        if (child != nullptr && child->GetTargetScreen() == targetScreen)
+        {
+            Scene* scene = child->GetScene();
+            if (scene != nullptr)
+                return scene;
+        }
+    }
+
+    return nullptr;
+}
+
+void SecondScreenPreview::UpdateScreen(ScreenState& screen, uint8_t targetScreen, float deltaTime)
+{
+    Scene* scene = FindSceneForScreen(targetScreen);
+
+    if (scene != screen.mCurrentScene)
+    {
+        screen.mCurrentScene = scene;
+
+        if (screen.mCurrentScene != nullptr)
+        {
+            screen.mWorld->LoadScene(screen.mCurrentScene->GetName().c_str(), true);
+        }
+        else
+        {
+            screen.mWorld->DestroyRootNode();
+            screen.mWorld->SpawnDefaultRoot();
+            screen.mWorld->SpawnDefaultCamera();
+        }
+    }
+
+    screen.mWorld->Update(deltaTime);
+}
+
+void SecondScreenPreview::Update(float deltaTime)
+{
+    if (!mEnabled)
+        return;
+
+    UpdateScreen(mTop, 0, deltaTime);
+    UpdateScreen(mBottom, 1, deltaTime);
+}
+
+void SecondScreenPreview::Render()
+{
+    if (!mEnabled)
+        return;
+
+    if (mTop.mWorld != nullptr && mTop.mColorTarget != nullptr)
+    {
+        Renderer::Get()->RenderSecondScreen(mTop.mWorld, mTop.mColorTarget, mTop.mDepthTarget,
+                                            kTopWidth, kTopHeight);
+    }
+
+    if (mBottom.mWorld != nullptr && mBottom.mColorTarget != nullptr)
+    {
+        Renderer::Get()->RenderSecondScreen(mBottom.mWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
+                                            kBottomWidth, kBottomHeight);
+    }
+}
+
+static void DrawScreenImage(ImTextureID texId, uint32_t nativeW, uint32_t nativeH, float maxW)
+{
+    if (texId == 0)
+        return;
+
+    float aspect = (float)nativeW / (float)nativeH;
+    float drawW = maxW;
+    float drawH = drawW / aspect;
+
+    // Center horizontally
+    float offsetX = (ImGui::GetContentRegionAvail().x - drawW) * 0.5f;
+    if (offsetX > 0.0f)
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+
+    ImGui::Image(texId, ImVec2(drawW, drawH));
+}
+
+void SecondScreenPreview::DrawPanel()
+{
+    bool wasEnabled = mEnabled;
+    bool enableToggle = mEnabled;
+    ImGui::Checkbox("Enable Preview", &enableToggle);
+
+    if (enableToggle && !wasEnabled)
+        Enable();
+    else if (!enableToggle && wasEnabled)
+        Disable();
+
+    if (!mEnabled)
+    {
+        ImGui::TextDisabled("Preview is disabled. Enable to see the 3DS screens.");
+        return;
+    }
+
+    // Both screens are 240px tall natively. Scale uniformly so they
+    // look like the real 3DS: top (400x240) wider, bottom (320x240) narrower.
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    float spacing = 4.0f;
+
+    // Uniform scale: fit top width to panel width, and both screens + spacing in height
+    float scale = avail.x / (float)kTopWidth;
+    float totalH = scale * (float)(kTopHeight + kBottomHeight) + spacing;
+
+    if (totalH > avail.y && avail.y > 0.0f)
+    {
+        scale = (avail.y - spacing) / (float)(kTopHeight + kBottomHeight);
+    }
+
+    float topW = scale * (float)kTopWidth;
+    float topH = scale * (float)kTopHeight;
+    float botW = scale * (float)kBottomWidth;
+    float botH = scale * (float)kBottomHeight;
+    totalH = topH + botH + spacing;
+
+    // Center vertically
+    float offsetY = (avail.y - totalH) * 0.5f;
+    if (offsetY > 0.0f)
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
+
+    // Top screen (wider)
+    DrawScreenImage(mTop.mImGuiTexId, kTopWidth, kTopHeight, topW);
+
+    ImGui::Dummy(ImVec2(0.0f, spacing));
+
+    // Bottom screen (narrower, centered)
+    DrawScreenImage(mBottom.mImGuiTexId, kBottomWidth, kBottomHeight, botW);
+}
+
+#endif

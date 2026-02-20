@@ -597,6 +597,13 @@ void Node::GatherProperties(std::vector<Property>& outProps)
 #endif
     }
 
+    {
+        SCOPED_CATEGORY("Screen");
+        static const char* sTargetScreenNames[] = { "Top Screen", "Bottom Screen" };
+        outProps.push_back(Property(DatumType::Byte, "Target Screen", this, &mTargetScreen,
+            1, nullptr, NULL_DATUM, 2, sTargetScreenNames));
+    }
+
     if (mScript != nullptr)
     {
         mScript->AppendScriptProperties(outProps);

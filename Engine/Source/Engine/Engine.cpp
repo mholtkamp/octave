@@ -57,6 +57,7 @@
 #if EDITOR
 #include "EditorState.h"
 #include "EditorImgui.h"
+#include "SecondScreenPreview/SecondScreenPreview.h"
 
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
@@ -642,6 +643,13 @@ bool Update()
         sWorlds[i]->Update(gameDeltaTime);
     }
 
+#if EDITOR
+    if (GetSecondScreenPreview()->IsEnabled())
+    {
+        GetSecondScreenPreview()->Update(gameDeltaTime);
+    }
+#endif
+
     // Tick all runtime plugins
     if (RuntimePluginManager::Get())
     {
@@ -678,6 +686,7 @@ void Shutdown()
 #if EDITOR
     // Shutdown FileWatcher first
     DestroyFileWatcher();
+    GetSecondScreenPreview()->Disable();
 #endif
 
     NetworkManager::Get()->Shutdown();

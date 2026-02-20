@@ -163,6 +163,9 @@ struct EditorState
     bool mProjectUpgradeInProgress = false;
     std::vector<AssetStub*> mAssetsNeedingUpgrade;
 
+    // 3DS Preview Panel state
+    bool mShow3DSPreview = false;
+
     // Timeline Panel state
     bool mShowTimelinePanel = false;
     TimelineRef mEditedTimelineRef;

@@ -132,6 +132,9 @@
     <Filter Include="Source Files\Editor\DebugLog">
       <UniqueIdentifier>{d3a5c7b2-1f4e-4a8b-9c6d-e2f0b8a1d5c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\SecondScreenPreview">
+      <UniqueIdentifier>{b4c6d8e0-2a3f-4b5c-8d7e-f9a1b3c5d7e9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Editor\Timeline">
       <UniqueIdentifier>{a7c3e1b5-9d2f-4e6a-8b0c-f1d4a6e8c2b7}</UniqueIdentifier>
     </Filter>
@@ -661,6 +664,9 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\DebugLog\DebugLogWindow.cpp">
       <Filter>Source Files\Editor\DebugLog</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp">
+      <Filter>Source Files\Editor\SecondScreenPreview</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\EditorImgui.cpp">
       <Filter>Source Files\Editor</Filter>
@@ -1559,6 +1565,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h">
       <Filter>Source Files\Editor\DebugLog</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h">
+      <Filter>Source Files\Editor\SecondScreenPreview</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorImgui.h">
       <Filter>Source Files\Editor</Filter>
