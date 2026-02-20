@@ -36,6 +36,13 @@ nav:
       - 3DS:
           - Overview: Development/Platforms/3DS/Overview.md
           - Screens: Development/Platforms/3DS/Screens.md
+      - UI:
+          - Overview: Development/UI/Overview.md
+          - Displaying Images: Development/UI/DisplayingImages.md
+          - Text: Development/UI/Text.md
+          - Buttons: Development/UI/Buttons.md
+          - Animation: Development/UI/Animation.md
+          - Building UI: Development/UI/BuildingUI.md
       - Timeline:
           - Overview: Development/Timeline/Overview.md
           - TimelinePlayer: Development/Timeline/TimelinePlayer.md
