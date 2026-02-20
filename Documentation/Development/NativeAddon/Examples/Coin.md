@@ -1,6 +1,6 @@
-# Example: Rotator3D
+# Example: Coin
 
-A native addon that creates a Rotator3D component to continuously rotate Node3D objects with configurable speed and axis. The rotation logic runs entirely in C++ with no Lua overhead per frame.
+A native addon that creates a Coin component to continuously rotate Node3D objects with configurable speed and axis. The rotation logic runs entirely in C++ with no Lua overhead per frame.
 
 ---
 
@@ -11,7 +11,7 @@ This example demonstrates:
 - Storing Node3D references in native addon components
 - Using OctaveEngineAPI to directly manipulate Node3D transforms
 - Exposing configurable properties to Lua scripts
-- Managing multiple Rotator3D instances from native code
+- Managing multiple Coin instances from native code
 
 ---
 
@@ -21,7 +21,7 @@ This example demonstrates:
 
 ```json
 {
-    "name": "Rotator3D",
+    "name": "Coin",
     "author": "Octave Examples",
     "description": "Continuously rotates objects with configurable speed and axis.",
     "version": "1.0.0",
@@ -29,22 +29,22 @@ This example demonstrates:
     "native": {
         "target": "engine",
         "sourceDir": "Source",
-        "binaryName": "Rotator3D",
+        "binaryName": "Coin",
         "apiVersion": 2
     }
 }
 ```
 
-### Source/Rotator3D.cpp
+### Source/Coin.cpp
 
 ```cpp
 /**
- * @file Rotator3D.cpp
+ * @file Coin.cpp
  * @brief Native addon that provides rotation functionality for Node3D objects.
  *
  * This addon demonstrates using the plugin Tick callback to update all
- * Rotator3D instances each frame entirely in C++. Lua only needs to create
- * and configure Rotator3Ds - no Lua Tick function required.
+ * Coin instances each frame entirely in C++. Lua only needs to create
+ * and configure Coins - no Lua Tick function required.
  */
 
 #include "Plugins/OctavePluginAPI.h"
@@ -63,10 +63,10 @@ extern "C" {
 static OctaveEngineAPI* sEngineAPI = nullptr;
 
 //=============================================================================
-// Rotator3D Data Structure
+// Coin Data Structure
 //=============================================================================
 
-struct Rotator3DData
+struct CoinData
 {
     Node3D* targetNode = nullptr;  // The node to rotate
     float speedX = 0.0f;           // Degrees per second on X axis
@@ -75,8 +75,8 @@ struct Rotator3DData
     bool enabled = true;
 };
 
-// Global list of all active Rotator3Ds (managed by the plugin)
-static std::vector<Rotator3DData*> sActiveRotator3Ds;
+// Global list of all active Coins (managed by the plugin)
+static std::vector<CoinData*> sActiveCoins;
 
 //=============================================================================
 // Plugin Tick - Called every frame by the engine
@@ -84,8 +84,8 @@ static std::vector<Rotator3DData*> sActiveRotator3Ds;
 
 static void PluginTick(float deltaTime)
 {
-    // Update all active Rotator3Ds
-    for (Rotator3DData* data : sActiveRotator3Ds)
+    // Update all active Coins
+    for (CoinData* data : sActiveCoins)
     {
         if (data == nullptr || !data->enabled || data->targetNode == nullptr)
         {
@@ -106,13 +106,13 @@ static void PluginTick(float deltaTime)
 // Lua Bindings - Use sEngineAPI->Lua_* wrappers!
 //=============================================================================
 
-// Rotator3D.Create(node) - Creates a new Rotator3D attached to a Node3D
-static int Lua_Rotator3D_Create(lua_State* L)
+// Coin.Create(node) - Creates a new Coin attached to a Node3D
+static int Lua_Coin_Create(lua_State* L)
 {
     // First argument should be a Node3D userdata
     if (!sEngineAPI->Lua_isuserdata(L, 1))
     {
-        sEngineAPI->LogError("Rotator3D.Create: expected Node3D as first argument");
+        sEngineAPI->LogError("Coin.Create: expected Node3D as first argument");
         sEngineAPI->Lua_pushnil(L);
         return 1;
     }
@@ -121,95 +121,95 @@ static int Lua_Rotator3D_Create(lua_State* L)
     Node3D* node = *(Node3D**)sEngineAPI->Lua_touserdata(L, 1);
     if (node == nullptr)
     {
-        sEngineAPI->LogError("Rotator3D.Create: Node3D is null");
+        sEngineAPI->LogError("Coin.Create: Node3D is null");
         sEngineAPI->Lua_pushnil(L);
         return 1;
     }
 
-    // Create our Rotator3DData userdata
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->Lua_newuserdata(L, sizeof(Rotator3DData));
-    new (data) Rotator3DData();  // Placement new to initialize
+    // Create our CoinData userdata
+    CoinData* data = (CoinData*)sEngineAPI->Lua_newuserdata(L, sizeof(CoinData));
+    new (data) CoinData();  // Placement new to initialize
     data->targetNode = node;
 
-    // Add to active Rotator3Ds list
-    sActiveRotator3Ds.push_back(data);
+    // Add to active Coins list
+    sActiveCoins.push_back(data);
 
-    sEngineAPI->LuaL_getmetatable(L, "Rotator3D");
+    sEngineAPI->LuaL_getmetatable(L, "Coin");
     sEngineAPI->Lua_setmetatable(L, -2);
 
     return 1;
 }
 
-// Rotator3D:SetSpeed(x, y, z) - Set rotation speed for each axis
-static int Lua_Rotator3D_SetSpeed(lua_State* L)
+// Coin:SetSpeed(x, y, z) - Set rotation speed for each axis
+static int Lua_Coin_SetSpeed(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     data->speedX = (float)sEngineAPI->LuaL_checknumber(L, 2);
     data->speedY = (float)sEngineAPI->LuaL_checknumber(L, 3);
     data->speedZ = (float)sEngineAPI->LuaL_checknumber(L, 4);
     return 0;
 }
 
-// Rotator3D:SetSpeedX(speed)
-static int Lua_Rotator3D_SetSpeedX(lua_State* L)
+// Coin:SetSpeedX(speed)
+static int Lua_Coin_SetSpeedX(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     data->speedX = (float)sEngineAPI->LuaL_checknumber(L, 2);
     return 0;
 }
 
-// Rotator3D:SetSpeedY(speed)
-static int Lua_Rotator3D_SetSpeedY(lua_State* L)
+// Coin:SetSpeedY(speed)
+static int Lua_Coin_SetSpeedY(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     data->speedY = (float)sEngineAPI->LuaL_checknumber(L, 2);
     return 0;
 }
 
-// Rotator3D:SetSpeedZ(speed)
-static int Lua_Rotator3D_SetSpeedZ(lua_State* L)
+// Coin:SetSpeedZ(speed)
+static int Lua_Coin_SetSpeedZ(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     data->speedZ = (float)sEngineAPI->LuaL_checknumber(L, 2);
     return 0;
 }
 
-// Rotator3D:GetSpeed() - Returns x, y, z rotation speeds
-static int Lua_Rotator3D_GetSpeed(lua_State* L)
+// Coin:GetSpeed() - Returns x, y, z rotation speeds
+static int Lua_Coin_GetSpeed(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     sEngineAPI->Lua_pushnumber(L, data->speedX);
     sEngineAPI->Lua_pushnumber(L, data->speedY);
     sEngineAPI->Lua_pushnumber(L, data->speedZ);
     return 3;
 }
 
-// Rotator3D:SetEnabled(enabled)
-static int Lua_Rotator3D_SetEnabled(lua_State* L)
+// Coin:SetEnabled(enabled)
+static int Lua_Coin_SetEnabled(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     data->enabled = sEngineAPI->Lua_toboolean(L, 2);
     return 0;
 }
 
-// Rotator3D:IsEnabled()
-static int Lua_Rotator3D_IsEnabled(lua_State* L)
+// Coin:IsEnabled()
+static int Lua_Coin_IsEnabled(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
     sEngineAPI->Lua_pushboolean(L, data->enabled);
     return 1;
 }
 
-// Rotator3D:Destroy() - Remove from active list
-static int Lua_Rotator3D_Destroy(lua_State* L)
+// Coin:Destroy() - Remove from active list
+static int Lua_Coin_Destroy(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->LuaL_checkudata(L, 1, "Rotator3D");
+    CoinData* data = (CoinData*)sEngineAPI->LuaL_checkudata(L, 1, "Coin");
 
     // Remove from active list
-    auto it = std::find(sActiveRotator3Ds.begin(), sActiveRotator3Ds.end(), data);
-    if (it != sActiveRotator3Ds.end())
+    auto it = std::find(sActiveCoins.begin(), sActiveCoins.end(), data);
+    if (it != sActiveCoins.end())
     {
-        sActiveRotator3Ds.erase(it);
+        sActiveCoins.erase(it);
     }
 
     // Clear the target to prevent updates
@@ -220,38 +220,38 @@ static int Lua_Rotator3D_Destroy(lua_State* L)
 }
 
 // Garbage collection - ensure cleanup
-static int Lua_Rotator3D_GC(lua_State* L)
+static int Lua_Coin_GC(lua_State* L)
 {
-    Rotator3DData* data = (Rotator3DData*)sEngineAPI->Lua_touserdata(L, 1);
+    CoinData* data = (CoinData*)sEngineAPI->Lua_touserdata(L, 1);
     if (data != nullptr)
     {
         // Remove from active list if still there
-        auto it = std::find(sActiveRotator3Ds.begin(), sActiveRotator3Ds.end(), data);
-        if (it != sActiveRotator3Ds.end())
+        auto it = std::find(sActiveCoins.begin(), sActiveCoins.end(), data);
+        if (it != sActiveCoins.end())
         {
-            sActiveRotator3Ds.erase(it);
+            sActiveCoins.erase(it);
         }
     }
     return 0;
 }
 
 // Metatable methods
-static const luaL_Reg sRotator3DMethods[] = {
-    {"SetSpeed", Lua_Rotator3D_SetSpeed},
-    {"SetSpeedX", Lua_Rotator3D_SetSpeedX},
-    {"SetSpeedY", Lua_Rotator3D_SetSpeedY},
-    {"SetSpeedZ", Lua_Rotator3D_SetSpeedZ},
-    {"GetSpeed", Lua_Rotator3D_GetSpeed},
-    {"SetEnabled", Lua_Rotator3D_SetEnabled},
-    {"IsEnabled", Lua_Rotator3D_IsEnabled},
-    {"Destroy", Lua_Rotator3D_Destroy},
-    {"__gc", Lua_Rotator3D_GC},
+static const luaL_Reg sCoinMethods[] = {
+    {"SetSpeed", Lua_Coin_SetSpeed},
+    {"SetSpeedX", Lua_Coin_SetSpeedX},
+    {"SetSpeedY", Lua_Coin_SetSpeedY},
+    {"SetSpeedZ", Lua_Coin_SetSpeedZ},
+    {"GetSpeed", Lua_Coin_GetSpeed},
+    {"SetEnabled", Lua_Coin_SetEnabled},
+    {"IsEnabled", Lua_Coin_IsEnabled},
+    {"Destroy", Lua_Coin_Destroy},
+    {"__gc", Lua_Coin_GC},
     {nullptr, nullptr}
 };
 
 // Module functions
-static const luaL_Reg sRotator3DFuncs[] = {
-    {"Create", Lua_Rotator3D_Create},
+static const luaL_Reg sCoinFuncs[] = {
+    {"Create", Lua_Coin_Create},
     {nullptr, nullptr}
 };
 
@@ -262,8 +262,8 @@ static const luaL_Reg sRotator3DFuncs[] = {
 static int OnLoad(OctaveEngineAPI* api)
 {
     sEngineAPI = api;
-    sActiveRotator3Ds.clear();
-    api->LogDebug("Rotator3D addon loaded!");
+    sActiveCoins.clear();
+    api->LogDebug("Coin addon loaded!");
     return 0;
 }
 
@@ -271,29 +271,29 @@ static void OnUnload()
 {
     if (sEngineAPI)
     {
-        sEngineAPI->LogDebug("Rotator3D addon unloaded.");
+        sEngineAPI->LogDebug("Coin addon unloaded.");
     }
-    sActiveRotator3Ds.clear();
+    sActiveCoins.clear();
     sEngineAPI = nullptr;
 }
 
 static void RegisterScriptFuncs(lua_State* L)
 {
-    // Create the Rotator3D metatable
-    sEngineAPI->LuaL_newmetatable(L, "Rotator3D");
+    // Create the Coin metatable
+    sEngineAPI->LuaL_newmetatable(L, "Coin");
 
     // Set __index to itself for method lookup
     sEngineAPI->Lua_pushvalue(L, -1);
     sEngineAPI->Lua_setfield(L, -2, "__index");
 
     // Register methods (including __gc for cleanup)
-    sEngineAPI->LuaL_setfuncs(L, sRotator3DMethods, 0);
+    sEngineAPI->LuaL_setfuncs(L, sCoinMethods, 0);
     sEngineAPI->Lua_pop(L, 1);
 
-    // Create the Rotator3D table and register module functions
+    // Create the Coin table and register module functions
     sEngineAPI->Lua_createtable(L, 0, 1);
-    sEngineAPI->LuaL_setfuncs(L, sRotator3DFuncs, 0);
-    sEngineAPI->Lua_setglobal(L, "Rotator3D");
+    sEngineAPI->LuaL_setfuncs(L, sCoinFuncs, 0);
+    sEngineAPI->Lua_setglobal(L, "Coin");
 }
 
 //=============================================================================
@@ -303,7 +303,7 @@ static void RegisterScriptFuncs(lua_State* L)
 extern "C" OCTAVE_PLUGIN_API int OctavePlugin_GetDesc(OctavePluginDesc* desc)
 {
     desc->apiVersion = OCTAVE_PLUGIN_API_VERSION;
-    desc->pluginName = "Rotator3D";
+    desc->pluginName = "Coin";
     desc->pluginVersion = "1.0.0";
     desc->OnLoad = OnLoad;
     desc->OnUnload = OnUnload;
@@ -319,7 +319,7 @@ extern "C" OCTAVE_PLUGIN_API int OctavePlugin_GetDesc(OctavePluginDesc* desc)
 // This is NOT used when building as a DLL for the editor
 #if !defined(OCTAVE_PLUGIN_EXPORT)
 #include "Plugins/RuntimePluginManager.h"
-OCTAVE_REGISTER_PLUGIN(Rotator3D, OctavePlugin_GetDesc)
+OCTAVE_REGISTER_PLUGIN(Coin, OctavePlugin_GetDesc)
 #endif
 ```
 
@@ -335,20 +335,20 @@ OCTAVE_REGISTER_PLUGIN(Rotator3D, OctavePlugin_GetDesc)
 
 RotatingCube = {}
 
-local Rotator3D = nil
+local Coin = nil
 
 function RotatingCube:Create()
-    -- Create a Rotator3D attached to this node
+    -- Create a Coin attached to this node
     -- Default: rotates at 45 degrees/sec on Y axis
     -- No Tick function needed - C++ handles everything!
-    Rotator3D = Rotator3D.Create(self)
+    Coin = Coin.Create(self)
 end
 
 function RotatingCube:Destroy()
     -- Clean up when node is destroyed
-    if Rotator3D then
-        Rotator3D:Destroy()
-        Rotator3D = nil
+    if Coin then
+        Coin:Destroy()
+        Coin = nil
     end
 end
 ```
@@ -361,7 +361,7 @@ end
 
 SpinningPlatform = {}
 
-local Rotator3D = nil
+local Coin = nil
 
 -- Exposed properties (editable in inspector)
 SpeedX = 0.0
@@ -370,28 +370,28 @@ SpeedZ = 0.0
 StartEnabled = true
 
 function SpinningPlatform:Create()
-    Rotator3D = Rotator3D.Create(self)
-    Rotator3D:SetSpeed(SpeedX, SpeedY, SpeedZ)
-    Rotator3D:SetEnabled(StartEnabled)
+    Coin = Coin.Create(self)
+    Coin:SetSpeed(SpeedX, SpeedY, SpeedZ)
+    Coin:SetEnabled(StartEnabled)
 end
 
 function SpinningPlatform:Destroy()
-    if Rotator3D then
-        Rotator3D:Destroy()
-        Rotator3D = nil
+    if Coin then
+        Coin:Destroy()
+        Coin = nil
     end
 end
 
 -- Called from other scripts or events
 function SpinningPlatform:SetRotationEnabled(enabled)
-    if Rotator3D then
-        Rotator3D:SetEnabled(enabled)
+    if Coin then
+        Coin:SetEnabled(enabled)
     end
 end
 
 function SpinningPlatform:SetRotationSpeed(x, y, z)
-    if Rotator3D then
-        Rotator3D:SetSpeed(x, y, z)
+    if Coin then
+        Coin:SetSpeed(x, y, z)
     end
 end
 ```
@@ -400,17 +400,17 @@ end
 
 ## API Reference
 
-### Rotator3D.Create(node)
-Creates a new Rotator3D instance attached to a Node3D.
+### Coin.Create(node)
+Creates a new Coin instance attached to a Node3D.
 
 **Parameters:**
 - `node` (Node3D): The node to rotate (typically `self`)
 
-**Returns:** Rotator3D userdata, or nil on error
+**Returns:** Coin userdata, or nil on error
 
 ---
 
-### Rotator3D:SetSpeed(x, y, z)
+### Coin:SetSpeed(x, y, z)
 Sets the rotation speed for all axes.
 
 **Parameters:**
@@ -420,7 +420,7 @@ Sets the rotation speed for all axes.
 
 ---
 
-### Rotator3D:SetSpeedX(speed) / SetSpeedY(speed) / SetSpeedZ(speed)
+### Coin:SetSpeedX(speed) / SetSpeedY(speed) / SetSpeedZ(speed)
 Sets the rotation speed for a single axis.
 
 **Parameters:**
@@ -428,14 +428,14 @@ Sets the rotation speed for a single axis.
 
 ---
 
-### Rotator3D:GetSpeed()
+### Coin:GetSpeed()
 Gets the current rotation speeds.
 
 **Returns:** x, y, z (numbers)
 
 ---
 
-### Rotator3D:SetEnabled(enabled)
+### Coin:SetEnabled(enabled)
 Enables or disables the rotation.
 
 **Parameters:**
@@ -443,15 +443,15 @@ Enables or disables the rotation.
 
 ---
 
-### Rotator3D:IsEnabled()
+### Coin:IsEnabled()
 Checks if rotation is enabled.
 
 **Returns:** boolean
 
 ---
 
-### Rotator3D:Destroy()
-Removes the Rotator3D from the update list. Call this in your Destroy callback.
+### Coin:Destroy()
+Removes the Coin from the update list. Call this in your Destroy callback.
 
 ---
 
@@ -464,7 +464,7 @@ Native addons have two tick callbacks:
 | `Tick` | During gameplay only (PIE or built game) | Gameplay logic like rotation, movement, AI |
 | `TickEditor` | Every frame in editor (regardless of play state) | Editor tools, visualizations, gizmos |
 
-This Rotator3D uses `Tick` so objects only rotate during gameplay, not while editing.
+This Coin uses `Tick` so objects only rotate during gameplay, not while editing.
 
 ---
 
@@ -475,7 +475,7 @@ This Rotator3D uses `Tick` so objects only rotate during gameplay, not while edi
 | **Zero Lua overhead** | No Tick function needed in Lua - C++ handles all updates |
 | **Automatic cleanup** | `__gc` metamethod ensures cleanup when Lua garbage collects |
 | **Direct Node3D access** | Uses `Node3D_AddRotation` for maximum performance |
-| **Multiple instances** | Plugin manages all Rotator3Ds in a single tick loop |
+| **Multiple instances** | Plugin manages all Coins in a single tick loop |
 | **Gameplay-only rotation** | Uses `Tick` callback so objects don't rotate while editing |
 
 ---
@@ -492,7 +492,7 @@ This Rotator3D uses `Tick` so objects only rotate during gameplay, not while edi
 │                            │                              │
 │                            ▼                              │
 │              ┌─────────────────────────┐                 │
-│              │  For each Rotator3DData:  │                 │
+│              │  For each CoinData:  │                 │
 │              │  - Calculate delta      │                 │
 │              │  - Node3D_AddRotation() │                 │
 │              └─────────────────────────┘                 │
@@ -503,11 +503,11 @@ This Rotator3D uses `Tick` so objects only rotate during gameplay, not while edi
 
 ## Important Notes
 
-**Lifecycle Management:** Always call `Rotator3D:Destroy()` in your Lua script's `Destroy()` callback, or the Rotator3D may continue trying to update a destroyed node.
+**Lifecycle Management:** Always call `Coin:Destroy()` in your Lua script's `Destroy()` callback, or the Coin may continue trying to update a destroyed node.
 
-**Garbage Collection:** The `__gc` metamethod provides automatic cleanup when Lua garbage collects the Rotator3D, but explicit `Destroy()` is recommended for deterministic cleanup.
+**Garbage Collection:** The `__gc` metamethod provides automatic cleanup when Lua garbage collects the Coin, but explicit `Destroy()` is recommended for deterministic cleanup.
 
-**Node Validity:** The plugin stores a raw pointer to the Node3D. If the node is destroyed before the Rotator3D, ensure you call `Rotator3D:Destroy()` first.
+**Node Validity:** The plugin stores a raw pointer to the Node3D. If the node is destroyed before the Coin, ensure you call `Coin:Destroy()` first.
 
 ---
 
@@ -519,7 +519,7 @@ When you build your game, the native addon source files are compiled directly in
 // At the end of the plugin source file (ONLY for compiled-in builds):
 #if !defined(OCTAVE_PLUGIN_EXPORT)
 #include "Plugins/RuntimePluginManager.h"
-OCTAVE_REGISTER_PLUGIN(Rotator3D, OctavePlugin_GetDesc)
+OCTAVE_REGISTER_PLUGIN(Coin, OctavePlugin_GetDesc)
 #endif
 ```
 

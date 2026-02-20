@@ -30,7 +30,6 @@ nav:
       - Docker: Info/Docker.md
 
   - Development:
-      - Overview: Development/UUID.md
       - Mesh Instancing: Development/MeshInstancing.md
       - Packaging Flow: Development/PackagingFlow.md
       - Themes / CSS: Development/ThemesCss.md
@@ -43,7 +42,7 @@ nav:
               - Custom Script Inspector: Development/NativeAddon/Examples/CustomScriptInspector.md
               - Custom Theme: Development/NativeAddon/Examples/CustomTheme.md
               - Debug Log: Development/NativeAddon/Examples/DebugLog.md
-              - Rotator3D: Development/NativeAddon/Examples/Rotator3D.md
+              - Coin: Development/NativeAddon/Examples/Coin.md
               - Select Handler: Development/NativeAddon/Examples/SelectHandler.md
           - Editor Examples:
               - Add Node Menu: Development/NativeAddon/Examples/Editor/AddNodeMenu.md
