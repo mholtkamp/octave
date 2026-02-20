@@ -3868,248 +3868,285 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     }
 }
 
-static void DrawAssetBrowser(bool showFilter, bool interactive)
+// Flat directory picker for dialogs (e.g., Save Scene As)
+static void DrawDirPicker()
 {
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+    if (currentDir == nullptr)
+        return;
 
-    static std::string sUpperAssetName;
-    std::string& filterStr = GetEditorState()->mTabFilterStr[GetEditorState()->ActiveTab()];
-    std::vector<AssetStub*>& filteredStubs = GetEditorState()->mTabFilteredStubs[GetEditorState()->ActiveTab()];
+    ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kBgHover);
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive, kBgInactive);
 
-    if (showFilter && ImGui::InputText("Filter", &filterStr, ImGuiInputTextFlags_EnterReturnsTrue))
+    if (currentDir->mParentDir != nullptr)
     {
-        filteredStubs.clear();
-
-        if (filterStr != "")
+        if (ImGui::Selectable(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "...", false))
         {
-            // Convert filter string to all upper case
-            std::string filterStrUpper = filterStr;
-            for (uint32_t c = 0; c < filterStrUpper.size(); ++c)
-            {
-                filterStrUpper[c] = toupper(filterStrUpper[c]);
-            }
-
-            // Iterate through all matching asset names
-            const auto& assetMap = AssetManager::Get()->GetAssetMap();
-            for (auto element : assetMap)
-            {
-                // Get the upper case version of asset name
-                sUpperAssetName = element.second->mName;
-                for (uint32_t c = 0; c < sUpperAssetName.size(); ++c)
-                {
-                    sUpperAssetName[c] = toupper(sUpperAssetName[c]);
-                }
-
-                if (sUpperAssetName.find(filterStrUpper) != std::string::npos)
-                {
-                    filteredStubs.push_back(element.second);
-                }
-            }
+            GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
         }
     }
 
-    if (filterStr == "")
+    for (uint32_t i = 0; i < currentDir->mChildDirs.size(); ++i)
     {
-        filteredStubs.clear();
+        AssetDir* childDir = currentDir->mChildDirs[i];
+        std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + "  " + childDir->mName;
+        if (ImGui::Selectable(dirLabel.c_str(), false))
+        {
+            GetEditorState()->SetAssetDirectory(childDir, true);
+        }
     }
 
-    if (currentDir != nullptr)
+    ImGui::PopStyleColor(3);
+}
+
+static bool DirMatchesFilter(AssetDir* dir, const std::string& filterLower)
+{
+    if (dir == nullptr)
+        return false;
+
+    // Check if directory name matches
     {
-        if (!showFilter || filterStr == "")
+        std::string nameLower = dir->mName;
+        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+        if (nameLower.find(filterLower) != std::string::npos)
+            return true;
+    }
+
+    // Check if any asset in this directory matches
+    for (AssetStub* stub : dir->mAssetStubs)
+    {
+        std::string nameLower = stub->mName;
+        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+        if (nameLower.find(filterLower) != std::string::npos)
+            return true;
+    }
+
+    // Check if any descendant directory matches
+    for (AssetDir* child : dir->mChildDirs)
+    {
+        if (DirMatchesFilter(child, filterLower))
+            return true;
+    }
+
+    return false;
+}
+
+static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
+{
+    AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
+
+    for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i)
+    {
+        AssetStub* stub = dir->mAssetStubs[i];
+
+        // Filter check
+        if (!filterLower.empty())
         {
-            // Directories first
-            ImGui::PushStyleColor(ImGuiCol_Header, kBgInactive);
-            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kBgHover);
-            ImGui::PushStyleColor(ImGuiCol_HeaderActive, kBgInactive);
-
-            // Parent Dir (..)
-            if (currentDir->mParentDir != nullptr)
-            {
-                if (ImGui::Selectable(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "...", false))
-                {
-                    GetEditorState()->SetAssetDirectory(currentDir->mParentDir, true);
-                }
-            }
-
-            // Child Dirs
-            for (uint32_t i = 0; i < currentDir->mChildDirs.size(); ++i)
-            {
-                AssetDir* childDir = currentDir->mChildDirs[i];
-
-                std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + "  " + childDir->mName;
-                if (ImGui::Selectable(dirLabel.c_str(), false))
-                {
-                    GetEditorState()->SetAssetDirectory(childDir, true);
-                }
-
-                if (ImGui::BeginPopupContextItem())
-                {
-                    DrawAssetsContextPopup(nullptr, childDir);
-                    ImGui::EndPopup();
-                }
-            }
-
-            ImGui::PopStyleColor(3); // Pop Directory Colors
+            std::string nameLower = stub->mName;
+            std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+            if (nameLower.find(filterLower) == std::string::npos)
+                continue;
         }
 
-        std::vector<AssetStub*>* stubs = &(currentDir->mAssetStubs);
-        if (showFilter && filterStr != "")
+        bool isSelectedStub = (stub == selStub);
+        if (isSelectedStub)
         {
-            stubs = &filteredStubs;
+            ImGui::PushStyleColor(ImGuiCol_Header, kSelectedColor);
+            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kSelectedColor);
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, kSelectedColor);
         }
 
-        // Assets
-        AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
-        for (uint32_t i = 0; i < stubs->size(); ++i)
+        glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
+
+        std::string assetDispText = std::string(GetAssetIcon(stub->mType)) + "  " + stub->mName;
+        if (stub->mAsset && stub->mAsset->GetDirtyFlag())
         {
-            AssetStub* stub = (*stubs)[i];
+            assetDispText = "*" + assetDispText;
+        }
 
-            bool isSelectedStub = (stub == selStub);
-            if (isSelectedStub)
+        ImGui::PushID(stub);
+        if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick))
+        {
+            if (selStub != stub)
             {
-                ImGui::PushStyleColor(ImGuiCol_Header, kSelectedColor);
-                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kSelectedColor);
-                ImGui::PushStyleColor(ImGuiCol_HeaderActive, kSelectedColor);
+                GetEditorState()->SetSelectedAssetStub(stub);
+            }
+            else if (!IsControlDown())
+            {
+                GetEditorState()->SetSelectedAssetStub(nullptr);
             }
 
-            glm::vec4 assetColor = AssetManager::Get()->GetEditorAssetColor(stub->mType);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(assetColor.r, assetColor.g, assetColor.b, assetColor.a));
-
-            std::string assetDispText = std::string(GetAssetIcon(stub->mType)) + "  " + stub->mName;
-            if (stub && stub->mAsset && stub->mAsset->GetDirtyFlag())
+            if (IsControlDown() &&
+                stub != nullptr &&
+                stub->mAsset != nullptr)
             {
-                assetDispText = "*" + assetDispText;
+                GetEditorState()->InspectObject(stub->mAsset);
             }
 
-            if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick))
+            if (ImGui::IsMouseDoubleClicked(0))
             {
-                if (selStub != stub)
+                EditorUIHookManager::Get()->FireOnAssetOpen(stub->mName.c_str());
+
+                if (stub->mAsset == nullptr)
+                    AssetManager::Get()->LoadAsset(*stub);
+
+                if (stub->mType == Scene::GetStaticType())
                 {
-                    GetEditorState()->SetSelectedAssetStub(stub);
+                    Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
+                    if (scene)
+                        ActionManager::Get()->OpenScene(scene);
                 }
-                else if (!IsControlDown())
+                else if (stub->mType == Timeline::GetStaticType())
                 {
-                    GetEditorState()->SetSelectedAssetStub(nullptr);
-                }
-
-                if (IsControlDown() &&
-                    stub != nullptr &&
-                    stub->mAsset != nullptr)
-                {
-                    GetEditorState()->InspectObject(stub->mAsset);
-                }
-
-                if (ImGui::IsMouseDoubleClicked(0))
-                {
-                    EditorUIHookManager::Get()->FireOnAssetOpen(stub->mName.c_str());
-
-                    if (stub->mAsset == nullptr)
-                        AssetManager::Get()->LoadAsset(*stub);
-
-                    if (stub->mType == Scene::GetStaticType())
+                    Timeline* timeline = stub->mAsset ? stub->mAsset->As<Timeline>() : nullptr;
+                    if (timeline)
                     {
-                        Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
-                        if (scene)
-                            ActionManager::Get()->OpenScene(scene);
+                        OpenTimelineForEditing(timeline);
                     }
-                    else if (stub->mType == Timeline::GetStaticType())
-                    {
-                        Timeline* timeline = stub->mAsset ? stub->mAsset->As<Timeline>() : nullptr;
-                        if (timeline)
-                        {
-                            OpenTimelineForEditing(timeline);
-                        }
-                    }
-                    else
-                    {
-                        if (stub->mAsset)
-                            GetEditorState()->InspectObject(stub->mAsset);
-                    }
-
-                    EditorUIHookManager::Get()->FireOnAssetOpened(stub->mName.c_str());
                 }
-            }
-
-            if (stub->mType == StaticMesh::GetStaticType() &&
-                ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-            {
-                AssetStub* dragStub = stub;
-                ImGui::SetDragDropPayload(DRAGDROP_ASSET, &dragStub, sizeof(AssetStub*));
-                ImGui::Text("%s", stub->mName.c_str());
-                ImGui::EndDragDropSource();
-            }
-
-            if (GetEditorState()->mTrackSelectedAsset &&
-                stub == GetEditorState()->mSelectedAssetStub)
-            {
-                ImGui::SetScrollHereY(0.5f);
-                GetEditorState()->mTrackSelectedAsset = false;
-            }
-
-            ImGui::PopStyleColor(); // Pop asset color
-
-            // Asset browser item GUI overlay (Batch 7)
-            {
-                ImVec2 rowMin = ImGui::GetItemRectMin();
-                ImVec2 rowMax = ImGui::GetItemRectMax();
-                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-                if (hookMgr != nullptr)
+                else
                 {
-                    const char* typeName = (stub->mAsset != nullptr) ?
-                        stub->mAsset->GetTypeName() : "";
-                    hookMgr->DrawAssetItemGUI(stub->mName.c_str(), typeName,
-                        rowMin.x, rowMin.y, rowMax.x - rowMin.x, rowMax.y - rowMin.y);
+                    if (stub->mAsset)
+                        GetEditorState()->InspectObject(stub->mAsset);
                 }
-            }
 
-            if (isSelectedStub)
-            {
-                ImGui::PopStyleColor(3);
-            }
-
-            if (interactive && ImGui::BeginPopupContextItem())
-            {
-                DrawAssetsContextPopup(stub, nullptr);
-                ImGui::EndPopup();
+                EditorUIHookManager::Get()->FireOnAssetOpened(stub->mName.c_str());
             }
         }
+
+        if (stub->mType == StaticMesh::GetStaticType() &&
+            ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+        {
+            AssetStub* dragStub = stub;
+            ImGui::SetDragDropPayload(DRAGDROP_ASSET, &dragStub, sizeof(AssetStub*));
+            ImGui::Text("%s", stub->mName.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+        if (GetEditorState()->mTrackSelectedAsset &&
+            stub == GetEditorState()->mSelectedAssetStub)
+        {
+            ImGui::SetScrollHereY(0.5f);
+            GetEditorState()->mTrackSelectedAsset = false;
+        }
+
+        ImGui::PopStyleColor(); // Pop asset color
+
+        // Asset browser item GUI overlay
+        {
+            ImVec2 rowMin = ImGui::GetItemRectMin();
+            ImVec2 rowMax = ImGui::GetItemRectMax();
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                const char* typeName = (stub->mAsset != nullptr) ?
+                    stub->mAsset->GetTypeName() : "";
+                hookMgr->DrawAssetItemGUI(stub->mName.c_str(), typeName,
+                    rowMin.x, rowMin.y, rowMax.x - rowMin.x, rowMax.y - rowMin.y);
+            }
+        }
+
+        if (isSelectedStub)
+        {
+            ImGui::PopStyleColor(3);
+        }
+
+        if (ImGui::BeginPopupContextItem())
+        {
+            // Set current directory so context popup operations target this asset's directory
+            if (stub->mDirectory)
+                GetEditorState()->mTabCurrentDir[GetEditorState()->ActiveTab()] = stub->mDirectory;
+            DrawAssetsContextPopup(stub, nullptr);
+            ImGui::EndPopup();
+        }
+        ImGui::PopID();
+    }
+}
+
+static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool isRoot)
+{
+    if (dir == nullptr)
+        return;
+
+    // When filtering, skip directories that don't match
+    if (!filterLower.empty() && !DirMatchesFilter(dir, filterLower))
+        return;
+
+    ImGuiTreeNodeFlags dirFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    if (!filterLower.empty())
+        dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+    if (isRoot)
+        dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+    // Check if directory has no children (leaf directory with no subdirs)
+    bool hasChildren = !dir->mChildDirs.empty() || !dir->mAssetStubs.empty();
+    if (!hasChildren)
+        dirFlags |= ImGuiTreeNodeFlags_Leaf;
+
+    std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + dir->mName;
+    ImGui::PushID(dir);
+    bool nodeOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
+
+    if (ImGui::BeginPopupContextItem())
+    {
+        // Set current directory so context popup operations target this directory
+        GetEditorState()->mTabCurrentDir[GetEditorState()->ActiveTab()] = dir;
+        DrawAssetsContextPopup(nullptr, dir);
+        ImGui::EndPopup();
+    }
+
+    if (nodeOpen)
+    {
+        // Recurse into child directories
+        for (AssetDir* child : dir->mChildDirs)
+        {
+            DrawAssetDirTree(child, filterLower, false);
+        }
+
+        // Draw assets in this directory
+        DrawAssetItems(dir, filterLower);
+
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, bool showRootChildren)
+{
+    if (rootDir == nullptr)
+        return;
+
+    if (showRootChildren)
+    {
+        // Show root's children directly (don't wrap in a root tree node)
+        for (AssetDir* child : rootDir->mChildDirs)
+        {
+            DrawAssetDirTree(child, filterLower, true);
+        }
+        // Draw assets directly in the root directory
+        DrawAssetItems(rootDir, filterLower);
+    }
+    else
+    {
+        // Show the directory itself as a tree node
+        DrawAssetDirTree(rootDir, filterLower, true);
     }
 
     // If no popup is open and we aren't inputting text...
     if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup) &&
         ImGui::IsWindowHovered() &&
-        !ImGui::GetIO().WantTextInput &&
-        interactive)
+        !ImGui::GetIO().WantTextInput)
     {
         const bool ctrlDown = IsControlDown();
-        const bool shiftDown = IsShiftDown();
-        const bool altDown = IsAltDown();
 
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
         {
             ImGui::OpenPopup("Null Context");
         }
 
-        if (filterStr != "")
-        {
-            if (IsMouseButtonJustDown(MOUSE_X1))
-            {
-                filterStr = "";
-                filteredStubs.clear();
-            }
-        }
-        else
-        {
-            if (IsMouseButtonJustDown(MOUSE_X1))
-            {
-                GetEditorState()->RegressDirPast();
-            }
-            else if (IsMouseButtonJustDown(MOUSE_X2))
-            {
-                GetEditorState()->ProgressDirFuture();
-            }
-        }
-
+        AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
         if (currentDir != nullptr && !currentDir->mAddonDir)
         {
             if (ctrlDown && IsKeyJustDown(KEY_N))
@@ -4149,7 +4186,7 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
         }
     }
 
-    if (interactive && ImGui::BeginPopup("Null Context"))
+    if (ImGui::BeginPopup("Null Context"))
     {
         DrawAssetsContextPopup(nullptr, nullptr);
         ImGui::EndPopup();
@@ -4160,14 +4197,106 @@ static void DrawAssetsPanel()
 {
     const float kAssetPanelIndent = 4.0f;
 
+    // Shared search bar above tab bar
+    static char sAssetsSearchBuffer[256] = "";
+    ImGui::SetNextItemWidth(-1);
+    ImGui::InputTextWithHint("##AssetsSearch", "Search assets...", sAssetsSearchBuffer, sizeof(sAssetsSearchBuffer));
+    std::string filterLower;
+    if (sAssetsSearchBuffer[0] != '\0')
+    {
+        filterLower = sAssetsSearchBuffer;
+        std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+    }
+
+    ImGui::Spacing();
+
     if (ImGui::BeginTabBar("AssetBrowserTabs"))
     {
         if (ImGui::BeginTabItem("Project"))
         {
             if (GetEditorState()->mActiveAssetTab != AssetBrowserTab::Project)
                 GetEditorState()->mActiveAssetTab = AssetBrowserTab::Project;
+
+            // Toolbar
+            {
+                bool hasProject = !GetEngineState()->mProjectDirectory.empty();
+                if (!hasProject) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+
+                if (ImGui::Button(ICON_BXS_ARROW_TO_BOTTOM "##ImportAsset"))
+                {
+                    if (hasProject)
+                        ActionManager::Get()->ImportAsset();
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Import Asset");
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX "##NewFolder"))
+                {
+                    if (hasProject)
+                        ImGui::OpenPopup("NewFolderPopup");
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("New Folder");
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "##OpenProjectExplorer"))
+                {
+                    if (hasProject)
+                    {
+                        AssetDir* projDir = AssetManager::Get()->FindProjectDirectory();
+                        if (projDir)
+                            SYS_ExplorerOpenDirectory(projDir->mPath);
+                    }
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in Explorer");
+
+                if (!hasProject) ImGui::PopStyleVar();
+
+                // New Folder popup
+                static char sNewFolderBuffer[256] = "";
+                static bool sNewFolderFocus = false;
+                if (ImGui::IsPopupOpen("NewFolderPopup"))
+                    sNewFolderFocus = true;
+                if (ImGui::BeginPopup("NewFolderPopup"))
+                {
+                    if (sNewFolderFocus)
+                    {
+                        ImGui::SetKeyboardFocusHere();
+                        sNewFolderFocus = false;
+                    }
+                    if (ImGui::InputText("Folder Name", sNewFolderBuffer, sizeof(sNewFolderBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        std::string folderName = sNewFolderBuffer;
+                        if (!folderName.empty())
+                        {
+                            AssetDir* curDir = GetEditorState()->GetAssetDirectory();
+                            if (curDir == nullptr)
+                                curDir = AssetManager::Get()->FindProjectDirectory();
+                            if (curDir)
+                            {
+                                if (SYS_CreateDirectory((curDir->mPath + folderName).c_str()))
+                                    curDir->CreateSubdirectory(folderName);
+                                else
+                                    LogError("Failed to create folder");
+                            }
+                        }
+                        sNewFolderBuffer[0] = '\0';
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+
+                ImGui::Spacing();
+            }
+
             ImGui::Indent(kAssetPanelIndent);
-            DrawAssetBrowser(true, true);
+            AssetDir* projectDir = AssetManager::Get()->FindProjectDirectory();
+            // Initialize current dir to project root if not set
+            if (GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Project] == nullptr && projectDir != nullptr)
+                GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Project] = projectDir;
+            DrawAssetBrowser(projectDir, filterLower, true);
             ImGui::Unindent(kAssetPanelIndent);
             ImGui::EndTabItem();
         }
@@ -4176,12 +4305,27 @@ static void DrawAssetsPanel()
             if (GetEditorState()->mActiveAssetTab != AssetBrowserTab::Addons)
             {
                 GetEditorState()->mActiveAssetTab = AssetBrowserTab::Addons;
-                // Init addons tab to Packages root if not set
                 if (GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Addons] == nullptr)
                     GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Addons] = AssetManager::Get()->FindPackagesDirectory();
             }
+
+            // Toolbar
+            {
+                if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "##OpenAddonsExplorer"))
+                {
+                    AssetDir* pkgDir = AssetManager::Get()->FindPackagesDirectory();
+                    if (pkgDir)
+                        SYS_ExplorerOpenDirectory(pkgDir->mPath);
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Open in Explorer");
+
+                ImGui::Spacing();
+            }
+
             ImGui::Indent(kAssetPanelIndent);
-            DrawAssetBrowser(true, true);
+            AssetDir* packagesDir = AssetManager::Get()->FindPackagesDirectory();
+            DrawAssetBrowser(packagesDir, filterLower, true);
             ImGui::Unindent(kAssetPanelIndent);
             ImGui::EndTabItem();
         }
@@ -6123,7 +6267,7 @@ static void DrawMainMenuBar()
         {
             ImGuiWindowFlags childFlags = ImGuiWindowFlags_None;
             ImGui::BeginChild("Dir Browser", ImVec2(250, 250), true, childFlags);
-            DrawAssetBrowser(false, false);
+            DrawDirPicker();
 
             ImGui::EndChild();
         }

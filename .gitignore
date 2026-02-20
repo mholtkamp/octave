@@ -336,3 +336,9 @@ Engine/Assets/Scenes/Levels/SC_Demo_FirstPerson.oct
 /Standalone/Embedded*.cpp
 /Standalone/EmbeddedAssets.cpp
 /Standalone/EmbeddedScripts.cpp
+
+
+# Docs build outputs
+site/
+doxygen_xml/
+Documentation/api/

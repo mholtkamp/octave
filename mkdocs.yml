@@ -1,0 +1,89 @@
+site_name: Octave Engine Docs
+docs_dir: Documentation
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - include-markdown
+
+
+
+nav:
+  - Home: index.md
+
+  - Info:
+      - Editor: Info/Editor.md
+      - Scripting: Info/Scripting.md
+      - Templates: Info/Templates.md
+      - Addons: Info/Addons.md
+      - Build Profiles: Info/BuildProfiles.md
+      - Docker: Info/Docker.md
+
+  - Development:
+      - Overview: Development/UUID.md
+      - Mesh Instancing: Development/MeshInstancing.md
+      - Packaging Flow: Development/PackagingFlow.md
+      - Themes / CSS: Development/ThemesCss.md
+      - Native Addons:
+          - Overview: Development/NativeAddon/NativeAddon.md
+          - Editor Examples:
+              - Add Node Menu: Development/NativeAddon/Examples/Editor/AddNodeMenu.md
+              - Asset Importer: Development/NativeAddon/Examples/Editor/AssetImporter.md
+              - Custom Dock Panel: Development/NativeAddon/Examples/Editor/CustomDockablePanel.md
+              - Toolbar Extension: Development/NativeAddon/Examples/Editor/ToolbarExtension.md
+              - Undo / Redo: Development/NativeAddon/Examples/Editor/UndoRedoHook.md
+
+  - Lua API:
+      - Overview: Lua/README.md
+
+      - Systems:
+          - Engine: Lua/Systems/Engine.md
+          - Renderer: Lua/Systems/Renderer.md
+          - Input: Lua/Systems/Input.md
+          - Audio: Lua/Systems/Audio.md
+          - Network: Lua/Systems/Network.md
+          - Timer Manager: Lua/Systems/TimerManager.md
+          - System: Lua/Systems/System.md
+          - Log: Lua/Systems/Log.md
+          - Math: Lua/Systems/Math.md
+          - Script: Lua/Systems/Script.md
+          - Asset Manager: Lua/Systems/AssetManager.md
+
+      - Assets:
+          - Scene: Lua/Assets/Scene.md
+          - Static Mesh: Lua/Assets/StaticMesh.md
+          - Skeletal Mesh: Lua/Assets/SkeletalMesh.md
+          - Material: Lua/Assets/Material.md
+          - Texture: Lua/Assets/Texture.md
+          - Sound Wave: Lua/Assets/SoundWave.md
+          - Particle System: Lua/Assets/ParticleSystem.md
+
+      - Nodes:
+          - Node: Lua/Nodes/Node.md
+          - 3D:
+              - Node3D: Lua/Nodes/3D/Node3D.md
+              - Camera3D: Lua/Nodes/3D/Camera3D.md
+              - StaticMesh3D: Lua/Nodes/3D/StaticMesh3D.md
+              - SkeletalMesh3D: Lua/Nodes/3D/SkeletalMesh3D.md
+              - InstancedMesh3D: Lua/Nodes/3D/InstancedMesh3D.md
+              - Light3D: Lua/Nodes/3D/Light3D.md
+              - DirectionalLight3D: Lua/Nodes/3D/DirectionalLight3D.md
+              - PointLight3D: Lua/Nodes/3D/PointLight3D.md
+              - Particle3D: Lua/Nodes/3D/Particle3D.md
+
+      - Widgets:
+          - Widget: Lua/Nodes/Widgets/Widget.md
+          - Button: Lua/Nodes/Widgets/Button.md
+          - Text: Lua/Nodes/Widgets/Text.md
+  - API Reference:
+      - C++ API (HTML): api/index.html

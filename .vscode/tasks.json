@@ -138,6 +138,54 @@
             "problemMatcher": [],
             "group": "build",
             "detail": "Publish Dev Linux Docker Image to Docker Hub as dev tag"
+        },
+        {
+            "type": "shell",
+            "label": "Preview Docs - Linux",
+            "command": "docker stop octave-docs &&  docker rm octave-docs && docker build -t octave-docs -f Tools/CI/docs/Dockerfile Tools/CI/docs && docker run --rm -it --user 0:0  -p 8580:8000 --name octave-docs -v ${PWD}:/repo octave-docs serve",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - Linux"
+        },
+        {
+            "type": "shell",
+            "label": "Stop Docs - Linux",
+            "command": "docker stop octave-docs &&  docker rm octave-docs ",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Stop Docs - WSL",
+            "command": "wsl docker stop octave-docs &&  wsl docker rm octave-docs ",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Preview Docs - WSL",
+            "command": "wsl docker build -t octave-docs -f Tools/CI/docs/Dockerfile Tools/CI/docs && wsl docker run --rm  -it --user 0:0 --name octave-docs  -p 8580:8000 -v ${PWD}:/repo octave-docs serve",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
         }
     ],
     "version": "2.0.0"
