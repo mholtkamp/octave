@@ -2,11 +2,13 @@
 
 #include "EditorUIHookManager.h"
 #include "Log.h"
+#include "InputDevices.h"
 
 #include "imgui.h"
 #include "imgui_dock.h"
 
 #include <algorithm>
+#include <cctype>
 
 EditorUIHookManager* EditorUIHookManager::sInstance = nullptr;
 
@@ -389,6 +391,464 @@ void EditorUIHookManager::InitializeHooks()
         if (mgr == nullptr) return;
         mgr->mOnAssetDropViewport.push_back({hookId, cb, userData});
     };
+
+    // ===== Batch 1: Menu Positioning & Top-Level Menu Control =====
+
+    mHooks.AddTopLevelMenuItemEx = [](HookId hookId, const char* menuName,
+                                       TopLevelMenuDrawCallback drawFunc, void* userData, int32_t position) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredTopLevelMenu menu;
+        menu.mHookId = hookId;
+        menu.mMenuName = menuName ? menuName : "";
+        menu.mDrawFunc = drawFunc;
+        menu.mUserData = userData;
+        menu.mPosition = position;
+
+        mgr->mTopLevelMenus.push_back(menu);
+    };
+
+    mHooks.AddMenuItemEx = [](HookId hookId, const char* menuPath, const char* itemPath,
+                               MenuCallback callback, void* userData, const char* shortcut,
+                               MenuValidationCallback validateFunc) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredMenuItemEx item;
+        item.mHookId = hookId;
+        item.mMenuPath = menuPath ? menuPath : "";
+        item.mItemPath = itemPath ? itemPath : "";
+        item.mCallback = callback;
+        item.mUserData = userData;
+        item.mShortcut = shortcut ? shortcut : "";
+        item.mValidateFunc = validateFunc;
+
+        mgr->mMenuItemsEx.push_back(item);
+    };
+
+    // ===== Batch 2: Create/Spawn Menu Extensions =====
+
+    mHooks.AddNodeMenuItems = [](HookId hookId, const char* category,
+                                  MenuSectionDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredNodeMenuItems item;
+        item.mHookId = hookId;
+        item.mCategory = category ? category : "";
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mNodeMenuItems.push_back(item);
+    };
+
+    mHooks.RemoveNodeMenuItems = [](HookId hookId, const char* category) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string cat = category ? category : "";
+        mgr->mNodeMenuItems.erase(std::remove_if(mgr->mNodeMenuItems.begin(), mgr->mNodeMenuItems.end(),
+            [hookId, &cat](const RegisteredNodeMenuItems& item) {
+                return item.mHookId == hookId && item.mCategory == cat;
+            }), mgr->mNodeMenuItems.end());
+    };
+
+    mHooks.AddCreateAssetItems = [](HookId hookId, MenuSectionDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredCreateAssetItems item;
+        item.mHookId = hookId;
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mCreateAssetItems.push_back(item);
+    };
+
+    mHooks.RemoveCreateAssetItems = [](HookId hookId) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        mgr->mCreateAssetItems.erase(std::remove_if(mgr->mCreateAssetItems.begin(), mgr->mCreateAssetItems.end(),
+            [hookId](const RegisteredCreateAssetItems& item) {
+                return item.mHookId == hookId;
+            }), mgr->mCreateAssetItems.end());
+    };
+
+    mHooks.AddSpawnBasic3dItems = [](HookId hookId, MenuSectionDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredSpawnItems item;
+        item.mHookId = hookId;
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mSpawnBasic3dItems.push_back(item);
+    };
+
+    mHooks.AddSpawnBasicWidgetItems = [](HookId hookId, MenuSectionDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredSpawnItems item;
+        item.mHookId = hookId;
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mSpawnBasicWidgetItems.push_back(item);
+    };
+
+    // ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
+
+    mHooks.AddViewportContextItem = [](HookId hookId, const char* itemPath,
+                                        MenuCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredViewportContextItem item;
+        item.mHookId = hookId;
+        item.mItemPath = itemPath ? itemPath : "";
+        item.mCallback = callback;
+        item.mUserData = userData;
+
+        mgr->mViewportContextItems.push_back(item);
+    };
+
+    mHooks.RemoveViewportContextItem = [](HookId hookId, const char* itemPath) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string path = itemPath ? itemPath : "";
+        mgr->mViewportContextItems.erase(std::remove_if(mgr->mViewportContextItems.begin(), mgr->mViewportContextItems.end(),
+            [hookId, &path](const RegisteredViewportContextItem& item) {
+                return item.mHookId == hookId && item.mItemPath == path;
+            }), mgr->mViewportContextItems.end());
+    };
+
+    mHooks.RegisterViewportOverlay = [](HookId hookId, const char* overlayName,
+                                         ViewportOverlayCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredViewportOverlay overlay;
+        overlay.mHookId = hookId;
+        overlay.mOverlayName = overlayName ? overlayName : "";
+        overlay.mDrawFunc = drawFunc;
+        overlay.mUserData = userData;
+
+        mgr->mViewportOverlays.push_back(overlay);
+    };
+
+    mHooks.UnregisterViewportOverlay = [](HookId hookId, const char* overlayName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string name = overlayName ? overlayName : "";
+        mgr->mViewportOverlays.erase(std::remove_if(mgr->mViewportOverlays.begin(), mgr->mViewportOverlays.end(),
+            [hookId, &name](const RegisteredViewportOverlay& overlay) {
+                return overlay.mHookId == hookId && overlay.mOverlayName == name;
+            }), mgr->mViewportOverlays.end());
+    };
+
+    // ===== Batch 4: Custom Preferences/Settings Pages =====
+
+    mHooks.RegisterPreferencesPanel = [](HookId hookId, const char* panelName, const char* panelCategory,
+                                          PreferencesPanelDrawCallback drawFunc,
+                                          PreferencesLoadCallback loadFunc, PreferencesSaveCallback saveFunc,
+                                          void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredPreferencesPanel panel;
+        panel.mHookId = hookId;
+        panel.mPanelName = panelName ? panelName : "";
+        panel.mPanelCategory = panelCategory ? panelCategory : "";
+        panel.mDrawFunc = drawFunc;
+        panel.mLoadFunc = loadFunc;
+        panel.mSaveFunc = saveFunc;
+        panel.mUserData = userData;
+
+        mgr->mPreferencesPanels.push_back(panel);
+    };
+
+    mHooks.UnregisterPreferencesPanel = [](HookId hookId, const char* panelName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string name = panelName ? panelName : "";
+        mgr->mPreferencesPanels.erase(std::remove_if(mgr->mPreferencesPanels.begin(), mgr->mPreferencesPanels.end(),
+            [hookId, &name](const RegisteredPreferencesPanel& panel) {
+                return panel.mHookId == hookId && panel.mPanelName == name;
+            }), mgr->mPreferencesPanels.end());
+    };
+
+    // ===== Batch 5: Custom Keyboard Shortcuts =====
+
+    mHooks.RegisterShortcut = [](HookId hookId, const char* shortcutId, const char* displayName,
+                                  const char* defaultBinding, ShortcutCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredShortcut sc;
+        sc.mHookId = hookId;
+        sc.mShortcutId = shortcutId ? shortcutId : "";
+        sc.mDisplayName = displayName ? displayName : "";
+        sc.mDefaultBinding = defaultBinding ? defaultBinding : "";
+        sc.mCallback = callback;
+        sc.mUserData = userData;
+
+        mgr->ParseKeyBinding(sc);
+        mgr->mShortcuts.push_back(sc);
+    };
+
+    mHooks.UnregisterShortcut = [](HookId hookId, const char* shortcutId) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string id = shortcutId ? shortcutId : "";
+        mgr->mShortcuts.erase(std::remove_if(mgr->mShortcuts.begin(), mgr->mShortcuts.end(),
+            [hookId, &id](const RegisteredShortcut& sc) {
+                return sc.mHookId == hookId && sc.mShortcutId == id;
+            }), mgr->mShortcuts.end());
+    };
+
+    // ===== Batch 6: Property Drawer System =====
+
+    mHooks.RegisterPropertyDrawer = [](HookId hookId, const char* propertyTypeName,
+                                        PropertyDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredPropertyDrawer drawer;
+        drawer.mHookId = hookId;
+        drawer.mPropertyTypeName = propertyTypeName ? propertyTypeName : "";
+        drawer.mDrawFunc = drawFunc;
+        drawer.mUserData = userData;
+
+        mgr->mPropertyDrawers.push_back(drawer);
+    };
+
+    mHooks.UnregisterPropertyDrawer = [](HookId hookId, const char* propertyTypeName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string typeName = propertyTypeName ? propertyTypeName : "";
+        mgr->mPropertyDrawers.erase(std::remove_if(mgr->mPropertyDrawers.begin(), mgr->mPropertyDrawers.end(),
+            [hookId, &typeName](const RegisteredPropertyDrawer& drawer) {
+                return drawer.mHookId == hookId && drawer.mPropertyTypeName == typeName;
+            }), mgr->mPropertyDrawers.end());
+    };
+
+    // ===== Batch 7: Hierarchy & Asset Browser Extensions =====
+
+    mHooks.RegisterHierarchyItemGUI = [](HookId hookId, HierarchyItemGUICallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredHierarchyItemGUI item;
+        item.mHookId = hookId;
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mHierarchyItemGUI.push_back(item);
+    };
+
+    mHooks.UnregisterHierarchyItemGUI = [](HookId hookId) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        mgr->mHierarchyItemGUI.erase(std::remove_if(mgr->mHierarchyItemGUI.begin(), mgr->mHierarchyItemGUI.end(),
+            [hookId](const RegisteredHierarchyItemGUI& item) {
+                return item.mHookId == hookId;
+            }), mgr->mHierarchyItemGUI.end());
+    };
+
+    mHooks.RegisterAssetItemGUI = [](HookId hookId, AssetItemGUICallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredAssetItemGUI item;
+        item.mHookId = hookId;
+        item.mDrawFunc = drawFunc;
+        item.mUserData = userData;
+
+        mgr->mAssetItemGUI.push_back(item);
+    };
+
+    mHooks.UnregisterAssetItemGUI = [](HookId hookId) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        mgr->mAssetItemGUI.erase(std::remove_if(mgr->mAssetItemGUI.begin(), mgr->mAssetItemGUI.end(),
+            [hookId](const RegisteredAssetItemGUI& item) {
+                return item.mHookId == hookId;
+            }), mgr->mAssetItemGUI.end());
+    };
+
+    mHooks.RegisterOnHierarchyChanged = [](HookId hookId, HierarchyChangedCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnHierarchyChanged.push_back({hookId, cb, userData});
+    };
+
+    // ===== Batch 8: Additional Context Menus =====
+
+    mHooks.AddSceneTabContextItem = [](HookId hookId, const char* itemPath,
+                                        MenuCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mSceneTabContextItems.push_back({hookId, itemPath ? itemPath : "", callback, userData});
+    };
+
+    mHooks.AddDebugLogContextItem = [](HookId hookId, const char* itemPath,
+                                        MenuCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mDebugLogContextItems.push_back({hookId, itemPath ? itemPath : "", callback, userData});
+    };
+
+    mHooks.AddImportMenuItem = [](HookId hookId, const char* itemPath,
+                                   MenuCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mImportMenuItems.push_back({hookId, itemPath ? itemPath : "", callback, userData});
+    };
+
+    mHooks.AddAddonsMenuItem = [](HookId hookId, const char* itemPath,
+                                   MenuCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mAddonsMenuItems.push_back({hookId, itemPath ? itemPath : "", callback, userData});
+    };
+
+    mHooks.AddPlayTarget = [](HookId hookId, const char* targetName, const char* iconText,
+                               PlayTargetCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredPlayTarget target;
+        target.mHookId = hookId;
+        target.mTargetName = targetName ? targetName : "";
+        target.mIconText = iconText ? iconText : "";
+        target.mCallback = callback;
+        target.mUserData = userData;
+
+        mgr->mPlayTargets.push_back(target);
+    };
+
+    mHooks.RemovePlayTarget = [](HookId hookId, const char* targetName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string name = targetName ? targetName : "";
+        mgr->mPlayTargets.erase(std::remove_if(mgr->mPlayTargets.begin(), mgr->mPlayTargets.end(),
+            [hookId, &name](const RegisteredPlayTarget& target) {
+                return target.mHookId == hookId && target.mTargetName == name;
+            }), mgr->mPlayTargets.end());
+    };
+
+    // ===== Batch 9: Drag-Drop Enhancement & Asset Pipeline =====
+
+    mHooks.RegisterDragDropHandler = [](HookId hookId, const char* targetArea,
+                                         DragDropHandlerCallback handler, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredDragDropHandler h;
+        h.mHookId = hookId;
+        h.mTargetArea = targetArea ? targetArea : "";
+        h.mHandler = handler;
+        h.mUserData = userData;
+
+        mgr->mDragDropHandlers.push_back(h);
+    };
+
+    mHooks.RegisterAssetImporter = [](HookId hookId, const char* extension,
+                                       AssetImportCallback importFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredAssetImporter imp;
+        imp.mHookId = hookId;
+        imp.mExtension = extension ? extension : "";
+        imp.mImportFunc = importFunc;
+        imp.mUserData = userData;
+
+        mgr->mAssetImporters.push_back(imp);
+    };
+
+    mHooks.UnregisterAssetImporter = [](HookId hookId, const char* extension) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string ext = extension ? extension : "";
+        mgr->mAssetImporters.erase(std::remove_if(mgr->mAssetImporters.begin(), mgr->mAssetImporters.end(),
+            [hookId, &ext](const RegisteredAssetImporter& imp) {
+                return imp.mHookId == hookId && imp.mExtension == ext;
+            }), mgr->mAssetImporters.end());
+    };
+
+    mHooks.RegisterOnPreAssetImport = [](HookId hookId, PreImportCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnPreAssetImport.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterOnPostAssetImport = [](HookId hookId, StringEventCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnPostAssetImport.push_back({hookId, cb, userData});
+    };
+
+    // ===== Batch 10: Build Pipeline & Editor State =====
+
+    mHooks.RegisterOnPreBuild = [](HookId hookId, PreBuildCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnPreBuild.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterOnPostBuild = [](HookId hookId, PackageFinishedCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnPostBuild.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterOnEditorModeChanged = [](HookId hookId, EditorModeCallback cb, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+        mgr->mOnEditorModeChanged.push_back({hookId, cb, userData});
+    };
+
+    mHooks.RegisterGizmoTool = [](HookId hookId, const char* toolName, const char* iconText,
+                                   const char* tooltip, GizmoToolDrawCallback drawFunc, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredGizmoTool tool;
+        tool.mHookId = hookId;
+        tool.mToolName = toolName ? toolName : "";
+        tool.mIconText = iconText ? iconText : "";
+        tool.mTooltip = tooltip ? tooltip : "";
+        tool.mDrawFunc = drawFunc;
+        tool.mUserData = userData;
+        tool.mIsActive = false;
+
+        mgr->mGizmoTools.push_back(tool);
+    };
+
+    mHooks.UnregisterGizmoTool = [](HookId hookId, const char* toolName) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string name = toolName ? toolName : "";
+        mgr->mGizmoTools.erase(std::remove_if(mgr->mGizmoTools.begin(), mgr->mGizmoTools.end(),
+            [hookId, &name](const RegisteredGizmoTool& tool) {
+                return tool.mHookId == hookId && tool.mToolName == name;
+            }), mgr->mGizmoTools.end());
+    };
 }
 
 const std::vector<RegisteredMenuItem>& EditorUIHookManager::GetMenuItems(const std::string& menuPath) const
@@ -404,26 +864,47 @@ const std::vector<RegisteredMenuItem>& EditorUIHookManager::GetMenuItems(const s
 void EditorUIHookManager::DrawMenuItems(const std::string& menuPath)
 {
     auto it = mMenuItems.find(menuPath);
-    if (it == mMenuItems.end() || it->second.empty())
+    bool hasLegacy = (it != mMenuItems.end() && !it->second.empty());
+
+    if (hasLegacy)
     {
-        return;
+        for (const RegisteredMenuItem& item : it->second)
+        {
+            if (item.mIsSeparator)
+            {
+                ImGui::Separator();
+            }
+            else
+            {
+                const char* shortcut = item.mShortcut.empty() ? nullptr : item.mShortcut.c_str();
+                if (ImGui::MenuItem(item.mItemPath.c_str(), shortcut))
+                {
+                    if (item.mCallback)
+                    {
+                        item.mCallback(item.mUserData);
+                    }
+                }
+            }
+        }
     }
 
-    for (const RegisteredMenuItem& item : it->second)
+    // Also draw MenuItemEx entries for this menu
+    for (const RegisteredMenuItemEx& item : mMenuItemsEx)
     {
-        if (item.mIsSeparator)
+        if (item.mMenuPath != menuPath) continue;
+
+        bool enabled = true;
+        if (item.mValidateFunc)
         {
-            ImGui::Separator();
+            enabled = item.mValidateFunc(item.mUserData);
         }
-        else
+
+        const char* shortcut = item.mShortcut.empty() ? nullptr : item.mShortcut.c_str();
+        if (ImGui::MenuItem(item.mItemPath.c_str(), shortcut, false, enabled))
         {
-            const char* shortcut = item.mShortcut.empty() ? nullptr : item.mShortcut.c_str();
-            if (ImGui::MenuItem(item.mItemPath.c_str(), shortcut))
+            if (item.mCallback)
             {
-                if (item.mCallback)
-                {
-                    item.mCallback(item.mUserData);
-                }
+                item.mCallback(item.mUserData);
             }
         }
     }
@@ -613,30 +1094,69 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mOnUndoRedo);
     removeByHookId(mOnAssetDropHierarchy);
     removeByHookId(mOnAssetDropViewport);
+
+    // New hook types
+    removeByHookId(mMenuItemsEx);
+    removeByHookId(mNodeMenuItems);
+    removeByHookId(mCreateAssetItems);
+    removeByHookId(mSpawnBasic3dItems);
+    removeByHookId(mSpawnBasicWidgetItems);
+    removeByHookId(mViewportContextItems);
+    removeByHookId(mViewportOverlays);
+    removeByHookId(mPreferencesPanels);
+    removeByHookId(mShortcuts);
+    removeByHookId(mPropertyDrawers);
+    removeByHookId(mHierarchyItemGUI);
+    removeByHookId(mAssetItemGUI);
+    removeByHookId(mOnHierarchyChanged);
+    removeByHookId(mSceneTabContextItems);
+    removeByHookId(mDebugLogContextItems);
+    removeByHookId(mImportMenuItems);
+    removeByHookId(mAddonsMenuItems);
+    removeByHookId(mPlayTargets);
+    removeByHookId(mDragDropHandlers);
+    removeByHookId(mAssetImporters);
+    removeByHookId(mOnPreAssetImport);
+    removeByHookId(mOnPostAssetImport);
+    removeByHookId(mOnPreBuild);
+    removeByHookId(mOnPostBuild);
+    removeByHookId(mOnEditorModeChanged);
+    removeByHookId(mGizmoTools);
 }
 
 // ===== Top-Level Menus and Toolbar Drawing =====
 
 void EditorUIHookManager::DrawTopLevelMenus()
 {
+    // Draw only menus with position == -1 (legacy append behavior)
     for (const RegisteredTopLevelMenu& menu : mTopLevelMenus)
     {
-        ImGui::SameLine();
-        if (ImGui::Button(menu.mMenuName.c_str()))
-        {
-            ImGui::OpenPopup(menu.mMenuName.c_str());
-        }
-    }
+        if (menu.mPosition != -1) continue;
 
-    for (const RegisteredTopLevelMenu& menu : mTopLevelMenus)
-    {
-        if (ImGui::BeginPopup(menu.mMenuName.c_str()))
+        if (ImGui::BeginMenu(menu.mMenuName.c_str()))
         {
             if (menu.mDrawFunc)
             {
                 menu.mDrawFunc(menu.mUserData);
             }
-            ImGui::EndPopup();
+            ImGui::EndMenu();
+        }
+    }
+}
+
+void EditorUIHookManager::DrawTopLevelMenusAtPosition(int32_t builtinPosition)
+{
+    for (const RegisteredTopLevelMenu& menu : mTopLevelMenus)
+    {
+        if (menu.mPosition != builtinPosition) continue;
+
+        if (ImGui::BeginMenu(menu.mMenuName.c_str()))
+        {
+            if (menu.mDrawFunc)
+            {
+                menu.mDrawFunc(menu.mUserData);
+            }
+            ImGui::EndMenu();
         }
     }
 }
@@ -649,6 +1169,439 @@ void EditorUIHookManager::DrawToolbarItems()
         if (item.mDrawFunc)
         {
             item.mDrawFunc(item.mUserData);
+        }
+    }
+}
+
+// ===== Batch 2: Create/Spawn Menu Extensions =====
+
+void EditorUIHookManager::DrawNodeMenuItems(const char* category, void* parentNode)
+{
+    for (const RegisteredNodeMenuItems& item : mNodeMenuItems)
+    {
+        if (item.mCategory == category && item.mDrawFunc)
+        {
+            ImGui::Separator();
+            item.mDrawFunc(parentNode, item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawCustomNodeCategories(void* parentNode)
+{
+    // Collect unique custom category names (not built-in ones)
+    std::vector<std::string> customCategories;
+    for (const RegisteredNodeMenuItems& item : mNodeMenuItems)
+    {
+        if (item.mCategory != "3D" && item.mCategory != "Widget" &&
+            item.mCategory != "Scene" && item.mCategory != "Other")
+        {
+            bool found = false;
+            for (const std::string& cat : customCategories)
+            {
+                if (cat == item.mCategory) { found = true; break; }
+            }
+            if (!found) customCategories.push_back(item.mCategory);
+        }
+    }
+
+    for (const std::string& category : customCategories)
+    {
+        if (ImGui::BeginMenu(category.c_str()))
+        {
+            for (const RegisteredNodeMenuItems& item : mNodeMenuItems)
+            {
+                if (item.mCategory == category && item.mDrawFunc)
+                {
+                    item.mDrawFunc(parentNode, item.mUserData);
+                }
+            }
+            ImGui::EndMenu();
+        }
+    }
+}
+
+void EditorUIHookManager::DrawCreateAssetItems()
+{
+    for (const RegisteredCreateAssetItems& item : mCreateAssetItems)
+    {
+        if (item.mDrawFunc)
+        {
+            ImGui::Separator();
+            item.mDrawFunc(nullptr, item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawSpawnBasic3dItems(void* parentNode)
+{
+    for (const RegisteredSpawnItems& item : mSpawnBasic3dItems)
+    {
+        if (item.mDrawFunc)
+        {
+            ImGui::Separator();
+            item.mDrawFunc(parentNode, item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawSpawnBasicWidgetItems(void* parentNode)
+{
+    for (const RegisteredSpawnItems& item : mSpawnBasicWidgetItems)
+    {
+        if (item.mDrawFunc)
+        {
+            ImGui::Separator();
+            item.mDrawFunc(parentNode, item.mUserData);
+        }
+    }
+}
+
+// ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
+
+void EditorUIHookManager::DrawViewportContextItems()
+{
+    for (const RegisteredViewportContextItem& item : mViewportContextItems)
+    {
+        if (ImGui::MenuItem(item.mItemPath.c_str()))
+        {
+            if (item.mCallback)
+            {
+                item.mCallback(item.mUserData);
+            }
+        }
+    }
+}
+
+void EditorUIHookManager::DrawViewportOverlays(float viewportX, float viewportY, float viewportW, float viewportH)
+{
+    for (const RegisteredViewportOverlay& overlay : mViewportOverlays)
+    {
+        if (overlay.mDrawFunc)
+        {
+            overlay.mDrawFunc(viewportX, viewportY, viewportW, viewportH, overlay.mUserData);
+        }
+    }
+}
+
+bool EditorUIHookManager::HasViewportContextItems() const
+{
+    return !mViewportContextItems.empty();
+}
+
+// ===== Batch 4: Preferences =====
+
+void EditorUIHookManager::LoadAddonPreferences()
+{
+    for (const RegisteredPreferencesPanel& panel : mPreferencesPanels)
+    {
+        if (panel.mLoadFunc)
+        {
+            panel.mLoadFunc(panel.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::SaveAddonPreferences()
+{
+    for (const RegisteredPreferencesPanel& panel : mPreferencesPanels)
+    {
+        if (panel.mSaveFunc)
+        {
+            panel.mSaveFunc(panel.mUserData);
+        }
+    }
+}
+
+// ===== Batch 5: Keyboard Shortcuts =====
+
+void EditorUIHookManager::ParseKeyBinding(RegisteredShortcut& shortcut)
+{
+    // Parse "Ctrl+Shift+Alt+X" format
+    std::string binding = shortcut.mDefaultBinding;
+    shortcut.mCtrl = false;
+    shortcut.mShift = false;
+    shortcut.mAlt = false;
+    shortcut.mKeyCode = -1;
+
+    // Convert to uppercase for comparison
+    std::string upper = binding;
+    for (char& c : upper) c = (char)toupper((unsigned char)c);
+
+    // Check modifiers
+    if (upper.find("CTRL+") != std::string::npos) shortcut.mCtrl = true;
+    if (upper.find("SHIFT+") != std::string::npos) shortcut.mShift = true;
+    if (upper.find("ALT+") != std::string::npos) shortcut.mAlt = true;
+
+    // Get the key (last part after the last '+')
+    size_t lastPlus = upper.rfind('+');
+    std::string key = (lastPlus != std::string::npos) ? upper.substr(lastPlus + 1) : upper;
+
+    // Map common key names to KEY_* constants from InputTypes.h
+    if (key.length() == 1 && key[0] >= 'A' && key[0] <= 'Z')
+    {
+        shortcut.mKeyCode = KEY_A + (key[0] - 'A');
+    }
+    else if (key.length() == 1 && key[0] >= '0' && key[0] <= '9')
+    {
+        shortcut.mKeyCode = KEY_0 + (key[0] - '0');
+    }
+    else if (key == "F1")  shortcut.mKeyCode = KEY_F1;
+    else if (key == "F2")  shortcut.mKeyCode = KEY_F2;
+    else if (key == "F3")  shortcut.mKeyCode = KEY_F3;
+    else if (key == "F4")  shortcut.mKeyCode = KEY_F4;
+    else if (key == "F5")  shortcut.mKeyCode = KEY_F5;
+    else if (key == "F6")  shortcut.mKeyCode = KEY_F6;
+    else if (key == "F7")  shortcut.mKeyCode = KEY_F7;
+    else if (key == "F8")  shortcut.mKeyCode = KEY_F8;
+    else if (key == "F9")  shortcut.mKeyCode = KEY_F9;
+    else if (key == "F10") shortcut.mKeyCode = KEY_F10;
+    else if (key == "F11") shortcut.mKeyCode = KEY_F11;
+    else if (key == "F12") shortcut.mKeyCode = KEY_F12;
+    else if (key == "SPACE") shortcut.mKeyCode = KEY_SPACE;
+    else if (key == "ENTER" || key == "RETURN") shortcut.mKeyCode = KEY_ENTER;
+    else if (key == "ESCAPE" || key == "ESC") shortcut.mKeyCode = KEY_ESCAPE;
+    else if (key == "TAB") shortcut.mKeyCode = KEY_TAB;
+    else if (key == "DELETE" || key == "DEL") shortcut.mKeyCode = KEY_DELETE;
+    else if (key == "BACKSPACE") shortcut.mKeyCode = KEY_BACKSPACE;
+}
+
+void EditorUIHookManager::ProcessShortcuts()
+{
+    // Don't process shortcuts when typing in text fields
+    if (ImGui::GetIO().WantTextInput) return;
+
+    for (const RegisteredShortcut& sc : mShortcuts)
+    {
+        if (sc.mKeyCode < 0 || sc.mCallback == nullptr) continue;
+
+        // Check modifier key state using engine's input system
+        bool ctrlMatch = sc.mCtrl ? IsControlDown() : !IsControlDown();
+        bool shiftMatch = sc.mShift ? IsShiftDown() : !IsShiftDown();
+        bool altMatch = sc.mAlt ? IsAltDown() : !IsAltDown();
+
+        if (ctrlMatch && shiftMatch && altMatch && IsKeyJustDown(sc.mKeyCode))
+        {
+            sc.mCallback(sc.mUserData);
+        }
+    }
+}
+
+// ===== Batch 6: Property Drawers =====
+
+bool EditorUIHookManager::DrawPropertyDrawer(const char* propertyTypeName, const char* propertyName,
+                                              void* propertyOwner, int32_t propertyType)
+{
+    for (const RegisteredPropertyDrawer& drawer : mPropertyDrawers)
+    {
+        if (drawer.mPropertyTypeName == propertyTypeName && drawer.mDrawFunc)
+        {
+            if (drawer.mDrawFunc(propertyName, propertyOwner, propertyType, drawer.mUserData))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// ===== Batch 7: Hierarchy & Asset Browser Extensions =====
+
+void EditorUIHookManager::DrawHierarchyItemGUI(void* node, float rowX, float rowY, float rowW, float rowH)
+{
+    for (const RegisteredHierarchyItemGUI& item : mHierarchyItemGUI)
+    {
+        if (item.mDrawFunc)
+        {
+            item.mDrawFunc(node, rowX, rowY, rowW, rowH, item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawAssetItemGUI(const char* assetName, const char* assetType,
+                                            float rowX, float rowY, float rowW, float rowH)
+{
+    for (const RegisteredAssetItemGUI& item : mAssetItemGUI)
+    {
+        if (item.mDrawFunc)
+        {
+            item.mDrawFunc(assetName, assetType, rowX, rowY, rowW, rowH, item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::FireOnHierarchyChanged(int32_t changeType, void* node)
+{
+    for (const auto& entry : mOnHierarchyChanged)
+    {
+        if (entry.mCallback) entry.mCallback(changeType, node, entry.mUserData);
+    }
+}
+
+// ===== Batch 8: Additional Context Menus =====
+
+void EditorUIHookManager::DrawSceneTabContextItems()
+{
+    for (const RegisteredSimpleContextItem& item : mSceneTabContextItems)
+    {
+        if (ImGui::MenuItem(item.mItemPath.c_str()))
+        {
+            if (item.mCallback) item.mCallback(item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawDebugLogContextItems()
+{
+    for (const RegisteredSimpleContextItem& item : mDebugLogContextItems)
+    {
+        if (ImGui::MenuItem(item.mItemPath.c_str()))
+        {
+            if (item.mCallback) item.mCallback(item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawImportMenuItems()
+{
+    for (const RegisteredSimpleContextItem& item : mImportMenuItems)
+    {
+        if (ImGui::MenuItem(item.mItemPath.c_str()))
+        {
+            if (item.mCallback) item.mCallback(item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawAddonsMenuItems()
+{
+    for (const RegisteredSimpleContextItem& item : mAddonsMenuItems)
+    {
+        if (ImGui::MenuItem(item.mItemPath.c_str()))
+        {
+            if (item.mCallback) item.mCallback(item.mUserData);
+        }
+    }
+}
+
+void EditorUIHookManager::DrawPlayTargets()
+{
+    for (const RegisteredPlayTarget& target : mPlayTargets)
+    {
+        if (ImGui::Selectable(target.mTargetName.c_str()))
+        {
+            if (target.mCallback) target.mCallback(target.mUserData);
+        }
+    }
+}
+
+bool EditorUIHookManager::HasPlayTargets() const
+{
+    return !mPlayTargets.empty();
+}
+
+// ===== Batch 9: Drag-Drop & Asset Pipeline =====
+
+bool EditorUIHookManager::HandleDragDrop(const char* targetArea, const char* payloadType,
+                                          const void* payloadData, int32_t payloadSize)
+{
+    for (const RegisteredDragDropHandler& handler : mDragDropHandlers)
+    {
+        if (handler.mTargetArea == targetArea && handler.mHandler)
+        {
+            if (handler.mHandler(payloadType, payloadData, payloadSize, handler.mUserData))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool EditorUIHookManager::HandleAssetImport(const char* filePath, const char* extension)
+{
+    for (const RegisteredAssetImporter& imp : mAssetImporters)
+    {
+        if (imp.mExtension == extension && imp.mImportFunc)
+        {
+            if (imp.mImportFunc(filePath, extension, imp.mUserData))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool EditorUIHookManager::FireOnPreAssetImport(const char* filePath)
+{
+    for (const auto& entry : mOnPreAssetImport)
+    {
+        if (entry.mCallback && !entry.mCallback(filePath, entry.mUserData))
+        {
+            return false; // Cancelled
+        }
+    }
+    return true;
+}
+
+void EditorUIHookManager::FireOnPostAssetImport(const char* assetPath)
+{
+    for (const auto& entry : mOnPostAssetImport)
+    {
+        if (entry.mCallback) entry.mCallback(assetPath, entry.mUserData);
+    }
+}
+
+// ===== Batch 10: Build Pipeline & Editor State =====
+
+bool EditorUIHookManager::FireOnPreBuild(int32_t platform)
+{
+    for (const auto& entry : mOnPreBuild)
+    {
+        if (entry.mCallback && !entry.mCallback(platform, entry.mUserData))
+        {
+            return false; // Cancelled
+        }
+    }
+    return true;
+}
+
+void EditorUIHookManager::FireOnPostBuild(int32_t platform, bool success)
+{
+    for (const auto& entry : mOnPostBuild)
+    {
+        if (entry.mCallback) entry.mCallback(platform, success, entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::FireOnEditorModeChanged(int32_t newMode)
+{
+    for (const auto& entry : mOnEditorModeChanged)
+    {
+        if (entry.mCallback) entry.mCallback(newMode, entry.mUserData);
+    }
+}
+
+void EditorUIHookManager::DrawGizmoTools(void* selectedNode)
+{
+    for (RegisteredGizmoTool& tool : mGizmoTools)
+    {
+        ImGui::SameLine();
+        if (tool.mIsActive) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 0.8f, 1.0f));
+        if (ImGui::Button(tool.mIconText.c_str()))
+        {
+            tool.mIsActive = !tool.mIsActive;
+        }
+        if (tool.mIsActive) ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered() && !tool.mTooltip.empty())
+        {
+            ImGui::SetTooltip("%s", tool.mTooltip.c_str());
+        }
+
+        if (tool.mIsActive && tool.mDrawFunc && selectedNode)
+        {
+            tool.mDrawFunc(selectedNode, tool.mUserData);
         }
     }
 }

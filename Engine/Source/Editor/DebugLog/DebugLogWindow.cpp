@@ -1,10 +1,12 @@
 #if EDITOR
 
 #include "DebugLogWindow.h"
+#include "Editor/EditorUIHookManager.h"
 #include "Engine.h"
 #include "Clock.h"
 #include "Log.h"
 #include "imgui.h"
+#include "EditorIcons.h"
 
 #include <cstring>
 #include <cstdio>
@@ -183,19 +185,17 @@ void DebugLogWindow::DrawContent()
     DrainPendingEntries();
 
     // Toolbar row
-    if (ImGui::Button("Clear"))
-    {
+    if (ImGui::Button(ICON_ZONDICONS_TRASH "##LogClear"))
         Clear();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Clear");
     ImGui::SameLine();
 
-    if (ImGui::Button("Copy All"))
-    {
+    if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FILE_COPY_SHARP "##LogCopy"))
         CopyAllToClipboard();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Copy All");
     ImGui::SameLine();
 
-    if (ImGui::Button("Find"))
+    if (ImGui::Button(ICON_IC_BASELINE_SEARCH "##LogFind"))
     {
         mSearchActive = !mSearchActive;
         if (!mSearchActive)
@@ -205,6 +205,7 @@ void DebugLogWindow::DrawContent()
             mCurrentMatchIndex = -1;
         }
     }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Find");
     ImGui::SameLine();
 
     ImGui::Spacing();
@@ -212,26 +213,27 @@ void DebugLogWindow::DrawContent()
 
     // Severity filter toggles
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
-    ImGui::Checkbox("D", &mShowDebug);
+    ImGui::Checkbox(ICON_MDI_BUG "##FilterDebug", &mShowDebug);
     ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show Debug messages");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Debug");
     ImGui::SameLine();
 
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.5f, 1.0f));
-    ImGui::Checkbox("W", &mShowWarnings);
+    ImGui::Checkbox(ICON_MATERIAL_SYMBOLS_WARNING "##FilterWarning", &mShowWarnings);
     ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show Warning messages");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Warning");
     ImGui::SameLine();
 
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
-    ImGui::Checkbox("E", &mShowErrors);
+    ImGui::Checkbox(ICON_DASHICONS_NO_ALT "##FilterError", &mShowErrors);
     ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show Error messages");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Error");
     ImGui::SameLine();
 
     ImGui::Spacing();
     ImGui::SameLine();
-    ImGui::Checkbox("Auto-scroll", &mAutoScroll);
+    ImGui::Checkbox(ICON_BXS_ARROW_TO_BOTTOM "##AutoScroll", &mAutoScroll);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Auto-scroll");
 
     // Search bar
     if (mSearchActive)
@@ -333,8 +335,16 @@ void DebugLogWindow::DrawContent()
             int mins = (totalSec % 3600) / 60;
             int secs = totalSec % 60;
 
+            const char* severityIcon = ICON_MDI_BUG;
+            switch (entry.mSeverity)
+            {
+                case LogSeverity::Warning: severityIcon = ICON_MATERIAL_SYMBOLS_WARNING; break;
+                case LogSeverity::Error:   severityIcon = ICON_DASHICONS_NO_ALT; break;
+                default: break;
+            }
+
             char label[1280];
-            snprintf(label, sizeof(label), "[%02d:%02d:%02d] %s", hours, mins, secs, entry.mMessage.c_str());
+            snprintf(label, sizeof(label), "%s [%02d:%02d:%02d] %s", severityIcon, hours, mins, secs, entry.mMessage.c_str());
 
             ImVec4 color;
             switch (entry.mSeverity)
@@ -388,6 +398,14 @@ void DebugLogWindow::DrawContent()
                 {
                     CopyAllToClipboard();
                 }
+
+                // Addon debug log context items (Batch 8)
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr)
+                {
+                    hookMgr->DrawDebugLogContextItems();
+                }
+
                 ImGui::EndPopup();
             }
 

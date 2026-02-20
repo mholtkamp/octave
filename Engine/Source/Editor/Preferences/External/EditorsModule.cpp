@@ -180,10 +180,12 @@ std::string EditorsModule::BuildCppOpenCommand(const std::string& filePath, cons
 
 void EditorsModule::OpenLuaScript(const std::string& filePath)
 {
-    if (mUseInternalEditor)
-    {
-        GetScriptEditorWindow()->OpenFile(filePath);
-        return;
+    if (SYS_DoesFileExist(filePath.c_str(), false)) {
+        if (mUseInternalEditor)
+        {
+            GetScriptEditorWindow()->OpenFile(filePath);
+            return;
+        }
     }
 
     if (!IsLuaEditorConfigured())

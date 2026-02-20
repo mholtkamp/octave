@@ -396,8 +396,19 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
-    // Fire OnPackageStarted hook
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+
+    // Fire OnPreBuild hook (can cancel the build)
+    if (hookMgr != nullptr)
+    {
+        if (!hookMgr->FireOnPreBuild((int32_t)platform))
+        {
+            LogWarning("Build cancelled by addon hook.");
+            return;
+        }
+    }
+
+    // Fire OnPackageStarted hook
     if (hookMgr != nullptr)
     {
         hookMgr->FireOnPackageStarted((int32_t)platform);
@@ -973,6 +984,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
         // Fire OnPackageFinished with failure
         if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, false);
+        if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, false);
         return;
     }
       if(!IsHeadless()){
@@ -984,6 +996,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     // Fire OnPackageFinished with success
     if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, true);
+    if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, true);
 }
 
 void ActionManager::PrepareRelease()

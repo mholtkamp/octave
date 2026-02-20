@@ -367,6 +367,30 @@ static void DrawDockspace()
                 }
             }
         }
+
+        // Viewport right-click context menu (Batch 3)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr && hookMgr->HasViewportContextItems())
+            {
+                if (ImGui::BeginPopupContextWindow("ViewportContextMenu", 1))
+                {
+                    hookMgr->DrawViewportContextItems();
+                    ImGui::EndPopup();
+                }
+            }
+        }
+
+        // Viewport overlays (Batch 3)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                hookMgr->DrawViewportOverlays(
+                    sViewportDockPos.x, sViewportDockPos.y,
+                    sViewportDockSize.x, sViewportDockSize.y);
+            }
+        }
     }
     ImGui::EndDock();
     ImGui::PopStyleColor();
@@ -1927,6 +1951,19 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
         // Allow custom property drawing
         bool custom = owner ? owner->DrawCustomProperty(prop) : false;
 
+        // Check addon property drawers (Batch 6)
+        if (!custom)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                // Match by property name - addon registers for specific property names
+                custom = hookMgr->DrawPropertyDrawer(
+                    prop.mName.c_str(), prop.mName.c_str(),
+                    owner, (int32_t)propType);
+            }
+        }
+
         if (custom)
         {
             ImGui::PopID();
@@ -2517,6 +2554,13 @@ static void DrawAddNodeMenu(Node* node)
                 GetEditorState()->SetSelectedNode(newNode);
             }
         }
+
+        // Draw addon node menu items for "3D" category
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawNodeMenuItems("3D", node);
+        }
+
         ImGui::EndMenu();
     }
 
@@ -2537,6 +2581,12 @@ static void DrawAddNodeMenu(Node* node)
 
                 GetEditorState()->SetSelectedNode(newNode);
             }
+        }
+
+        // Draw addon node menu items for "Widget" category
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawNodeMenuItems("Widget", node);
         }
 
         ImGui::EndMenu();
@@ -2616,7 +2666,19 @@ static void DrawAddNodeMenu(Node* node)
             }
         }
 
+        // Draw addon node menu items for "Other" category
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawNodeMenuItems("Other", node);
+        }
+
         ImGui::EndMenu();
+    }
+
+    // Draw addon custom node categories
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->DrawCustomNodeCategories(node);
     }
 }
 
@@ -2626,9 +2688,13 @@ static void DrawImportMenu(Node* node)
     if (ImGui::MenuItem("Camera"))
     {
         am->BeginImportCamera();
-
     }
 
+    // Draw addon import menu items (Batch 8)
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->DrawImportMenuItems();
+    }
 }
 
 static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
@@ -2665,6 +2731,12 @@ static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
         am->SpawnBasicNode(BASIC_TEXT_MESH, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_INSTANCED_MESH))
         am->SpawnBasicNode(BASIC_INSTANCED_MESH, node, selAsset, setFocusPos, spawnPos);
+
+    // Draw addon spawn basic 3D items
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->DrawSpawnBasic3dItems(node);
+    }
 }
 static void DrawSpawnBasicWidgetMenu(Node* node)
 {
@@ -2700,6 +2772,12 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
         {
             GetEditorState()->SetSelectedNode(newWidget);
         }
+    }
+
+    // Draw addon spawn basic widget items
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->DrawSpawnBasicWidgetItems(node);
     }
 }
 
@@ -2883,6 +2961,18 @@ static void DrawScenePanel()
             bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
             bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
             bool collapseChildren = !expandChildren && nodeMiddleClicked;
+
+            // Hierarchy item GUI overlay (Batch 7)
+            {
+                ImVec2 rowMin = ImGui::GetItemRectMin();
+                ImVec2 rowMax = ImGui::GetItemRectMax();
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr)
+                {
+                    hookMgr->DrawHierarchyItemGUI(node, rowMin.x, rowMin.y,
+                        rowMax.x - rowMin.x, rowMax.y - rowMin.y);
+                }
+            }
 
             if (inSubScene || nodeHasScene)
             {
@@ -3578,6 +3668,12 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 showPopup = true;
             }
 
+            // Draw addon create asset items
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawCreateAssetItems();
+            }
+
             ImGui::EndMenu();
 
             if (showPopup)
@@ -3951,6 +4047,20 @@ static void DrawAssetBrowser(bool showFilter, bool interactive)
             }
 
             ImGui::PopStyleColor(); // Pop asset color
+
+            // Asset browser item GUI overlay (Batch 7)
+            {
+                ImVec2 rowMin = ImGui::GetItemRectMin();
+                ImVec2 rowMax = ImGui::GetItemRectMax();
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr)
+                {
+                    const char* typeName = (stub->mAsset != nullptr) ?
+                        stub->mAsset->GetTypeName() : "";
+                    hookMgr->DrawAssetItemGUI(stub->mName.c_str(), typeName,
+                        rowMin.x, rowMin.y, rowMax.x - rowMin.x, rowMax.y - rowMin.y);
+                }
+            }
 
             if (isSelectedStub)
             {
@@ -4535,11 +4645,25 @@ static void DrawScriptsPanel()
                 if (!editorConfigured) ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
                 if (ImGui::Button(ICON_IX_CODE "##OpenLuaEditor"))
                 {
-                    if (hasProject && editorConfigured)
-                        editors->OpenLuaScript(GetEngineState()->mProjectDirectory + "Scripts/");
+                    if (hasProject && editorConfigured) {
+                        editors->OpenLuaScript(GetEngineState()->mProjectDirectory);
+                    }
                 }
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                    ImGui::SetTooltip("Open in Editor");
+                {
+                    if (editorConfigured)
+                    {
+                        std::string editorName = editors->mLuaEditorPath;
+                        size_t lastSlash = editorName.find_last_of("/\\");
+                        if (lastSlash != std::string::npos)
+                            editorName = editorName.substr(lastSlash + 1);
+                        ImGui::SetTooltip("Open in %s", editorName.c_str());
+                    }
+                    else
+                    {
+                        ImGui::SetTooltip("Open in External Editor (not configured)");
+                    }
+                }
                 if (!editorConfigured) ImGui::PopStyleVar();
 
                 ImGui::SameLine();
@@ -4563,25 +4687,33 @@ static void DrawScriptsPanel()
                 ImGui::Spacing();
             }
 
-            // Refresh every 2 seconds
-            if (sLuaScripts.empty() || currentTime - sLuaLastUpdate > 2.0)
+            // Cache the engine root directory on first use so relative paths survive cwd changes
+            static std::string sEngineRoot;
+            if (sEngineRoot.empty())
             {
-                sLuaScripts.clear();
+                sEngineRoot = AssetManager::Get()->GetOctaveDirectory();
+            }
+
+            // Refresh every 2 seconds
+            static bool sLuaInitialized = false;
+            if (!sLuaInitialized || currentTime - sLuaLastUpdate > 2.0)
+            {
+                std::vector<ScriptFileEntry> newScripts;
                 const std::string& projectDir = GetEngineState()->mProjectDirectory;
 
-                // Engine scripts
+                // Engine scripts (use cached absolute path)
                 {
+                    std::string engineScriptsDir = sEngineRoot + "Engine/Scripts/";
                     std::vector<std::string> files;
-                    AssetManager::Get()->GatherScriptFiles("Engine/Scripts/", files);
-                    const std::string prefix = "Engine/Scripts/";
+                    AssetManager::Get()->GatherScriptFiles(engineScriptsDir, files);
                     for (const std::string& f : files)
                     {
                         ScriptFileEntry entry;
                         entry.mFullPath = f;
                         entry.mOrigin = "Engine";
-                        entry.mDisplayName = (f.length() > prefix.length() && f.substr(0, prefix.length()) == prefix)
-                            ? f.substr(prefix.length()) : f;
-                        sLuaScripts.push_back(entry);
+                        entry.mDisplayName = (f.length() > engineScriptsDir.length() && f.substr(0, engineScriptsDir.length()) == engineScriptsDir)
+                            ? f.substr(engineScriptsDir.length()) : f;
+                        newScripts.push_back(entry);
                     }
                 }
 
@@ -4598,7 +4730,7 @@ static void DrawScriptsPanel()
                         entry.mOrigin = "Project";
                         entry.mDisplayName = (f.length() > projScriptsDir.length() && f.substr(0, projScriptsDir.length()) == projScriptsDir)
                             ? f.substr(projScriptsDir.length()) : f;
-                        sLuaScripts.push_back(entry);
+                        newScripts.push_back(entry);
                     }
 
                     // Package scripts
@@ -4622,7 +4754,7 @@ static void DrawScriptsPanel()
                                 entry.mOrigin = pkgName;
                                 entry.mDisplayName = (f.length() > pkgScriptsDir.length() && f.substr(0, pkgScriptsDir.length()) == pkgScriptsDir)
                                     ? "Packages/" + pkgName + "/" + f.substr(pkgScriptsDir.length()) : f;
-                                sLuaScripts.push_back(entry);
+                                newScripts.push_back(entry);
                             }
                         }
                         SYS_IterateDirectory(pkgDirEntry);
@@ -4630,7 +4762,9 @@ static void DrawScriptsPanel()
                     SYS_CloseDirectory(pkgDirEntry);
                 }
 
+                sLuaScripts = std::move(newScripts);
                 sLuaLastUpdate = currentTime;
+                sLuaInitialized = true;
             }
 
             // Build directory tree
@@ -4656,9 +4790,12 @@ static void DrawScriptsPanel()
                         continue;
                 }
 
-                // Split path into components
+                // Group by origin (Engine, Project, package name) at the top level
+                TreeNode* current = &root.children[entry.mOrigin];
+                current->name = entry.mOrigin;
+
+                // Split display path into subdirectory components
                 std::string path = entry.mDisplayName;
-                TreeNode* current = &root;
                 size_t pos = 0;
                 size_t slash;
                 while ((slash = path.find('/', pos)) != std::string::npos)
@@ -4686,7 +4823,8 @@ static void DrawScriptsPanel()
                     if (hasFilter)
                         dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-                    if (ImGui::TreeNodeEx(pair.first.c_str(), dirFlags))
+                    std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + pair.first;
+                    if (ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags))
                     {
                         drawTree(pair.second);
                         ImGui::TreePop();
@@ -4703,7 +4841,8 @@ static void DrawScriptsPanel()
                         fileName = fileName.substr(lastSlash + 1);
 
                     ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                    ImGui::TreeNodeEx(fileName.c_str(), leafFlags);
+                    std::string labelWithIcon = std::string(ICON_LUA) + " " + fileName;
+                    ImGui::TreeNodeEx(labelWithIcon.c_str(), leafFlags);
 
                     if (ImGui::IsItemHovered())
                     {
@@ -4768,24 +4907,36 @@ static void DrawScriptsPanel()
                 {
                     if (hasProject && hasAddons && cppConfigured)
                     {
-                        // Open first addon's source in IDE
+                        // Open first addon's vcxproj in IDE
                         std::vector<std::string> addonIds = nam->GetDiscoveredAddonIds();
                         for (const std::string& id : addonIds)
                         {
                             const NativeAddonState* state = nam->GetState(id);
                             if (state && state->mNativeMetadata.mHasNative)
                             {
-                                std::string sourceDir = state->mSourcePath + state->mNativeMetadata.mSourceDir + "/";
                                 std::string binaryName = state->mNativeMetadata.mBinaryName.empty() ? id : state->mNativeMetadata.mBinaryName;
                                 std::string vcxproj = state->mSourcePath + binaryName + ".vcxproj";
-                                editors->OpenCppFile(sourceDir, vcxproj);
+                                editors->OpenCppFile(vcxproj, vcxproj);
                                 break;
                             }
                         }
                     }
                 }
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                    ImGui::SetTooltip("Open in IDE");
+                {
+                    if (cppConfigured)
+                    {
+                        std::string editorName = editors->mCppEditorPath;
+                        size_t lastSlash = editorName.find_last_of("/\\");
+                        if (lastSlash != std::string::npos)
+                            editorName = editorName.substr(lastSlash + 1);
+                        ImGui::SetTooltip("Open in %s", editorName.c_str());
+                    }
+                    else
+                    {
+                        ImGui::SetTooltip("Open in External Editor (not configured)");
+                    }
+                }
                 if (!cppConfigured || !hasAddons) ImGui::PopStyleVar();
 
                 ImGui::SameLine();
@@ -4885,7 +5036,7 @@ static void DrawScriptsPanel()
                     if (!filterLower.empty())
                         addonFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-                    if (ImGui::TreeNodeEx(addon.mAddonId.c_str(), addonFlags, "%s", addon.mAddonName.c_str()))
+                    if (ImGui::TreeNodeEx(addon.mAddonId.c_str(), addonFlags, "%s %s", ICON_MATERIAL_SYMBOLS_FOLDER_SHARP, addon.mAddonName.c_str()))
                     {
                         for (const std::string& srcFile : addon.mSourceFiles)
                         {
@@ -4905,7 +5056,23 @@ static void DrawScriptsPanel()
                             }
 
                             ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                            ImGui::TreeNodeEx(srcFile.c_str(), leafFlags, "%s", fileName.c_str());
+                            const char* fileIcon = ICON_MINGCUTE_PAPER_FILL ;
+                            {
+                                size_t dot = fileName.rfind('.');
+                                if (dot != std::string::npos)
+                                {
+                                    std::string ext = fileName.substr(dot);
+                                    if (ext == ".cpp" || ext == ".c" || ext == ".h" || ext == ".hpp")
+                                        fileIcon = ICON_CPP;
+                                    else if (ext == ".lua")
+                                        fileIcon = ICON_LUA;
+                                    else if (ext == ".json")
+                                        fileIcon = ICON_JSON;
+                                    else if (ext == ".cs")
+                                        fileIcon = ICON_CS;
+                                }
+                            }
+                            ImGui::TreeNodeEx(srcFile.c_str(), leafFlags, "%s %s", fileIcon, fileName.c_str());
 
                             if (ImGui::IsItemHovered())
                             {
@@ -5059,6 +5226,12 @@ static void DrawMainMenuBar()
             ImGui::EndMenu();
         }
 
+        // Draw addon menus positioned after File (position=0)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(0);
+        }
+
         if (ImGui::BeginMenu("Edit"))
         {
             if (ImGui::MenuItem("Undo"))
@@ -5073,6 +5246,12 @@ static void DrawMainMenuBar()
             }
 
             ImGui::EndMenu();
+        }
+
+        // Draw addon menus positioned after Edit (position=1)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(1);
         }
 
         if (ImGui::BeginMenu("View"))
@@ -5169,6 +5348,12 @@ static void DrawMainMenuBar()
             ImGui::EndMenu();
         }
 
+        // Draw addon menus positioned after View (position=2)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(2);
+        }
+
         if (ImGui::BeginMenu("World"))
         {
             if (ImGui::BeginMenu("Spawn Node"))
@@ -5207,6 +5392,12 @@ static void DrawMainMenuBar()
             }
 
             ImGui::EndMenu();
+        }
+
+        // Draw addon menus positioned after World (position=3)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(3);
         }
 
         if (ImGui::BeginMenu("Developer"))
@@ -5261,10 +5452,29 @@ static void DrawMainMenuBar()
             ImGui::EndMenu();
         }
 
+        // Draw addon menus positioned after Developer (position=4)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(4);
+        }
+
         if (ImGui::BeginMenu("Addons"))
         {
             DrawAddonsPopupContent();
+
+            // Draw addon-registered Addons menu items (Batch 8)
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->DrawAddonsMenuItems();
+            }
+
             ImGui::EndMenu();
+        }
+
+        // Draw addon menus positioned after Addons (position=5)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(5);
         }
 
         if (ImGui::BeginMenu("Extra"))
@@ -5298,7 +5508,13 @@ static void DrawMainMenuBar()
             ImGui::EndMenu();
         }
 
-        // Draw addon top-level menus as main menu bar entries
+        // Draw addon menus positioned after Extra (position=6)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->DrawTopLevelMenusAtPosition(6);
+        }
+
+        // Draw addon top-level menus as main menu bar entries (legacy append, position=-1)
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
             if (hookMgr != nullptr)
@@ -5340,8 +5556,18 @@ static void DrawMainMenuBar()
             paintMode = PaintMode::None;
         }
 
-        GetEditorState()->SetEditorMode((EditorMode)curMode);
-        GetEditorState()->SetPaintMode(paintMode);
+        {
+            EditorMode prevMode = GetEditorState()->mMode;
+            GetEditorState()->SetEditorMode((EditorMode)curMode);
+            GetEditorState()->SetPaintMode(paintMode);
+
+            // Fire editor mode changed hook (Batch 10)
+            if ((int)prevMode != curMode)
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr) hookMgr->FireOnEditorModeChanged(curMode);
+            }
+        }
 
         // Gizmo Operation Buttons (Translate/Rotate/Scale)
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -5375,6 +5601,16 @@ static void DrawMainMenuBar()
             gizmoOp = ImGuizmo::SCALE;
         if (isScale) ImGui::PopStyleColor();
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale (Space+S)");
+
+        // Draw addon gizmo tools (Batch 10)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr)
+            {
+                Node* selNode = GetEditorState()->GetSelectedNode();
+                hookMgr->DrawGizmoTools(selNode);
+            }
+        }
 
         // Local/World mode toggle
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -5436,6 +5672,14 @@ static void DrawMainMenuBar()
                     }
 
                     ImGui::EndTabItem();
+                }
+
+                // Scene tab context menu (Batch 8)
+                if (ImGui::BeginPopupContextItem())
+                {
+                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                    if (hookMgr != nullptr) hookMgr->DrawSceneTabContextItems();
+                    ImGui::EndPopup();
                 }
 
                 if (!opened)
@@ -5616,6 +5860,16 @@ static void DrawMainMenuBar()
                     }
                 }
 
+                // Draw addon play targets (Batch 8)
+                {
+                    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                    if (hookMgr != nullptr && hookMgr->HasPlayTargets())
+                    {
+                        ImGui::Separator();
+                        hookMgr->DrawPlayTargets();
+                    }
+                }
+
                 ImGui::EndPopup();
             }
         }
@@ -5676,6 +5930,12 @@ static void DrawMainMenuBar()
                     LogDebug("Native addon dependencies regenerated and addons reloaded.");
                 }
             }
+        }
+
+        // Process addon keyboard shortcuts (Batch 5)
+        {
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->ProcessShortcuts();
         }
 
         if (ImGui::BeginPopup("Spawn Basic 3D"))

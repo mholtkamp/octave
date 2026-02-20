@@ -33,6 +33,7 @@ private:
     bool mIsOpen = false;
     PreferencesModule* mSelectedModule = nullptr;
     bool mPendingClose = false;
+    std::string mSelectedAddonPanel;  // Non-empty if an addon panel is selected
 };
 
 PreferencesWindow* GetPreferencesWindow();

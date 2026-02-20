@@ -524,7 +524,7 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
     outDirEntry.mFindHandle = FindFirstFile(dirString.c_str(), &outDirEntry.mFindData);
     if (outDirEntry.mFindHandle == INVALID_HANDLE_VALUE)
     {
-        LogError("Invalid first file");
+        // Directory doesn't exist or is empty — not an error, caller checks mValid.
         return;
     }
 

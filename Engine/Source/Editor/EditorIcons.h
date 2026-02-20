@@ -1,6 +1,6 @@
 // =============================================================================
 // EditorIcons.h — Generated from selection.icomoon.json
-// Font: OctaveIcons.ttf | 160 icons | Range: U+F000..U+F09F
+// Font: OctaveIcons.ttf | 165 icons | Range: U+F000..U+F0A4
 // =============================================================================
 #pragma once
 
@@ -10,9 +10,9 @@
 // Glyph range
 // ---------------------------------------------------------------------------
 static constexpr ImWchar kIconMin = 0xF000;
-static constexpr ImWchar kIconMax = 0xF09F;
+static constexpr ImWchar kIconMax = 0xF0A4;
 
-static const ImWchar kIconRanges[] = { 0xF000, 0xF09F, 0 };
+static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 
 // ---------------------------------------------------------------------------
 // Icon definitions (sorted alphabetically by identifier)
@@ -45,6 +45,8 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF09F, 0 };
 #define ICON_CLARITY_MOBILE_SOLID                                   u8"\uF087"
 #define ICON_CLARITY_NO_ACCESS_SOLID                                u8"\uF041"
 #define ICON_CONSOLE                                                u8"\uF059"
+#define ICON_CPP                                                    u8"\uF0A2"
+#define ICON_CS                                                     u8"\uF0A0"
 #define ICON_CURVEGRAPH                                             u8"\uF050"
 #define ICON_DASHICONS_ARROW_DOWN                                   u8"\uF040"
 #define ICON_DASHICONS_ARROW_UP                                     u8"\uF03F"
@@ -81,9 +83,11 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF09F, 0 };
 #define ICON_IX_CODE                                                u8"\uF02E"
 #define ICON_IX_VIDEO_CAMERA_FILLED                                 u8"\uF02D"
 #define ICON_IX_VIDEO_FILE_FILLED                                   u8"\uF02C"
+#define ICON_JSON                                                   u8"\uF0A1"
 #define ICON_LAYERS                                                 u8"\uF058"
 #define ICON_LIGHTBULB                                              u8"\uF04E"
 #define ICON_LINE_MD_PAINT_DROP_FILLED                              u8"\uF02B"
+#define ICON_LUA                                                    u8"\uF0A3"
 #define ICON_LUCIDE_ROTATE_3D                                       u8"\uF02A"
 #define ICON_MAGE_SCALE_UP                                          u8"\uF029"
 #define ICON_MAJESTICONS_MAP_MARKER                                 u8"\uF089"
@@ -146,6 +150,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF09F, 0 };
 #define ICON_RI_PLAYSTATION_FILL                                    u8"\uF068"
 #define ICON_RI_SWITCH_FILL                                         u8"\uF06D"
 #define ICON_RI_WINDOWS_FILL                                        u8"\uF071"
+#define ICON_SAVEAS                                                 u8"\uF0A4"
 #define ICON_SCENE                                                  u8"\uF060"
 #define ICON_SHADOW                                                 u8"\uF04D"
 #define ICON_SIMPLE_ICONS_PLAYSTATION2                              u8"\uF06A"

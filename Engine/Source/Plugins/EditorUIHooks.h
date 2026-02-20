@@ -88,6 +88,145 @@ typedef void (*TopLevelMenuDrawCallback)(void* userData);
 typedef void (*ToolbarDrawCallback)(void* userData);
 
 /**
+ * @brief Callback for menu item validation (enable/disable).
+ * @param userData User data passed during registration
+ * @return true if menu item should be enabled, false to grey it out
+ */
+typedef bool (*MenuValidationCallback)(void* userData);
+
+/**
+ * @brief Draw callback for menu sections (called inside BeginMenu/EndMenu).
+ * @param parentNode Pointer to the parent node context (can be nullptr)
+ * @param userData User data passed during registration
+ */
+typedef void (*MenuSectionDrawCallback)(void* parentNode, void* userData);
+
+/**
+ * @brief Callback for viewport overlay drawing.
+ * @param viewportX X position of viewport
+ * @param viewportY Y position of viewport
+ * @param viewportW Width of viewport
+ * @param viewportH Height of viewport
+ * @param userData User data passed during registration
+ */
+typedef void (*ViewportOverlayCallback)(float viewportX, float viewportY, float viewportW, float viewportH, void* userData);
+
+/**
+ * @brief Callback for preferences panel drawing.
+ * @param userData User data passed during registration
+ */
+typedef void (*PreferencesPanelDrawCallback)(void* userData);
+
+/**
+ * @brief Callback for preferences load/save.
+ * @param userData User data passed during registration
+ */
+typedef void (*PreferencesLoadCallback)(void* userData);
+typedef void (*PreferencesSaveCallback)(void* userData);
+
+/**
+ * @brief Callback for keyboard shortcuts.
+ * @param userData User data passed during registration
+ */
+typedef void (*ShortcutCallback)(void* userData);
+
+/**
+ * @brief Property drawer callback - return true if handled.
+ * @param propertyName Name of the property being drawn
+ * @param propertyOwner Pointer to the object that owns the property
+ * @param propertyType Type identifier for the property
+ * @param userData User data passed during registration
+ * @return true if the property was drawn by this callback
+ */
+typedef bool (*PropertyDrawCallback)(const char* propertyName, void* propertyOwner, int32_t propertyType, void* userData);
+
+/**
+ * @brief Hierarchy item GUI overlay callback.
+ * @param node Pointer to the node being drawn
+ * @param rowX X position of the row
+ * @param rowY Y position of the row
+ * @param rowW Width of the row
+ * @param rowH Height of the row
+ * @param userData User data passed during registration
+ */
+typedef void (*HierarchyItemGUICallback)(void* node, float rowX, float rowY, float rowW, float rowH, void* userData);
+
+/**
+ * @brief Asset browser item GUI overlay callback.
+ * @param assetName Name of the asset
+ * @param assetType Type name of the asset
+ * @param rowX X position of the row
+ * @param rowY Y position of the row
+ * @param rowW Width of the row
+ * @param rowH Height of the row
+ * @param userData User data passed during registration
+ */
+typedef void (*AssetItemGUICallback)(const char* assetName, const char* assetType, float rowX, float rowY, float rowW, float rowH, void* userData);
+
+/**
+ * @brief Hierarchy changed event callback.
+ * @param changeType 0=NodeCreated, 1=NodeDestroyed, 2=NodeReparented, 3=NodeRenamed
+ * @param node Pointer to the affected node
+ * @param userData User data passed during registration
+ */
+typedef void (*HierarchyChangedCallback)(int32_t changeType, void* node, void* userData);
+
+/**
+ * @brief Custom drag-drop handler callback.
+ * @param payloadType Type string of the drag payload
+ * @param payloadData Pointer to the payload data
+ * @param payloadSize Size of the payload data in bytes
+ * @param userData User data passed during registration
+ * @return true to consume the drop, false to pass through
+ */
+typedef bool (*DragDropHandlerCallback)(const char* payloadType, const void* payloadData, int32_t payloadSize, void* userData);
+
+/**
+ * @brief Custom asset import callback.
+ * @param filePath Path of the file to import
+ * @param extension File extension (e.g., ".fbx")
+ * @param userData User data passed during registration
+ * @return true if the import was handled
+ */
+typedef bool (*AssetImportCallback)(const char* filePath, const char* extension, void* userData);
+
+/**
+ * @brief Pre-import callback. Return false to cancel the import.
+ * @param filePath Path of the file about to be imported
+ * @param userData User data passed during registration
+ * @return false to cancel the import
+ */
+typedef bool (*PreImportCallback)(const char* filePath, void* userData);
+
+/**
+ * @brief Pre-build callback. Return false to cancel the build.
+ * @param platform Platform enum value
+ * @param userData User data passed during registration
+ * @return false to cancel the build
+ */
+typedef bool (*PreBuildCallback)(int32_t platform, void* userData);
+
+/**
+ * @brief Editor mode changed callback.
+ * @param newMode New editor mode value
+ * @param userData User data passed during registration
+ */
+typedef void (*EditorModeCallback)(int32_t newMode, void* userData);
+
+/**
+ * @brief Custom gizmo tool draw callback.
+ * @param selectedNode Pointer to the currently selected node
+ * @param userData User data passed during registration
+ */
+typedef void (*GizmoToolDrawCallback)(void* selectedNode, void* userData);
+
+/**
+ * @brief Play target callback.
+ * @param userData User data passed during registration
+ */
+typedef void (*PlayTargetCallback)(void* userData);
+
+/**
  * @brief Unique identifier for tracking hooks.
  *
  * Use GenerateHookId() to create from addon ID or Lua script UUID.
@@ -357,6 +496,287 @@ struct EditorUIHooks
 
     /** @brief Register callback for when an asset is dropped onto the viewport. Receives asset name. */
     void (*RegisterOnAssetDropViewport)(HookId hookId, StringEventCallback cb, void* userData);
+
+    // ===== Batch 1: Menu Positioning & Top-Level Menu Control =====
+
+    /**
+     * @brief Add a custom top-level menu with position control.
+     * @param hookId Unique identifier for this hook
+     * @param menuName Display name for the menu
+     * @param drawFunc Function called to draw menu contents
+     * @param userData User data passed to drawFunc
+     * @param position Position index: -1=append after all, 0=after File, 1=after Edit, 2=after View, 3=after World, 4=after Developer, 5=after Addons, 6=after Extra
+     */
+    void (*AddTopLevelMenuItemEx)(
+        HookId hookId,
+        const char* menuName,
+        TopLevelMenuDrawCallback drawFunc,
+        void* userData,
+        int32_t position
+    );
+
+    /**
+     * @brief Add a menu item with validation callback.
+     * @param hookId Unique identifier for this hook
+     * @param menuPath Top-level menu name
+     * @param itemPath Item path within menu
+     * @param callback Function called when item is clicked
+     * @param userData User data passed to callback
+     * @param shortcut Optional keyboard shortcut (can be nullptr)
+     * @param validateFunc Validation callback - return false to grey out item (can be nullptr)
+     */
+    void (*AddMenuItemEx)(
+        HookId hookId,
+        const char* menuPath,
+        const char* itemPath,
+        MenuCallback callback,
+        void* userData,
+        const char* shortcut,
+        MenuValidationCallback validateFunc
+    );
+
+    // ===== Batch 2: Create/Spawn Menu Extensions =====
+
+    /**
+     * @brief Extend the "Add Node" submenu.
+     * @param hookId Unique identifier for this hook
+     * @param category Category name: "3D", "Widget", "Other", or custom name for a new submenu
+     * @param drawFunc Function called to draw menu items
+     * @param userData User data passed to drawFunc
+     */
+    void (*AddNodeMenuItems)(HookId hookId, const char* category, MenuSectionDrawCallback drawFunc, void* userData);
+
+    /** @brief Remove previously added node menu items. */
+    void (*RemoveNodeMenuItems)(HookId hookId, const char* category);
+
+    /**
+     * @brief Extend the "Create Asset" submenu in asset browser context menu.
+     * @param hookId Unique identifier for this hook
+     * @param drawFunc Function called to draw menu items
+     * @param userData User data passed to drawFunc
+     */
+    void (*AddCreateAssetItems)(HookId hookId, MenuSectionDrawCallback drawFunc, void* userData);
+
+    /** @brief Remove previously added create asset items. */
+    void (*RemoveCreateAssetItems)(HookId hookId);
+
+    /**
+     * @brief Extend the "Spawn Basic 3D" menu.
+     * @param hookId Unique identifier for this hook
+     * @param drawFunc Function called to draw additional 3D spawn items
+     * @param userData User data passed to drawFunc
+     */
+    void (*AddSpawnBasic3dItems)(HookId hookId, MenuSectionDrawCallback drawFunc, void* userData);
+
+    /**
+     * @brief Extend the "Spawn Basic Widget" menu.
+     * @param hookId Unique identifier for this hook
+     * @param drawFunc Function called to draw additional widget spawn items
+     * @param userData User data passed to drawFunc
+     */
+    void (*AddSpawnBasicWidgetItems)(HookId hookId, MenuSectionDrawCallback drawFunc, void* userData);
+
+    // ===== Batch 3: Viewport Context Menu & Overlay Drawing =====
+
+    /**
+     * @brief Add item to viewport right-click context menu.
+     * @param hookId Unique identifier for this hook
+     * @param itemPath Item path in context menu
+     * @param callback Function called when item is clicked
+     * @param userData User data passed to callback
+     */
+    void (*AddViewportContextItem)(HookId hookId, const char* itemPath, MenuCallback callback, void* userData);
+
+    /** @brief Remove a viewport context menu item. */
+    void (*RemoveViewportContextItem)(HookId hookId, const char* itemPath);
+
+    /**
+     * @brief Register a viewport overlay drawn each frame.
+     * @param hookId Unique identifier for this hook
+     * @param overlayName Unique name for the overlay
+     * @param drawFunc Function called each frame with viewport dimensions
+     * @param userData User data passed to drawFunc
+     */
+    void (*RegisterViewportOverlay)(HookId hookId, const char* overlayName, ViewportOverlayCallback drawFunc, void* userData);
+
+    /** @brief Unregister a viewport overlay. */
+    void (*UnregisterViewportOverlay)(HookId hookId, const char* overlayName);
+
+    // ===== Batch 4: Custom Preferences/Settings Pages =====
+
+    /**
+     * @brief Register a custom preferences panel.
+     * @param hookId Unique identifier for this hook
+     * @param panelName Display name in preferences sidebar
+     * @param panelCategory Category path, e.g., "Addons/MyAddon"
+     * @param drawFunc Function called to draw panel content
+     * @param loadFunc Optional load callback (can be nullptr)
+     * @param saveFunc Optional save callback (can be nullptr)
+     * @param userData User data passed to callbacks
+     */
+    void (*RegisterPreferencesPanel)(
+        HookId hookId,
+        const char* panelName,
+        const char* panelCategory,
+        PreferencesPanelDrawCallback drawFunc,
+        PreferencesLoadCallback loadFunc,
+        PreferencesSaveCallback saveFunc,
+        void* userData
+    );
+
+    /** @brief Unregister a custom preferences panel. */
+    void (*UnregisterPreferencesPanel)(HookId hookId, const char* panelName);
+
+    // ===== Batch 5: Custom Keyboard Shortcuts =====
+
+    /**
+     * @brief Register a keyboard shortcut.
+     * @param hookId Unique identifier for this hook
+     * @param shortcutId Unique ID, e.g., "myaddon.toggle_panel"
+     * @param displayName Human-readable name, e.g., "My Addon: Toggle Panel"
+     * @param defaultBinding Default key binding, e.g., "Ctrl+Shift+M"
+     * @param callback Function called when shortcut is triggered
+     * @param userData User data passed to callback
+     */
+    void (*RegisterShortcut)(
+        HookId hookId,
+        const char* shortcutId,
+        const char* displayName,
+        const char* defaultBinding,
+        ShortcutCallback callback,
+        void* userData
+    );
+
+    /** @brief Unregister a keyboard shortcut. */
+    void (*UnregisterShortcut)(HookId hookId, const char* shortcutId);
+
+    // ===== Batch 6: Property Drawer System =====
+
+    /**
+     * @brief Register a custom drawer for a property type.
+     * @param hookId Unique identifier for this hook
+     * @param propertyTypeName Type name to match (e.g., "glm::vec3", "Asset*")
+     * @param drawFunc Function called to draw the property
+     * @param userData User data passed to drawFunc
+     */
+    void (*RegisterPropertyDrawer)(HookId hookId, const char* propertyTypeName, PropertyDrawCallback drawFunc, void* userData);
+
+    /** @brief Unregister a custom property drawer. */
+    void (*UnregisterPropertyDrawer)(HookId hookId, const char* propertyTypeName);
+
+    // ===== Batch 7: Hierarchy & Asset Browser Extensions =====
+
+    /**
+     * @brief Register a hierarchy item GUI overlay callback.
+     * Called for each visible node in the hierarchy tree.
+     */
+    void (*RegisterHierarchyItemGUI)(HookId hookId, HierarchyItemGUICallback drawFunc, void* userData);
+
+    /** @brief Unregister a hierarchy item GUI overlay. */
+    void (*UnregisterHierarchyItemGUI)(HookId hookId);
+
+    /**
+     * @brief Register an asset browser item GUI overlay callback.
+     * Called for each visible asset in the asset browser.
+     */
+    void (*RegisterAssetItemGUI)(HookId hookId, AssetItemGUICallback drawFunc, void* userData);
+
+    /** @brief Unregister an asset browser item GUI overlay. */
+    void (*UnregisterAssetItemGUI)(HookId hookId);
+
+    /**
+     * @brief Register a hierarchy changed event callback.
+     * changeType: 0=NodeCreated, 1=NodeDestroyed, 2=NodeReparented, 3=NodeRenamed
+     */
+    void (*RegisterOnHierarchyChanged)(HookId hookId, HierarchyChangedCallback cb, void* userData);
+
+    // ===== Batch 8: Additional Context Menus =====
+
+    /** @brief Add item to scene tab context menu (right-click on scene tabs). */
+    void (*AddSceneTabContextItem)(HookId hookId, const char* itemPath, MenuCallback callback, void* userData);
+
+    /** @brief Add item to debug log context menu. */
+    void (*AddDebugLogContextItem)(HookId hookId, const char* itemPath, MenuCallback callback, void* userData);
+
+    /** @brief Add item to the import menu. */
+    void (*AddImportMenuItem)(HookId hookId, const char* itemPath, MenuCallback callback, void* userData);
+
+    /** @brief Add item to the addons menu. */
+    void (*AddAddonsMenuItem)(HookId hookId, const char* itemPath, MenuCallback callback, void* userData);
+
+    /**
+     * @brief Add a custom play target to the play dropdown.
+     * @param hookId Unique identifier for this hook
+     * @param targetName Display name for the target
+     * @param iconText Icon text for the target button
+     * @param callback Function called when this target is selected and play is pressed
+     * @param userData User data passed to callback
+     */
+    void (*AddPlayTarget)(HookId hookId, const char* targetName, const char* iconText, PlayTargetCallback callback, void* userData);
+
+    /** @brief Remove a custom play target. */
+    void (*RemovePlayTarget)(HookId hookId, const char* targetName);
+
+    // ===== Batch 9: Drag-Drop Enhancement & Asset Pipeline =====
+
+    /**
+     * @brief Register a custom drag-drop handler.
+     * @param hookId Unique identifier for this hook
+     * @param targetArea Target area: "Viewport", "Hierarchy", "AssetBrowser", "Inspector"
+     * @param handler Function called when a drop occurs
+     * @param userData User data passed to handler
+     */
+    void (*RegisterDragDropHandler)(HookId hookId, const char* targetArea, DragDropHandlerCallback handler, void* userData);
+
+    /**
+     * @brief Register a custom asset importer for a file extension.
+     * @param hookId Unique identifier for this hook
+     * @param extension File extension to handle (e.g., ".fbx")
+     * @param importFunc Function called to import the file
+     * @param userData User data passed to importFunc
+     */
+    void (*RegisterAssetImporter)(HookId hookId, const char* extension, AssetImportCallback importFunc, void* userData);
+
+    /** @brief Unregister a custom asset importer. */
+    void (*UnregisterAssetImporter)(HookId hookId, const char* extension);
+
+    /** @brief Register a pre-asset-import hook. Return false from callback to cancel. */
+    void (*RegisterOnPreAssetImport)(HookId hookId, PreImportCallback cb, void* userData);
+
+    /** @brief Register a post-asset-import hook. */
+    void (*RegisterOnPostAssetImport)(HookId hookId, StringEventCallback cb, void* userData);
+
+    // ===== Batch 10: Build Pipeline & Editor State =====
+
+    /** @brief Register a pre-build hook. Return false from callback to cancel. */
+    void (*RegisterOnPreBuild)(HookId hookId, PreBuildCallback cb, void* userData);
+
+    /** @brief Register a post-build hook. */
+    void (*RegisterOnPostBuild)(HookId hookId, PackageFinishedCallback cb, void* userData);
+
+    /** @brief Register callback for editor mode changes (Scene/2D/3D/Paint). */
+    void (*RegisterOnEditorModeChanged)(HookId hookId, EditorModeCallback cb, void* userData);
+
+    /**
+     * @brief Register a custom gizmo tool (adds to Translate/Rotate/Scale toolbar).
+     * @param hookId Unique identifier for this hook
+     * @param toolName Unique name for the tool
+     * @param iconText Icon character for toolbar button
+     * @param tooltip Tooltip text
+     * @param drawFunc Function called when tool is active and a node is selected
+     * @param userData User data passed to drawFunc
+     */
+    void (*RegisterGizmoTool)(
+        HookId hookId,
+        const char* toolName,
+        const char* iconText,
+        const char* tooltip,
+        GizmoToolDrawCallback drawFunc,
+        void* userData
+    );
+
+    /** @brief Unregister a custom gizmo tool. */
+    void (*UnregisterGizmoTool)(HookId hookId, const char* toolName);
 
     // ===== Cleanup =====
 

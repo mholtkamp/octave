@@ -159,34 +159,29 @@ void ScriptEditorWindow::DrawContent()
     }
 
     // --- Toolbar ---
-    if (ImGui::Button("New"))
-    {
+    if (ImGui::Button(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX "##ScriptNew"))
         DoNew();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("New (Ctrl+N)");
     ImGui::SameLine();
 
-    if (ImGui::Button("Open"))
-    {
+    if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP "##ScriptOpen"))
         DoOpen();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Open (Ctrl+O)");
     ImGui::SameLine();
 
-    if (ImGui::Button("Save"))
-    {
+    if (ImGui::Button(ICON_MATERIAL_SYMBOLS_SAVE_SHARP "##ScriptSave"))
         DoSave();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Save (Ctrl+S)");
     ImGui::SameLine();
 
-    if (ImGui::Button("Save As"))
-    {
+    if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FILE_COPY_SHARP "##ScriptSaveAs"))
         DoSaveAs();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Save As");
     ImGui::SameLine();
 
-    if (ImGui::Button("Close"))
-    {
+    if (ImGui::Button(ICON_DASHICONS_NO_ALT "##ScriptClose"))
         DoCloseCurrentBuffer();
-    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Close");
 
     // Recent files dropdown
     ImGui::SameLine();
@@ -251,9 +246,10 @@ void ScriptEditorWindow::DrawContent()
             NVec2f(cursorPos.x + regionAvail.x, cursorPos.y + regionAvail.y));
         zep->Display();
 
-        // Invisible button to capture input for Zep
+        // Invisible button to capture click/keyboard input for Zep
         ImGui::InvisibleButton("##ZepInput", regionAvail);
-        if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+        bool zepHovered = ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+        if (ImGui::IsItemActive() || zepHovered)
         {
             zep->HandleInput();
 
