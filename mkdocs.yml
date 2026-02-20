@@ -33,6 +33,12 @@ nav:
       - Mesh Instancing: Development/MeshInstancing.md
       - Packaging Flow: Development/PackagingFlow.md
       - Themes / CSS: Development/ThemesCss.md
+      - Timeline:
+          - Overview: Development/Timeline/Overview.md
+          - TimelinePlayer: Development/Timeline/TimelinePlayer.md
+          - Tracks and Clips: Development/Timeline/TracksAndClips.md
+          - Lua API: Development/Timeline/LuaAPI.md
+          - Creating Custom Tracks: Development/Timeline/CreatingCustomTracks.md
       - Native Addons:
           - Overview: Development/NativeAddon/NativeAddon.md
           - General Examples:
