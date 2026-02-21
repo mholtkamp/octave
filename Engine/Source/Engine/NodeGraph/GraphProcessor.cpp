@@ -102,6 +102,23 @@ void GraphProcessor::Evaluate(NodeGraph* graph, const char* eventName)
             PropagateExecutionOutputs(graph, node);
         }
     }
+
+    // Accumulate triggered execution output pins for editor visualization.
+    // Uses insert (not clear+insert) so multiple FireEvent calls per frame all contribute.
+    for (uint32_t i = 0; i < mEvaluationOrder.size(); ++i)
+    {
+        GraphNode* node = graph->FindNode(mEvaluationOrder[i]);
+        if (node == nullptr)
+            continue;
+        for (uint32_t j = 0; j < node->GetNumOutputPins(); ++j)
+        {
+            const GraphPin& pin = node->GetOutputPins()[j];
+            if (pin.mDataType == DatumType::Execution && pin.mExecutionTriggered)
+            {
+                graph->mExecutedPinIds.insert(pin.mId);
+            }
+        }
+    }
 }
 
 void GraphProcessor::TopologicalSort(NodeGraph* graph)

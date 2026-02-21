@@ -17,6 +17,9 @@
 #include "NodeGraph/Nodes/InputNodes.h"
 #include "NodeGraph/Nodes/FunctionNodes.h"
 #include "AssetManager.h"
+#include "Engine.h"
+#include "World.h"
+#include "Nodes/NodeGraphPlayer.h"
 #include "Log.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -26,6 +29,7 @@
 #include <cctype>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace ed = ax::NodeEditor;
@@ -59,6 +63,11 @@ static bool sRenamingFunction = false;
 static int32_t sRenamingIndex = -1;
 static char sRenameBuffer[128] = {};
 static char sNodeSearchBuffer[128] = {};
+
+// Execution flash feedback
+static std::unordered_map<GraphNodeId, double> sNodeFlashTimes;
+static const float kFlashDuration = 0.4f;
+static NodeGraph* sRuntimeGraph = nullptr; // Points to active NodeGraphPlayer's runtime graph during PIE
 
 static ed::EditorContext* CreateNewEditorContext()
 {
@@ -316,6 +325,67 @@ static void BeginColumns()  { ImGui::BeginGroup(); }
 static void NextColumn()    { ImGui::EndGroup(); ImGui::SameLine(0.0f, kMiddleGap); ImGui::BeginGroup(); }
 static void EndColumns()    { ImGui::EndGroup(); }
 
+static NodeGraph* FindRuntimeGraph()
+{
+    if (sEditedAsset == nullptr)
+        return nullptr;
+
+    World* world = GetWorld(0);
+    if (world == nullptr)
+        return nullptr;
+
+    std::vector<Node*> nodes = world->GatherNodes();
+    for (uint32_t i = 0; i < nodes.size(); ++i)
+    {
+        NodeGraphPlayer* player = nodes[i]->As<NodeGraphPlayer>();
+        if (player != nullptr &&
+            player->GetNodeGraphAsset() == sEditedAsset &&
+            player->IsPlaying())
+        {
+            return player->GetRuntimeGraph();
+        }
+    }
+
+    return nullptr;
+}
+
+static void RecordExecutionFlash(NodeGraph& graph)
+{
+    double currentTime = ImGui::GetTime();
+
+    // Erase stale entries
+    for (auto it = sNodeFlashTimes.begin(); it != sNodeFlashTimes.end(); )
+    {
+        if (currentTime - it->second > kFlashDuration)
+            it = sNodeFlashTimes.erase(it);
+        else
+            ++it;
+    }
+
+    if (graph.mExecutedPinIds.empty())
+        return;
+
+    // Record flash for nodes that own any triggered execution pin
+    const std::vector<GraphNode*>& nodes = graph.GetNodes();
+    for (uint32_t i = 0; i < nodes.size(); ++i)
+    {
+        GraphNode* node = nodes[i];
+        for (uint32_t j = 0; j < node->GetNumOutputPins(); ++j)
+        {
+            const GraphPin& pin = node->GetOutputPins()[j];
+            if (pin.mDataType == DatumType::Execution &&
+                graph.mExecutedPinIds.count(pin.mId))
+            {
+                sNodeFlashTimes[node->GetId()] = currentTime;
+                break;
+            }
+        }
+    }
+
+    // Clear so it re-accumulates next frame
+    graph.mExecutedPinIds.clear();
+}
+
 static void DrawNodes(NodeGraph& graph)
 {
     const std::vector<GraphNode*>& nodes = graph.GetNodes();
@@ -325,6 +395,20 @@ static void DrawNodes(NodeGraph& graph)
         GraphNode* node = nodes[i];
         glm::vec4 color = node->GetNodeColor();
         ImColor headerColor(color.x, color.y, color.z, color.w);
+
+        // Flash node border if recently executed
+        bool flashing = false;
+        auto flashIt = sNodeFlashTimes.find(node->GetId());
+        if (flashIt != sNodeFlashTimes.end())
+        {
+            float elapsed = (float)(ImGui::GetTime() - flashIt->second);
+            float alpha = 1.0f - (elapsed / kFlashDuration);
+            if (alpha > 0.0f)
+            {
+                ed::PushStyleColor(ed::StyleColor_NodeBorder, ImVec4(1.0f, 0.7f, 0.2f, alpha));
+                flashing = true;
+            }
+        }
 
         ed::BeginNode(MakeNodeId(node->GetId()));
 
@@ -460,6 +544,11 @@ static void DrawNodes(NodeGraph& graph)
         EndColumns();
 
         ed::EndNode();
+
+        if (flashing)
+        {
+            ed::PopStyleColor();
+        }
     }
 }
 
@@ -482,6 +571,21 @@ static void DrawLinks(NodeGraph& graph)
             MakePinId(links[i].mInputPinId),
             color,
             2.0f);
+
+        // Animate flow on active execution links
+        if (outputPin != nullptr && outputPin->mDataType == DatumType::Execution)
+        {
+            // Check ephemeral flag (preview mode) or persistent set (PIE)
+            bool triggered = outputPin->mExecutionTriggered;
+            if (!triggered && sRuntimeGraph != nullptr)
+            {
+                triggered = sRuntimeGraph->mExecutedPinIds.count(links[i].mOutputPinId) > 0;
+            }
+            if (triggered)
+            {
+                ed::Flow(MakeLinkId(links[i].mId));
+            }
+        }
     }
 }
 
@@ -903,6 +1007,12 @@ static void DrawContextMenu(NodeGraph& graph)
         sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
         ImGui::OpenPopup("Create Node");
     }
+    // Shift+A shortcut to open Create Node menu (Blender-style)
+    else if (ImGui::IsKeyPressed(ImGuiKey_A) && ImGui::GetIO().KeyShift && !ImGui::IsAnyItemActive())
+    {
+        sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
+        ImGui::OpenPopup("Create Node");
+    }
     ed::Resume();
 
     // Draw popups (must be inside Suspend/Resume)
@@ -957,12 +1067,16 @@ static void DrawContextMenu(NodeGraph& graph)
                     if (nameLower.find(searchLower) != std::string::npos ||
                         catLower.find(searchLower) != std::string::npos)
                     {
-                        char label[256];
-                        snprintf(label, sizeof(label), "%s  [%s]", nodeTypes[i].mTypeName.c_str(), nodeTypes[i].mCategory.c_str());
-                        if (ImGui::MenuItem(label))
+                        ImGui::PushID((int)i);
+                        if (ImGui::Selectable(nodeTypes[i].mTypeName.c_str()))
                         {
                             AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
+                            ImGui::CloseCurrentPopup();
                         }
+                        // Category hint on the same line
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("[%s]", nodeTypes[i].mCategory.c_str());
+                        ImGui::PopID();
                     }
                 }
 
@@ -980,12 +1094,15 @@ static void DrawContextMenu(NodeGraph& graph)
 
                             if (fnameLower.find(searchLower) != std::string::npos)
                             {
-                                char label[256];
-                                snprintf(label, sizeof(label), "%s  [Function]", fg->GetGraphName().c_str());
-                                if (ImGui::MenuItem(label))
+                                ImGui::PushID((int)(nodeTypes.size() + i));
+                                if (ImGui::Selectable(fg->GetGraphName().c_str()))
                                 {
                                     AddFunctionCallNode(graph, fg->GetGraphName());
+                                    ImGui::CloseCurrentPopup();
                                 }
+                                ImGui::SameLine();
+                                ImGui::TextDisabled("[Function]");
+                                ImGui::PopID();
                             }
                         }
                     }
@@ -1390,11 +1507,37 @@ void DrawNodeGraphContent()
 
     if (ImGui::Checkbox("Preview", &sPreviewEnabled))
     {
+        if (!sPreviewEnabled)
+        {
+            sNodeFlashTimes.clear();
+        }
     }
 
     if (sPreviewEnabled)
     {
-        sProcessor.Evaluate(&graph);
+        // Collect unique event names so execution chains actually fire during preview
+        std::unordered_set<std::string> previewEvents;
+        const std::vector<GraphNode*>& allNodes = graph.GetNodes();
+        for (uint32_t i = 0; i < allNodes.size(); ++i)
+        {
+            if (allNodes[i]->IsEventNode())
+            {
+                previewEvents.insert(allNodes[i]->GetEventName());
+            }
+        }
+
+        if (previewEvents.empty())
+        {
+            sProcessor.Evaluate(&graph);
+        }
+        else
+        {
+            for (const auto& evt : previewEvents)
+            {
+                sProcessor.Evaluate(&graph, evt.c_str());
+            }
+        }
+        RecordExecutionFlash(graph);
 
         // If owner is a MaterialLite, apply graph values to material params
         if (sEditedOwner != nullptr)
@@ -1416,6 +1559,17 @@ void DrawNodeGraphContent()
                     }
                 }
             }
+        }
+    }
+
+    // During Play In Editor, read execution state from the runtime graph
+    sRuntimeGraph = nullptr;
+    if (!sPreviewEnabled && IsPlayingInEditor())
+    {
+        sRuntimeGraph = FindRuntimeGraph();
+        if (sRuntimeGraph != nullptr)
+        {
+            RecordExecutionFlash(*sRuntimeGraph);
         }
     }
 

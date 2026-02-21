@@ -6,6 +6,7 @@
 #include "NodeGraph/GraphPin.h"
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 class Asset;
@@ -80,6 +81,9 @@ public:
     // Read output node's computed values after evaluation
     GraphNode* FindOutputNode() const;
     const Datum& GetOutputValue(uint32_t pinIndex) const;
+
+    // Execution tracking — accumulated by GraphProcessor, read/cleared by editor
+    std::unordered_set<GraphPinId> mExecutedPinIds;
 
 private:
 
