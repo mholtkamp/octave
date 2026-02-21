@@ -7,8 +7,7 @@
 ---@field h number
 ---@field width number
 ---@field height number
-local Rect = {}
-Rect = Rect
+Rect = {}
 
 ---@return any
 function Rect:Create() end

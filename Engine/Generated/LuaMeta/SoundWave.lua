@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class SoundWave : Asset
-local SoundWave = {}
+SoundWave = {}
 
 ---@return number
 function SoundWave:GetVolumeMultiplier() end

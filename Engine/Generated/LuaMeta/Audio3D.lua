@@ -1,10 +1,10 @@
 --- @meta
 
 ---@class Audio3D : Node3D
-local Audio3D = {}
+Audio3D = {}
 
----@param arg1? SoundWave
-function Audio3D:SetSoundWave(arg1) end
+---@param wave? SoundWave
+function Audio3D:SetSoundWave(wave) end
 
 ---@return any
 function Audio3D:GetSoundWave() end
@@ -39,14 +39,14 @@ function Audio3D:SetStartOffset(value) end
 ---@return number
 function Audio3D:GetStartOffset() end
 
----@param arg1 integer
-function Audio3D:SetPriority(arg1) end
+---@param value integer
+function Audio3D:SetPriority(value) end
 
 ---@return integer
 function Audio3D:GetPriority() end
 
----@param arg1 integer
-function Audio3D:SetAttenuationFunc(arg1) end
+---@param value integer
+function Audio3D:SetAttenuationFunc(value) end
 
 ---@return integer
 function Audio3D:GetAttenuationFunc() end

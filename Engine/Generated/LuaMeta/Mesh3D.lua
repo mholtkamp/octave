@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Mesh3D : Primitive3D
-local Mesh3D = {}
+Mesh3D = {}
 
 ---@return any
 function Mesh3D:GetMaterial() end
@@ -9,8 +9,8 @@ function Mesh3D:GetMaterial() end
 ---@return any
 function Mesh3D:GetMaterialOverride() end
 
----@param arg1? Material
-function Mesh3D:SetMaterialOverride(arg1) end
+---@param material? Material
+function Mesh3D:SetMaterialOverride(material) end
 
 ---@return any
 function Mesh3D:InstantiateMaterial() end

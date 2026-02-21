@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Font : Asset
-local Font = {}
+Font = {}
 
 ---@return integer
 function Font:GetSize() end

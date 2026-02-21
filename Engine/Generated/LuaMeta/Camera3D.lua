@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Camera3D : Node3D
-local Camera3D = {}
+Camera3D = {}
 
 ---@param persp boolean
 function Camera3D:EnablePerspective(persp) end
@@ -53,6 +53,6 @@ function Camera3D:ScreenToWorldPosition(x, y) end
 
 ---@param x integer
 ---@param y integer
----@param arg3? integer
+---@param colMask? integer
 ---@return Vector, Node
-function Camera3D:TraceScreenToWorld(x, y, arg3) end
+function Camera3D:TraceScreenToWorld(x, y, colMask) end

@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Timeline : Asset
-local Timeline = {}
+Timeline = {}
 
 ---@return number
 function Timeline:GetDuration() end

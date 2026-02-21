@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "Log.h"
 #include "Nodes/Node.h"
+#include "Nodes/3D/Camera3d.h"
 #include "Assets/Scene.h"
 #include "EditorState.h"
 
@@ -173,6 +174,23 @@ Scene* SecondScreenPreview::FindSceneForScreen(uint8_t targetScreen)
     return nullptr;
 }
 
+static Camera3D* FindCameraForScreen(World* world, uint8_t targetScreen)
+{
+    if (world == nullptr)
+        return nullptr;
+
+    std::vector<Camera3D*> cameras;
+    world->FindNodes(cameras);
+
+    for (Camera3D* cam : cameras)
+    {
+        if (cam->GetTargetScreen() == targetScreen)
+            return cam;
+    }
+
+    return nullptr;
+}
+
 void SecondScreenPreview::UpdateScreen(ScreenState& screen, uint8_t targetScreen, float deltaTime)
 {
     Scene* scene = FindSceneForScreen(targetScreen);
@@ -201,6 +219,10 @@ void SecondScreenPreview::Update(float deltaTime)
     if (!mEnabled)
         return;
 
+    // During PIE, the game world is already being updated by the engine.
+    if (IsPlayingInEditor())
+        return;
+
     UpdateScreen(mTop, 0, deltaTime);
     UpdateScreen(mBottom, 1, deltaTime);
 }
@@ -217,20 +239,49 @@ void SecondScreenPreview::Render()
     uint32_t prevVpW = edState->mViewportWidth;
     uint32_t prevVpH = edState->mViewportHeight;
 
-    if (mTop.mWorld != nullptr && mTop.mColorTarget != nullptr)
+    if (IsPlayingInEditor())
     {
-        edState->mViewportWidth = kTopWidth;
-        edState->mViewportHeight = kTopHeight;
-        Renderer::Get()->RenderSecondScreen(mTop.mWorld, mTop.mColorTarget, mTop.mDepthTarget,
-                                            kTopWidth, kTopHeight);
-    }
+        // During PIE, render the live game world with target-screen cameras
+        World* gameWorld = GetWorld(0);
+        if (gameWorld != nullptr)
+        {
+            if (mTop.mColorTarget != nullptr)
+            {
+                Camera3D* topCam = FindCameraForScreen(gameWorld, 0);
+                edState->mViewportWidth = kTopWidth;
+                edState->mViewportHeight = kTopHeight;
+                Renderer::Get()->RenderSecondScreen(gameWorld, mTop.mColorTarget, mTop.mDepthTarget,
+                                                     kTopWidth, kTopHeight, topCam);
+            }
 
-    if (mBottom.mWorld != nullptr && mBottom.mColorTarget != nullptr)
+            if (mBottom.mColorTarget != nullptr)
+            {
+                Camera3D* botCam = FindCameraForScreen(gameWorld, 1);
+                edState->mViewportWidth = kBottomWidth;
+                edState->mViewportHeight = kBottomHeight;
+                Renderer::Get()->RenderSecondScreen(gameWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
+                                                     kBottomWidth, kBottomHeight, botCam);
+            }
+        }
+    }
+    else
     {
-        edState->mViewportWidth = kBottomWidth;
-        edState->mViewportHeight = kBottomHeight;
-        Renderer::Get()->RenderSecondScreen(mBottom.mWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
-                                            kBottomWidth, kBottomHeight);
+        // Normal editor preview — render from separate preview worlds
+        if (mTop.mWorld != nullptr && mTop.mColorTarget != nullptr)
+        {
+            edState->mViewportWidth = kTopWidth;
+            edState->mViewportHeight = kTopHeight;
+            Renderer::Get()->RenderSecondScreen(mTop.mWorld, mTop.mColorTarget, mTop.mDepthTarget,
+                                                kTopWidth, kTopHeight);
+        }
+
+        if (mBottom.mWorld != nullptr && mBottom.mColorTarget != nullptr)
+        {
+            edState->mViewportWidth = kBottomWidth;
+            edState->mViewportHeight = kBottomHeight;
+            Renderer::Get()->RenderSecondScreen(mBottom.mWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
+                                                kBottomWidth, kBottomHeight);
+        }
     }
 
     // Restore original viewport dimensions

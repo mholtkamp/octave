@@ -28,3 +28,18 @@ function AssetManager.UnloadAsset(name) end
 ---@param assetNameStr string
 ---@return any
 function AssetManager.CreateAndRegisterAsset(assetTypeStr, assetDirStr, assetNameStr) end
+
+---@type function
+RefSweep = AssetManager.RefSweep
+
+---@type function
+GetAsset = AssetManager.GetAsset
+
+---@type function
+LoadAsset = AssetManager.LoadAsset
+
+---@type function
+AsyncLoadAsset = AssetManager.AsyncLoadAsset
+
+---@type function
+UnloadAsset = AssetManager.UnloadAsset

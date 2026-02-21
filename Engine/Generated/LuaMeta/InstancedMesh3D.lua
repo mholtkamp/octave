@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class InstancedMesh3D : StaticMesh3D
-local InstancedMesh3D = {}
+InstancedMesh3D = {}
 
 ---@return integer
 function InstancedMesh3D:GetNumInstances() end

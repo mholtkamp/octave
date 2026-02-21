@@ -1,8 +1,7 @@
 --- @meta
 
 ---@class World
-local World = {}
-World = World
+World = {}
 
 ---@return Node
 function World:GetActiveCamera() end
@@ -13,18 +12,18 @@ function World:GetAudioReceiver() end
 ---@param cameraComp Camera3D
 function World:SetActiveCamera(cameraComp) end
 
----@param arg1? Node3D
-function World:SetAudioReceiver(arg1) end
+---@param transformComp? Node3D
+function World:SetAudioReceiver(transformComp) end
 
 ---@param nodeClass string
----@param arg2? Vector
+---@param position? Vector
 ---@return Node
-function World:SpawnNode(nodeClass, arg2) end
+function World:SpawnNode(nodeClass, position) end
 
 ---@param scene Scene
----@param arg2? Vector
+---@param position? Vector
 ---@return Node
-function World:SpawnScene(scene, arg2) end
+function World:SpawnScene(scene, position) end
 
 ---@return Node
 function World:GetRootNode() end
@@ -72,29 +71,29 @@ function World:GetGravity() end
 
 ---@param start Vector
 ---@param end Vector
----@param arg3 integer
+---@param colMask integer
 ---@param arg4 table
----@param arg5 boolean
+---@param ignorePureOverlap boolean
 ---@return number
-function World:RayTest(start, end, arg3, arg4, arg5) end
+function World:RayTest(start, end, colMask, arg4, ignorePureOverlap) end
 
 ---@param start Vector
 ---@param end Vector
----@param arg3 integer
----@param arg4 boolean
+---@param colMask integer
+---@param ignorePureOverlap boolean
 ---@return integer
-function World:RayTestMulti(start, end, arg3, arg4) end
+function World:RayTestMulti(start, end, colMask, ignorePureOverlap) end
 
 ---@param primComp Primitive3D
 ---@param start Vector
 ---@param end Vector
----@param arg4 integer
+---@param colMask integer
 ---@return number
-function World:SweepTest(primComp, start, end, arg4) end
+function World:SweepTest(primComp, start, end, colMask) end
 
 ---@param newScene string
----@param arg2? boolean
-function World:LoadScene(newScene, arg2) end
+---@param instant? boolean
+function World:LoadScene(newScene, instant) end
 
 ---@param newRoot Node
 function World:QueueRootNode(newRoot) end

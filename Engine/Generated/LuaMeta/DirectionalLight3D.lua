@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class DirectionalLight3D : Light3D
-local DirectionalLight3D = {}
+DirectionalLight3D = {}
 
 ---@return Vector
 function DirectionalLight3D:GetDirection() end

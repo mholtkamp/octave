@@ -110,6 +110,7 @@ struct EditorState
     bool mMouseNeedsRecenter = false;
     bool mUiEnabled = true;
     bool mPlayInEditor = false;
+    bool mPlayInGameWindow = false;
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
@@ -170,7 +171,7 @@ struct EditorState
     bool mShowGamePreview = false;
 
     // Play target (shared between viewport toolbar and Game Preview)
-    int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=Dolphin, 2=Azahar, 3=Standalone, 4=Send3dsLink
+    int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=PlayFullScreen, 2=Dolphin, 3=Azahar, 4=Standalone, 5=Send3dsLink
 
     // Node Graph Panel state
     bool mShowNodeGraphPanel = false;

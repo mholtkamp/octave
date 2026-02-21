@@ -110,7 +110,7 @@ void EditorState::Shutdown()
 void EditorState::Update(float deltaTime)
 {
     // TODO-NODE: Handle Widgets/2D? Maybe split modes to 3D and 2D
-    if (!mPlayInEditor || mEjected)
+    if (!mPlayInEditor || mEjected || mPlayInGameWindow)
     {
         switch (mMode)
         {
@@ -131,7 +131,7 @@ void EditorState::Update(float deltaTime)
         }
     }
 
-    if (mPlayInEditor && !mEjected)
+    if (mPlayInEditor && !mEjected && !mPlayInGameWindow)
     {
         mViewportX = 0;
         mViewportY = 0;
@@ -583,8 +583,11 @@ void EditorState::BeginPlayInEditor()
     GetWorld(0)->Clear();
     OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
 
-    ShowEditorUi(false);
-    Renderer::Get()->EnableProxyRendering(false);
+    if (!mPlayInGameWindow)
+    {
+        ShowEditorUi(false);
+        Renderer::Get()->EnableProxyRendering(false);
+    }
 
     SetEditorMode(EditorMode::Scene);
 
@@ -645,11 +648,15 @@ void EditorState::EndPlayInEditor()
 
     ActionManager::Get()->ResetUndoRedo();
 
-    ShowEditorUi(true);
-    Renderer::Get()->EnableProxyRendering(true);
+    if (!mPlayInGameWindow)
+    {
+        ShowEditorUi(true);
+        Renderer::Get()->EnableProxyRendering(true);
+    }
     Renderer::Get()->SetClearColor(mSavedEditorClearColor);
 
     mPlayInEditor = false;
+    mPlayInGameWindow = false;
     mEjected = false;
     mPaused = false;
     mEndPieAtEndOfFrame = false;
@@ -672,7 +679,8 @@ void EditorState::EndPlayInEditor()
 void EditorState::EjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        !mEjected)
+        !mEjected &&
+        !mPlayInGameWindow)
     {
         SetSelectedNode(nullptr);
 
@@ -702,7 +710,8 @@ void EditorState::EjectPlayInEditor()
 void EditorState::InjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        mEjected)
+        mEjected &&
+        !mPlayInGameWindow)
     {
         SetSelectedNode(nullptr);
 

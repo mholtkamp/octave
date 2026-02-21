@@ -1,13 +1,13 @@
 --- @meta
 
 ---@class SkeletalMesh : Asset
-local SkeletalMesh = {}
+SkeletalMesh = {}
 
 ---@return any
 function SkeletalMesh:GetMaterial() end
 
----@param arg1? Material
-function SkeletalMesh:SetMaterial(arg1) end
+---@param material? Material
+function SkeletalMesh:SetMaterial(material) end
 
 ---@return integer
 function SkeletalMesh:GetNumIndices() end

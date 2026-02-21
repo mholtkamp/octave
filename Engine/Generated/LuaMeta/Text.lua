@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Text : Widget
-local Text = {}
+Text = {}
 
 ---@param font Font
 function Text:SetFont(font) end

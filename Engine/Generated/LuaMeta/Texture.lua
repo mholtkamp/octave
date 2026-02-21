@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Texture : Asset
-local Texture = {}
+Texture = {}
 
 ---@return boolean
 function Texture:IsMipmapped() end

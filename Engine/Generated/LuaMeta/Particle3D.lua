@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Particle3D : Primitive3D
-local Particle3D = {}
+Particle3D = {}
 
 function Particle3D:Reset() end
 
@@ -20,14 +20,14 @@ function Particle3D:IsSimulationEnabled() end
 ---@return number
 function Particle3D:GetElapsedTime() end
 
----@param arg1? ParticleSystem
-function Particle3D:SetParticleSystem(arg1) end
+---@param system? ParticleSystem
+function Particle3D:SetParticleSystem(system) end
 
 ---@return any
 function Particle3D:GetParticleSystem() end
 
----@param arg1? Material
-function Particle3D:SetMaterialOverride(arg1) end
+---@param material? Material
+function Particle3D:SetMaterialOverride(material) end
 
 ---@return any
 function Particle3D:GetMaterial() end
@@ -63,8 +63,8 @@ function Particle3D:EnableAutoEmit(value) end
 ---@return boolean
 function Particle3D:IsAutoEmitEnabled() end
 
----@param arg1 integer
-function Particle3D:SetParticleOrientation(arg1) end
+---@param value integer
+function Particle3D:SetParticleOrientation(value) end
 
 ---@return integer
 function Particle3D:GetParticleOrientation() end

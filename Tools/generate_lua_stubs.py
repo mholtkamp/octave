@@ -137,6 +137,7 @@ class TypeInfo:
     operators: list = field(default_factory=list)  # list[(op, desc)]
     source_file: str = ""
     extra_globals: list = field(default_factory=list)  # list[(name, target)]
+    table_aliases: list = field(default_factory=list)  # list[str] - alias global names
 
 
 # ---------------------------------------------------------------------------
@@ -337,8 +338,6 @@ def parse_return_types(body):
     Determine return types from lua_push* calls and *_Lua::Create calls
     just before `return N` statements.
     """
-    returns = []
-
     # Find the return statement(s) - specifically `return N;` where N > 0
     return_match = re.search(r'return\s+(\d+)\s*;', body)
     if not return_match:
@@ -348,38 +347,8 @@ def parse_return_types(body):
     if return_count == 0:
         return []
 
-    # Scan for push/create calls in the body
-    found_returns = []
-
-    # lua_push* calls
-    for push_func, lua_type in PUSH_TYPE_MAP.items():
-        if push_func + '(' in body:
-            found_returns.append(lua_type)
-
-    # *_Lua::Create calls
-    for create_func, lua_type in CREATE_TYPE_MAP.items():
-        if create_func + '(' in body:
-            found_returns.append(lua_type)
-
-    # LuaPushDatum -> table
-    if 'LuaPushDatum(' in body:
-        found_returns.append("table")
-
-    if not found_returns:
-        return ["any"] * return_count
-
-    # If we have exactly the right number, great
-    if len(found_returns) == return_count:
-        return found_returns
-
-    # If we found more, try to be smarter by ordering them by position
-    if len(found_returns) > return_count:
-        return _order_returns_by_position(body, return_count)
-
-    # If we found fewer, pad with any
-    while len(found_returns) < return_count:
-        found_returns.append("any")
-    return found_returns[:return_count]
+    # Always use position-based return type detection for accuracy
+    return _order_returns_by_position(body, return_count)
 
 
 def _order_returns_by_position(body, count):
@@ -503,16 +472,40 @@ def parse_bind_function(source, class_prefix):
 
     # Extra global shortcuts (e.g., lua_pushcfunction + lua_setglobal outside the main table)
     extra_globals = []
-    # Pattern: lua_pushcfunction(L, Xxx_Lua::Func); lua_setglobal(L, "Name");
+    # Pattern: lua_pushcfunction(L, Func); lua_setglobal(L, "Name");
     extra_pattern = re.compile(
-        r'lua_pushcfunction\s*\(\s*L\s*,\s*(\w+::\w+)\s*\)\s*;\s*'
+        r'lua_pushcfunction\s*\(\s*L\s*,\s*([\w:]+)\s*\)\s*;\s*'
         r'lua_setglobal\s*\(\s*L\s*,\s*"(\w+)"\s*\)',
         re.DOTALL
     )
     for m in extra_pattern.finditer(bind_body):
         extra_globals.append((m.group(2), m.group(1)))
 
-    return kind, parent_name, global_name, registrations, extra_globals
+    # Table aliases:
+    # Pattern 1: lua_getglobal(L, "X"); lua_setglobal(L, "Y");
+    # Pattern 2: lua_pushvalue(L, -1); lua_setglobal(L, X_NAME); lua_setglobal(L, "Y");
+    table_aliases = []
+
+    # Pattern 1
+    alias_pattern1 = re.compile(
+        r'lua_getglobal\s*\(\s*L\s*,\s*(?:"(\w+)"|(\w+_LUA_NAME))\s*\)\s*;\s*'
+        r'lua_setglobal\s*\(\s*L\s*,\s*"(\w+)"\s*\)',
+        re.DOTALL
+    )
+    for m in alias_pattern1.finditer(bind_body):
+        table_aliases.append(m.group(3))
+
+    # Pattern 2: pushvalue + two setglobals (second one is the alias)
+    alias_pattern2 = re.compile(
+        r'lua_pushvalue\s*\([^)]+\)\s*;\s*'
+        r'lua_setglobal\s*\(\s*L\s*,\s*(?:"(\w+)"|\w+)\s*\)\s*;\s*'
+        r'lua_setglobal\s*\(\s*L\s*,\s*"(\w+)"\s*\)',
+        re.DOTALL
+    )
+    for m in alias_pattern2.finditer(bind_body):
+        table_aliases.append(m.group(2))
+
+    return kind, parent_name, global_name, registrations, extra_globals, table_aliases
 
 
 def parse_bind_common(source, class_prefix):
@@ -697,9 +690,30 @@ def process_binding_file(filepath, name_map, check_map, verbose=False):
         print(f"  Processing {basename} (class: {class_prefix})")
 
     # Parse the Bind() function
-    kind, parent_const, global_const, registrations, extra_globals = parse_bind_function(source, class_prefix)
+    kind, parent_const, global_const, registrations, extra_globals, table_aliases = parse_bind_function(source, class_prefix)
     if kind is None:
         return [], parse_enum_functions(source)
+
+    # Extract all function bodies once (reused for method analysis too)
+    all_bodies = extract_function_bodies(source)
+
+    # Scan helper Bind* functions (e.g. BindGlobalFunctions) for extra globals
+    for func_key, func_body in all_bodies.items():
+        # Skip the main Bind() and BindCommon() which are already handled
+        if func_key == f"{class_prefix}::Bind" or func_key == f"{class_prefix}::BindCommon":
+            continue
+        # Only look at Bind* helper functions
+        func_short = func_key.split('::')[-1] if '::' in func_key else func_key
+        if not func_short.startswith('Bind'):
+            continue
+        # Scan for pushcfunction + setglobal pairs
+        helper_pattern = re.compile(
+            r'lua_pushcfunction\s*\(\s*L\s*,\s*([\w:]+)\s*\)\s*;\s*'
+            r'lua_setglobal\s*\(\s*L\s*,\s*"(\w+)"\s*\)',
+            re.DOTALL
+        )
+        for m in helper_pattern.finditer(func_body):
+            extra_globals.append((m.group(2), m.group(1)))
 
     # Also parse BindCommon if it exists
     common_regs = parse_bind_common(source, class_prefix)
@@ -720,9 +734,6 @@ def process_binding_file(filepath, name_map, check_map, verbose=False):
     if global_name is None:
         # Fallback: derive from class prefix
         global_name = class_prefix.replace('_Lua', '')
-
-    # Extract function bodies for method analysis
-    all_bodies = extract_function_bodies(source)
 
     # Determine if methods use self (class or value type)
     is_self_type = kind in ("class", "value")
@@ -774,7 +785,8 @@ def process_binding_file(filepath, name_map, check_map, verbose=False):
         parent=parent_name,
         methods=methods,
         source_file=basename,
-        extra_globals=extra_globals
+        extra_globals=extra_globals,
+        table_aliases=table_aliases
     )
 
     # Add fields for value types
@@ -857,6 +869,11 @@ def generate_module_stub(type_info):
     for global_name, cpp_func in type_info.extra_globals:
         lines.append(f"---@type function")
         lines.append(f"{global_name} = {type_info.lua_name}.{cpp_func.split('::')[-1]}")
+        lines.append(f"")
+
+    # Table aliases (e.g., Math = Maths)
+    for alias in type_info.table_aliases:
+        lines.append(f"{alias} = {type_info.lua_name}")
         lines.append(f"")
 
     return "\n".join(lines)
@@ -977,6 +994,11 @@ def main():
         print(f"Error: Input directory not found: {input_dir}", file=sys.stderr)
         sys.exit(1)
 
+    # Clean and recreate output directory
+    if os.path.isdir(output_dir):
+        for f in os.listdir(output_dir):
+            if f.endswith('.lua'):
+                os.remove(os.path.join(output_dir, f))
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"Input:  {os.path.abspath(input_dir)}")

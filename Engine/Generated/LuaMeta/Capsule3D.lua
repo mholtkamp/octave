@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Capsule3D : Primitive3D
-local Capsule3D = {}
+Capsule3D = {}
 
 ---@return number
 function Capsule3D:GetHeight() end

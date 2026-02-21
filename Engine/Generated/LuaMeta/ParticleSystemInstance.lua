@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class ParticleSystemInstance : ParticleSystem
-local ParticleSystemInstance = {}
+ParticleSystemInstance = {}
 
 ---@return any
 function ParticleSystemInstance:Create() end

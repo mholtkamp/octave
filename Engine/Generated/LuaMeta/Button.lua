@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Button : Widget
-local Button = {}
+Button = {}
 
 function Button:SetSelected() end
 
@@ -30,11 +30,11 @@ function Button:SetTextString(value) end
 ---@return string
 function Button:GetTextString() end
 
----@param arg1? Texture
----@param arg2? Texture
----@param arg3? Texture
----@param arg4? Texture
-function Button:SetStateTextures(arg1, arg2, arg3, arg4) end
+---@param normal? Texture
+---@param hovered? Texture
+---@param pressed? Texture
+---@param locked? Texture
+function Button:SetStateTextures(normal, hovered, pressed, locked) end
 
 ---@param normal Vector
 ---@param hovered Vector
@@ -45,7 +45,7 @@ function Button:SetStateColors(normal, hovered, pressed, locked) end
 ---@return any, any, any, any
 function Button:GetStateTextures() end
 
----@return Vector, any, any, any
+---@return Vector, Vector, Vector, Vector
 function Button:GetStateColors() end
 
 ---@param arg1 Node
@@ -54,7 +54,7 @@ function Button:GetStateColors() end
 ---@param arg4 Node
 function Button:SetNavigation(arg1, arg2, arg3, arg4) end
 
----@return Node, any, any, any
+---@return Node, Node, Node, Node
 function Button:GetNavigation() end
 
 ---@return Node

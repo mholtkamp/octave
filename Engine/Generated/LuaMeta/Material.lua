@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Material : Asset
-local Material = {}
+Material = {}
 
 ---@return boolean
 function Material:IsBase() end

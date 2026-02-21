@@ -1,10 +1,10 @@
 --- @meta
 
 ---@class Quad : Widget
-local Quad = {}
+Quad = {}
 
----@param arg1? Texture
-function Quad:SetTexture(arg1) end
+---@param texture? Texture
+function Quad:SetTexture(texture) end
 
 ---@return any
 function Quad:GetTexture() end

@@ -37,46 +37,46 @@ function Input.IsMouseButtonJustDown(mouse) end
 ---@return boolean
 function Input.IsMouseButtonJustUp(mouse) end
 
----@return integer, any
+---@return integer, integer
 function Input.GetMousePosition() end
 
 ---@return integer
 function Input.GetScrollWheelDelta() end
 
----@return integer, any
+---@return integer, integer
 function Input.GetMouseDelta() end
 
 ---@param index integer
 ---@return boolean
 function Input.IsTouchDown(index) end
 
----@param arg1? integer
+---@param index? integer
 ---@return boolean
-function Input.IsPointerJustUp(arg1) end
+function Input.IsPointerJustUp(index) end
 
----@param arg1? integer
+---@param index? integer
 ---@return boolean
-function Input.IsPointerJustDown(arg1) end
+function Input.IsPointerJustDown(index) end
 
----@param arg1? integer
+---@param index? integer
 ---@return boolean
-function Input.IsPointerDown(arg1) end
+function Input.IsPointerDown(index) end
 
----@param arg1? integer
----@return integer, any
-function Input.GetTouchPosition(arg1) end
+---@param index? integer
+---@return integer, integer
+function Input.GetTouchPosition(index) end
 
----@param arg1? integer
----@return number, any
-function Input.GetTouchPositionNormalized(arg1) end
+---@param index? integer
+---@return number, number
+function Input.GetTouchPositionNormalized(index) end
 
----@param arg1? integer
----@return integer, any
-function Input.GetPointerPosition(arg1) end
+---@param index? integer
+---@return integer, integer
+function Input.GetPointerPosition(index) end
 
----@param arg1? integer
----@return number, any
-function Input.GetPointerPositionNormalized(arg1) end
+---@param index? integer
+---@return number, number
+function Input.GetPointerPositionNormalized(index) end
 
 ---@param button integer
 ---@param index? integer
@@ -169,13 +169,13 @@ function Input.IsMousePressed(mouse) end
 ---@return boolean
 function Input.IsMouseReleased(mouse) end
 
----@param arg1? integer
+---@param index? integer
 ---@return boolean
-function Input.IsPointerReleased(arg1) end
+function Input.IsPointerReleased(index) end
 
----@param arg1? integer
+---@param index? integer
 ---@return boolean
-function Input.IsPointerPressed(arg1) end
+function Input.IsPointerPressed(index) end
 
 ---@param button integer
 ---@param index? integer

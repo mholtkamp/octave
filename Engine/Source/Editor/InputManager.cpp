@@ -121,6 +121,8 @@ void InputManager::UpdateHotkeys()
         }
         else if (altDown && IsKeyJustDown(KEY_P))
         {
+            if (GetEditorState()->mPlayTarget == 0) // PlayInEditor (game window)
+                GetEditorState()->mPlayInGameWindow = true;
             GetEditorState()->BeginPlayInEditor();
         }
         else if (ctrlDown && IsKeyJustDown(KEY_S))

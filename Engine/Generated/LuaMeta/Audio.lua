@@ -4,33 +4,33 @@
 Audio = {}
 
 ---@param soundWave SoundWave
----@param arg2? number
----@param arg3? number
----@param arg4? number
----@param arg5? boolean
----@param arg6? integer
-function Audio.PlaySound2D(soundWave, arg2, arg3, arg4, arg5, arg6) end
+---@param volume? number
+---@param pitch? number
+---@param startTime? number
+---@param loop? boolean
+---@param priority? integer
+function Audio.PlaySound2D(soundWave, volume, pitch, startTime, loop, priority) end
 
 ---@param soundWave SoundWave
 ---@param pos Vector
 ---@param innerRadius number
 ---@param outerRadius number
----@param arg5? integer
----@param arg6? number
----@param arg7? number
----@param arg8? number
----@param arg9? boolean
----@param arg10? integer
-function Audio.PlaySound3D(soundWave, pos, innerRadius, outerRadius, arg5, arg6, arg7, arg8, arg9, arg10) end
+---@param attenFunc? integer
+---@param volume? number
+---@param pitch? number
+---@param startTime? number
+---@param loop? boolean
+---@param priority? integer
+function Audio.PlaySound3D(soundWave, pos, innerRadius, outerRadius, attenFunc, volume, pitch, startTime, loop, priority) end
 
 ---@param soundWave SoundWave
 function Audio.StopSounds(soundWave) end
 
 ---@param soundWave SoundWave
 ---@param volume number
----@param arg3 number
----@param arg4 integer
-function Audio.UpdateSound(soundWave, volume, arg3, arg4) end
+---@param pitch number
+---@param priority integer
+function Audio.UpdateSound(soundWave, volume, pitch, priority) end
 
 function Audio.StopAllSounds() end
 

@@ -1,4 +1,4 @@
 --- @meta
 
 ---@class PolyRect : Widget
-local PolyRect = {}
+PolyRect = {}

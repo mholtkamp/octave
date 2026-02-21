@@ -18,8 +18,8 @@ function Script.New() end
 function Script.GarbageCollect() end
 
 ---@param dirStr string
----@param arg2? boolean
-function Script.LoadDirectory(dirStr, arg2) end
+---@param recurse? boolean
+function Script.LoadDirectory(dirStr, recurse) end
 
 ---@param filename string
 function Script.Require(filename) end

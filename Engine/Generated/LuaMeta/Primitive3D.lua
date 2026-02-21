@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Primitive3D : Node3D
-local Primitive3D = {}
+Primitive3D = {}
 
 ---@param enable boolean
 function Primitive3D:EnablePhysics(enable) end
@@ -75,11 +75,11 @@ function Primitive3D:SetLinearFactor(value) end
 ---@param value Vector
 function Primitive3D:SetAngularFactor(value) end
 
----@param arg1 integer
-function Primitive3D:SetCollisionGroup(arg1) end
+---@param value integer
+function Primitive3D:SetCollisionGroup(value) end
 
----@param arg1 integer
-function Primitive3D:SetCollisionMask(arg1) end
+---@param value integer
+function Primitive3D:SetCollisionMask(value) end
 
 ---@return Vector
 function Primitive3D:GetLinearVelocity() end

@@ -1459,7 +1459,8 @@ void Renderer::RenderSelectedGeometry(World* world)
     // Rendering selected geometry while playing looks bad,
     // so just skip rendering selected unless we find a good use-case.
     if (!GetEditorState()->mPlayInEditor ||
-        GetEditorState()->mEjected)
+        GetEditorState()->mEjected ||
+        GetEditorState()->mPlayInGameWindow)
     {
         std::vector<Node*> selectedNodes = GetEditorState()->GetSelectedNodes();
 
@@ -1477,7 +1478,7 @@ void Renderer::RenderSelectedGeometry(World* world)
 
 #if EDITOR
 void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depthTarget,
-                                   uint32_t width, uint32_t height)
+                                   uint32_t width, uint32_t height, Camera3D* cameraOverride)
 {
     if (world == nullptr || colorTarget == nullptr || depthTarget == nullptr)
         return;
@@ -1489,9 +1490,10 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     mCurrentWorld = world;
     mScreenIndex = 1;
 
-    // Find the scene's own camera. Prefer the one marked "Main Camera",
-    // fall back to the first Camera3D found.
-    Camera3D* camera = nullptr;
+    // Use the provided camera override, or find the scene's own camera.
+    // Prefer the one marked "Main Camera", fall back to the first Camera3D found.
+    Camera3D* camera = cameraOverride;
+    if (camera == nullptr)
     {
         std::vector<Camera3D*> cameras;
         world->FindNodes(cameras);
@@ -1853,7 +1855,7 @@ uint32_t Renderer::GetViewportX(int32_t screenIdx)
     OCT_UNUSED(screenIdx);
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportX;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportX;
 #else
     return uint32_t(0);
 #endif
@@ -1864,7 +1866,7 @@ uint32_t Renderer::GetViewportY(int32_t screenIdx)
     OCT_UNUSED(screenIdx);
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportY;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportY;
 #else
     return uint32_t(0);
 #endif
@@ -1880,7 +1882,7 @@ uint32_t Renderer::GetViewportWidth(int32_t screenIdx)
     uint32_t windowWidth = (screenIdx == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
 
 #if EDITOR
-    windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
+    windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowWidth : GetEditorState()->mViewportWidth;
 #endif
 
     windowWidth = glm::max<uint32_t>(windowWidth, 1);
@@ -1897,7 +1899,7 @@ uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
     uint32_t windowHeight = (screenIdx == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
 
 #if EDITOR
-    windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
+    windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowHeight : GetEditorState()->mViewportHeight;
 #endif
 
     windowHeight = glm::max<uint32_t>(windowHeight, 1);

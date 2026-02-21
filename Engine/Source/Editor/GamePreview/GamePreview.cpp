@@ -234,16 +234,11 @@ void GamePreview::Render()
     if (world == nullptr || mColorTarget == nullptr || mDepthTarget == nullptr)
         return;
 
-    // Set camera override to the selected camera
+    // Determine the selected camera to pass as override
     Camera3D* selectedCamera = nullptr;
     if (mSelectedCameraIndex >= 0 && mSelectedCameraIndex < (int32_t)mCachedCameras.size())
     {
         selectedCamera = mCachedCameras[mSelectedCameraIndex];
-    }
-
-    if (selectedCamera != nullptr)
-    {
-        world->SetCameraOverride(selectedCamera);
     }
 
     // Temporarily override the editor viewport dimensions so that
@@ -260,13 +255,12 @@ void GamePreview::Render()
     Renderer::Get()->EnableProxyRendering(mShowGizmos);
 
     Renderer::Get()->RenderSecondScreen(world, mColorTarget, mDepthTarget,
-                                         mCurrentWidth, mCurrentHeight);
+                                         mCurrentWidth, mCurrentHeight, selectedCamera);
 
     // Restore state
     edState->mViewportWidth = prevVpW;
     edState->mViewportHeight = prevVpH;
     Renderer::Get()->EnableProxyRendering(prevProxy);
-    world->SetCameraOverride(nullptr);
 
     // Handle screenshot after render
     if (mScreenshotRequested)
@@ -474,6 +468,7 @@ void GamePreview::DrawPanel()
             }
             else
             {
+                GetEditorState()->mPlayInGameWindow = true;
                 GetEditorState()->BeginPlayInEditor();
             }
         }

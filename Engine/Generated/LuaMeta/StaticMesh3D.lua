@@ -1,10 +1,10 @@
 --- @meta
 
 ---@class StaticMesh3D : Mesh3D
-local StaticMesh3D = {}
+StaticMesh3D = {}
 
----@param arg1? StaticMesh
-function StaticMesh3D:SetStaticMesh(arg1) end
+---@param mesh? StaticMesh
+function StaticMesh3D:SetStaticMesh(mesh) end
 
 ---@return any
 function StaticMesh3D:GetStaticMesh() end

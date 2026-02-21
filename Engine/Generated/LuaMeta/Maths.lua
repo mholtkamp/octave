@@ -143,3 +143,5 @@ function Maths.Wrap(value, start, end) end
 ---@param alpha number
 ---@return number
 function Maths.Mix(a, b, alpha) end
+
+Math = Maths

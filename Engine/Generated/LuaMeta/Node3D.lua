@@ -1,13 +1,13 @@
 --- @meta
 
 ---@class Node3D : Node
-local Node3D = {}
+Node3D = {}
 
 ---@param newParent SkeletalMesh3D
 ---@param boneName string
----@param arg3? boolean
----@param arg4? integer
-function Node3D:AttachToBone(newParent, boneName, arg3, arg4) end
+---@param keepWorldTransform? boolean
+---@param childIndex? integer
+function Node3D:AttachToBone(newParent, boneName, keepWorldTransform, childIndex) end
 
 function Node3D:UpdateTransform() end
 
@@ -77,8 +77,8 @@ function Node3D:AddWorldRotationEuler(deltaDegrees) end
 function Node3D:AddWorldRotationQuat(deltaVec) end
 
 ---@param worldPos Vector
----@param arg2 Vector
-function Node3D:LookAt(worldPos, arg2) end
+---@param up Vector
+function Node3D:LookAt(worldPos, up) end
 
 ---@return Vector
 function Node3D:GetForwardVector() end

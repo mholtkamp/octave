@@ -11,8 +11,7 @@
 --- Vector / Vector|number -> Vector
 --- -Vector -> Vector
 --- Vector == Vector -> boolean
-local Vector = {}
-Vector = Vector
+Vector = {}
 
 function Vector:Create() end
 

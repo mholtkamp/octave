@@ -1,12 +1,12 @@
 --- @meta
 
 ---@class Poly : Widget
-local Poly = {}
+Poly = {}
 
 ---@param pos Vector
----@param arg2? Vector
----@param arg3? Vector
-function Poly:AddVertex(pos, arg2, arg3) end
+---@param color? Vector
+---@param uv? Vector
+function Poly:AddVertex(pos, color, uv) end
 
 function Poly:ClearVertices() end
 

@@ -1,39 +1,39 @@
 --- @meta
 
 ---@class SkeletalMesh3D : Mesh3D
-local SkeletalMesh3D = {}
+SkeletalMesh3D = {}
 
----@param arg1? SkeletalMesh
-function SkeletalMesh3D:SetSkeletalMesh(arg1) end
+---@param skMesh? SkeletalMesh
+function SkeletalMesh3D:SetSkeletalMesh(skMesh) end
 
 ---@return any
 function SkeletalMesh3D:GetSkeletalMesh() end
 
 ---@param animName string
----@param arg2? integer
----@param arg3? boolean
----@param arg4? number
----@param arg5? number
-function SkeletalMesh3D:PlayAnimation(animName, arg2, arg3, arg4, arg5) end
+---@param slot? integer
+---@param loop? boolean
+---@param speed? number
+---@param weight? number
+function SkeletalMesh3D:PlayAnimation(animName, slot, loop, speed, weight) end
 
 ---@param animName string
----@param arg2? boolean
-function SkeletalMesh3D:StopAnimation(animName, arg2) end
+---@param cancelQueued? boolean
+function SkeletalMesh3D:StopAnimation(animName, cancelQueued) end
 
----@param arg1? boolean
-function SkeletalMesh3D:StopAllAnimations(arg1) end
+---@param cancelQueued? boolean
+function SkeletalMesh3D:StopAllAnimations(cancelQueued) end
 
 ---@param animName string
 ---@return boolean
 function SkeletalMesh3D:IsAnimationPlaying(animName) end
 
 ---@param animName string
----@param arg2? string
----@param arg3? integer
----@param arg4? boolean
----@param arg5? number
----@param arg6? number
-function SkeletalMesh3D:QueueAnimation(animName, arg2, arg3, arg4, arg5, arg6) end
+---@param dependentAnimName? string
+---@param slot? integer
+---@param loop? boolean
+---@param speed? number
+---@param weight? number
+function SkeletalMesh3D:QueueAnimation(animName, dependentAnimName, slot, loop, speed, weight) end
 
 ---@param animName string
 function SkeletalMesh3D:CancelQueuedAnimation(animName) end

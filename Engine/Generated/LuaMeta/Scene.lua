@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Scene : Asset
-local Scene = {}
+Scene = {}
 
 ---@param root Node
 function Scene:Capture(root) end

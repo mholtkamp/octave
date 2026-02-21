@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Spline3D : Node3D
-local Spline3D = {}
+Spline3D = {}
 
 ---@param p Vector
 function Spline3D:AddPoint(p) end
@@ -46,19 +46,19 @@ function Spline3D:SetFollowLinkEnabled(index, enabled) end
 function Spline3D:IsFollowLinkEnabled(index) end
 
 ---@param index integer
----@param arg2? number
+---@param epsilon? number
 ---@return boolean
-function Spline3D:IsNearLinkFrom(index, arg2) end
+function Spline3D:IsNearLinkFrom(index, epsilon) end
 
 ---@param index integer
----@param arg2? number
+---@param epsilon? number
 ---@return boolean
-function Spline3D:IsNearLinkTo(index, arg2) end
+function Spline3D:IsNearLinkTo(index, epsilon) end
 
 ---@param index integer
----@param arg2? number
+---@param threshold? number
 ---@return boolean
-function Spline3D:IsLinkDirectionForward(index, arg2) end
+function Spline3D:IsLinkDirectionForward(index, threshold) end
 
 ---@param index integer
 ---@return boolean

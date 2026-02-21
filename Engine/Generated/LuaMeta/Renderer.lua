@@ -20,9 +20,9 @@ function Renderer.GetFrameIndex() end
 ---@return integer
 function Renderer.GetScreenIndex() end
 
----@param arg1? integer
+---@param screenIndex? integer
 ---@return Vector
-function Renderer.GetScreenResolution(arg1) end
+function Renderer.GetScreenResolution(screenIndex) end
 
 ---@return Vector
 function Renderer.GetActiveScreenResolution() end
@@ -33,8 +33,8 @@ function Renderer.GetGlobalUiScale() end
 ---@param scale number
 function Renderer.SetGlobalUiScale(scale) end
 
----@param arg1 integer
-function Renderer.SetDebugMode(arg1) end
+---@param debugMode integer
+function Renderer.SetDebugMode(debugMode) end
 
 ---@return integer
 function Renderer.GetDebugMode() end
@@ -45,8 +45,8 @@ function Renderer.EnableProxyRendering(value) end
 ---@return boolean
 function Renderer.IsProxyRenderingEnabled() end
 
----@param arg1 integer
-function Renderer.SetBoundsDebugMode(arg1) end
+---@param value integer
+function Renderer.SetBoundsDebugMode(value) end
 
 ---@return integer
 function Renderer.GetBoundsDebugMode() end
@@ -59,12 +59,12 @@ function Renderer.IsFrustumCullingEnabled() end
 
 ---@param mesh StaticMesh
 ---@param pos Vector
----@param arg3? Vector
----@param arg4? Vector
----@param arg5? Vector
----@param arg6? number
----@param arg7? Material
-function Renderer.AddDebugDraw(mesh, pos, arg3, arg4, arg5, arg6, arg7) end
+---@param rot? Vector
+---@param scale? Vector
+---@param color? Vector
+---@param life? number
+---@param material? Material
+function Renderer.AddDebugDraw(mesh, pos, rot, scale, color, life, material) end
 
 ---@param start Vector
 ---@param end Vector

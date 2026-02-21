@@ -1,10 +1,10 @@
 --- @meta
 
 ---@class ParticleSystem : Asset
-local ParticleSystem = {}
+ParticleSystem = {}
 
----@param arg1? Material
-function ParticleSystem:SetMaterial(arg1) end
+---@param value? Material
+function ParticleSystem:SetMaterial(value) end
 
 ---@return any
 function ParticleSystem:GetMaterial() end
@@ -21,8 +21,8 @@ function ParticleSystem:SetSpawnRate(value) end
 ---@return number
 function ParticleSystem:GetSpawnRate() end
 
----@param arg1 integer
-function ParticleSystem:SetBurstCount(arg1) end
+---@param value integer
+function ParticleSystem:SetBurstCount(value) end
 
 ---@return integer
 function ParticleSystem:GetBurstCount() end
@@ -33,14 +33,14 @@ function ParticleSystem:SetBurstWindow(value) end
 ---@return number
 function ParticleSystem:GetBurstWindow() end
 
----@param arg1 integer
-function ParticleSystem:SetMaxParticles(arg1) end
+---@param value integer
+function ParticleSystem:SetMaxParticles(value) end
 
 ---@return integer
 function ParticleSystem:GetMaxParticles() end
 
----@param arg1 integer
-function ParticleSystem:SetLoops(arg1) end
+---@param value integer
+function ParticleSystem:SetLoops(value) end
 
 ---@return integer
 function ParticleSystem:GetLoops() end
@@ -64,8 +64,8 @@ function ParticleSystem:SetLockedRatio(value) end
 function ParticleSystem:IsRatioLocked() end
 
 ---@param minVal number
----@param arg2? number
-function ParticleSystem:SetLifetime(minVal, arg2) end
+---@param maxVal? number
+function ParticleSystem:SetLifetime(minVal, maxVal) end
 
 ---@return number
 function ParticleSystem:GetLifetimeMin() end
@@ -74,8 +74,8 @@ function ParticleSystem:GetLifetimeMin() end
 function ParticleSystem:GetLifetimeMax() end
 
 ---@param minVal Vector
----@param arg2? Vector
-function ParticleSystem:SetPosition(minVal, arg2) end
+---@param maxVal? Vector
+function ParticleSystem:SetPosition(minVal, maxVal) end
 
 ---@return Vector
 function ParticleSystem:GetPositionMin() end
@@ -84,8 +84,8 @@ function ParticleSystem:GetPositionMin() end
 function ParticleSystem:GetPositionMax() end
 
 ---@param minVal Vector
----@param arg2? Vector
-function ParticleSystem:SetVelocity(minVal, arg2) end
+---@param maxVal? Vector
+function ParticleSystem:SetVelocity(minVal, maxVal) end
 
 ---@return Vector
 function ParticleSystem:GetVelocityMin() end
@@ -94,8 +94,8 @@ function ParticleSystem:GetVelocityMin() end
 function ParticleSystem:GetVelocityMax() end
 
 ---@param minVal Vector
----@param arg2? Vector
-function ParticleSystem:SetSize(minVal, arg2) end
+---@param maxVal? Vector
+function ParticleSystem:SetSize(minVal, maxVal) end
 
 ---@return Vector
 function ParticleSystem:GetSizeMin() end
@@ -104,8 +104,8 @@ function ParticleSystem:GetSizeMin() end
 function ParticleSystem:GetSizeMax() end
 
 ---@param minVal number
----@param arg2? number
-function ParticleSystem:SetRotation(minVal, arg2) end
+---@param maxVal? number
+function ParticleSystem:SetRotation(minVal, maxVal) end
 
 ---@return number
 function ParticleSystem:GetRotationMin() end
@@ -114,8 +114,8 @@ function ParticleSystem:GetRotationMin() end
 function ParticleSystem:GetRotationMax() end
 
 ---@param minVal number
----@param arg2? number
-function ParticleSystem:SetRotationSpeed(minVal, arg2) end
+---@param maxVal? number
+function ParticleSystem:SetRotationSpeed(minVal, maxVal) end
 
 ---@return number
 function ParticleSystem:GetRotationSpeedMin() end

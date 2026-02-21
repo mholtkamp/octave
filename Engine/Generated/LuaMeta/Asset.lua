@@ -1,11 +1,11 @@
 --- @meta
 
 ---@class Asset
-local Asset = {}
+Asset = {}
 
----@param arg1 Asset
+---@param assetB Asset
 ---@return boolean
-function Asset:Equals(arg1) end
+function Asset:Equals(assetB) end
 
 ---@return string
 function Asset:GetName() end

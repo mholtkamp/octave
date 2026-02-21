@@ -43,6 +43,26 @@ nav:
           - Buttons: Development/UI/Buttons.md
           - Animation: Development/UI/Animation.md
           - Building UI: Development/UI/BuildingUI.md
+      - Input:
+          - Overview: Development/Input/Overview.md
+          - Keyboard: Development/Input/Keyboard.md
+          - Mouse: Development/Input/Mouse.md
+          - Gamepad: Development/Input/Gamepad.md
+          - Touch: Development/Input/Touch.md
+          - Platform Specific: Development/Input/PlatformSpecific.md
+          - Known Gaps: Development/Input/KnownGaps.md
+      - Logging:
+          - Overview: Development/Logging/Overview.md
+          - Configuration: Development/Logging/Configuration.md
+          - C++ API: Development/Logging/CppAPI.md
+          - Lua API: Development/Logging/LuaAPI.md
+          - Editor Debug Log: Development/Logging/EditorDebugLog.md
+      - Node Graph:
+          - Overview: Development/NodeGraph/Overview.md
+          - Graph Types: Development/NodeGraph/GraphTypes.md
+          - Creating Domains: Development/NodeGraph/CreatingDomains.md
+          - Creating Nodes: Development/NodeGraph/CreatingNodes.md
+          - NodeGraphPlayer: Development/NodeGraph/NodeGraphPlayer.md
       - Timeline:
           - Overview: Development/Timeline/Overview.md
           - TimelinePlayer: Development/Timeline/TimelinePlayer.md
@@ -71,6 +91,7 @@ nav:
               - Drag and Drop Asset: Development/NativeAddon/Examples/Editor/DragAndDropAsset.md
               - Editor Init Hooks: Development/NativeAddon/Examples/Editor/EditorInitHooks.md
               - Editor Shutdown Hook: Development/NativeAddon/Examples/Editor/EditorShutdownHook.md
+              - Game Preview Resolution: Development/NativeAddon/Examples/Editor/GamePreviewResolution.md
               - Gizmo Tool: Development/NativeAddon/Examples/Editor/GizmoTool.md
               - Hierarchy Item GUI: Development/NativeAddon/Examples/Editor/HierarchyItemGUI.md
               - Keyboard Shortcuts: Development/NativeAddon/Examples/Editor/KeyboardShortcuts.md
@@ -87,6 +108,11 @@ nav:
               - Top Level Menu: Development/NativeAddon/Examples/Editor/TopLevelMenu.md
               - Undo / Redo: Development/NativeAddon/Examples/Editor/UndoRedoHook.md
               - Viewport Overlay: Development/NativeAddon/Examples/Editor/ViewportOverlay.md
+              - Node Graph:
+                  - Custom Domain: Development/NativeAddon/Examples/Editor/NodeGraph/CustomDomain.md
+                  - Custom Material Type: Development/NativeAddon/Examples/Editor/NodeGraph/CustomMaterialType.md
+                  - Custom Node: Development/NativeAddon/Examples/Editor/NodeGraph/CustomNode.md
+                  - Domain Callbacks: Development/NativeAddon/Examples/Editor/NodeGraph/DomainCallbacks.md
 
   - Lua API:
       - Overview: Lua/README.md

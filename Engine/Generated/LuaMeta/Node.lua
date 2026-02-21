@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Node
-local Node = {}
+Node = {}
 
 ---@return Node
 function Node:Construct() end
@@ -22,16 +22,16 @@ function Node:SetName(name) end
 ---@param active boolean
 function Node:SetActive(active) end
 
----@param arg1? boolean
+---@param recurse? boolean
 ---@return boolean
-function Node:IsActive(arg1) end
+function Node:IsActive(recurse) end
 
 ---@param visible boolean
 function Node:SetVisible(visible) end
 
----@param arg1? boolean
+---@param recurse? boolean
 ---@return boolean
-function Node:IsVisible(arg1) end
+function Node:IsVisible(recurse) end
 
 ---@param value boolean
 function Node:SetPersistent(value) end
@@ -45,13 +45,13 @@ function Node:GetWorld() end
 ---@return Node
 function Node:GetParent() end
 
----@param arg1? Node
----@param arg2? boolean
----@param arg3? integer
-function Node:Attach(arg1, arg2, arg3) end
+---@param newParent? Node
+---@param keepWorldTransform? boolean
+---@param childIndex? integer
+function Node:Attach(newParent, keepWorldTransform, childIndex) end
 
----@param arg1? boolean
-function Node:Detach(arg1) end
+---@param keepWorldTransform? boolean
+function Node:Detach(keepWorldTransform) end
 
 ---@param index integer
 ---@return Node
@@ -65,26 +65,26 @@ function Node:GetChildByType(typeName) end
 function Node:GetNumChildren() end
 
 ---@param newChild Node
----@param arg2? integer
-function Node:AddChild(newChild, arg2) end
+---@param index? integer
+function Node:AddChild(newChild, index) end
 
 ---@param childName string
 function Node:RemoveChild(childName) end
 
 ---@param name string
----@param arg2? boolean
+---@param recurse? boolean
 ---@return Node
-function Node:FindChild(name, arg2) end
+function Node:FindChild(name, recurse) end
 
 ---@param tag string
----@param arg2? boolean
+---@param recurse? boolean
 ---@return Node
-function Node:FindChildWithTag(tag, arg2) end
+function Node:FindChildWithTag(tag, recurse) end
 
 ---@param typeName string
----@param arg2? boolean
+---@param recurse? boolean
 ---@return Node
-function Node:FindChildOfType(typeName, arg2) end
+function Node:FindChildOfType(typeName, recurse) end
 
 ---@param name string
 ---@return Node
@@ -108,12 +108,12 @@ function Node:GetRoot() end
 function Node:IsWorldRoot() end
 
 ---@param arg1 function
----@param arg2? boolean
-function Node:Traverse(arg1, arg2) end
+---@param inverted? boolean
+function Node:Traverse(arg1, inverted) end
 
 ---@param arg1 function
----@param arg2? boolean
-function Node:ForEach(arg1, arg2) end
+---@param inverted? boolean
+function Node:ForEach(arg1, inverted) end
 
 ---@param nodeClass string
 ---@return Node
@@ -178,8 +178,8 @@ function Node:GetNetId() end
 function Node:GetOwningHost() end
 
 ---@param netHostId integer
----@param arg2? boolean
-function Node:SetOwningHost(netHostId, arg2) end
+---@param setPawn? boolean
+function Node:SetOwningHost(netHostId, setPawn) end
 
 ---@param replicate boolean
 function Node:SetReplicate(replicate) end

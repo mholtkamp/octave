@@ -6052,12 +6052,13 @@ static void DrawMainMenuBar()
 
         // -- Right-aligned buttons: [Addon Toolbar Items] [Hammer] [Play ▾] --
         {
-            enum class PlayTarget { PlayInEditor, Dolphin, Azahar, Standalone, Send3dsLink, Count };
+            enum class PlayTarget { PlayInEditor, PlayFullScreen, Dolphin, Azahar, Standalone, Send3dsLink, Count };
             int32_t& playTargetRef = GetEditorState()->mPlayTarget;
             PlayTarget currentPlayTarget = (PlayTarget)playTargetRef;
 
             const char* playTargetLabels[] = {
                 "Play In Editor",
+                "Play Full Screen",
                 "Play on Dolphin",
                 "Play on Azahar",
                 "Play Standalone",
@@ -6124,6 +6125,10 @@ static void DrawMainMenuBar()
                     switch (currentPlayTarget)
                     {
                     case PlayTarget::PlayInEditor:
+                        GetEditorState()->mPlayInGameWindow = true;
+                        GetEditorState()->BeginPlayInEditor();
+                        break;
+                    case PlayTarget::PlayFullScreen:
                         GetEditorState()->BeginPlayInEditor();
                         break;
                     case PlayTarget::Dolphin:
@@ -6180,6 +6185,7 @@ static void DrawMainMenuBar()
 
                 PlayTargetInfo items[] = {
                     { PlayTarget::PlayInEditor, "Play In Editor",  true,          nullptr },
+                    { PlayTarget::PlayFullScreen, "Play Full Screen", true,       nullptr },
                     { PlayTarget::Dolphin,      "Play on Dolphin", dolphinOk,     "Configure Dolphin path in Preferences > External > Launchers" },
                     { PlayTarget::Azahar,       "Play on Azahar",  azaharOk,      "Configure Azahar path in Preferences > External > Launchers" },
                     { PlayTarget::Standalone,   "Play Standalone",  true,          nullptr },
@@ -7619,7 +7625,8 @@ bool EditorImguiIsViewportHovered()
 
 bool EditorIsInterfaceVisible()
 {
-    return GetEditorState()->mShowInterface && (!IsPlaying() || GetEditorState()->mEjected);
+    EditorState* es = GetEditorState();
+    return es->mShowInterface && (!IsPlaying() || es->mEjected || es->mPlayInGameWindow);
 }
 
 #endif

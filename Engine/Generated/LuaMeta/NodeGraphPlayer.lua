@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class NodeGraphPlayer : Node
-local NodeGraphPlayer = {}
+NodeGraphPlayer = {}
 
 function NodeGraphPlayer:Play() end
 
@@ -29,9 +29,9 @@ function NodeGraphPlayer:GetNodeGraphAsset() end
 function NodeGraphPlayer:SetInputFloat(name, value) end
 
 ---@param name string
----@param arg2 number
+---@param value number
 ---@return boolean
-function NodeGraphPlayer:SetInputInt(name, arg2) end
+function NodeGraphPlayer:SetInputInt(name, value) end
 
 ---@param name string
 ---@param value boolean
@@ -53,25 +53,25 @@ function NodeGraphPlayer:SetInputVector(name, value) end
 ---@return boolean
 function NodeGraphPlayer:SetInputColor(name, value) end
 
----@param arg1 number
+---@param pinIndex number
 ---@return number
-function NodeGraphPlayer:GetOutputFloat(arg1) end
+function NodeGraphPlayer:GetOutputFloat(pinIndex) end
 
----@param arg1 number
+---@param pinIndex number
 ---@return integer
-function NodeGraphPlayer:GetOutputInt(arg1) end
+function NodeGraphPlayer:GetOutputInt(pinIndex) end
 
----@param arg1 number
+---@param pinIndex number
 ---@return boolean
-function NodeGraphPlayer:GetOutputBool(arg1) end
+function NodeGraphPlayer:GetOutputBool(pinIndex) end
 
----@param arg1 number
+---@param pinIndex number
 ---@return Vector
-function NodeGraphPlayer:GetOutputVector(arg1) end
+function NodeGraphPlayer:GetOutputVector(pinIndex) end
 
----@param arg1 number
+---@param pinIndex number
 ---@return Vector
-function NodeGraphPlayer:GetOutputColor(arg1) end
+function NodeGraphPlayer:GetOutputColor(pinIndex) end
 
 ---@param playOnStart boolean
 function NodeGraphPlayer:SetPlayOnStart(playOnStart) end

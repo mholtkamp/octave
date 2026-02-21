@@ -1,8 +1,7 @@
 --- @meta
 
 ---@class Stream
-local Stream = {}
-Stream = Stream
+Stream = {}
 
 ---@return any
 function Stream:Create() end
@@ -17,8 +16,8 @@ function Stream:GetPos() end
 function Stream:SetPos(pos) end
 
 ---@param path string
----@param arg2 integer
-function Stream:ReadFile(path, arg2) end
+---@param maxSize integer
+function Stream:ReadFile(path, maxSize) end
 
 ---@param path string
 function Stream:WriteFile(path) end
@@ -62,11 +61,11 @@ function Stream:ReadVec4() end
 ---@param value integer
 function Stream:WriteInt32(value) end
 
----@param arg1 integer
-function Stream:WriteInt16(arg1) end
+---@param value integer
+function Stream:WriteInt16(value) end
 
----@param arg1 integer
-function Stream:WriteInt8(arg1) end
+---@param value integer
+function Stream:WriteInt8(value) end
 
 ---@param value number
 function Stream:WriteFloat(value) end

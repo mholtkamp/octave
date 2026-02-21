@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class TextMesh3D : StaticMesh3D
-local TextMesh3D = {}
+TextMesh3D = {}
 
 ---@param text string
 function TextMesh3D:SetText(text) end

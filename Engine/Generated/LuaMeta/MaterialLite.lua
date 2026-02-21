@@ -1,11 +1,11 @@
 --- @meta
 
 ---@class MaterialLite : Material
-local MaterialLite = {}
+MaterialLite = {}
 
 ---@param slot integer
----@param arg2? Texture
-function MaterialLite:SetTexture(slot, arg2) end
+---@param texture? Texture
+function MaterialLite:SetTexture(slot, texture) end
 
 ---@param slot integer
 ---@return any
@@ -14,27 +14,27 @@ function MaterialLite:GetTexture(slot) end
 ---@return integer
 function MaterialLite:GetShadingModel() end
 
----@param arg1 integer
-function MaterialLite:SetShadingModel(arg1) end
+---@param value integer
+function MaterialLite:SetShadingModel(value) end
 
----@param arg1 integer
-function MaterialLite:SetBlendMode(arg1) end
+---@param value integer
+function MaterialLite:SetBlendMode(value) end
 
----@param arg1? integer
+---@param uvIndex? integer
 ---@return Vector
-function MaterialLite:GetUvOffset(arg1) end
+function MaterialLite:GetUvOffset(uvIndex) end
 
 ---@param value Vector
----@param arg2? integer
-function MaterialLite:SetUvOffset(value, arg2) end
+---@param uvIndex? integer
+function MaterialLite:SetUvOffset(value, uvIndex) end
 
----@param arg1? integer
+---@param uvIndex? integer
 ---@return Vector
-function MaterialLite:GetUvScale(arg1) end
+function MaterialLite:GetUvScale(uvIndex) end
 
 ---@param value Vector
----@param arg2? integer
-function MaterialLite:SetUvScale(value, arg2) end
+---@param uvIndex? integer
+function MaterialLite:SetUvScale(value, uvIndex) end
 
 ---@return Vector
 function MaterialLite:GetColor() end
@@ -109,8 +109,8 @@ function MaterialLite:GetTevMode(slot) end
 ---@param tevMode integer
 function MaterialLite:SetTevMode(slot, tevMode) end
 
----@param arg1 integer
-function MaterialLite:SetCullMode(arg1) end
+---@param value integer
+function MaterialLite:SetCullMode(value) end
 
 ---@return any
 function MaterialLite:Create() end

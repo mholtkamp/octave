@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class MaterialInstance : Material
-local MaterialInstance = {}
+MaterialInstance = {}
 
 ---@return any
 function MaterialInstance:GetBaseMaterial() end

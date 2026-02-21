@@ -1,8 +1,7 @@
 --- @meta
 
 ---@class Signal
-local Signal = {}
-Signal = Signal
+Signal = {}
 
 ---@return any
 function Signal:Create() end

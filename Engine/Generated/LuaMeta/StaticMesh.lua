@@ -1,13 +1,13 @@
 --- @meta
 
 ---@class StaticMesh : Asset
-local StaticMesh = {}
+StaticMesh = {}
 
 ---@return any
 function StaticMesh:GetMaterial() end
 
----@param arg1? Material
-function StaticMesh:SetMaterial(arg1) end
+---@param material? Material
+function StaticMesh:SetMaterial(material) end
 
 ---@return integer
 function StaticMesh:GetNumIndices() end

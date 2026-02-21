@@ -21,16 +21,16 @@ function Network.IsSearching() end
 ---@return integer
 function Network.GetNumSessions() end
 
----@param arg1 integer
+---@param index integer
 ---@return nil
-function Network.GetSession(arg1) end
+function Network.GetSession(index) end
 
 ---@return any
 function Network.GetSessions() end
 
 ---@param ipAddr string
----@param arg2? integer
-function Network.Connect(ipAddr, arg2) end
+---@param port? integer
+function Network.Connect(ipAddr, port) end
 
 function Network.Disconnect() end
 
@@ -46,9 +46,9 @@ function Network.GetNumClients() end
 ---@return any
 function Network.GetClients() end
 
----@param arg1 integer
+---@param id integer
 ---@return nil
-function Network.FindNetClient(arg1) end
+function Network.FindNetClient(id) end
 
 ---@return string
 function Network.GetNetStatus() end
@@ -89,13 +89,13 @@ function Network.GetHostId() end
 ---@param dist number
 function Network.SetRelevancyDistance(dist) end
 
----@param arg1 integer
+---@param hostId integer
 ---@param arg2 Node
-function Network.SetPawn(arg1, arg2) end
+function Network.SetPawn(hostId, arg2) end
 
----@param arg1 integer
+---@param hostId integer
 ---@return Node
-function Network.GetPawn(arg1) end
+function Network.GetPawn(hostId) end
 
 ---@param value boolean
 function Network.EnableNetRelevancy(value) end

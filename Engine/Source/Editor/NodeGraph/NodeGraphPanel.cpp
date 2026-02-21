@@ -150,21 +150,12 @@ static void DrawInputPinWidget(GraphPin& pin)
     case DatumType::Color:
     {
         glm::vec4 c = pin.mDefaultValue.GetColor();
-        if (ImGui::ColorButton("##colbtn", ImVec4(c.x, c.y, c.z, c.w), ImGuiColorEditFlags_NoTooltip))
+        ImGui::ColorEdit4("##v", &c.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+        if (memcmp(&c, &pin.mDefaultValue.GetColor(), sizeof(glm::vec4)) != 0)
         {
-            ImGui::OpenPopup("##colorpicker");
+            pin.mDefaultValue = Datum(c);
+            pin.mValue = pin.mDefaultValue;
         }
-        ed::Suspend();
-        if (ImGui::BeginPopup("##colorpicker"))
-        {
-            if (ImGui::ColorPicker4("##picker", &c.x))
-            {
-                pin.mDefaultValue = Datum(c);
-                pin.mValue = pin.mDefaultValue;
-            }
-            ImGui::EndPopup();
-        }
-        ed::Resume();
         break;
     }
     default:
@@ -419,7 +410,7 @@ static void DrawContextMenu(NodeGraph& graph)
     static ed::LinkId sContextLinkId;
 
     // Detect right-click ourselves using hovered queries (more reliable than Show*ContextMenu)
-    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !ImGui::IsAnyItemHovered())
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
     {
         ed::NodeId hoveredNode = ed::GetHoveredNode();
         ed::LinkId hoveredLink = ed::GetHoveredLink();
@@ -572,7 +563,7 @@ void DrawNodeGraphContent()
     EnsureEditorContext();
     NodeGraph& graph = *sEditedGraph;
 
-    // Toolbar
+    // Toolbar - line 1: name + preview
     const char* displayName = sEditedOwner ? sEditedOwner->GetName().c_str() : "Node Graph";
     ImGui::Text("%s", displayName);
     ImGui::SameLine();
@@ -609,10 +600,9 @@ void DrawNodeGraphContent()
     }
 
     ImGui::SameLine();
+    ImGui::Text("Nodes: %u  Links: %u", graph.GetNumNodes(), graph.GetNumLinks());
 
-    // Quick-add toolbar buttons
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
+    // Toolbar - line 2: quick-add buttons
     if (ImGui::SmallButton("+ Float"))  { AddNodeAtCenter(graph, FloatConstantNode::GetStaticType()); }
     ImGui::SameLine();
     if (ImGui::SmallButton("+ Int"))    { AddNodeAtCenter(graph, IntConstantNode::GetStaticType()); }
@@ -635,9 +625,6 @@ void DrawNodeGraphContent()
         if (ImGui::MenuItem("Byte Input"))   { AddNodeAtCenter(graph, ByteInputNode::GetStaticType()); }
         ImGui::EndPopup();
     }
-
-    ImGui::SameLine();
-    ImGui::Text("Nodes: %u  Links: %u", graph.GetNumNodes(), graph.GetNumLinks());
 
     ImGui::Separator();
 

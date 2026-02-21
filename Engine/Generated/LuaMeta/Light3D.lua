@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Light3D : Node3D
-local Light3D = {}
+Light3D = {}
 
 ---@param value Vector
 function Light3D:SetColor(value) end

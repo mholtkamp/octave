@@ -1005,7 +1005,8 @@ Camera3D* World::GetActiveCamera()
     // When in editor, the active camera is the EditorCamera unless
     // we are playing in editor (and not ejected).
     if (!GetEditorState()->mPlayInEditor ||
-        GetEditorState()->mEjected)
+        GetEditorState()->mEjected ||
+        GetEditorState()->mPlayInGameWindow)
     {
         Camera3D* editorCam = GetEditorState()->GetEditorCamera();
 

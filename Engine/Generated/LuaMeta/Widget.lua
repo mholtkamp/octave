@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class Widget : Node
-local Widget = {}
+Widget = {}
 
 ---@return Rect
 function Widget:GetRect() end
@@ -44,13 +44,13 @@ function Widget:SetRightMargin(value) end
 ---@param value number
 function Widget:SetBottomMargin(value) end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetPosition(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetPosition(x, y) end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetDimensions(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetDimensions(x, y) end
 
 ---@param rect Rect
 function Widget:SetRect(rect) end
@@ -67,16 +67,16 @@ function Widget:SetRatios(x, y, w, h) end
 ---@param bottom number
 function Widget:SetMargins(left, top, right, bottom) end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetOffset(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetOffset(x, y) end
 
 ---@return Vector
 function Widget:GetOffset() end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetSize(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetSize(x, y) end
 
 ---@return Vector
 function Widget:GetSize() end
@@ -84,8 +84,8 @@ function Widget:GetSize() end
 ---@return integer
 function Widget:GetAnchorMode() end
 
----@param arg1 integer
-function Widget:SetAnchorMode(arg1) end
+---@param value integer
+function Widget:SetAnchorMode(value) end
 
 ---@return boolean
 function Widget:StretchX() end
@@ -131,10 +131,10 @@ function Widget:IsDirty() end
 ---@return boolean
 function Widget:ContainsMouse() end
 
----@param arg1 integer
----@param arg2 integer
+---@param x integer
+---@param y integer
 ---@return boolean
-function Widget:ContainsPoint(arg1, arg2) end
+function Widget:ContainsPoint(x, y) end
 
 ---@param value number
 function Widget:SetRotation(value) end
@@ -142,16 +142,16 @@ function Widget:SetRotation(value) end
 ---@return number
 function Widget:GetRotation() end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetPivot(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetPivot(x, y) end
 
 ---@return Vector
 function Widget:GetPivot() end
 
----@param arg1 number
----@param arg2 number
-function Widget:SetScale(arg1, arg2) end
+---@param x number
+---@param y number
+function Widget:SetScale(x, y) end
 
 ---@return Vector
 function Widget:GetScale() end
@@ -162,8 +162,8 @@ function Widget:IsScissorEnabled() end
 ---@param value boolean
 function Widget:EnableScissor(value) end
 
----@param arg1 integer
-function Widget:SetOpacity(arg1) end
+---@param value integer
+function Widget:SetOpacity(value) end
 
 ---@param value number
 function Widget:SetOpacityFloat(value) end

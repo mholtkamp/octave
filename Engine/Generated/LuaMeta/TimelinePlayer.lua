@@ -1,7 +1,7 @@
 --- @meta
 
 ---@class TimelinePlayer : Node
-local TimelinePlayer = {}
+TimelinePlayer = {}
 
 function TimelinePlayer:Play() end
 

@@ -8,9 +8,9 @@ function Engine.Quit() end
 ---@return boolean
 function Engine.IsShuttingDown() end
 
----@param arg1? integer
+---@param worldIndex? integer
 ---@return World
-function Engine.GetWorld(arg1) end
+function Engine.GetWorld(worldIndex) end
 
 ---@return number
 function Engine.GetTime() end
@@ -47,8 +47,8 @@ function Engine.IsPlayingInEditor() end
 ---@return boolean
 function Engine.IsPlaying() end
 
----@param arg1? boolean
-function Engine.ReloadAllScripts(arg1) end
+---@param restartScripts? boolean
+function Engine.ReloadAllScripts(restartScripts) end
 
 ---@param value boolean
 function Engine.SetPaused(value) end
