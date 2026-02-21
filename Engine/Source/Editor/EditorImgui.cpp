@@ -42,6 +42,7 @@
 #include "Assets/MaterialLite.h"
 #include "Assets/Timeline.h"
 #include "Assets/Font.h"
+#include "Assets/NodeGraphAsset.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -60,6 +61,7 @@
 #include "ThemeEditor/ThemeEditorWindow.h"
 #include "Preferences/Appearance/Theme/CssThemeParser.h"
 #include "Timeline/TimelinePanel.h"
+#include "NodeGraph/NodeGraphPanel.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
 #include "Preferences/External/LaunchersModule.h"
@@ -139,6 +141,7 @@ static const char* GetAssetIcon(TypeId type)
     if (type == ParticleSystem::GetStaticType())     return ICON_FIREWORK;
     if (type == Timeline::GetStaticType())           return ICON_TIMELINE;
     if (type == Font::GetStaticType())               return ICON_TEXTMESH;
+    if (type == NodeGraphAsset::GetStaticType())    return ICON_IC_BASELINE_SHARE;
     return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
 }
 
@@ -503,6 +506,18 @@ static void DrawDockspace()
     ImGui::EndDock();
     ImGui::PopStyleColor();
 
+    // --- Node Graph dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_IC_BASELINE_SHARE "  Node Graph", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    {
+        DrawNodeGraphContent();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
     // Draw plugin/addon dockable windows
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr)
@@ -531,6 +546,7 @@ static void DrawDockspace()
             ImGui::DockTo("EditorDock", ICON_IX_CODE "  Script Editor", ICON_VIEWPORT3D "  Viewport", ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_CIB_NINTENDO_3DS "  3DS Preview", ICON_INFO "  Properties", ImGuiDockSlot_Left, 0.5f);
             ImGui::DockTo("EditorDock", ICON_IX_VIDEO_CAMERA_FILLED "  Game Preview",ICON_CIB_NINTENDO_3DS "  3DS Preview",  ImGuiDockSlot_Tab);
+            ImGui::DockTo("EditorDock", ICON_IC_BASELINE_SHARE "  Node Graph", ICON_VIEWPORT3D "  Viewport", ImGuiDockSlot_Tab);
 
             // Defer activating the Viewport tab — docks call setActive() on their
             // first BeginDock frame, so we need to wait a couple frames for all
@@ -3769,6 +3785,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 sNewAssetType = Timeline::GetStaticType();
                 showPopup = true;
             }
+            if (ImGui::Selectable("Node Graph", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = NodeGraphAsset::GetStaticType();
+                showPopup = true;
+            }
 
             // Draw addon create asset items
             {
@@ -3933,6 +3954,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                     assetName = "P_Particle";
                 else if (sNewAssetType == Timeline::GetStaticType())
                     assetName = "TL_Timeline";
+                else if (sNewAssetType == NodeGraphAsset::GetStaticType())
+                    assetName = "NG_NodeGraph";
             }
 
             if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
@@ -4116,6 +4139,15 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
             if (selStub != stub)
             {
                 GetEditorState()->SetSelectedAssetStub(stub);
+
+                if (stub != nullptr &&
+                    stub->mType == NodeGraphAsset::GetStaticType())
+                {
+                    if (stub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*stub);
+                    if (stub->mAsset != nullptr)
+                        GetEditorState()->InspectObject(stub->mAsset);
+                }
             }
             else if (!IsControlDown())
             {
@@ -4148,6 +4180,26 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
                     if (timeline)
                     {
                         OpenTimelineForEditing(timeline);
+                    }
+                }
+                else if (stub->mType == NodeGraphAsset::GetStaticType())
+                {
+                    NodeGraphAsset* nodeGraph = stub->mAsset ? stub->mAsset->As<NodeGraphAsset>() : nullptr;
+                    if (nodeGraph)
+                    {
+                        OpenNodeGraphForEditing(nodeGraph);
+                    }
+                }
+                else if (stub->mAsset && stub->mAsset->Is(Material::ClassRuntimeId()))
+                {
+                    Material* mat = stub->mAsset->As<Material>();
+                    if (mat->HasNodeGraph())
+                    {
+                        OpenNodeGraphForEditing(mat->GetNodeGraph(), mat);
+                    }
+                    else
+                    {
+                        GetEditorState()->InspectObject(mat);
                     }
                 }
                 else
@@ -5628,6 +5680,9 @@ static void DrawMainMenuBar()
 
             if (ImGui::MenuItem("Game Preview"))
                 GetEditorState()->mShowGamePreview = !GetEditorState()->mShowGamePreview;
+
+            if (ImGui::MenuItem("Node Graph"))
+                GetEditorState()->mShowNodeGraphPanel = !GetEditorState()->mShowNodeGraphPanel;
 
             ImGui::Separator();
             if (ImGui::MenuItem("Reset Layout"))
@@ -7438,6 +7493,7 @@ void EditorImguiDraw()
         {
             DrawTimelinePanel();
         }
+
 
         // Draw ImGuizmo gizmos for selected 3D nodes
         DrawImGuizmo();

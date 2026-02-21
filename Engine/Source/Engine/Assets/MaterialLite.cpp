@@ -16,6 +16,11 @@
 
 #include "Graphics/Graphics.h"
 
+#include "NodeGraph/NodeGraph.h"
+#include "NodeGraph/GraphNode.h"
+#include "NodeGraph/GraphDomainManager.h"
+#include "NodeGraph/Nodes/MaterialNodes.h"
+
 #if EDITOR
 #include "EditorImgui.h"
 #endif
@@ -63,7 +68,13 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     MaterialLite* material = static_cast<MaterialLite*>(prop->mOwner);
     bool success = false;
 
-    if (prop->mName == "Texture 0")
+    if (prop->mName == "Use Node Graph")
+    {
+        bool useNodeGraph = *(bool*)newValue;
+        material->SetUseNodeGraph(useNodeGraph);
+        success = true;
+    }
+    else if (prop->mName == "Texture 0")
     {
         material->SetTexture(0, *(Texture**)newValue);
         success = true;
@@ -181,6 +192,16 @@ void MaterialLite::LoadStream(Stream& stream, Platform platform)
     mLiteParams.mFresnelEnabled = stream.ReadBool();
     mLiteParams.mApplyFog = stream.ReadBool();
     mLiteParams.mCullMode = (CullMode)stream.ReadUint8();
+
+    // Node graph
+    if (mVersion >= ASSET_VERSION_MATERIAL_LITE_NODE_GRAPH)
+    {
+        mUseNodeGraph = stream.ReadBool();
+        if (mUseNodeGraph)
+        {
+            mGraph.LoadStream(stream, mVersion);
+        }
+    }
 }
 
 void MaterialLite::SaveStream(Stream& stream, Platform platform)
@@ -221,6 +242,13 @@ void MaterialLite::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mLiteParams.mFresnelEnabled);
     stream.WriteBool(mLiteParams.mApplyFog);
     stream.WriteUint8((uint8_t)mLiteParams.mCullMode);
+
+    // Node graph
+    stream.WriteBool(mUseNodeGraph);
+    if (mUseNodeGraph)
+    {
+        mGraph.SaveStream(stream);
+    }
 }
 
 void MaterialLite::Create()
@@ -265,6 +293,7 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
 {
     Material::GatherProperties(outProps);
 
+    outProps.push_back(Property(DatumType::Bool, "Use Node Graph", this, &mUseNodeGraph, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), gShadingModelStrings));
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), gVertexColorModeStrings));
@@ -705,4 +734,41 @@ void MaterialLite::SetTevMode(uint32_t textureSlot, TevMode mode)
     {
         mLiteParams.mTevModes[textureSlot] = mode;
     }
+}
+
+void MaterialLite::SetUseNodeGraph(bool use)
+{
+    mUseNodeGraph = use;
+
+    if (mUseNodeGraph && mGraph.GetNumNodes() == 0)
+    {
+        mGraph.SetDomainName("Material");
+        mGraph.AddNode(MaterialOutputNode::GetStaticType());
+    }
+}
+
+void MaterialLite::ApplyGraphToParams()
+{
+    GraphNode* output = mGraph.FindOutputNode();
+    if (output == nullptr)
+        return;
+
+    mLiteParams.mColor        = output->GetInputValue(0).GetColor();
+    mLiteParams.mOpacity      = output->GetInputValue(1).GetFloat();
+    mLiteParams.mMaskCutoff   = output->GetInputValue(2).GetFloat();
+    mLiteParams.mEmission     = output->GetInputValue(3).GetFloat();
+    mLiteParams.mSpecular     = output->GetInputValue(4).GetFloat();
+    mLiteParams.mShininess    = output->GetInputValue(5).GetFloat();
+    mLiteParams.mWrapLighting = output->GetInputValue(6).GetFloat();
+    mLiteParams.mFresnelColor = output->GetInputValue(7).GetColor();
+    mLiteParams.mFresnelPower = output->GetInputValue(8).GetFloat();
+    mLiteParams.mUvOffsets[0] = output->GetInputValue(9).GetVector2D();
+    mLiteParams.mUvScales[0]  = output->GetInputValue(10).GetVector2D();
+    mLiteParams.mUvOffsets[1] = output->GetInputValue(11).GetVector2D();
+    mLiteParams.mUvScales[1]  = output->GetInputValue(12).GetVector2D();
+}
+
+void MaterialLite::ApplyGraphValues(NodeGraph* graph)
+{
+    ApplyGraphToParams();
 }

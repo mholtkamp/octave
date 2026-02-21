@@ -172,6 +172,9 @@ struct EditorState
     // Play target (shared between viewport toolbar and Game Preview)
     int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=Dolphin, 2=Azahar, 3=Standalone, 4=Send3dsLink
 
+    // Node Graph Panel state
+    bool mShowNodeGraphPanel = false;
+
     // Timeline Panel state
     bool mShowTimelinePanel = false;
     TimelineRef mEditedTimelineRef;

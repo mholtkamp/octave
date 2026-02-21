@@ -33,7 +33,8 @@ class AssetDir;
 #define ASSET_VERSION_UUID_SUPPORT 12
 #define ASSET_VERSION_UUID_WITH_NAME_FALLBACK 13
 #define ASSET_VERSION_NODE_PERSISTENT_UUID 14
-#define ASSET_VERSION_CURRENT 14
+#define ASSET_VERSION_MATERIAL_LITE_NODE_GRAPH 15
+#define ASSET_VERSION_CURRENT 15
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);

@@ -19,6 +19,8 @@
 #include "EngineTypes.h"
 #include "Vertex.h"
 
+class NodeGraph;
+
 class Material;
 class MaterialInstance;
 class MaterialLite;
@@ -84,6 +86,11 @@ public:
     virtual bool IsDepthTestDisabled() const;
     virtual bool ShouldApplyFog() const;
     virtual CullMode GetCullMode() const;
+
+    // Node graph integration hooks
+    virtual bool HasNodeGraph() const { return false; }
+    virtual NodeGraph* GetNodeGraph() { return nullptr; }
+    virtual void ApplyGraphValues(NodeGraph* graph) {}
 
     static MaterialLite* AsLite(Material* material);
     static void OverwriteShaderParameters(std::vector<ShaderParameter>& dst, const std::vector<ShaderParameter>& src);

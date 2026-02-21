@@ -8,6 +8,7 @@
 #include "Script.h"
 #include "Assets/Scene.h"
 #include "Assets/Timeline.h"
+#include "Assets/NodeGraphAsset.h"
 #include "Timeline/TimelineTrack.h"
 #include "Timeline/TimelineClip.h"
 #include "Timeline/Tracks/TransformTrack.h"
@@ -23,6 +24,7 @@
 #include "Timeline/Tracks/FunctionCallTrack.h"
 #include "Timeline/Tracks/FunctionCallClip.h"
 #include "Nodes/TimelinePlayer.h"
+#include "Nodes/NodeGraphPlayer.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
@@ -42,6 +44,13 @@
 #include "Input/Input.h"
 #include "Audio/Audio.h"
 #include "Plugins/RuntimePluginManager.h"
+#include "NodeGraph/GraphDomainManager.h"
+#include "NodeGraph/Domains/MaterialDomain.h"
+#include "NodeGraph/Domains/ShaderDomain.h"
+#include "NodeGraph/Domains/ProceduralDomain.h"
+#include "NodeGraph/Domains/AnimationDomain.h"
+#include "NodeGraph/Domains/FSMDomain.h"
+#include "NodeGraph/Domains/SceneGraphDomain.h"
 
 #if PLATFORM_WINDOWS
 // I think this is needed for the WinMain parameters
@@ -175,6 +184,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(TextMesh3D);
     FORCE_LINK_CALL(InstancedMesh3D);
     FORCE_LINK_CALL(TimelinePlayer);
+    FORCE_LINK_CALL(NodeGraphPlayer);
 
     // Asset Types
     FORCE_LINK_CALL(Scene);
@@ -204,6 +214,18 @@ void ForceLinkage()
     FORCE_LINK_CALL(ActivateClip);
     FORCE_LINK_CALL(FunctionCallTrack);
     FORCE_LINK_CALL(FunctionCallClip);
+
+    // Node Graph Types
+    FORCE_LINK_CALL(NodeGraphAsset);
+    FORCE_LINK_CALL(MathNodes);
+    FORCE_LINK_CALL(ValueNodes);
+    FORCE_LINK_CALL(MaterialNodes);
+    FORCE_LINK_CALL(ShaderNodes);
+    FORCE_LINK_CALL(ProceduralNodes);
+    FORCE_LINK_CALL(AnimationNodes);
+    FORCE_LINK_CALL(FSMNodes);
+    FORCE_LINK_CALL(SceneGraphNodes);
+    FORCE_LINK_CALL(InputNodes);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);
@@ -501,6 +523,16 @@ bool Initialize()
         LogError("[ENG] RPM is NULL!");
     }
 
+    // Initialize node graph domain system
+    GraphDomainManager::Create();
+    GraphDomainManager::Get()->RegisterDomain(new MaterialDomain());
+    GraphDomainManager::Get()->RegisterDomain(new ShaderDomain());
+    GraphDomainManager::Get()->RegisterDomain(new ProceduralDomain());
+    GraphDomainManager::Get()->RegisterDomain(new AnimationDomain());
+    GraphDomainManager::Get()->RegisterDomain(new FSMDomain());
+    GraphDomainManager::Get()->RegisterDomain(new SceneGraphDomain());
+    GraphDomainManager::Get()->ProcessExternalRegistrations();
+
 #if !EDITOR
     Scene* defaultScene = nullptr;
 
@@ -699,6 +731,8 @@ void Shutdown()
     }
 
     sWorlds.clear();
+
+    GraphDomainManager::Destroy();
 
     // Shutdown runtime plugins before Lua closes
     RuntimePluginManager::Destroy();

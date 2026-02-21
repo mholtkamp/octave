@@ -47,6 +47,7 @@
 #include "LuaBindings/Font_Lua.h"
 #include "LuaBindings/Timeline_Lua.h"
 #include "LuaBindings/TimelinePlayer_Lua.h"
+#include "LuaBindings/NodeGraphPlayer_Lua.h"
 #include "LuaBindings/AssetManager_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
@@ -106,6 +107,7 @@ void BindLuaInterface()
     TextMesh3D_Lua::Bind();
     Sphere3D_Lua::Bind();
     TimelinePlayer_Lua::Bind();
+    NodeGraphPlayer_Lua::Bind();
 
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();

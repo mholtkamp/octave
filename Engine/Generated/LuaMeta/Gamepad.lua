@@ -1,0 +1,38 @@
+--- @meta
+
+---@enum Gamepad
+Gamepad = {
+    A = 0,
+    B = 0,
+    C = 0,
+    X = 0,
+    Y = 0,
+    Z = 0,
+    L1 = 0,
+    R1 = 0,
+    L2 = 0,
+    R2 = 0,
+    L3 = 0,
+    R3 = 0,
+    Start = 0,
+    Select = 0,
+    Left = 0,
+    Right = 0,
+    Up = 0,
+    Down = 0,
+    Home = 0,
+    LsLeft = 0,
+    LsRight = 0,
+    LsUp = 0,
+    LsDown = 0,
+    RsLeft = 0,
+    RsRight = 0,
+    RsUp = 0,
+    RsDown = 0,
+    AxisL = 0,
+    AxisR = 0,
+    AxisLX = 0,
+    AxisLY = 0,
+    AxisRX = 0,
+    AxisRY = 0
+}

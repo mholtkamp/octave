@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assets/Material.h"
+#include "NodeGraph/NodeGraph.h"
 
 extern const char* gShadingModelStrings[];
 extern const char* gVertexColorModeStrings[];
@@ -55,6 +56,16 @@ public:
     virtual bool DrawCustomProperty(Property& prop) override;
 
     virtual bool IsLite() const override;
+
+    // Node graph integration
+    virtual bool HasNodeGraph() const override { return mUseNodeGraph; }
+    virtual NodeGraph* GetNodeGraph() override { return &mGraph; }
+    virtual void ApplyGraphValues(NodeGraph* graph) override;
+
+    NodeGraph& GetGraph() { return mGraph; }
+    const NodeGraph& GetGraph() const { return mGraph; }
+    void SetUseNodeGraph(bool use);
+    void ApplyGraphToParams();
 
     const MaterialLiteParams& GetLiteParams() const;
     void SetLiteParams(const MaterialLiteParams& params);
@@ -134,4 +145,6 @@ protected:
 
     // Properties
     MaterialLiteParams mLiteParams;
+    NodeGraph mGraph;
+    bool mUseNodeGraph = false;
 };

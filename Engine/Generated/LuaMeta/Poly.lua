@@ -1,0 +1,30 @@
+--- @meta
+
+---@class Poly : Widget
+local Poly = {}
+
+---@param pos Vector
+---@param arg2? Vector
+---@param arg3? Vector
+function Poly:AddVertex(pos, arg2, arg3) end
+
+function Poly:ClearVertices() end
+
+---@return integer
+function Poly:GetNumVertices() end
+
+---@param index integer
+---@return table
+function Poly:GetVertex(index) end
+
+---@param texture Texture
+function Poly:SetTexture(texture) end
+
+---@return any
+function Poly:GetTexture() end
+
+---@return number
+function Poly:GetLineWidth() end
+
+---@param value number
+function Poly:SetLineWidth(value) end

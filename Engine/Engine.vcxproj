@@ -622,6 +622,42 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FeatureFlags.cpp" />
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor_api.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\crude_json.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_canvas.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
@@ -682,6 +718,7 @@
     <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp" />
     <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp" />
     <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp" />
+    <ClCompile Include="Source\Editor\NodeGraph\NodeGraphPanel.cpp" />
     <ClCompile Include="Source\Editor\ThemeEditor\ThemeEditorWindow.cpp" />
     <ClCompile Include="Source\Editor\ThemeEditor\CssGenerator.cpp" />
     <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp" />
@@ -702,6 +739,7 @@
     <ClCompile Include="Source\Engine\Assets\StaticMesh.cpp" />
     <ClCompile Include="Source\Engine\Assets\Texture.cpp" />
     <ClCompile Include="Source\Engine\Assets\Timeline.cpp" />
+    <ClCompile Include="Source\Engine\Assets\NodeGraphAsset.cpp" />
     <ClCompile Include="Source\Engine\AudioManager.cpp" />
     <ClCompile Include="Source\Engine\Clock.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
@@ -748,6 +786,7 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\NodeGraphPlayer.cpp" />
     <ClCompile Include="Source\Engine\Timeline\TimelineTrack.cpp" />
     <ClCompile Include="Source\Engine\Timeline\TimelineClip.cpp" />
     <ClCompile Include="Source\Engine\Timeline\TimelineInstance.cpp" />
@@ -763,6 +802,27 @@
     <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateClip.cpp" />
     <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.cpp" />
     <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallClip.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphTypes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphNode.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\NodeGraph.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphProcessor.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomainManager.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MathNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ValueNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\InputNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ShaderDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\AnimationDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\FSMDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
@@ -876,6 +936,7 @@
     <ClCompile Include="Source\LuaBindings\Widget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\TimelinePlayer_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\NodeGraphPlayer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Timeline_Lua.cpp" />
     <ClCompile Include="Source\Network\3DS\Network_3DS.cpp" />
     <ClCompile Include="Source\Network\Android\Network_Android.cpp" />
@@ -981,6 +1042,7 @@
     <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h" />
     <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h" />
     <ClInclude Include="Source\Editor\Timeline\TimelineActions.h" />
+    <ClInclude Include="Source\Editor\NodeGraph\NodeGraphPanel.h" />
     <ClInclude Include="Source\Editor\ThemeEditor\ThemeEditorWindow.h" />
     <ClInclude Include="Source\Editor\ThemeEditor\CssGenerator.h" />
     <ClInclude Include="Source\Plugins\EditorUIHooks.h" />
@@ -1005,6 +1067,7 @@
     <ClInclude Include="Source\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Source\Engine\Assets\Texture.h" />
     <ClInclude Include="Source\Engine\Assets\Timeline.h" />
+    <ClInclude Include="Source\Engine\Assets\NodeGraphAsset.h" />
     <ClInclude Include="Source\Engine\AudioManager.h" />
     <ClInclude Include="Source\Engine\CameraFrustum.h" />
     <ClInclude Include="Source\Engine\Clock.h" />
@@ -1056,6 +1119,7 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
     <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h" />
+    <ClInclude Include="Source\Engine\Nodes\NodeGraphPlayer.h" />
     <ClInclude Include="Source\Engine\Timeline\TimelineTrack.h" />
     <ClInclude Include="Source\Engine\Timeline\TimelineClip.h" />
     <ClInclude Include="Source\Engine\Timeline\TimelineInstance.h" />
@@ -1072,6 +1136,29 @@
     <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateClip.h" />
     <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.h" />
     <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallClip.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphTypes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphPin.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphLink.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphNode.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\NodeGraph.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphProcessor.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomainManager.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MathNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ValueNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\InputNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ShaderDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\AnimationDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\FSMDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.h" />
     <ClInclude Include="Source\Engine\SmartPointer.h" />
     <ClInclude Include="Source\Engine\Profiler.h" />
     <ClInclude Include="Source\Engine\Property.h" />
@@ -1186,6 +1273,7 @@
     <ClInclude Include="Source\LuaBindings\Widget_Lua.h" />
     <ClInclude Include="Source\LuaBindings\World_Lua.h" />
     <ClInclude Include="Source\LuaBindings\TimelinePlayer_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\NodeGraphPlayer_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Timeline_Lua.h" />
     <ClInclude Include="Source\Network\NetPlatformEpic.h" />
     <ClInclude Include="Source\Network\NetPlatformSteam.h" />
