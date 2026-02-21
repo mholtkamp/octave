@@ -226,6 +226,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(FSMNodes);
     FORCE_LINK_CALL(SceneGraphNodes);
     FORCE_LINK_CALL(InputNodes);
+    FORCE_LINK_CALL(FunctionNodes);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);

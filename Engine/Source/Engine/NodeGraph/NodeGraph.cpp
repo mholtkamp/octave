@@ -1,4 +1,5 @@
 #include "NodeGraph/NodeGraph.h"
+#include "Asset.h"
 #include "Stream.h"
 #include "Log.h"
 
@@ -36,6 +37,7 @@ GraphNode* NodeGraph::AddNode(TypeId nodeType)
         }
 
         mNodes.push_back(node);
+        node->SetGraph(this);
     }
     return node;
 }
@@ -260,6 +262,7 @@ bool NodeGraph::WouldCreateCycle(GraphNodeId fromNodeId, GraphNodeId toNodeId) c
 void NodeGraph::SaveStream(Stream& stream)
 {
     stream.WriteString(mDomainName);
+    stream.WriteString(mGraphName);
 
     // Save nodes
     stream.WriteUint32((uint32_t)mNodes.size());
@@ -291,6 +294,11 @@ void NodeGraph::LoadStream(Stream& stream, uint32_t version)
 
     stream.ReadString(mDomainName);
 
+    if (version >= ASSET_VERSION_NODE_GRAPH_FUNCTIONS)
+    {
+        stream.ReadString(mGraphName);
+    }
+
     // Load nodes
     uint32_t numNodes = stream.ReadUint32();
     for (uint32_t i = 0; i < numNodes; ++i)
@@ -303,6 +311,7 @@ void NodeGraph::LoadStream(Stream& stream, uint32_t version)
             node->SetupPins();
             node->LoadStream(stream, version);
             mNodes.push_back(node);
+            node->SetGraph(this);
         }
         else
         {
@@ -383,6 +392,7 @@ void NodeGraph::Clear()
     }
     mNodes.clear();
     mLinks.clear();
+    mGraphName.clear();
     mNextNodeId = 1;
     mNextLinkId = 1;
     mNextPinId = 1;
@@ -393,6 +403,7 @@ void NodeGraph::CopyFrom(const NodeGraph& other)
     Clear();
 
     mDomainName = other.mDomainName;
+    mGraphName = other.mGraphName;
     mNextNodeId = other.mNextNodeId;
     mNextLinkId = other.mNextLinkId;
     mNextPinId = other.mNextPinId;
@@ -435,8 +446,12 @@ void NodeGraph::CopyFrom(const NodeGraph& other)
             newNode->SetInputName(srcNode->GetInputName());
         }
 
+        // Copy any custom data from subclasses (e.g. FunctionCallNode)
+        newNode->CopyCustomData(srcNode);
+
         nodeMap[srcNode->GetId()] = newNode;
         mNodes.push_back(newNode);
+        newNode->SetGraph(this);
     }
 
     // Copy links

@@ -9,6 +9,7 @@
 #include <vector>
 
 class Asset;
+class Node;
 class Stream;
 
 class NodeGraph
@@ -50,10 +51,18 @@ public:
     const std::string& GetDomainName() const { return mDomainName; }
     void SetDomainName(const std::string& name) { mDomainName = name; }
 
+    // Graph name (empty = main graph, non-empty = function graph)
+    const std::string& GetGraphName() const { return mGraphName; }
+    void SetGraphName(const std::string& name) { mGraphName = name; }
+
     void Clear();
 
     // Deep copy for runtime (independent from asset)
     void CopyFrom(const NodeGraph& other);
+
+    // Owner node (for gameplay graphs)
+    void SetOwnerNode(Node* node) { mOwnerNode = node; }
+    Node* GetOwnerNode() const { return mOwnerNode; }
 
     // Find input nodes by name
     GraphNode* FindInputNode(const char* inputName) const;
@@ -77,6 +86,8 @@ private:
     std::vector<GraphNode*> mNodes;
     std::vector<GraphLink> mLinks;
     std::string mDomainName;
+    std::string mGraphName;
+    Node* mOwnerNode = nullptr;
 
     GraphNodeId mNextNodeId = 1;
     GraphLinkId mNextLinkId = 1;

@@ -253,7 +253,15 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Node: size = sizeof(WeakPtr<Node>); break;
         case DatumType::Short: size = sizeof(int16_t); break;
         case DatumType::Function: size = sizeof(ScriptFunc); break;
-        
+        // Extended pin types (these reuse base type storage)
+        case DatumType::Node3D: size = sizeof(WeakPtr<Node>); break;
+        case DatumType::Widget: size = sizeof(WeakPtr<Node>); break;
+        case DatumType::Text: size = sizeof(WeakPtr<Node>); break;
+        case DatumType::Quad: size = sizeof(WeakPtr<Node>); break;
+        case DatumType::Audio3D: size = sizeof(WeakPtr<Node>); break;
+        case DatumType::Scene: size = sizeof(AssetRef); break;
+        case DatumType::Execution: size = 0; break;
+
         case DatumType::Count: size = 0; break;
     }
 

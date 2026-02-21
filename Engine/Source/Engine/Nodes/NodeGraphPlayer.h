@@ -58,11 +58,16 @@ public:
     void SetPlayOnStart(bool v) { mPlayOnStart = v; }
     bool GetPlayOnStart() const { return mPlayOnStart; }
 
+    // Event system
+    float GetDeltaTime() const { return mDeltaTime; }
+    bool HasStartFired() const { return mStartFired; }
+
     NodeGraph* GetRuntimeGraph() { return mRuntimeGraph; }
 
 protected:
 
     void EnsureRuntimeGraph();
+    void FireEvent(const char* eventName);
 
     AssetRef mNodeGraphAsset;
     NodeGraph* mRuntimeGraph = nullptr;
@@ -70,4 +75,6 @@ protected:
     bool mPlaying = false;
     bool mPaused = false;
     bool mPlayOnStart = false;
+    bool mStartFired = false;
+    float mDeltaTime = 0.0f;
 };

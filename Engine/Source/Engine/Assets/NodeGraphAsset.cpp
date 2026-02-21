@@ -2,6 +2,7 @@
 #include "NodeGraph/GraphDomainManager.h"
 #include "NodeGraph/GraphDomain.h"
 #include "NodeGraph/GraphNode.h"
+#include "NodeGraph/Nodes/FunctionNodes.h"
 #include "Log.h"
 #include "Property.h"
 
@@ -22,6 +23,18 @@ void NodeGraphAsset::LoadStream(Stream& stream, Platform platform)
     Asset::LoadStream(stream, platform);
     mGraph.LoadStream(stream, mVersion);
 
+    // Load function graphs
+    if (mVersion >= ASSET_VERSION_NODE_GRAPH_FUNCTIONS)
+    {
+        uint32_t numFuncs = stream.ReadUint32();
+        for (uint32_t i = 0; i < numFuncs; ++i)
+        {
+            NodeGraph* fg = new NodeGraph();
+            fg->LoadStream(stream, mVersion);
+            mFunctionGraphs.push_back(fg);
+        }
+    }
+
     // Resolve mDomainIndex from the loaded domain name
     GraphDomainManager* mgr = GraphDomainManager::Get();
     if (mgr != nullptr)
@@ -36,12 +49,22 @@ void NodeGraphAsset::LoadStream(Stream& stream, Platform platform)
             }
         }
     }
+
+    // Wire FunctionCallNodes in all graphs to this asset
+    ResolveFunctionCallNodes();
 }
 
 void NodeGraphAsset::SaveStream(Stream& stream, Platform platform)
 {
     Asset::SaveStream(stream, platform);
     mGraph.SaveStream(stream);
+
+    // Save function graphs
+    stream.WriteUint32((uint32_t)mFunctionGraphs.size());
+    for (auto* fg : mFunctionGraphs)
+    {
+        fg->SaveStream(stream);
+    }
 }
 
 void NodeGraphAsset::Create()
@@ -87,6 +110,13 @@ void NodeGraphAsset::Create()
 void NodeGraphAsset::Destroy()
 {
     mGraph.Clear();
+
+    for (auto* fg : mFunctionGraphs)
+    {
+        delete fg;
+    }
+    mFunctionGraphs.clear();
+
     Asset::Destroy();
 }
 
@@ -110,6 +140,13 @@ bool NodeGraphAsset::HandlePropChange(Datum* datum, uint32_t index, const void* 
             {
                 asset->mDomainIndex = newIndex;
                 asset->mGraph.Clear();
+
+                // Clear function graphs on domain change
+                for (auto* fg : asset->mFunctionGraphs)
+                {
+                    delete fg;
+                }
+                asset->mFunctionGraphs.clear();
 
                 GraphDomain* domain = domains[newIndex];
                 asset->mGraph.SetDomainName(domain->GetDomainName());
@@ -149,6 +186,113 @@ void NodeGraphAsset::GatherProperties(std::vector<Property>& outProps)
         }
 
         outProps.push_back(Property(DatumType::Integer, "Graph Type", this, &mDomainIndex, 1, HandlePropChange, NULL_DATUM, count, sDomainNames));
+    }
+}
+
+NodeGraph* NodeGraphAsset::AddFunctionGraph(const std::string& name)
+{
+    // Check for duplicate name
+    if (FindFunctionGraph(name) != nullptr)
+    {
+        LogWarning("NodeGraphAsset::AddFunctionGraph - Function '%s' already exists", name.c_str());
+        return nullptr;
+    }
+
+    NodeGraph* fg = new NodeGraph();
+    fg->SetDomainName(mGraph.GetDomainName());
+    fg->SetGraphName(name);
+    mFunctionGraphs.push_back(fg);
+    return fg;
+}
+
+void NodeGraphAsset::RemoveFunctionGraph(uint32_t index)
+{
+    if (index < mFunctionGraphs.size())
+    {
+        delete mFunctionGraphs[index];
+        mFunctionGraphs.erase(mFunctionGraphs.begin() + index);
+    }
+}
+
+NodeGraph* NodeGraphAsset::FindFunctionGraph(const std::string& name) const
+{
+    for (auto* fg : mFunctionGraphs)
+    {
+        if (fg->GetGraphName() == name)
+        {
+            return fg;
+        }
+    }
+    return nullptr;
+}
+
+NodeGraph* NodeGraphAsset::GetFunctionGraph(uint32_t index)
+{
+    if (index < mFunctionGraphs.size())
+    {
+        return mFunctionGraphs[index];
+    }
+    return nullptr;
+}
+
+void NodeGraphAsset::RenameFunctionGraph(uint32_t index, const std::string& newName)
+{
+    if (index >= mFunctionGraphs.size())
+        return;
+
+    // Check for duplicate name
+    for (uint32_t i = 0; i < mFunctionGraphs.size(); ++i)
+    {
+        if (i != index && mFunctionGraphs[i]->GetGraphName() == newName)
+        {
+            LogWarning("NodeGraphAsset::RenameFunctionGraph - Name '%s' already in use", newName.c_str());
+            return;
+        }
+    }
+
+    std::string oldName = mFunctionGraphs[index]->GetGraphName();
+    mFunctionGraphs[index]->SetGraphName(newName);
+
+    // Update FunctionCallNodes referencing the old name in all graphs
+    auto updateCallNodes = [&](NodeGraph* graph)
+    {
+        for (GraphNode* node : graph->GetNodes())
+        {
+            if (node->GetType() == FunctionCallNode::GetStaticType())
+            {
+                FunctionCallNode* callNode = static_cast<FunctionCallNode*>(node);
+                if (callNode->GetFunctionName() == oldName)
+                {
+                    callNode->SetFunctionName(newName);
+                }
+            }
+        }
+    };
+
+    updateCallNodes(&mGraph);
+    for (auto* fg : mFunctionGraphs)
+    {
+        updateCallNodes(fg);
+    }
+}
+
+void NodeGraphAsset::ResolveFunctionCallNodes()
+{
+    auto wireGraph = [this](NodeGraph* graph)
+    {
+        for (GraphNode* node : graph->GetNodes())
+        {
+            if (node->GetType() == FunctionCallNode::GetStaticType())
+            {
+                static_cast<FunctionCallNode*>(node)->SetOwnerAsset(this);
+            }
+        }
+    };
+
+    wireGraph(&mGraph);
+    for (auto* fg : mFunctionGraphs)
+    {
+        wireGraph(fg);
     }
 }
 

@@ -37,6 +37,13 @@ enum class DatumType : uint8_t
     Node,
     Short,
     Function,
+    Node3D,
+    Widget,
+    Text,
+    Quad,
+    Audio3D,
+    Scene,
+    Execution,
 
     Count
 };

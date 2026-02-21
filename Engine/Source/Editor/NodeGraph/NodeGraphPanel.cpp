@@ -15,11 +15,18 @@
 #include "NodeGraph/GraphProcessor.h"
 #include "NodeGraph/Nodes/ValueNodes.h"
 #include "NodeGraph/Nodes/InputNodes.h"
+#include "NodeGraph/Nodes/FunctionNodes.h"
 #include "AssetManager.h"
 #include "Log.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui-node-editor/imgui_node_editor.h"
+
+#include <algorithm>
+#include <cctype>
+#include <map>
+#include <string>
+#include <unordered_set>
 
 namespace ed = ax::NodeEditor;
 
@@ -43,14 +50,29 @@ static ImVec2 sCanvasCenter = ImVec2(0, 0);
 static GraphNodeId sPendingNodeId = 0;
 static glm::vec2 sPendingNodePos = glm::vec2(0, 0);
 
+// Function sidebar state
+static const float kFunctionSidebarWidth = 200.0f;
+static const float kMiddleGap = 20.0f;  // gap between input/output columns
+static int32_t sSelectedGraphIndex = -1;  // -1 = main graph (Event Graph), 0..N = function index
+static std::map<std::string, ed::EditorContext*> sEditorContextMap;
+static bool sRenamingFunction = false;
+static int32_t sRenamingIndex = -1;
+static char sRenameBuffer[128] = {};
+static char sNodeSearchBuffer[128] = {};
+
+static ed::EditorContext* CreateNewEditorContext()
+{
+    ed::Config config;
+    config.SettingsFile = nullptr;
+    config.NavigateButtonIndex = 1;
+    return ed::CreateEditor(&config);
+}
+
 static void EnsureEditorContext()
 {
     if (sEditorContext == nullptr)
     {
-        ed::Config config;
-        config.SettingsFile = nullptr;
-        config.NavigateButtonIndex = 1; // Right mouse button for panning
-        sEditorContext = ed::CreateEditor(&config);
+        sEditorContext = CreateNewEditorContext();
     }
 }
 
@@ -58,6 +80,12 @@ static ImColor GetPinColor(DatumType type)
 {
     glm::vec4 c = GetDatumTypeColor(type);
     return ImColor(c.x, c.y, c.z, c.w);
+}
+
+static bool IsNodeRefType(DatumType type)
+{
+    return type == DatumType::Node || type == DatumType::Node3D || type == DatumType::Widget ||
+           type == DatumType::Text || type == DatumType::Quad || type == DatumType::Audio3D;
 }
 
 static void DrawPinIcon(DatumType type, bool connected)
@@ -69,13 +97,46 @@ static void DrawPinIcon(DatumType type, bool connected)
     float radius = size.x * 0.5f;
     ImColor color = GetPinColor(type);
 
-    if (connected)
+    if (type == DatumType::Execution)
     {
-        drawList->AddCircleFilled(center, radius, color);
+        // Triangle/arrow shape for execution pins
+        ImVec2 p1(center.x - radius * 0.6f, center.y - radius * 0.8f);
+        ImVec2 p2(center.x + radius * 0.8f, center.y);
+        ImVec2 p3(center.x - radius * 0.6f, center.y + radius * 0.8f);
+        if (connected)
+            drawList->AddTriangleFilled(p1, p2, p3, color);
+        else
+            drawList->AddTriangle(p1, p2, p3, color, 2.0f);
+    }
+    else if (IsNodeRefType(type))
+    {
+        // Diamond shape for node-reference pins
+        ImVec2 top(center.x, center.y - radius);
+        ImVec2 right(center.x + radius, center.y);
+        ImVec2 bottom(center.x, center.y + radius);
+        ImVec2 left(center.x - radius, center.y);
+        if (connected)
+            drawList->AddQuadFilled(top, right, bottom, left, color);
+        else
+            drawList->AddQuad(top, right, bottom, left, color, 2.0f);
+    }
+    else if (type == DatumType::Scene || type == DatumType::Asset)
+    {
+        // Square shape for asset/scene pins
+        ImVec2 tl(center.x - radius * 0.7f, center.y - radius * 0.7f);
+        ImVec2 br(center.x + radius * 0.7f, center.y + radius * 0.7f);
+        if (connected)
+            drawList->AddRectFilled(tl, br, color);
+        else
+            drawList->AddRect(tl, br, color, 0.0f, 0, 2.0f);
     }
     else
     {
-        drawList->AddCircle(center, radius, color, 12, 2.0f);
+        // Circle for data pins (existing behavior)
+        if (connected)
+            drawList->AddCircleFilled(center, radius, color);
+        else
+            drawList->AddCircle(center, radius, color, 12, 2.0f);
     }
 
     ImGui::Dummy(size);
@@ -163,6 +224,35 @@ static void DrawInputPinWidget(GraphPin& pin)
         }
         break;
     }
+    case DatumType::String:
+    {
+        static char buf[256];
+        std::string s = pin.mDefaultValue.GetString();
+        strncpy(buf, s.c_str(), sizeof(buf) - 1);
+        buf[sizeof(buf) - 1] = '\0';
+        ImGui::SetNextItemWidth(120.0f);
+        if (ImGui::InputText("##v", buf, sizeof(buf)))
+        {
+            pin.mDefaultValue = Datum(std::string(buf));
+            pin.mValue = pin.mDefaultValue;
+        }
+        break;
+    }
+    case DatumType::Execution:
+        // No widget for execution pins
+        break;
+    case DatumType::Node:
+    case DatumType::Node3D:
+    case DatumType::Widget:
+    case DatumType::Text:
+    case DatumType::Quad:
+    case DatumType::Audio3D:
+        ImGui::TextDisabled("%s", GetDatumTypeName(pin.mDataType));
+        break;
+    case DatumType::Scene:
+    case DatumType::Asset:
+        ImGui::TextDisabled("%s", GetDatumTypeName(pin.mDataType));
+        break;
     default:
         break;
     }
@@ -200,10 +290,31 @@ static void DrawOutputPinValue(const GraphPin& pin)
         ImGui::ColorButton("##v", col, ImGuiColorEditFlags_NoTooltip, ImVec2(12, 12));
         break;
     }
+    case DatumType::String:
+        ImGui::Text("%s", pin.mValue.GetString().c_str());
+        break;
+    case DatumType::Execution:
+        break;
+    case DatumType::Node:
+    case DatumType::Node3D:
+    case DatumType::Widget:
+    case DatumType::Text:
+    case DatumType::Quad:
+    case DatumType::Audio3D:
+        ImGui::TextDisabled("%s", GetDatumTypeName(pin.mDataType));
+        break;
+    case DatumType::Scene:
+    case DatumType::Asset:
+        ImGui::TextDisabled("%s", GetDatumTypeName(pin.mDataType));
+        break;
     default:
         break;
     }
 }
+
+static void BeginColumns()  { ImGui::BeginGroup(); }
+static void NextColumn()    { ImGui::EndGroup(); ImGui::SameLine(0.0f, kMiddleGap); ImGui::BeginGroup(); }
+static void EndColumns()    { ImGui::EndGroup(); }
 
 static void DrawNodes(NodeGraph& graph)
 {
@@ -236,54 +347,117 @@ static void DrawNodes(NodeGraph& graph)
             ImGui::PopID();
         }
 
-        ImGui::Separator();
+        ImGui::Spacing();
 
-        // Input pins
         bool isSinkNode = (node->GetNumOutputPins() == 0);
-        for (uint32_t j = 0; j < node->GetNumInputPins(); ++j)
+        bool hasInputs = (node->GetNumInputPins() > 0) ||
+                         (node->GetType() == FunctionOutputNode::GetStaticType());
+        bool hasOutputs = (node->GetNumOutputPins() > 0);
+
+        BeginColumns();
+
+        // LEFT COLUMN: input pins
+        if (hasInputs)
         {
-            GraphPin& pin = node->GetInputPins()[j];
-            bool connected = IsPinConnected(graph, pin.mId);
-
-            ed::BeginPin(MakePinId(pin.mId), ed::PinKind::Input);
-            DrawPinIcon(pin.mDataType, connected);
-            ed::EndPin();
-
-            ImGui::SameLine();
-            ImGui::Text("%s", pin.mName.c_str());
-
-            if (!connected)
+            for (uint32_t j = 0; j < node->GetNumInputPins(); ++j)
             {
+                GraphPin& pin = node->GetInputPins()[j];
+                bool connected = IsPinConnected(graph, pin.mId);
+
+                ed::BeginPin(MakePinId(pin.mId), ed::PinKind::Input);
+                DrawPinIcon(pin.mDataType, connected);
+                ed::EndPin();
+
                 ImGui::SameLine();
-                ImGui::PushID(pin.mId);
-                DrawInputPinWidget(pin);
-                ImGui::PopID();
+                ImGui::Text("%s", pin.mName.c_str());
+
+                if (!connected)
+                {
+                    ImGui::SameLine();
+                    ImGui::PushID(pin.mId);
+                    DrawInputPinWidget(pin);
+                    ImGui::PopID();
+                }
+                else if (isSinkNode)
+                {
+                    // Show the evaluated value on sink nodes (Viewer, Material Output)
+                    ImGui::SameLine();
+                    ImGui::PushID(pin.mId);
+                    DrawOutputPinValue(pin);
+                    ImGui::PopID();
+                }
             }
-            else if (isSinkNode)
+
+            // FunctionOutputNode: add dynamic pin button
+            if (node->GetType() == FunctionOutputNode::GetStaticType())
             {
-                // Show the evaluated value on sink nodes (Viewer, Material Output)
-                ImGui::SameLine();
-                ImGui::PushID(pin.mId);
-                DrawOutputPinValue(pin);
+                ImGui::PushID(node->GetId() + 20000);
+                if (ImGui::SmallButton("+ Output"))
+                {
+                    ImGui::OpenPopup("AddOutputPin");
+                }
+
+                if (ImGui::BeginPopup("AddOutputPin"))
+                {
+                    FunctionOutputNode* funcOutput = static_cast<FunctionOutputNode*>(node);
+                    if (ImGui::MenuItem("Float"))   { funcOutput->AddOutputField("Float", DatumType::Float); }
+                    if (ImGui::MenuItem("Integer")) { funcOutput->AddOutputField("Integer", DatumType::Integer); }
+                    if (ImGui::MenuItem("Bool"))    { funcOutput->AddOutputField("Bool", DatumType::Bool); }
+                    if (ImGui::MenuItem("String"))  { funcOutput->AddOutputField("String", DatumType::String); }
+                    if (ImGui::MenuItem("Vector"))  { funcOutput->AddOutputField("Vector", DatumType::Vector); }
+                    if (ImGui::MenuItem("Color"))   { funcOutput->AddOutputField("Color", DatumType::Color); }
+                    ImGui::EndPopup();
+                }
+
+                // Right-click on input pins to remove them
+                for (uint32_t j = 0; j < node->GetNumInputPins(); ++j)
+                {
+                    char popupId[32];
+                    snprintf(popupId, sizeof(popupId), "RemovePin_%u", j);
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                    {
+                        // Check if mouse is over this specific pin area
+                    }
+                }
                 ImGui::PopID();
             }
         }
+        else if (hasOutputs)
+        {
+            // Source-only nodes: empty left column with minimum width
+            ImGui::Dummy(ImVec2(1.0f, 0.0f));
+        }
 
-        // Output pins
+        NextColumn();
+
+        // RIGHT COLUMN: output pins
         for (uint32_t j = 0; j < node->GetNumOutputPins(); ++j)
         {
             const GraphPin& pin = node->GetOutputPins()[j];
             bool connected = IsPinConnected(graph, pin.mId);
 
-            ImGui::PushID(pin.mId);
-            DrawOutputPinValue(pin);
-            ImGui::PopID();
-            ImGui::SameLine();
-
+            // Render pin icon first to establish the line, then label via SameLine.
+            // imgui-node-editor positions the link endpoint at the pin icon
+            // regardless of draw order within the BeginPin/EndPin block.
             ed::BeginPin(MakePinId(pin.mId), ed::PinKind::Output);
+            if (pin.mDataType == DatumType::Execution)
+            {
+                ImGui::Text("%s", pin.mName.c_str());
+                ImGui::SameLine();
+            }
+            else
+            {
+                ImGui::PushID(pin.mId);
+                DrawOutputPinValue(pin);
+                ImGui::PopID();
+                ImGui::SameLine();
+            }
             DrawPinIcon(pin.mDataType, connected);
             ed::EndPin();
         }
+
+        EndColumns();
 
         ed::EndNode();
     }
@@ -418,50 +592,338 @@ static void AddNodeAtCenter(NodeGraph& graph, TypeId nodeType)
     }
 }
 
+static FunctionCallNode* AddFunctionCallNode(NodeGraph& graph, const std::string& functionName)
+{
+    if (sEditedAsset == nullptr)
+        return nullptr;
+
+    GraphNode* node = graph.AddNode(FunctionCallNode::GetStaticType());
+    if (node == nullptr)
+        return nullptr;
+
+    FunctionCallNode* callNode = static_cast<FunctionCallNode*>(node);
+    callNode->SetFunctionName(functionName);
+    callNode->RebuildPinsFromFunction(sEditedAsset);
+
+    sPendingNodeId = node->GetId();
+    sPendingNodePos = glm::vec2(sCanvasCenter.x, sCanvasCenter.y);
+
+    return callNode;
+}
+
+// Mapping from DatumType to the appropriate InputNode type
+static TypeId GetInputNodeTypeForDatum(DatumType type)
+{
+    switch (type)
+    {
+    case DatumType::Float:    return FloatInputNode::GetStaticType();
+    case DatumType::Integer:  return IntInputNode::GetStaticType();
+    case DatumType::Bool:     return BoolInputNode::GetStaticType();
+    case DatumType::String:   return StringInputNode::GetStaticType();
+    case DatumType::Vector:   return VectorInputNode::GetStaticType();
+    case DatumType::Color:    return ColorInputNode::GetStaticType();
+    case DatumType::Byte:     return ByteInputNode::GetStaticType();
+    case DatumType::Asset:    return AssetInputNode::GetStaticType();
+    default:                  return FloatInputNode::GetStaticType();
+    }
+}
+
+static void CreateFunctionFromSelection(NodeGraph& graph)
+{
+    if (sEditedAsset == nullptr)
+        return;
+
+    // 1. Collect selected node IDs
+    int selectedCount = ed::GetSelectedObjectCount();
+    if (selectedCount <= 0)
+        return;
+
+    std::vector<ed::NodeId> selectedEdIds(selectedCount);
+    int nodeCount = ed::GetSelectedNodes(selectedEdIds.data(), selectedCount);
+    if (nodeCount <= 0)
+        return;
+
+    std::unordered_set<GraphNodeId> selectedIds;
+    for (int i = 0; i < nodeCount; ++i)
+    {
+        selectedIds.insert(FromNodeId(selectedEdIds[i]));
+    }
+
+    // 2. Analyze boundary connections
+    struct IncomingConnection
+    {
+        GraphPinId externalOutputPinId;    // pin in unselected node
+        GraphPinId internalInputPinId;     // pin in selected node
+        GraphNodeId internalNodeId;
+        DatumType type;
+    };
+    struct OutgoingConnection
+    {
+        GraphPinId internalOutputPinId;    // pin in selected node
+        GraphPinId externalInputPinId;     // pin in unselected node
+        GraphNodeId externalNodeId;
+        DatumType type;
+    };
+
+    std::vector<IncomingConnection> incoming;
+    std::vector<OutgoingConnection> outgoing;
+    std::vector<GraphLink> internalLinks;
+
+    for (const GraphLink& link : graph.GetLinks())
+    {
+        bool srcSelected = selectedIds.count(link.mOutputNodeId) > 0;
+        bool dstSelected = selectedIds.count(link.mInputNodeId) > 0;
+
+        if (srcSelected && dstSelected)
+        {
+            internalLinks.push_back(link);
+        }
+        else if (!srcSelected && dstSelected)
+        {
+            GraphPin* pin = graph.FindPin(link.mInputPinId);
+            DatumType type = pin ? pin->mDataType : DatumType::Float;
+            incoming.push_back({ link.mOutputPinId, link.mInputPinId, link.mInputNodeId, type });
+        }
+        else if (srcSelected && !dstSelected)
+        {
+            GraphPin* pin = graph.FindPin(link.mOutputPinId);
+            DatumType type = pin ? pin->mDataType : DatumType::Float;
+            outgoing.push_back({ link.mOutputPinId, link.mInputPinId, link.mOutputNodeId, type });
+        }
+    }
+
+    // 3. Create new function graph
+    static int sFunctionCounter = 1;
+    char funcName[64];
+    snprintf(funcName, sizeof(funcName), "Function_%d", sFunctionCounter++);
+
+    NodeGraph* funcGraph = sEditedAsset->AddFunctionGraph(funcName);
+    if (funcGraph == nullptr)
+        return;
+
+    // 4. Copy selected nodes to function graph (with ID remapping)
+    std::unordered_map<GraphNodeId, GraphNodeId> nodeIdMap;
+    std::unordered_map<GraphPinId, GraphPinId> pinIdMap;
+
+    // Compute centroid of selection
+    glm::vec2 centroid(0.0f);
+    int centroidCount = 0;
+
+    for (GraphNodeId selId : selectedIds)
+    {
+        GraphNode* srcNode = graph.FindNode(selId);
+        if (srcNode == nullptr)
+            continue;
+
+        centroid += srcNode->GetEditorPosition();
+        centroidCount++;
+
+        GraphNode* newNode = funcGraph->AddNode(srcNode->GetType());
+        if (newNode == nullptr)
+            continue;
+
+        newNode->SetEditorPosition(srcNode->GetEditorPosition());
+
+        // Copy pin values
+        for (uint32_t j = 0; j < srcNode->GetNumInputPins() && j < newNode->GetNumInputPins(); ++j)
+        {
+            newNode->GetInputPins()[j].mDefaultValue = srcNode->GetInputPins()[j].mDefaultValue;
+            newNode->GetInputPins()[j].mValue = srcNode->GetInputPins()[j].mValue;
+            pinIdMap[srcNode->GetInputPins()[j].mId] = newNode->GetInputPins()[j].mId;
+        }
+        for (uint32_t j = 0; j < srcNode->GetNumOutputPins() && j < newNode->GetNumOutputPins(); ++j)
+        {
+            pinIdMap[srcNode->GetOutputPins()[j].mId] = newNode->GetOutputPins()[j].mId;
+        }
+
+        if (srcNode->IsInputNode())
+        {
+            newNode->SetInputName(srcNode->GetInputName());
+        }
+
+        newNode->CopyCustomData(srcNode);
+        nodeIdMap[selId] = newNode->GetId();
+    }
+
+    if (centroidCount > 0)
+    {
+        centroid /= (float)centroidCount;
+    }
+
+    // 5. Copy internal links with remapped IDs
+    for (const GraphLink& link : internalLinks)
+    {
+        auto outIt = pinIdMap.find(link.mOutputPinId);
+        auto inIt = pinIdMap.find(link.mInputPinId);
+        if (outIt != pinIdMap.end() && inIt != pinIdMap.end())
+        {
+            funcGraph->AddLink(outIt->second, inIt->second);
+        }
+    }
+
+    // 6. Add InputNodes for each incoming connection
+    std::unordered_map<GraphPinId, GraphPinId> inputNodeOutputPinMap;  // external output pin → new InputNode output pin
+    float inputYOffset = 0.0f;
+
+    for (const IncomingConnection& conn : incoming)
+    {
+        // Check if we already created an InputNode for this external pin
+        if (inputNodeOutputPinMap.count(conn.externalOutputPinId) > 0)
+        {
+            // Reuse: link existing InputNode output to internal target
+            auto targetIt = pinIdMap.find(conn.internalInputPinId);
+            if (targetIt != pinIdMap.end())
+            {
+                funcGraph->AddLink(inputNodeOutputPinMap[conn.externalOutputPinId], targetIt->second);
+            }
+            continue;
+        }
+
+        TypeId inputType = GetInputNodeTypeForDatum(conn.type);
+        GraphNode* inputNode = funcGraph->AddNode(inputType);
+        if (inputNode == nullptr)
+            continue;
+
+        // Position to the left of selection
+        inputNode->SetEditorPosition(glm::vec2(centroid.x - 300.0f, centroid.y + inputYOffset));
+        inputYOffset += 80.0f;
+
+        // Name the input after the pin
+        GraphPin* srcPin = graph.FindPin(conn.internalInputPinId);
+        if (srcPin != nullptr)
+        {
+            inputNode->SetInputName(srcPin->mName);
+        }
+
+        // Link InputNode output → internal target
+        if (inputNode->GetNumOutputPins() > 0)
+        {
+            auto targetIt = pinIdMap.find(conn.internalInputPinId);
+            if (targetIt != pinIdMap.end())
+            {
+                funcGraph->AddLink(inputNode->GetOutputPinId(0), targetIt->second);
+            }
+            inputNodeOutputPinMap[conn.externalOutputPinId] = inputNode->GetOutputPinId(0);
+        }
+    }
+
+    // 7. Add FunctionOutputNode with dynamic pins for each outgoing connection
+    FunctionOutputNode* funcOutputNode = nullptr;
+    if (!outgoing.empty())
+    {
+        GraphNode* outputNodeBase = funcGraph->AddNode(FunctionOutputNode::GetStaticType());
+        funcOutputNode = static_cast<FunctionOutputNode*>(outputNodeBase);
+        funcOutputNode->SetEditorPosition(glm::vec2(centroid.x + 300.0f, centroid.y));
+
+        for (uint32_t i = 0; i < outgoing.size(); ++i)
+        {
+            GraphPin* srcPin = graph.FindPin(outgoing[i].internalOutputPinId);
+            std::string pinName = srcPin ? srcPin->mName : "Out";
+            funcOutputNode->AddOutputField(pinName, outgoing[i].type);
+
+            // Link internal source → FunctionOutputNode input
+            auto srcIt = pinIdMap.find(outgoing[i].internalOutputPinId);
+            if (srcIt != pinIdMap.end() && funcOutputNode->GetNumInputPins() > i)
+            {
+                funcGraph->AddLink(srcIt->second, funcOutputNode->GetInputPinId(i));
+            }
+        }
+    }
+
+    // 8. Remove selected nodes from main graph
+    // First remove all links connected to selected nodes
+    for (int32_t i = (int32_t)graph.GetLinks().size() - 1; i >= 0; --i)
+    {
+        const GraphLink& link = graph.GetLinks()[i];
+        if (selectedIds.count(link.mOutputNodeId) > 0 || selectedIds.count(link.mInputNodeId) > 0)
+        {
+            graph.RemoveLink(link.mId);
+        }
+    }
+    // Then remove the nodes
+    for (GraphNodeId selId : selectedIds)
+    {
+        graph.RemoveNode(selId);
+    }
+
+    // 9. Insert FunctionCallNode at centroid
+    GraphNode* callNodeBase = graph.AddNode(FunctionCallNode::GetStaticType());
+    FunctionCallNode* callNode = static_cast<FunctionCallNode*>(callNodeBase);
+    callNode->SetFunctionName(funcName);
+    callNode->RebuildPinsFromFunction(sEditedAsset);
+    callNode->SetEditorPosition(centroid);
+    ed::SetNodePosition(MakeNodeId(callNode->GetId()), ImVec2(centroid.x, centroid.y));
+
+    // 10. Reconnect external links to FunctionCallNode's pins
+    // Reconnect incoming: external output pin → FunctionCallNode input pin
+    uint32_t inputPinIdx = 0;
+    std::unordered_set<GraphPinId> reconnectedExternalPins;
+    for (const IncomingConnection& conn : incoming)
+    {
+        if (reconnectedExternalPins.count(conn.externalOutputPinId) > 0)
+            continue;
+
+        if (inputPinIdx < callNode->GetNumInputPins())
+        {
+            graph.AddLink(conn.externalOutputPinId, callNode->GetInputPinId(inputPinIdx));
+            reconnectedExternalPins.insert(conn.externalOutputPinId);
+        }
+        inputPinIdx++;
+    }
+
+    // Reconnect outgoing: FunctionCallNode output pin → external input pin
+    for (uint32_t i = 0; i < outgoing.size() && i < callNode->GetNumOutputPins(); ++i)
+    {
+        graph.AddLink(callNode->GetOutputPinId(i), outgoing[i].externalInputPinId);
+    }
+
+    ed::ClearSelection();
+}
+
 static void DrawContextMenu(NodeGraph& graph)
 {
     static ImVec2 sContextCanvasPos;
     static ed::NodeId sContextNodeId;
     static ed::LinkId sContextLinkId;
 
-    // Only open context menu on right-click release if we weren't dragging (panning)
-    bool wasDragging = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x != 0.0f ||
-                       ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y != 0.0f;
-    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !wasDragging && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
+    // Use imgui-node-editor's built-in context menu detection.
+    ed::Suspend();
+    if (ed::ShowNodeContextMenu(&sContextNodeId))
     {
-        ed::NodeId hoveredNode = ed::GetHoveredNode();
-        ed::LinkId hoveredLink = ed::GetHoveredLink();
-
-        // Convert to canvas coords now while the editor is still active
         sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
-
-        if (hoveredNode)
-        {
-            sContextNodeId = hoveredNode;
-            ed::Suspend();
-            ImGui::OpenPopup("Node Context");
-            ed::Resume();
-        }
-        else if (hoveredLink)
-        {
-            sContextLinkId = hoveredLink;
-            ed::Suspend();
-            ImGui::OpenPopup("Link Context");
-            ed::Resume();
-        }
-        else
-        {
-            ed::Suspend();
-            ImGui::OpenPopup("Create Node");
-            ed::Resume();
-        }
+        ImGui::OpenPopup("Node Context");
     }
+    else if (ed::ShowLinkContextMenu(&sContextLinkId))
+    {
+        sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
+        ImGui::OpenPopup("Link Context");
+    }
+    else if (ed::ShowBackgroundContextMenu())
+    {
+        sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
+        ImGui::OpenPopup("Create Node");
+    }
+    ed::Resume();
 
     // Draw popups (must be inside Suspend/Resume)
     ed::Suspend();
 
     if (ImGui::BeginPopup("Create Node"))
     {
+        // Clear search buffer when popup first opens
+        if (ImGui::IsWindowAppearing())
+        {
+            sNodeSearchBuffer[0] = '\0';
+        }
+
+        // Auto-focus search bar on first frame
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+        ImGui::InputTextWithHint("##NodeSearch", "Search nodes...", sNodeSearchBuffer, IM_ARRAYSIZE(sNodeSearchBuffer));
+        ImGui::Separator();
+
         GraphDomainManager* domainMgr = GraphDomainManager::Get();
         GraphDomain* domain = nullptr;
         if (domainMgr != nullptr)
@@ -469,32 +931,143 @@ static void DrawContextMenu(NodeGraph& graph)
             domain = domainMgr->GetDomain(graph.GetDomainName().c_str());
         }
 
+        bool hasSearchFilter = sNodeSearchBuffer[0] != '\0';
+
         if (domain != nullptr)
         {
             const std::vector<GraphNodeTypeInfo>& nodeTypes = domain->GetNodeTypes();
-            std::string lastCategory;
 
-            for (uint32_t i = 0; i < nodeTypes.size(); ++i)
+            if (hasSearchFilter)
             {
-                if (nodeTypes[i].mCategory != lastCategory)
+                // --- Flat filtered list ---
+                std::string searchLower = sNodeSearchBuffer;
+                std::transform(searchLower.begin(), searchLower.end(), searchLower.begin(),
+                    [](unsigned char c) { return (char)std::tolower(c); });
+
+                for (uint32_t i = 0; i < nodeTypes.size(); ++i)
                 {
-                    if (!lastCategory.empty())
+                    std::string nameLower = nodeTypes[i].mTypeName;
+                    std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(),
+                        [](unsigned char c) { return (char)std::tolower(c); });
+
+                    std::string catLower = nodeTypes[i].mCategory;
+                    std::transform(catLower.begin(), catLower.end(), catLower.begin(),
+                        [](unsigned char c) { return (char)std::tolower(c); });
+
+                    if (nameLower.find(searchLower) != std::string::npos ||
+                        catLower.find(searchLower) != std::string::npos)
                     {
-                        ImGui::Separator();
+                        char label[256];
+                        snprintf(label, sizeof(label), "%s  [%s]", nodeTypes[i].mTypeName.c_str(), nodeTypes[i].mCategory.c_str());
+                        if (ImGui::MenuItem(label))
+                        {
+                            AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
+                        }
                     }
-                    ImGui::TextDisabled("%s", nodeTypes[i].mCategory.c_str());
-                    lastCategory = nodeTypes[i].mCategory;
                 }
 
-                if (ImGui::MenuItem(nodeTypes[i].mTypeName.c_str()))
+                // Filter function graphs too
+                if (sEditedAsset != nullptr)
                 {
-                    AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
+                    for (uint32_t i = 0; i < sEditedAsset->GetNumFunctionGraphs(); ++i)
+                    {
+                        NodeGraph* fg = sEditedAsset->GetFunctionGraph(i);
+                        if (fg != nullptr)
+                        {
+                            std::string fnameLower = fg->GetGraphName();
+                            std::transform(fnameLower.begin(), fnameLower.end(), fnameLower.begin(),
+                                [](unsigned char c) { return (char)std::tolower(c); });
+
+                            if (fnameLower.find(searchLower) != std::string::npos)
+                            {
+                                char label[256];
+                                snprintf(label, sizeof(label), "%s  [Function]", fg->GetGraphName().c_str());
+                                if (ImGui::MenuItem(label))
+                                {
+                                    AddFunctionCallNode(graph, fg->GetGraphName());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // --- Category submenus ---
+                std::string lastCategory;
+
+                for (uint32_t i = 0; i < nodeTypes.size(); ++i)
+                {
+                    if (nodeTypes[i].mCategory != lastCategory)
+                    {
+                        // Close previous submenu
+                        if (!lastCategory.empty())
+                        {
+                            ImGui::EndMenu();
+                        }
+
+                        lastCategory = nodeTypes[i].mCategory;
+
+                        if (!ImGui::BeginMenu(lastCategory.c_str()))
+                        {
+                            // Skip all nodes in this category
+                            std::string skipCat = lastCategory;
+                            while (i + 1 < nodeTypes.size() && nodeTypes[i + 1].mCategory == skipCat)
+                            {
+                                ++i;
+                            }
+                            lastCategory.clear();
+                            continue;
+                        }
+                    }
+
+                    if (ImGui::MenuItem(nodeTypes[i].mTypeName.c_str()))
+                    {
+                        AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
+                    }
+                }
+
+                // Close the last open submenu
+                if (!lastCategory.empty())
+                {
+                    ImGui::EndMenu();
+                }
+
+                // Functions submenu
+                if (sEditedAsset != nullptr && sEditedAsset->GetNumFunctionGraphs() > 0)
+                {
+                    if (ImGui::BeginMenu("Functions"))
+                    {
+                        for (uint32_t i = 0; i < sEditedAsset->GetNumFunctionGraphs(); ++i)
+                        {
+                            NodeGraph* fg = sEditedAsset->GetFunctionGraph(i);
+                            if (fg != nullptr)
+                            {
+                                if (ImGui::MenuItem(fg->GetGraphName().c_str()))
+                                {
+                                    AddFunctionCallNode(graph, fg->GetGraphName());
+                                }
+                            }
+                        }
+                        ImGui::EndMenu();
+                    }
                 }
             }
         }
         else
         {
             ImGui::TextDisabled("No domain set");
+        }
+
+        // Create Function from Selection (always visible at bottom)
+        int selCount = ed::GetSelectedObjectCount();
+        if (selCount > 0)
+        {
+            ImGui::Separator();
+            if (ImGui::MenuItem("Create Function from Selection"))
+            {
+                CreateFunctionFromSelection(graph);
+            }
         }
 
         ImGui::EndPopup();
@@ -509,6 +1082,27 @@ static void DrawContextMenu(NodeGraph& graph)
         {
             ImGui::Text("%s", node->GetNodeTypeName());
             ImGui::Separator();
+        }
+
+        // Remove output pin option for FunctionOutputNode
+        if (node != nullptr && node->GetType() == FunctionOutputNode::GetStaticType())
+        {
+            FunctionOutputNode* funcOutput = static_cast<FunctionOutputNode*>(node);
+            if (funcOutput->GetNumInputPins() > 0)
+            {
+                if (ImGui::BeginMenu("Remove Output Pin"))
+                {
+                    for (uint32_t i = 0; i < funcOutput->GetNumInputPins(); ++i)
+                    {
+                        if (ImGui::MenuItem(funcOutput->GetInputPins()[i].mName.c_str()))
+                        {
+                            funcOutput->RemoveOutputField(i);
+                            break;
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+            }
         }
 
         if (ImGui::MenuItem("Delete"))
@@ -552,6 +1146,213 @@ static void UpdateNodePositions(NodeGraph& graph)
     }
 }
 
+static void SwitchToGraph(NodeGraphAsset* asset, int32_t index)
+{
+    if (asset == nullptr)
+        return;
+
+    // Save current node positions before switching
+    if (sEditedGraph != nullptr && sEditorContext != nullptr)
+    {
+        ed::SetCurrentEditor(sEditorContext);
+        UpdateNodePositions(*sEditedGraph);
+    }
+
+    // Determine which editor context key to use
+    std::string currentKey;
+    if (sSelectedGraphIndex == -1)
+    {
+        currentKey = "__main__";
+    }
+    else if (sSelectedGraphIndex >= 0 && sSelectedGraphIndex < (int32_t)asset->GetNumFunctionGraphs())
+    {
+        currentKey = asset->GetFunctionGraph(sSelectedGraphIndex)->GetGraphName();
+    }
+
+    // Store the current context in the map
+    if (sEditorContext != nullptr && !currentKey.empty())
+    {
+        sEditorContextMap[currentKey] = sEditorContext;
+        sEditorContext = nullptr;
+    }
+
+    // Update selection
+    sSelectedGraphIndex = index;
+
+    // Set the edited graph
+    if (index == -1)
+    {
+        sEditedGraph = &asset->GetGraph();
+    }
+    else if (index >= 0 && index < (int32_t)asset->GetNumFunctionGraphs())
+    {
+        sEditedGraph = asset->GetFunctionGraph(index);
+    }
+    else
+    {
+        return;
+    }
+
+    // Get or create editor context for the new graph
+    std::string newKey;
+    if (index == -1)
+    {
+        newKey = "__main__";
+    }
+    else
+    {
+        newKey = sEditedGraph->GetGraphName();
+    }
+
+    auto it = sEditorContextMap.find(newKey);
+    if (it != sEditorContextMap.end())
+    {
+        sEditorContext = it->second;
+        sEditorContextMap.erase(it);
+    }
+    else
+    {
+        sEditorContext = CreateNewEditorContext();
+        sNeedsPositionSync = true;
+    }
+}
+
+static void DrawFunctionSidebar(NodeGraphAsset* asset)
+{
+    ImGui::BeginChild("FunctionSidebar", ImVec2(kFunctionSidebarWidth, 0), true);
+
+    // Event Graph entry (always present)
+    bool isMainSelected = (sSelectedGraphIndex == -1);
+    if (ImGui::Selectable("Event Graph", isMainSelected))
+    {
+        if (!isMainSelected)
+        {
+            SwitchToGraph(asset, -1);
+        }
+    }
+
+    ImGui::Separator();
+
+    // Functions header with "+" button
+    ImGui::Text("Functions");
+    ImGui::SameLine(kFunctionSidebarWidth - 40.0f);
+    if (ImGui::SmallButton("+"))
+    {
+        static int sNewFuncCounter = 1;
+        char name[64];
+        snprintf(name, sizeof(name), "NewFunction_%d", sNewFuncCounter++);
+        NodeGraph* fg = asset->AddFunctionGraph(name);
+        if (fg != nullptr)
+        {
+            // Add a FunctionOutputNode to the new function graph
+            GraphNode* outputNode = fg->AddNode(FunctionOutputNode::GetStaticType());
+            if (outputNode != nullptr)
+            {
+                outputNode->SetEditorPosition(glm::vec2(400.0f, 200.0f));
+            }
+
+            // Switch to the new function graph
+            uint32_t newIdx = asset->GetNumFunctionGraphs() - 1;
+            SwitchToGraph(asset, (int32_t)newIdx);
+
+            // Start rename
+            sRenamingFunction = true;
+            sRenamingIndex = (int32_t)newIdx;
+            strncpy(sRenameBuffer, name, sizeof(sRenameBuffer) - 1);
+            sRenameBuffer[sizeof(sRenameBuffer) - 1] = '\0';
+        }
+    }
+
+    // Function list
+    for (uint32_t i = 0; i < asset->GetNumFunctionGraphs(); ++i)
+    {
+        NodeGraph* fg = asset->GetFunctionGraph(i);
+        if (fg == nullptr)
+            continue;
+
+        ImGui::PushID((int)i);
+
+        bool isSelected = (sSelectedGraphIndex == (int32_t)i);
+
+        if (sRenamingFunction && sRenamingIndex == (int32_t)i)
+        {
+            // Inline rename
+            ImGui::SetNextItemWidth(kFunctionSidebarWidth - 30.0f);
+            if (ImGui::InputText("##rename", sRenameBuffer, sizeof(sRenameBuffer),
+                ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+            {
+                if (strlen(sRenameBuffer) > 0)
+                {
+                    asset->RenameFunctionGraph(i, sRenameBuffer);
+                }
+                sRenamingFunction = false;
+                sRenamingIndex = -1;
+            }
+            // Cancel on escape or lost focus
+            if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
+                (!ImGui::IsItemActive() && !ImGui::IsItemFocused() && sRenamingFunction))
+            {
+                sRenamingFunction = false;
+                sRenamingIndex = -1;
+            }
+            // Auto-focus the rename field on first frame
+            if (sRenamingFunction && sRenamingIndex == (int32_t)i)
+            {
+                ImGui::SetKeyboardFocusHere(-1);
+            }
+        }
+        else
+        {
+            if (ImGui::Selectable(fg->GetGraphName().c_str(), isSelected))
+            {
+                SwitchToGraph(asset, (int32_t)i);
+            }
+
+            // Drag source for drag-drop onto canvas
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+            {
+                const std::string& funcName = fg->GetGraphName();
+                ImGui::SetDragDropPayload("DND_FUNCTION", funcName.c_str(), funcName.size() + 1);
+                ImGui::Text("Function: %s", funcName.c_str());
+                ImGui::EndDragDropSource();
+            }
+
+            // Right-click context menu
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::MenuItem("Rename"))
+                {
+                    sRenamingFunction = true;
+                    sRenamingIndex = (int32_t)i;
+                    strncpy(sRenameBuffer, fg->GetGraphName().c_str(), sizeof(sRenameBuffer) - 1);
+                    sRenameBuffer[sizeof(sRenameBuffer) - 1] = '\0';
+                }
+                if (ImGui::MenuItem("Delete"))
+                {
+                    // Switch to main graph if we're deleting the current one
+                    if (sSelectedGraphIndex == (int32_t)i)
+                    {
+                        SwitchToGraph(asset, -1);
+                    }
+                    else if (sSelectedGraphIndex > (int32_t)i)
+                    {
+                        sSelectedGraphIndex--;
+                    }
+                    asset->RemoveFunctionGraph(i);
+                    ImGui::EndPopup();
+                    ImGui::PopID();
+                    break;  // Break because we modified the vector
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        ImGui::PopID();
+    }
+
+    ImGui::EndChild();
+}
+
 void DrawNodeGraphContent()
 {
     if (sEditedGraph == nullptr)
@@ -561,11 +1362,30 @@ void DrawNodeGraphContent()
     }
 
     EnsureEditorContext();
+
+    // Draw sidebar + canvas layout if we have a NodeGraphAsset
+    if (sEditedAsset != nullptr)
+    {
+        DrawFunctionSidebar(sEditedAsset);
+        ImGui::SameLine();
+    }
+
+    // Canvas group
+    ImGui::BeginGroup();
+
     NodeGraph& graph = *sEditedGraph;
 
     // Toolbar - line 1: name + preview
     const char* displayName = sEditedOwner ? sEditedOwner->GetName().c_str() : "Node Graph";
-    ImGui::Text("%s", displayName);
+    if (sSelectedGraphIndex >= 0 && sEditedAsset != nullptr)
+    {
+        // Show function name when editing a function
+        ImGui::Text("%s > %s", displayName, graph.GetGraphName().c_str());
+    }
+    else
+    {
+        ImGui::Text("%s", displayName);
+    }
     ImGui::SameLine();
 
     if (ImGui::Checkbox("Preview", &sPreviewEnabled))
@@ -664,6 +1484,21 @@ void DrawNodeGraphContent()
         sPendingNodeId = 0;
     }
 
+    // Handle drag-drop from function sidebar onto canvas
+    if (sEditedAsset != nullptr)
+    {
+        // Accept drag-drop on the canvas area
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_FUNCTION"))
+            {
+                const char* funcName = static_cast<const char*>(payload->Data);
+                AddFunctionCallNode(graph, funcName);
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
+
     DrawNodes(graph);
     DrawLinks(graph);
     HandleCreation(graph);
@@ -698,6 +1533,8 @@ void DrawNodeGraphContent()
     ed::End();
 
     UpdateNodePositions(graph);
+
+    ImGui::EndGroup();
 }
 
 void OpenNodeGraphForEditing(NodeGraphAsset* asset)
@@ -707,11 +1544,24 @@ void OpenNodeGraphForEditing(NodeGraphAsset* asset)
         return;
     }
 
+    // Clean up previous editor contexts
+    for (auto& pair : sEditorContextMap)
+    {
+        ed::DestroyEditor(pair.second);
+    }
+    sEditorContextMap.clear();
+    sSelectedGraphIndex = -1;
+    sRenamingFunction = false;
+    sRenamingIndex = -1;
+
     sEditedGraph = &asset->GetGraph();
     sEditedOwner = asset;
     sEditedAsset = asset;
     GetEditorState()->mShowNodeGraphPanel = true;
     sNeedsPositionSync = true;
+
+    // Wire FunctionCallNodes in asset to asset pointer
+    asset->ResolveFunctionCallNodes();
 
     // Reset editor context for new graph
     if (sEditorContext != nullptr)
@@ -727,6 +1577,16 @@ void OpenNodeGraphForEditing(NodeGraph* graph, Asset* owner)
     {
         return;
     }
+
+    // Clean up previous editor contexts
+    for (auto& pair : sEditorContextMap)
+    {
+        ed::DestroyEditor(pair.second);
+    }
+    sEditorContextMap.clear();
+    sSelectedGraphIndex = -1;
+    sRenamingFunction = false;
+    sRenamingIndex = -1;
 
     sEditedGraph = graph;
     sEditedOwner = owner;
@@ -747,6 +1607,9 @@ void CloseNodeGraphPanel()
     sEditedGraph = nullptr;
     sEditedOwner = nullptr;
     sEditedAsset = nullptr;
+    sSelectedGraphIndex = -1;
+    sRenamingFunction = false;
+    sRenamingIndex = -1;
     GetEditorState()->mShowNodeGraphPanel = false;
 
     if (sEditorContext != nullptr)
@@ -754,6 +1617,12 @@ void CloseNodeGraphPanel()
         ed::DestroyEditor(sEditorContext);
         sEditorContext = nullptr;
     }
+
+    for (auto& pair : sEditorContextMap)
+    {
+        ed::DestroyEditor(pair.second);
+    }
+    sEditorContextMap.clear();
 }
 
 #endif

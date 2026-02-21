@@ -1049,6 +1049,9 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\InputNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp">
       <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
     </ClCompile>
@@ -1999,6 +2002,9 @@
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\InputNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h">

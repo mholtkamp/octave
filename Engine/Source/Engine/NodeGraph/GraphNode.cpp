@@ -1,4 +1,6 @@
 #include "NodeGraph/GraphNode.h"
+#include "NodeGraph/NodeGraph.h"
+#include "NodeGraph/GraphLink.h"
 #include "Stream.h"
 #include "Log.h"
 
@@ -33,7 +35,7 @@ const std::string& GraphNode::GetInputName() const
     return sEmpty;
 }
 
-static void WriteDatumToStream(Stream& stream, const Datum& datum)
+void GraphNode::WriteDatumToStream(Stream& stream, const Datum& datum)
 {
     stream.WriteUint8((uint8_t)datum.mType);
 
@@ -50,7 +52,7 @@ static void WriteDatumToStream(Stream& stream, const Datum& datum)
     }
 }
 
-static Datum ReadDatumFromStream(Stream& stream)
+Datum GraphNode::ReadDatumFromStream(Stream& stream)
 {
     DatumType type = (DatumType)stream.ReadUint8();
 
@@ -156,6 +158,14 @@ GraphPin& GraphNode::AddOutputPin(const char* name, DatumType type)
     case DatumType::Vector2D: pin.mValue = Datum(glm::vec2(0.0f)); break;
     case DatumType::Vector:   pin.mValue = Datum(glm::vec3(0.0f)); break;
     case DatumType::Color:    pin.mValue = Datum(glm::vec4(0.0f)); break;
+    case DatumType::Node:     pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Node3D:   pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Widget:   pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Text:     pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Quad:     pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Audio3D:  pin.mValue = Datum((Node*)nullptr); break;
+    case DatumType::Scene:    pin.mValue = Datum((Asset*)nullptr); break;
+    case DatumType::Execution: pin.mName = "    "; break;
     default: break;
     }
 
@@ -216,4 +226,43 @@ void GraphNode::SetOutputValue(uint32_t index, const Datum& value)
     {
         mOutputPins[index].mValue = value;
     }
+}
+
+void GraphNode::TriggerExecutionPin(uint32_t outputPinIndex)
+{
+    if (outputPinIndex >= mOutputPins.size())
+        return;
+
+    GraphPin& outPin = mOutputPins[outputPinIndex];
+    if (outPin.mDataType != DatumType::Execution)
+        return;
+
+    outPin.mExecutionTriggered = true;
+
+    if (mGraph == nullptr)
+        return;
+
+    // Propagate to connected input execution pins
+    const std::vector<GraphLink>& links = mGraph->GetLinks();
+    for (uint32_t i = 0; i < links.size(); ++i)
+    {
+        if (links[i].mOutputPinId == outPin.mId)
+        {
+            GraphPin* inputPin = mGraph->FindPin(links[i].mInputPinId);
+            if (inputPin != nullptr && inputPin->mDataType == DatumType::Execution)
+            {
+                inputPin->mExecutionTriggered = true;
+            }
+        }
+    }
+}
+
+bool GraphNode::WasExecutionTriggered(uint32_t inputPinIndex) const
+{
+    if (inputPinIndex < mInputPins.size() &&
+        mInputPins[inputPinIndex].mDataType == DatumType::Execution)
+    {
+        return mInputPins[inputPinIndex].mExecutionTriggered;
+    }
+    return false;
 }

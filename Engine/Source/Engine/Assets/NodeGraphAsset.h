@@ -4,6 +4,9 @@
 #include "Factory.h"
 #include "NodeGraph/NodeGraph.h"
 
+#include <vector>
+#include <string>
+
 class NodeGraphAsset : public Asset
 {
 public:
@@ -25,10 +28,21 @@ public:
     NodeGraph& GetGraph() { return mGraph; }
     const NodeGraph& GetGraph() const { return mGraph; }
 
+    // Function graphs
+    NodeGraph* AddFunctionGraph(const std::string& name);
+    void RemoveFunctionGraph(uint32_t index);
+    NodeGraph* FindFunctionGraph(const std::string& name) const;
+    uint32_t GetNumFunctionGraphs() const { return (uint32_t)mFunctionGraphs.size(); }
+    NodeGraph* GetFunctionGraph(uint32_t index);
+    const std::vector<NodeGraph*>& GetFunctionGraphs() const { return mFunctionGraphs; }
+    void RenameFunctionGraph(uint32_t index, const std::string& newName);
+    void ResolveFunctionCallNodes();
+
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
 protected:
 
     NodeGraph mGraph;
+    std::vector<NodeGraph*> mFunctionGraphs;
     int32_t mDomainIndex = 0;
 };

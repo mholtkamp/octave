@@ -10,6 +10,13 @@ class Node;
 void MakeNodeUserdataStrong(Node* node);
 void MakeNodeUserdataWeak(Node* node);
 
+// Detect Node-derived types without requiring Node to be complete.
+template<typename U, typename = void>
+struct IsNodeType : std::false_type {};
+
+template<typename U>
+struct IsNodeType<U, std::void_t<decltype(std::declval<U>().IsDestroyed())>> : std::true_type {};
+
 template<typename T>
 struct RefCount
 {
@@ -151,7 +158,7 @@ public:
 
         SetCommon(pointer, refCount);
 
-        if (std::is_base_of<Node, T>::value)
+        if constexpr (IsNodeType<T>::value)
         {
             if (diffPointer &&
                 mPointer != nullptr &&
@@ -208,7 +215,7 @@ public:
 
     void Clear()
     {
-        if (std::is_base_of<Node, T>::value)
+        if constexpr (IsNodeType<T>::value)
         {
             Node* node = (Node*)mPointer;
 
@@ -281,10 +288,9 @@ public:
 
     bool IsValid() const
     {
-        if (std::is_base_of<Node, T>::value)
+        if constexpr (IsNodeType<T>::value)
         {
             return (mPointer != nullptr && mRefCount != nullptr && !mPointer->IsDestroyed());
-
         }
         else
         {
@@ -494,7 +500,7 @@ public:
 
     bool IsValid() const
     {
-        if (std::is_base_of<Node, T>::value)
+        if constexpr (IsNodeType<T>::value)
         {
             return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0 && !mPointer->IsDestroyed());
         }

@@ -13,4 +13,5 @@ struct GraphPin
     GraphPinDirection mDirection = GraphPinDirection::Input;
     Datum mDefaultValue;
     Datum mValue;
+    bool mExecutionTriggered = false;
 };

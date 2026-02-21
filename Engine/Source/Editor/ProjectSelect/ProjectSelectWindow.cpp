@@ -155,12 +155,14 @@ void ProjectSelectWindow::DrawRecentProjects()
         {
             const std::string& path = recentProjects[i];
             std::string projectName = path;
+            std::string projectDirectory = path;
 
-            // Extract project name from path
-            size_t slashPos = projectName.find_last_of("/\\");
+            // Extract project name and directory from path
+            size_t slashPos = path.find_last_of("/\\");
             if (slashPos != std::string::npos)
             {
-                projectName = projectName.substr(slashPos + 1);
+                projectName = path.substr(slashPos + 1);
+                projectDirectory = path.substr(0, slashPos);
             }
             // Remove .octp extension
             size_t dotPos = projectName.find_last_of('.');
@@ -191,9 +193,14 @@ void ProjectSelectWindow::DrawRecentProjects()
             // Remove button on the right
 			// take background color out to make the button more visible
 
-            ImGui::SameLine(ImGui::GetWindowWidth() - 80);
+            ImGui::SameLine(ImGui::GetWindowWidth() - 100);
             //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             //ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+            if (ImGui::Button(ICON_MATERIAL_SYMBOLS_FOLDER_OPEN_SHARP, ImVec2(0,25) ))
+            {
+                SYS_ExplorerOpenDirectory(projectDirectory.c_str());
+            }
+            ImGui::SameLine(ImGui::GetWindowWidth() - 60);
             if (ImGui::Button(ICON_ZONDICONS_TRASH, ImVec2(0,25) ))
             {
 

@@ -817,6 +817,7 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\InputNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Domains\ShaderDomain.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.cpp" />
@@ -1153,6 +1154,7 @@
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\InputNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Domains\ShaderDomain.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.h" />

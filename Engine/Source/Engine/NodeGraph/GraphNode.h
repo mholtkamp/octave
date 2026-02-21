@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+class NodeGraph;
 class Stream;
 
 #define DECLARE_GRAPH_NODE(Class, Parent) \
@@ -81,11 +82,27 @@ public:
     virtual glm::vec4 GetNodeColor() const;
 
     virtual bool IsInputNode() const { return false; }
+    virtual bool IsFlowNode() const { return false; }
+    virtual bool IsEventNode() const { return false; }
+    virtual const char* GetEventName() const { return ""; }
     virtual const std::string& GetInputName() const;
     virtual void SetInputName(const std::string& name) {}
 
+    // Graph back-pointer
+    void SetGraph(NodeGraph* graph) { mGraph = graph; }
+    NodeGraph* GetGraph() const { return mGraph; }
+
+    // Execution pin helpers
+    void TriggerExecutionPin(uint32_t outputPinIndex);
+    bool WasExecutionTriggered(uint32_t inputPinIndex) const;
+
     virtual void SaveStream(Stream& stream);
     virtual void LoadStream(Stream& stream, uint32_t version);
+    virtual void CopyCustomData(const GraphNode* src) {}
+
+    // Datum serialization helpers (used by subclasses for custom pin serialization)
+    static void WriteDatumToStream(Stream& stream, const Datum& datum);
+    static Datum ReadDatumFromStream(Stream& stream);
 
     GraphPin& AddInputPin(const char* name, DatumType type, const Datum& defaultValue = Datum());
     GraphPin& AddOutputPin(const char* name, DatumType type);
@@ -113,6 +130,7 @@ public:
 
 protected:
 
+    NodeGraph* mGraph = nullptr;
     GraphNodeId mId = INVALID_GRAPH_NODE_ID;
     std::vector<GraphPin> mInputPins;
     std::vector<GraphPin> mOutputPins;

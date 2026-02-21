@@ -1,6 +1,8 @@
 #include "NodeGraph/Nodes/InputNodes.h"
 #include "Stream.h"
 #include "Utilities.h"
+#include "Nodes/Node.h"
+#include "Nodes/3D/Node3d.h"
 
 FORCE_LINK_DEF(InputNodes);
 
@@ -28,6 +30,12 @@ REGISTER_GRAPH_NODE_MULTI(VectorInputNode, "Vector Input", "Input", glm::vec4(0.
 
 DEFINE_GRAPH_NODE(ColorInputNode);
 REGISTER_GRAPH_NODE_MULTI(ColorInputNode, "Color Input", "Input", glm::vec4(0.9f, 0.6f, 0.1f, 1.0f), "Material", "Shader", "Procedural", "Animation", "FSM", "SceneGraph");
+
+DEFINE_GRAPH_NODE(NodeInputNode);
+REGISTER_GRAPH_NODE_MULTI(NodeInputNode, "Node Input", "Input", glm::vec4(0.9f, 0.6f, 0.1f, 1.0f), "Material", "Shader", "Procedural", "Animation", "FSM", "SceneGraph");
+
+DEFINE_GRAPH_NODE(Node3DInputNode);
+REGISTER_GRAPH_NODE_MULTI(Node3DInputNode, "Node3D Input", "Input", glm::vec4(0.9f, 0.6f, 0.1f, 1.0f), "Material", "Shader", "Procedural", "Animation", "FSM", "SceneGraph");
 
 // =============================================================================
 // FloatInputNode
@@ -232,6 +240,58 @@ void ColorInputNode::SaveStream(Stream& stream)
 }
 
 void ColorInputNode::LoadStream(Stream& stream, uint32_t version)
+{
+    GraphNode::LoadStream(stream, version);
+    stream.ReadString(mInputName);
+}
+
+// =============================================================================
+// NodeInputNode
+// =============================================================================
+void NodeInputNode::SetupPins()
+{
+    AddInputPin("Value", DatumType::Node);
+    AddOutputPin("Out", DatumType::Node);
+}
+
+void NodeInputNode::Evaluate()
+{
+    SetOutputValue(0, GetInputValue(0));
+}
+
+void NodeInputNode::SaveStream(Stream& stream)
+{
+    GraphNode::SaveStream(stream);
+    stream.WriteString(mInputName);
+}
+
+void NodeInputNode::LoadStream(Stream& stream, uint32_t version)
+{
+    GraphNode::LoadStream(stream, version);
+    stream.ReadString(mInputName);
+}
+
+// =============================================================================
+// Node3DInputNode
+// =============================================================================
+void Node3DInputNode::SetupPins()
+{
+    AddInputPin("Value", DatumType::Node3D);
+    AddOutputPin("Out", DatumType::Node3D);
+}
+
+void Node3DInputNode::Evaluate()
+{
+    SetOutputValue(0, GetInputValue(0));
+}
+
+void Node3DInputNode::SaveStream(Stream& stream)
+{
+    GraphNode::SaveStream(stream);
+    stream.WriteString(mInputName);
+}
+
+void Node3DInputNode::LoadStream(Stream& stream, uint32_t version)
 {
     GraphNode::LoadStream(stream, version);
     stream.ReadString(mInputName);
