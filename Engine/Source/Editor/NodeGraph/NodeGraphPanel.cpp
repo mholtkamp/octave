@@ -15,6 +15,7 @@
 #include "NodeGraph/GraphProcessor.h"
 #include "NodeGraph/Nodes/ValueNodes.h"
 #include "NodeGraph/Nodes/InputNodes.h"
+#include "AssetManager.h"
 #include "Log.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -38,6 +39,9 @@ static NodeGraphAsset* sEditedAsset = nullptr;
 static GraphProcessor sProcessor;
 static bool sNeedsPositionSync = false;
 static bool sPreviewEnabled = false;
+static ImVec2 sCanvasCenter = ImVec2(0, 0);
+static GraphNodeId sPendingNodeId = 0;
+static glm::vec2 sPendingNodePos = glm::vec2(0, 0);
 
 static void EnsureEditorContext()
 {
@@ -45,6 +49,7 @@ static void EnsureEditorContext()
     {
         ed::Config config;
         config.SettingsFile = nullptr;
+        config.NavigateButtonIndex = 1; // Right mouse button for panning
         sEditorContext = ed::CreateEditor(&config);
     }
 }
@@ -403,19 +408,32 @@ static void HandleDeletion(NodeGraph& graph)
     ed::EndDelete();
 }
 
+static void AddNodeAtCenter(NodeGraph& graph, TypeId nodeType)
+{
+    GraphNode* node = graph.AddNode(nodeType);
+    if (node != nullptr)
+    {
+        sPendingNodeId = node->GetId();
+        sPendingNodePos = glm::vec2(sCanvasCenter.x, sCanvasCenter.y);
+    }
+}
+
 static void DrawContextMenu(NodeGraph& graph)
 {
-    static ImVec2 sContextMenuPos;
+    static ImVec2 sContextCanvasPos;
     static ed::NodeId sContextNodeId;
     static ed::LinkId sContextLinkId;
 
-    // Detect right-click ourselves using hovered queries (more reliable than Show*ContextMenu)
-    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
+    // Only open context menu on right-click release if we weren't dragging (panning)
+    bool wasDragging = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x != 0.0f ||
+                       ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y != 0.0f;
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && !wasDragging && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
     {
         ed::NodeId hoveredNode = ed::GetHoveredNode();
         ed::LinkId hoveredLink = ed::GetHoveredLink();
 
-        sContextMenuPos = ImGui::GetMousePos();
+        // Convert to canvas coords now while the editor is still active
+        sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
 
         if (hoveredNode)
         {
@@ -470,13 +488,7 @@ static void DrawContextMenu(NodeGraph& graph)
 
                 if (ImGui::MenuItem(nodeTypes[i].mTypeName.c_str()))
                 {
-                    GraphNode* newNode = graph.AddNode(nodeTypes[i].mTypeId);
-                    if (newNode != nullptr)
-                    {
-                        ed::SetNodePosition(
-                            MakeNodeId(newNode->GetId()),
-                            ed::ScreenToCanvas(sContextMenuPos));
-                    }
+                    AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
                 }
             }
         }
@@ -537,18 +549,6 @@ static void UpdateNodePositions(NodeGraph& graph)
     {
         ImVec2 pos = ed::GetNodePosition(MakeNodeId(nodes[i]->GetId()));
         nodes[i]->SetEditorPosition(glm::vec2(pos.x, pos.y));
-    }
-}
-
-static void AddNodeAtCenter(NodeGraph& graph, TypeId nodeType)
-{
-    GraphNode* node = graph.AddNode(nodeType);
-    if (node != nullptr)
-    {
-        ImVec2 center = ed::ScreenToCanvas(ImVec2(
-            ImGui::GetWindowPos().x + ImGui::GetWindowWidth() * 0.5f,
-            ImGui::GetWindowPos().y + ImGui::GetWindowHeight() * 0.5f));
-        ed::SetNodePosition(MakeNodeId(node->GetId()), center);
     }
 }
 
@@ -626,11 +626,30 @@ void DrawNodeGraphContent()
         ImGui::EndPopup();
     }
 
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Save"))
+    {
+        if (sEditedOwner != nullptr)
+        {
+            AssetManager::Get()->SaveAsset(sEditedOwner->GetName());
+        }
+    }
+
     ImGui::Separator();
 
     // Node editor canvas
     ed::SetCurrentEditor(sEditorContext);
     ed::Begin("NodeGraphEditor");
+
+    // Cache visible canvas center (used by AddNodeAtCenter)
+    {
+        ImVec2 winPos = ImGui::GetWindowPos();
+        ImVec2 winSize = ImGui::GetWindowSize();
+        ImVec2 screenCenter = ImVec2(winPos.x + winSize.x * 0.5f, winPos.y + winSize.y * 0.5f);
+        sCanvasCenter = ed::ScreenToCanvas(screenCenter);
+    }
 
     if (sNeedsPositionSync)
     {
@@ -638,9 +657,41 @@ void DrawNodeGraphContent()
         sNeedsPositionSync = false;
     }
 
+    // Apply pending node position from AddNodeAtCenter (deferred to when editor is active)
+    if (sPendingNodeId != 0)
+    {
+        ed::SetNodePosition(MakeNodeId(sPendingNodeId), ImVec2(sPendingNodePos.x, sPendingNodePos.y));
+        sPendingNodeId = 0;
+    }
+
     DrawNodes(graph);
     DrawLinks(graph);
     HandleCreation(graph);
+
+    // Delete key hotkey — remove selected items directly from the graph
+    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::IsAnyItemActive())
+    {
+        int selectedCount = ed::GetSelectedObjectCount();
+        if (selectedCount > 0)
+        {
+            std::vector<ed::NodeId> selectedNodes(selectedCount);
+            std::vector<ed::LinkId> selectedLinks(selectedCount);
+            int nodeCount = ed::GetSelectedNodes(selectedNodes.data(), selectedCount);
+            int linkCount = ed::GetSelectedLinks(selectedLinks.data(), selectedCount);
+
+            for (int i = 0; i < linkCount; ++i)
+            {
+                graph.RemoveLink(FromLinkId(selectedLinks[i]));
+            }
+            for (int i = 0; i < nodeCount; ++i)
+            {
+                graph.RemoveNode(FromNodeId(selectedNodes[i]));
+            }
+
+            ed::ClearSelection();
+        }
+    }
+
     HandleDeletion(graph);
     DrawContextMenu(graph);
 
