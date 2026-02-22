@@ -28,6 +28,7 @@ nav:
       - Addons: Info/Addons.md
       - Build Profiles: Info/BuildProfiles.md
       - Docker: Info/Docker.md
+      - LLM Docs: Info/LLM.md
 
   - Development:
       - Mesh Instancing: Development/MeshInstancing.md

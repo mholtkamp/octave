@@ -1037,6 +1037,15 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\PointNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClCompile>
@@ -1051,6 +1060,12 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\VariableNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphClipboard.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp">
       <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
@@ -1992,6 +2007,15 @@
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\PointNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
@@ -2006,6 +2030,15 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\VariableNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphVariable.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphClipboard.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h">
       <Filter>Source Files\Engine\NodeGraph\Domains</Filter>

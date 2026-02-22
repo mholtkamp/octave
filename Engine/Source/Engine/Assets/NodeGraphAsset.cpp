@@ -3,6 +3,7 @@
 #include "NodeGraph/GraphDomain.h"
 #include "NodeGraph/GraphNode.h"
 #include "NodeGraph/Nodes/FunctionNodes.h"
+#include "NodeGraph/Nodes/VariableNodes.h"
 #include "Log.h"
 #include "Property.h"
 
@@ -50,8 +51,24 @@ void NodeGraphAsset::LoadStream(Stream& stream, Platform platform)
         }
     }
 
+    // Load variables
+    if (mVersion >= ASSET_VERSION_NODE_GRAPH_VARIABLES)
+    {
+        uint32_t numVars = stream.ReadUint32();
+        for (uint32_t i = 0; i < numVars; ++i)
+        {
+            GraphVariable var;
+            stream.ReadString(var.mName);
+            var.mType = (DatumType)stream.ReadUint8();
+            var.mDefaultValue = GraphNode::ReadDatumFromStream(stream);
+            var.mRuntimeValue = var.mDefaultValue;
+            mVariables.push_back(var);
+        }
+    }
+
     // Wire FunctionCallNodes in all graphs to this asset
     ResolveFunctionCallNodes();
+    ResolveVariableNodes();
 }
 
 void NodeGraphAsset::SaveStream(Stream& stream, Platform platform)
@@ -64,6 +81,15 @@ void NodeGraphAsset::SaveStream(Stream& stream, Platform platform)
     for (auto* fg : mFunctionGraphs)
     {
         fg->SaveStream(stream);
+    }
+
+    // Save variables
+    stream.WriteUint32((uint32_t)mVariables.size());
+    for (const auto& var : mVariables)
+    {
+        stream.WriteString(var.mName);
+        stream.WriteUint8((uint8_t)var.mType);
+        GraphNode::WriteDatumToStream(stream, var.mDefaultValue);
     }
 }
 
@@ -116,6 +142,7 @@ void NodeGraphAsset::Destroy()
         delete fg;
     }
     mFunctionGraphs.clear();
+    mVariables.clear();
 
     Asset::Destroy();
 }
@@ -141,12 +168,13 @@ bool NodeGraphAsset::HandlePropChange(Datum* datum, uint32_t index, const void* 
                 asset->mDomainIndex = newIndex;
                 asset->mGraph.Clear();
 
-                // Clear function graphs on domain change
+                // Clear function graphs and variables on domain change
                 for (auto* fg : asset->mFunctionGraphs)
                 {
                     delete fg;
                 }
                 asset->mFunctionGraphs.clear();
+                asset->mVariables.clear();
 
                 GraphDomain* domain = domains[newIndex];
                 asset->mGraph.SetDomainName(domain->GetDomainName());
@@ -304,4 +332,153 @@ glm::vec4 NodeGraphAsset::GetTypeColor()
 const char* NodeGraphAsset::GetTypeName()
 {
     return "Node Graph";
+}
+
+int32_t NodeGraphAsset::AddVariable(const std::string& name, DatumType type)
+{
+    // Check for duplicate name
+    if (FindVariableIndex(name) >= 0)
+    {
+        LogWarning("NodeGraphAsset::AddVariable - Variable '%s' already exists", name.c_str());
+        return -1;
+    }
+
+    GraphVariable var;
+    var.mName = name;
+    var.mType = type;
+
+    switch (type)
+    {
+    case DatumType::Integer:  var.mDefaultValue = Datum(0); break;
+    case DatumType::Float:    var.mDefaultValue = Datum(0.0f); break;
+    case DatumType::Bool:     var.mDefaultValue = Datum(false); break;
+    case DatumType::String:   var.mDefaultValue = Datum(std::string("")); break;
+    case DatumType::Vector2D: var.mDefaultValue = Datum(glm::vec2(0.0f)); break;
+    case DatumType::Vector:   var.mDefaultValue = Datum(glm::vec3(0.0f)); break;
+    case DatumType::Color:    var.mDefaultValue = Datum(glm::vec4(1.0f)); break;
+    default: var.mDefaultValue = Datum(0.0f); break;
+    }
+
+    var.mRuntimeValue = var.mDefaultValue;
+    mVariables.push_back(var);
+    return (int32_t)(mVariables.size() - 1);
+}
+
+void NodeGraphAsset::RemoveVariable(uint32_t index)
+{
+    if (index < mVariables.size())
+    {
+        mVariables.erase(mVariables.begin() + index);
+    }
+}
+
+void NodeGraphAsset::RenameVariable(uint32_t index, const std::string& newName)
+{
+    if (index >= mVariables.size())
+        return;
+
+    // Check for duplicate name
+    for (uint32_t i = 0; i < mVariables.size(); ++i)
+    {
+        if (i != index && mVariables[i].mName == newName)
+        {
+            LogWarning("NodeGraphAsset::RenameVariable - Name '%s' already in use", newName.c_str());
+            return;
+        }
+    }
+
+    std::string oldName = mVariables[index].mName;
+    mVariables[index].mName = newName;
+
+    // Update GetVariableNode/SetVariableNode instances referencing the old name
+    auto updateVarNodes = [&](NodeGraph* graph)
+    {
+        for (GraphNode* node : graph->GetNodes())
+        {
+            if (node->GetType() == GetVariableNode::GetStaticType())
+            {
+                GetVariableNode* varNode = static_cast<GetVariableNode*>(node);
+                if (varNode->GetVariableName() == oldName)
+                {
+                    varNode->SetVariableName(newName);
+                }
+            }
+            else if (node->GetType() == SetVariableNode::GetStaticType())
+            {
+                SetVariableNode* varNode = static_cast<SetVariableNode*>(node);
+                if (varNode->GetVariableName() == oldName)
+                {
+                    varNode->SetVariableName(newName);
+                }
+            }
+        }
+    };
+
+    updateVarNodes(&mGraph);
+    for (auto* fg : mFunctionGraphs)
+    {
+        updateVarNodes(fg);
+    }
+}
+
+int32_t NodeGraphAsset::FindVariableIndex(const std::string& name) const
+{
+    for (uint32_t i = 0; i < mVariables.size(); ++i)
+    {
+        if (mVariables[i].mName == name)
+        {
+            return (int32_t)i;
+        }
+    }
+    return -1;
+}
+
+GraphVariable* NodeGraphAsset::GetVariable(uint32_t index)
+{
+    if (index < mVariables.size())
+    {
+        return &mVariables[index];
+    }
+    return nullptr;
+}
+
+const GraphVariable* NodeGraphAsset::GetVariable(uint32_t index) const
+{
+    if (index < mVariables.size())
+    {
+        return &mVariables[index];
+    }
+    return nullptr;
+}
+
+void NodeGraphAsset::ResetVariablesToDefaults()
+{
+    for (auto& var : mVariables)
+    {
+        var.mRuntimeValue = var.mDefaultValue;
+    }
+}
+
+void NodeGraphAsset::ResolveVariableNodes()
+{
+    auto wireGraph = [this](NodeGraph* graph)
+    {
+        for (GraphNode* node : graph->GetNodes())
+        {
+            if (node->GetType() == GetVariableNode::GetStaticType())
+            {
+                static_cast<GetVariableNode*>(node)->SetOwnerAsset(this);
+            }
+            else if (node->GetType() == SetVariableNode::GetStaticType())
+            {
+                static_cast<SetVariableNode*>(node)->SetOwnerAsset(this);
+            }
+        }
+    };
+
+    wireGraph(&mGraph);
+    for (auto* fg : mFunctionGraphs)
+    {
+        wireGraph(fg);
+    }
 }

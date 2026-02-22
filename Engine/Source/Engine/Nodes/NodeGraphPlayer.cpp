@@ -4,6 +4,8 @@
 #include "NodeGraph/GraphDomain.h"
 #include "NodeGraph/GraphNode.h"
 #include "NodeGraph/Nodes/FunctionNodes.h"
+#include "NodeGraph/Nodes/VariableNodes.h"
+#include "Nodes/3D/Primitive3d.h"
 #include "Log.h"
 #include "Utilities.h"
 
@@ -53,6 +55,9 @@ void NodeGraphPlayer::Tick(float deltaTime)
             FireEvent("Start");
         }
 
+        // Process queued physics events (overlaps and collisions)
+        ProcessPhysicsEvents();
+
         // Fire Tick event every frame
         FireEvent("Tick");
 
@@ -89,6 +94,89 @@ void NodeGraphPlayer::Stop()
     Node::Stop();
 }
 
+void NodeGraphPlayer::BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
+{
+    OverlapEventData data;
+    data.mOtherNode = static_cast<Node*>(otherComp);
+    mBeginOverlapQueue.push_back(data);
+
+    Node::BeginOverlap(thisComp, otherComp);
+}
+
+void NodeGraphPlayer::EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp)
+{
+    OverlapEventData data;
+    data.mOtherNode = static_cast<Node*>(otherComp);
+    mEndOverlapQueue.push_back(data);
+
+    Node::EndOverlap(thisComp, otherComp);
+}
+
+void NodeGraphPlayer::OnCollision(
+    Primitive3D* thisComp,
+    Primitive3D* otherComp,
+    glm::vec3 impactPoint,
+    glm::vec3 impactNormal,
+    btPersistentManifold* manifold)
+{
+    CollisionPairKey key;
+    key.mThisComp = static_cast<Node*>(thisComp);
+    key.mOtherComp = static_cast<Node*>(otherComp);
+
+    CollisionEventData data;
+    data.mOtherNode = static_cast<Node*>(otherComp);
+    data.mHitPosition = impactPoint;
+    data.mHitNormal = impactNormal;
+
+    mCurrentCollisions[key] = data;
+
+    Node::OnCollision(thisComp, otherComp, impactPoint, impactNormal, manifold);
+}
+
+void NodeGraphPlayer::ProcessPhysicsEvents()
+{
+    // Drain overlap queues
+    for (uint32_t i = 0; i < mBeginOverlapQueue.size(); ++i)
+    {
+        mCurrentOverlapEventData = mBeginOverlapQueue[i];
+        FireEvent("BeginOverlap");
+    }
+    mBeginOverlapQueue.clear();
+
+    for (uint32_t i = 0; i < mEndOverlapQueue.size(); ++i)
+    {
+        mCurrentOverlapEventData = mEndOverlapQueue[i];
+        FireEvent("EndOverlap");
+    }
+    mEndOverlapQueue.clear();
+
+    // Detect collision begin: pairs in current that weren't in previous
+    for (auto& pair : mCurrentCollisions)
+    {
+        if (mPreviousCollisions.find(pair.first) == mPreviousCollisions.end())
+        {
+            mCurrentCollisionEventData = pair.second;
+            FireEvent("CollisionBegin");
+        }
+    }
+
+    // Detect collision end: pairs in previous that aren't in current
+    for (auto& pair : mPreviousCollisions)
+    {
+        if (mCurrentCollisions.find(pair.first) == mCurrentCollisions.end())
+        {
+            mCurrentCollisionEventData.mOtherNode = pair.second.mOtherNode;
+            mCurrentCollisionEventData.mHitPosition = glm::vec3(0.0f);
+            mCurrentCollisionEventData.mHitNormal = glm::vec3(0.0f);
+            FireEvent("CollisionEnd");
+        }
+    }
+
+    // Swap: current becomes previous for next frame
+    mPreviousCollisions = mCurrentCollisions;
+    mCurrentCollisions.clear();
+}
+
 void NodeGraphPlayer::GatherProperties(std::vector<Property>& outProps)
 {
     Node::GatherProperties(outProps);
@@ -114,6 +202,9 @@ void NodeGraphPlayer::Play()
     }
 
     EnsureRuntimeGraph();
+
+    // Reset variable runtime values to defaults on play
+    asset->ResetVariablesToDefaults();
 
     mPlaying = true;
     mPaused = false;
@@ -171,6 +262,13 @@ void NodeGraphPlayer::Reset()
     mPaused = false;
     mStartFired = false;
     mDeltaTime = 0.0f;
+
+    mBeginOverlapQueue.clear();
+    mEndOverlapQueue.clear();
+    mCurrentCollisions.clear();
+    mPreviousCollisions.clear();
+    mCurrentOverlapEventData = {};
+    mCurrentCollisionEventData = {};
 }
 
 bool NodeGraphPlayer::IsPlaying() const
@@ -304,12 +402,20 @@ void NodeGraphPlayer::EnsureRuntimeGraph()
         mRuntimeGraph->CopyFrom(asset->GetGraph());
         mRuntimeGraph->SetOwnerNode(this);
 
-        // Wire FunctionCallNodes to asset for function resolution
+        // Wire FunctionCallNodes and VariableNodes to asset
         for (GraphNode* node : mRuntimeGraph->GetNodes())
         {
             if (node->GetType() == FunctionCallNode::GetStaticType())
             {
                 static_cast<FunctionCallNode*>(node)->SetOwnerAsset(asset);
+            }
+            else if (node->GetType() == GetVariableNode::GetStaticType())
+            {
+                static_cast<GetVariableNode*>(node)->SetOwnerAsset(asset);
+            }
+            else if (node->GetType() == SetVariableNode::GetStaticType())
+            {
+                static_cast<SetVariableNode*>(node)->SetOwnerAsset(asset);
             }
         }
     }

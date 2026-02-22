@@ -384,6 +384,34 @@ void NodeGraph::LoadStream(Stream& stream, uint32_t version)
     }
 }
 
+void NodeGraph::InsertNode(GraphNode* node)
+{
+    if (node == nullptr)
+        return;
+
+    mNodes.push_back(node);
+    node->SetGraph(this);
+
+    // Advance ID counters past any IDs used by this node
+    if (node->GetId() >= mNextNodeId)
+    {
+        mNextNodeId = node->GetId() + 1;
+    }
+
+    for (uint32_t i = 0; i < node->GetNumInputPins(); ++i)
+    {
+        GraphPinId id = node->GetInputPins()[i].mId;
+        if (id >= mNextPinId)
+            mNextPinId = id + 1;
+    }
+    for (uint32_t i = 0; i < node->GetNumOutputPins(); ++i)
+    {
+        GraphPinId id = node->GetOutputPins()[i].mId;
+        if (id >= mNextPinId)
+            mNextPinId = id + 1;
+    }
+}
+
 void NodeGraph::Clear()
 {
     for (uint32_t i = 0; i < mNodes.size(); ++i)

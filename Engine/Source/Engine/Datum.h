@@ -21,6 +21,7 @@ class TableDatum;
 class ScriptFunc;
 class Object;
 class Node;
+class PointCloud;
 
 enum class DatumType : uint8_t
 {
@@ -43,6 +44,8 @@ enum class DatumType : uint8_t
     Quad,
     Audio3D,
     Scene,
+    PointCloud,
+    Spline3D,
     Execution,
 
     Count
@@ -64,6 +67,7 @@ union DatumData
     WeakPtr<Node>* n;
     int16_t* sh;
     ScriptFunc* fn;
+    PointCloud** pc;
     void* vp;
 };
 

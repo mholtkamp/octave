@@ -46,6 +46,62 @@ public:
 };
 
 // =============================================================================
+// Physics Event Nodes
+// =============================================================================
+
+class BeginOverlapEventNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(BeginOverlapEventNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsEventNode() const override { return true; }
+    virtual const char* GetEventName() const override { return "BeginOverlap"; }
+    virtual const char* GetNodeTypeName() const override { return "On Overlap Begin"; }
+    virtual const char* GetNodeCategory() const override { return "Event"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class EndOverlapEventNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(EndOverlapEventNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsEventNode() const override { return true; }
+    virtual const char* GetEventName() const override { return "EndOverlap"; }
+    virtual const char* GetNodeTypeName() const override { return "On Overlap End"; }
+    virtual const char* GetNodeCategory() const override { return "Event"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class CollisionBeginEventNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(CollisionBeginEventNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsEventNode() const override { return true; }
+    virtual const char* GetEventName() const override { return "CollisionBegin"; }
+    virtual const char* GetNodeTypeName() const override { return "On Collision Begin"; }
+    virtual const char* GetNodeCategory() const override { return "Event"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class CollisionEndEventNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(CollisionEndEventNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsEventNode() const override { return true; }
+    virtual const char* GetEventName() const override { return "CollisionEnd"; }
+    virtual const char* GetNodeTypeName() const override { return "On Collision End"; }
+    virtual const char* GetNodeCategory() const override { return "Event"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// =============================================================================
 // Graph Output Node (flexible sink for script readback)
 // =============================================================================
 

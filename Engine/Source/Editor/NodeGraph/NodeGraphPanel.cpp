@@ -16,7 +16,11 @@
 #include "NodeGraph/Nodes/ValueNodes.h"
 #include "NodeGraph/Nodes/InputNodes.h"
 #include "NodeGraph/Nodes/FunctionNodes.h"
+#include "NodeGraph/Nodes/VariableNodes.h"
+#include "NodeGraph/GraphClipboard.h"
+#include "NodeGraph/GraphVariable.h"
 #include "AssetManager.h"
+#include "Stream.h"
 #include "Engine.h"
 #include "World.h"
 #include "Nodes/NodeGraphPlayer.h"
@@ -66,6 +70,16 @@ static char sNodeSearchBuffer[128] = {};
 static int sSearchSelectedIndex = 0;
 static int sPopupFrameCount = 0;
 
+// Variable sidebar state
+static bool sRenamingVariable = false;
+static int32_t sRenamingVarIndex = -1;
+static char sVarRenameBuffer[128] = {};
+
+// Import/Export state
+static bool sShowExportPopup = false;
+static bool sShowImportPopup = false;
+static char sFilePathBuffer[512] = {};
+
 // Execution flash feedback
 static std::unordered_map<GraphNodeId, double> sNodeFlashTimes;
 static const float kFlashDuration = 0.4f;
@@ -96,7 +110,8 @@ static ImColor GetPinColor(DatumType type)
 static bool IsNodeRefType(DatumType type)
 {
     return type == DatumType::Node || type == DatumType::Node3D || type == DatumType::Widget ||
-           type == DatumType::Text || type == DatumType::Quad || type == DatumType::Audio3D;
+           type == DatumType::Text || type == DatumType::Quad || type == DatumType::Audio3D ||
+           type == DatumType::Spline3D;
 }
 
 static void DrawPinIcon(DatumType type, bool connected)
@@ -140,6 +155,23 @@ static void DrawPinIcon(DatumType type, bool connected)
             drawList->AddRectFilled(tl, br, color);
         else
             drawList->AddRect(tl, br, color, 0.0f, 0, 2.0f);
+    }
+    else if (type == DatumType::PointCloud)
+    {
+        // Dot cluster shape for point cloud pins
+        float dotR = radius * 0.3f;
+        if (connected)
+        {
+            drawList->AddCircleFilled(ImVec2(center.x - radius * 0.35f, center.y - radius * 0.35f), dotR, color);
+            drawList->AddCircleFilled(ImVec2(center.x + radius * 0.35f, center.y - radius * 0.35f), dotR, color);
+            drawList->AddCircleFilled(ImVec2(center.x, center.y + radius * 0.35f), dotR, color);
+        }
+        else
+        {
+            drawList->AddCircle(ImVec2(center.x - radius * 0.35f, center.y - radius * 0.35f), dotR, color, 8, 1.5f);
+            drawList->AddCircle(ImVec2(center.x + radius * 0.35f, center.y - radius * 0.35f), dotR, color, 8, 1.5f);
+            drawList->AddCircle(ImVec2(center.x, center.y + radius * 0.35f), dotR, color, 8, 1.5f);
+        }
     }
     else
     {
@@ -717,6 +749,44 @@ static FunctionCallNode* AddFunctionCallNode(NodeGraph& graph, const std::string
     return callNode;
 }
 
+static GetVariableNode* AddGetVariableNode(NodeGraph& graph, const std::string& varName)
+{
+    if (sEditedAsset == nullptr)
+        return nullptr;
+
+    GraphNode* node = graph.AddNode(GetVariableNode::GetStaticType());
+    if (node == nullptr)
+        return nullptr;
+
+    GetVariableNode* varNode = static_cast<GetVariableNode*>(node);
+    varNode->SetVariableName(varName);
+    varNode->RebuildPinFromVariable(sEditedAsset);
+
+    sPendingNodeId = node->GetId();
+    sPendingNodePos = glm::vec2(sCanvasCenter.x, sCanvasCenter.y);
+
+    return varNode;
+}
+
+static SetVariableNode* AddSetVariableNode(NodeGraph& graph, const std::string& varName)
+{
+    if (sEditedAsset == nullptr)
+        return nullptr;
+
+    GraphNode* node = graph.AddNode(SetVariableNode::GetStaticType());
+    if (node == nullptr)
+        return nullptr;
+
+    SetVariableNode* varNode = static_cast<SetVariableNode*>(node);
+    varNode->SetVariableName(varName);
+    varNode->RebuildPinsFromVariable(sEditedAsset);
+
+    sPendingNodeId = node->GetId();
+    sPendingNodePos = glm::vec2(sCanvasCenter.x, sCanvasCenter.y);
+
+    return varNode;
+}
+
 // Mapping from DatumType to the appropriate InputNode type
 static TypeId GetInputNodeTypeForDatum(DatumType type)
 {
@@ -1111,6 +1181,31 @@ static void DrawContextMenu(NodeGraph& graph)
                             }
                         }
                     }
+
+                    // Search variables (Get/Set)
+                    for (uint32_t i = 0; i < sEditedAsset->GetNumVariables(); ++i)
+                    {
+                        const GraphVariable* var = sEditedAsset->GetVariable(i);
+                        if (var == nullptr)
+                            continue;
+
+                        std::string vnameLower = var->mName;
+                        std::transform(vnameLower.begin(), vnameLower.end(), vnameLower.begin(),
+                            [](unsigned char c) { return (char)std::tolower(c); });
+
+                        // Also check against "get <name>" and "set <name>"
+                        std::string getLower = "get " + vnameLower;
+                        std::string setLower = "set " + vnameLower;
+
+                        if (vnameLower.find(searchLower) != std::string::npos ||
+                            getLower.find(searchLower) != std::string::npos ||
+                            setLower.find(searchLower) != std::string::npos)
+                        {
+                            // Use UINT32_MAX-1 tag for get variable, UINT32_MAX-2 for set variable
+                            results.push_back({ UINT32_MAX - 1, i });
+                            results.push_back({ UINT32_MAX - 2, i });
+                        }
+                    }
                 }
 
                 // Keyboard navigation (Up/Down/Enter)
@@ -1152,7 +1247,7 @@ static void DrawContextMenu(NodeGraph& graph)
                         ImGui::TextDisabled("[%s]", nodeTypes[sr.nodeTypeIndex].mCategory.c_str());
                         ImGui::PopID();
                     }
-                    else
+                    else if (sr.nodeTypeIndex == UINT32_MAX)
                     {
                         // Function graph
                         NodeGraph* fg = sEditedAsset->GetFunctionGraph(sr.funcIndex);
@@ -1165,6 +1260,40 @@ static void DrawContextMenu(NodeGraph& graph)
                         }
                         ImGui::SameLine();
                         ImGui::TextDisabled("[Function]");
+                        ImGui::PopID();
+                    }
+                    else if (sr.nodeTypeIndex == UINT32_MAX - 1)
+                    {
+                        // Get Variable
+                        const GraphVariable* var = sEditedAsset->GetVariable(sr.funcIndex);
+                        char label[256];
+                        snprintf(label, sizeof(label), "Get %s", var->mName.c_str());
+                        ImGui::PushID((int)(nodeTypes.size() + 1000 + sr.funcIndex * 2));
+                        if (ImGui::Selectable(label, isSelected) ||
+                            (enterPressed && isSelected))
+                        {
+                            AddGetVariableNode(graph, var->mName);
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("[Variable]");
+                        ImGui::PopID();
+                    }
+                    else if (sr.nodeTypeIndex == UINT32_MAX - 2)
+                    {
+                        // Set Variable
+                        const GraphVariable* var = sEditedAsset->GetVariable(sr.funcIndex);
+                        char label[256];
+                        snprintf(label, sizeof(label), "Set %s", var->mName.c_str());
+                        ImGui::PushID((int)(nodeTypes.size() + 1001 + sr.funcIndex * 2));
+                        if (ImGui::Selectable(label, isSelected) ||
+                            (enterPressed && isSelected))
+                        {
+                            AddSetVariableNode(graph, var->mName);
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("[Variable]");
                         ImGui::PopID();
                     }
 
@@ -1234,6 +1363,55 @@ static void DrawContextMenu(NodeGraph& graph)
                         ImGui::EndMenu();
                     }
                 }
+
+                // Variables submenu
+                if (sEditedAsset != nullptr && sEditedAsset->GetNumVariables() > 0)
+                {
+                    if (ImGui::BeginMenu("Variables"))
+                    {
+                        for (uint32_t i = 0; i < sEditedAsset->GetNumVariables(); ++i)
+                        {
+                            const GraphVariable* var = sEditedAsset->GetVariable(i);
+                            if (var == nullptr)
+                                continue;
+
+                            char getName[256];
+                            snprintf(getName, sizeof(getName), "Get %s", var->mName.c_str());
+                            if (ImGui::MenuItem(getName))
+                            {
+                                AddGetVariableNode(graph, var->mName);
+                            }
+
+                            char setName[256];
+                            snprintf(setName, sizeof(setName), "Set %s", var->mName.c_str());
+                            if (ImGui::MenuItem(setName))
+                            {
+                                AddSetVariableNode(graph, var->mName);
+                            }
+
+                            if (i + 1 < sEditedAsset->GetNumVariables())
+                            {
+                                ImGui::Separator();
+                            }
+                        }
+                        ImGui::EndMenu();
+                    }
+                }
+
+                // Paste
+                ImGui::Separator();
+                if (ImGui::MenuItem("Paste", "Ctrl+V"))
+                {
+                    glm::vec2 pastePos(sContextCanvasPos.x, sContextCanvasPos.y);
+                    GraphClipboard::PasteFromClipboard(graph, pastePos, sEditedAsset);
+                }
+
+                // Import
+                if (ImGui::MenuItem("Import..."))
+                {
+                    sShowImportPopup = true;
+                    sFilePathBuffer[0] = '\0';
+                }
             }
         }
         else
@@ -1285,6 +1463,26 @@ static void DrawContextMenu(NodeGraph& graph)
                     ImGui::EndMenu();
                 }
             }
+        }
+
+        if (ImGui::MenuItem("Copy"))
+        {
+            std::vector<GraphNodeId> nodeIds;
+            int selectedCount = ed::GetSelectedObjectCount();
+            if (selectedCount > 0)
+            {
+                std::vector<ed::NodeId> selectedEdIds(selectedCount);
+                int nodeCount = ed::GetSelectedNodes(selectedEdIds.data(), selectedCount);
+                for (int i = 0; i < nodeCount; ++i)
+                {
+                    nodeIds.push_back(FromNodeId(selectedEdIds[i]));
+                }
+            }
+            if (nodeIds.empty())
+            {
+                nodeIds.push_back(nodeId);
+            }
+            GraphClipboard::CopyToClipboard(graph, nodeIds);
         }
 
         if (ImGui::MenuItem("Delete"))
@@ -1532,6 +1730,242 @@ static void DrawFunctionSidebar(NodeGraphAsset* asset)
         ImGui::PopID();
     }
 
+    // ---- Variables Section ----
+    ImGui::Separator();
+    ImGui::Text("Variables");
+    ImGui::SameLine(kFunctionSidebarWidth - 40.0f);
+    if (ImGui::SmallButton("+##AddVar"))
+    {
+        ImGui::OpenPopup("AddVariablePopup");
+    }
+
+    if (ImGui::BeginPopup("AddVariablePopup"))
+    {
+        static char sNewVarName[128] = "NewVariable";
+        ImGui::InputText("Name", sNewVarName, sizeof(sNewVarName));
+
+        const char* typeNames[] = { "Float", "Integer", "Bool", "String", "Vector2D", "Vector", "Color" };
+        DatumType typeValues[] = {
+            DatumType::Float, DatumType::Integer, DatumType::Bool, DatumType::String,
+            DatumType::Vector2D, DatumType::Vector, DatumType::Color
+        };
+        static int sSelectedType = 0;
+        ImGui::Combo("Type", &sSelectedType, typeNames, IM_ARRAYSIZE(typeNames));
+
+        if (ImGui::Button("Add"))
+        {
+            if (strlen(sNewVarName) > 0)
+            {
+                asset->AddVariable(sNewVarName, typeValues[sSelectedType]);
+                snprintf(sNewVarName, sizeof(sNewVarName), "NewVariable");
+                sSelectedType = 0;
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // Variable list
+    for (uint32_t i = 0; i < asset->GetNumVariables(); ++i)
+    {
+        GraphVariable* var = asset->GetVariable(i);
+        if (var == nullptr)
+            continue;
+
+        ImGui::PushID((int)(1000 + i));
+
+        if (sRenamingVariable && sRenamingVarIndex == (int32_t)i)
+        {
+            // Inline rename
+            ImGui::SetNextItemWidth(kFunctionSidebarWidth - 30.0f);
+            if (ImGui::InputText("##varRename", sVarRenameBuffer, sizeof(sVarRenameBuffer),
+                ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+            {
+                if (strlen(sVarRenameBuffer) > 0)
+                {
+                    asset->RenameVariable(i, sVarRenameBuffer);
+                }
+                sRenamingVariable = false;
+                sRenamingVarIndex = -1;
+            }
+            if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
+                (!ImGui::IsItemActive() && !ImGui::IsItemFocused() && sRenamingVariable))
+            {
+                sRenamingVariable = false;
+                sRenamingVarIndex = -1;
+            }
+            if (sRenamingVariable && sRenamingVarIndex == (int32_t)i)
+            {
+                ImGui::SetKeyboardFocusHere(-1);
+            }
+        }
+        else
+        {
+            // Type color indicator
+            glm::vec4 typeColor = GetDatumTypeColor(var->mType);
+            ImGui::ColorButton("##typeCol", ImVec4(typeColor.x, typeColor.y, typeColor.z, typeColor.w),
+                ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(8, 14));
+            ImGui::SameLine();
+
+            ImGui::Selectable(var->mName.c_str(), false);
+
+            // Drag source for drag-drop onto canvas
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+            {
+                ImGui::SetDragDropPayload("DND_VARIABLE", var->mName.c_str(), var->mName.size() + 1);
+                ImGui::Text("Variable: %s", var->mName.c_str());
+                ImGui::EndDragDropSource();
+            }
+
+            // Right-click context menu
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::MenuItem("Rename"))
+                {
+                    sRenamingVariable = true;
+                    sRenamingVarIndex = (int32_t)i;
+                    strncpy(sVarRenameBuffer, var->mName.c_str(), sizeof(sVarRenameBuffer) - 1);
+                    sVarRenameBuffer[sizeof(sVarRenameBuffer) - 1] = '\0';
+                }
+
+                if (ImGui::BeginMenu("Change Type"))
+                {
+                    const char* typeNames2[] = { "Float", "Integer", "Bool", "String", "Vector2D", "Vector", "Color" };
+                    DatumType typeValues2[] = {
+                        DatumType::Float, DatumType::Integer, DatumType::Bool, DatumType::String,
+                        DatumType::Vector2D, DatumType::Vector, DatumType::Color
+                    };
+                    for (int t = 0; t < 7; ++t)
+                    {
+                        bool isCurrent = (var->mType == typeValues2[t]);
+                        if (ImGui::MenuItem(typeNames2[t], nullptr, isCurrent))
+                        {
+                            if (!isCurrent)
+                            {
+                                var->mType = typeValues2[t];
+                                // Reset default value for new type
+                                switch (typeValues2[t])
+                                {
+                                case DatumType::Integer:  var->mDefaultValue = Datum(0); break;
+                                case DatumType::Float:    var->mDefaultValue = Datum(0.0f); break;
+                                case DatumType::Bool:     var->mDefaultValue = Datum(false); break;
+                                case DatumType::String:   var->mDefaultValue = Datum(std::string("")); break;
+                                case DatumType::Vector2D: var->mDefaultValue = Datum(glm::vec2(0.0f)); break;
+                                case DatumType::Vector:   var->mDefaultValue = Datum(glm::vec3(0.0f)); break;
+                                case DatumType::Color:    var->mDefaultValue = Datum(glm::vec4(1.0f)); break;
+                                default: break;
+                                }
+                                var->mRuntimeValue = var->mDefaultValue;
+                            }
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::MenuItem("Delete"))
+                {
+                    asset->RemoveVariable(i);
+                    ImGui::EndPopup();
+                    ImGui::PopID();
+                    break;
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        // Inline default value editor
+        if (!sRenamingVariable || sRenamingVarIndex != (int32_t)i)
+        {
+            ImGui::PushID((int)(2000 + i));
+            ImGui::SetNextItemWidth(kFunctionSidebarWidth - 30.0f);
+            switch (var->mType)
+            {
+            case DatumType::Float:
+            {
+                float f = var->mDefaultValue.GetFloat();
+                if (ImGui::DragFloat("##def", &f, 0.01f))
+                {
+                    var->mDefaultValue = Datum(f);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::Integer:
+            {
+                int32_t v = var->mDefaultValue.GetInteger();
+                if (ImGui::DragInt("##def", &v))
+                {
+                    var->mDefaultValue = Datum(v);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::Bool:
+            {
+                bool b = var->mDefaultValue.GetBool();
+                if (ImGui::Checkbox("##def", &b))
+                {
+                    var->mDefaultValue = Datum(b);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::String:
+            {
+                static char buf[256];
+                std::string s = var->mDefaultValue.GetString();
+                strncpy(buf, s.c_str(), sizeof(buf) - 1);
+                buf[sizeof(buf) - 1] = '\0';
+                if (ImGui::InputText("##def", buf, sizeof(buf)))
+                {
+                    var->mDefaultValue = Datum(std::string(buf));
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::Vector2D:
+            {
+                glm::vec2 v = var->mDefaultValue.GetVector2D();
+                if (ImGui::DragFloat2("##def", &v.x, 0.01f))
+                {
+                    var->mDefaultValue = Datum(v);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::Vector:
+            {
+                glm::vec3 v = var->mDefaultValue.GetVector();
+                if (ImGui::DragFloat3("##def", &v.x, 0.01f))
+                {
+                    var->mDefaultValue = Datum(v);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            case DatumType::Color:
+            {
+                glm::vec4 c = var->mDefaultValue.GetColor();
+                if (ImGui::ColorEdit4("##def", &c.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
+                {
+                    var->mDefaultValue = Datum(c);
+                    var->mRuntimeValue = var->mDefaultValue;
+                }
+                break;
+            }
+            default: break;
+            }
+            ImGui::PopID();
+        }
+
+        ImGui::PopID();
+    }
+
     ImGui::EndChild();
 }
 
@@ -1676,6 +2110,100 @@ void DrawNodeGraphContent()
         }
     }
 
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Export"))
+    {
+        int selectedCount = ed::GetSelectedObjectCount();
+        if (selectedCount > 0)
+        {
+            sShowExportPopup = true;
+            sFilePathBuffer[0] = '\0';
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Import"))
+    {
+        sShowImportPopup = true;
+        sFilePathBuffer[0] = '\0';
+    }
+
+    // Export popup
+    if (sShowExportPopup)
+    {
+        ImGui::OpenPopup("ExportNodesPopup");
+        sShowExportPopup = false;
+    }
+    if (ImGui::BeginPopup("ExportNodesPopup"))
+    {
+        ImGui::Text("Export Selection to File");
+        ImGui::SetNextItemWidth(300.0f);
+        ImGui::InputText("Path", sFilePathBuffer, sizeof(sFilePathBuffer));
+
+        if (ImGui::Button("Export"))
+        {
+            if (strlen(sFilePathBuffer) > 0)
+            {
+                int selectedCount = ed::GetSelectedObjectCount();
+                if (selectedCount > 0)
+                {
+                    std::vector<ed::NodeId> selectedEdIds(selectedCount);
+                    int nodeCount = ed::GetSelectedNodes(selectedEdIds.data(), selectedCount);
+                    if (nodeCount > 0)
+                    {
+                        std::vector<GraphNodeId> nodeIds;
+                        for (int i = 0; i < nodeCount; ++i)
+                        {
+                            nodeIds.push_back(FromNodeId(selectedEdIds[i]));
+                        }
+                        // Append .octgraph if no extension
+                        std::string path = sFilePathBuffer;
+                        if (path.find('.') == std::string::npos)
+                        {
+                            path += ".octgraph";
+                        }
+                        GraphClipboard::ExportToFile(graph, nodeIds, path);
+                    }
+                }
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // Import popup
+    if (sShowImportPopup)
+    {
+        ImGui::OpenPopup("ImportNodesPopup");
+        sShowImportPopup = false;
+    }
+    if (ImGui::BeginPopup("ImportNodesPopup"))
+    {
+        ImGui::Text("Import Nodes from File");
+        ImGui::SetNextItemWidth(300.0f);
+        ImGui::InputText("Path", sFilePathBuffer, sizeof(sFilePathBuffer));
+
+        if (ImGui::Button("Import"))
+        {
+            if (strlen(sFilePathBuffer) > 0)
+            {
+                glm::vec2 importPos(sCanvasCenter.x, sCanvasCenter.y);
+                GraphClipboard::ImportFromFile(graph, sFilePathBuffer, importPos, sEditedAsset);
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
     ImGui::Separator();
 
     // Node editor canvas
@@ -1714,6 +2242,19 @@ void DrawNodeGraphContent()
                 const char* funcName = static_cast<const char*>(payload->Data);
                 AddFunctionCallNode(graph, funcName);
             }
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_VARIABLE"))
+            {
+                const char* varName = static_cast<const char*>(payload->Data);
+                bool altHeld = ImGui::GetIO().KeyAlt;
+                if (altHeld)
+                {
+                    AddSetVariableNode(graph, varName);
+                }
+                else
+                {
+                    AddGetVariableNode(graph, varName);
+                }
+            }
             ImGui::EndDragDropTarget();
         }
     }
@@ -1743,6 +2284,75 @@ void DrawNodeGraphContent()
             }
 
             ed::ClearSelection();
+        }
+    }
+
+    // Ctrl+C — Copy selected nodes to clipboard
+    if (ImGui::IsKeyPressed(ImGuiKey_C) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    {
+        int selectedCount = ed::GetSelectedObjectCount();
+        if (selectedCount > 0)
+        {
+            std::vector<ed::NodeId> selectedEdIds(selectedCount);
+            int nodeCount = ed::GetSelectedNodes(selectedEdIds.data(), selectedCount);
+            if (nodeCount > 0)
+            {
+                std::vector<GraphNodeId> nodeIds;
+                for (int i = 0; i < nodeCount; ++i)
+                {
+                    nodeIds.push_back(FromNodeId(selectedEdIds[i]));
+                }
+                GraphClipboard::CopyToClipboard(graph, nodeIds);
+            }
+        }
+    }
+
+    // Ctrl+V — Paste from clipboard
+    if (ImGui::IsKeyPressed(ImGuiKey_V) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    {
+        glm::vec2 pastePos(sCanvasCenter.x, sCanvasCenter.y);
+        GraphClipboard::PasteFromClipboard(graph, pastePos, sEditedAsset);
+    }
+
+    // Ctrl+D — Duplicate selection
+    if (ImGui::IsKeyPressed(ImGuiKey_D) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    {
+        int selectedCount = ed::GetSelectedObjectCount();
+        if (selectedCount > 0)
+        {
+            std::vector<ed::NodeId> selectedEdIds(selectedCount);
+            int nodeCount = ed::GetSelectedNodes(selectedEdIds.data(), selectedCount);
+            if (nodeCount > 0)
+            {
+                std::vector<GraphNodeId> nodeIds;
+                for (int i = 0; i < nodeCount; ++i)
+                {
+                    nodeIds.push_back(FromNodeId(selectedEdIds[i]));
+                }
+
+                // Serialize to temp stream, deserialize back with offset
+                Stream tempStream;
+                GraphClipboard::SerializeSelection(graph, nodeIds, tempStream);
+                tempStream.SetPos(0);
+
+                // Get centroid of selected nodes for offset
+                glm::vec2 centroid(0.0f);
+                for (int i = 0; i < nodeCount; ++i)
+                {
+                    GraphNode* node = graph.FindNode(nodeIds[i]);
+                    if (node != nullptr)
+                    {
+                        centroid += node->GetEditorPosition();
+                    }
+                }
+                if (nodeCount > 0)
+                {
+                    centroid /= (float)nodeCount;
+                }
+
+                GraphClipboard::DeserializeIntoGraph(graph, tempStream, centroid + glm::vec2(50.0f, 50.0f), sEditedAsset);
+                ed::ClearSelection();
+            }
         }
     }
 
@@ -1776,11 +2386,14 @@ void OpenNodeGraphForEditing(NodeGraphAsset* asset)
     sEditedGraph = &asset->GetGraph();
     sEditedOwner = asset;
     sEditedAsset = asset;
+    sRenamingVariable = false;
+    sRenamingVarIndex = -1;
     GetEditorState()->mShowNodeGraphPanel = true;
     sNeedsPositionSync = true;
 
-    // Wire FunctionCallNodes in asset to asset pointer
+    // Wire FunctionCallNodes and VariableNodes in asset
     asset->ResolveFunctionCallNodes();
+    asset->ResolveVariableNodes();
 
     // Reset editor context for new graph
     if (sEditorContext != nullptr)

@@ -10,6 +10,7 @@
 #include "NetworkManager.h"
 #include "NodePath.h"
 #include "Nodes/Node.h"
+#include "NodeGraph/PointCloud.h"
 
 #include "System/System.h"
 
@@ -260,6 +261,8 @@ uint32_t Datum::GetDataTypeSize() const
         case DatumType::Quad: size = sizeof(WeakPtr<Node>); break;
         case DatumType::Audio3D: size = sizeof(WeakPtr<Node>); break;
         case DatumType::Scene: size = sizeof(AssetRef); break;
+        case DatumType::PointCloud: size = sizeof(PointCloud*); break;
+        case DatumType::Spline3D: size = sizeof(WeakPtr<Node>); break;
         case DatumType::Execution: size = 0; break;
 
         case DatumType::Count: size = 0; break;
@@ -422,6 +425,9 @@ void Datum::ReadStream(Stream& stream, uint32_t version, bool net, bool external
                 // Functions can't be serialized to file or network.
                 case DatumType::Function: OCT_ASSERT(0); break;
 
+                // PointCloud can't be serialized.
+                case DatumType::PointCloud: OCT_ASSERT(0); break;
+
                 case DatumType::Count: break;
             }
         }
@@ -472,6 +478,9 @@ void Datum::WriteStream(Stream& stream, bool net) const
 
             // Functions can't be serialized.
             case DatumType::Function: OCT_ASSERT(0); break;
+
+            // PointCloud can't be serialized.
+            case DatumType::PointCloud: OCT_ASSERT(0); break;
 
             case DatumType::Count: OCT_ASSERT(0); break;
         }
@@ -1885,6 +1894,14 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
             case DatumType::Function:
                 PushBack(*(src.mData.fn + i));
                 break;
+            case DatumType::PointCloud:
+            {
+                PrePushBack(DatumType::PointCloud);
+                PointCloud* srcCloud = *(src.mData.pc + i);
+                new (mData.pc + mCount) PointCloud*(srcCloud ? srcCloud->Clone() : nullptr);
+                mCount++;
+                break;
+            }
 
             case DatumType::Count:
                 break;
@@ -2058,6 +2075,9 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
     case DatumType::Function:
         new (dataUnion.fn + index) ScriptFunc();
         break;
+    case DatumType::PointCloud:
+        dataUnion.pc[index] = nullptr;
+        break;
 
     case DatumType::Count:
         OCT_ASSERT(0);
@@ -2091,6 +2111,10 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
     case DatumType::Function:
         dataUnion.fn[index].ScriptFunc::~ScriptFunc();
         break;
+    case DatumType::PointCloud:
+        delete dataUnion.pc[index];
+        dataUnion.pc[index] = nullptr;
+        break;
 
     default: break;
     }
@@ -2112,8 +2136,12 @@ void Datum::CopyData(DatumData& dst, uint32_t dstIndex, DatumData& src, uint32_t
     case DatumType::Function:
         dst.fn[dstIndex] = src.fn[srcIndex];
         break;
+    case DatumType::PointCloud:
+        delete dst.pc[dstIndex];
+        dst.pc[dstIndex] = src.pc[srcIndex] ? src.pc[srcIndex]->Clone() : nullptr;
+        break;
 
-    default: 
+    default:
         memcpy(dst.by + (dstIndex * GetDataTypeSize()), src.by + (srcIndex * GetDataTypeSize()), GetDataTypeSize());
         break;
     }

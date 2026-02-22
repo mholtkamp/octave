@@ -58,6 +58,14 @@ public:
 
     void Clear();
 
+    // ID allocation (for external node insertion)
+    GraphNodeId AllocNodeId() { return mNextNodeId++; }
+    GraphPinId AllocPinId() { return mNextPinId++; }
+    GraphLinkId AllocLinkId() { return mNextLinkId++; }
+
+    // Insert an externally-created node (takes ownership)
+    void InsertNode(GraphNode* node);
+
     // Deep copy for runtime (independent from asset)
     void CopyFrom(const NodeGraph& other);
 

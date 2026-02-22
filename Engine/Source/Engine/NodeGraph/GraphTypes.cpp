@@ -40,6 +40,10 @@ bool AreGraphPinTypesCompatible(DatumType outputType, DatumType inputType)
     // Scene -> Asset (Scene is an Asset subtype)
     if (outputType == DatumType::Scene   && inputType == DatumType::Asset) return true;
 
+    // Spline3D -> Node3D -> Node
+    if (outputType == DatumType::Spline3D && inputType == DatumType::Node3D) return true;
+    if (outputType == DatumType::Spline3D && inputType == DatumType::Node) return true;
+
     return false;
 }
 
@@ -62,6 +66,8 @@ const char* GetDatumTypeName(DatumType type)
     case DatumType::Quad:     return "Quad";
     case DatumType::Audio3D:  return "Audio3D";
     case DatumType::Scene:    return "Scene";
+    case DatumType::PointCloud: return "PointCloud";
+    case DatumType::Spline3D: return "Spline3D";
     case DatumType::Execution: return "Exec";
     default:                  return "Unknown";
     }
@@ -86,6 +92,8 @@ glm::vec4 GetDatumTypeColor(DatumType type)
     case DatumType::Quad:     return glm::vec4(0.9f, 0.5f, 0.2f, 1.0f);
     case DatumType::Audio3D:  return glm::vec4(0.2f, 0.8f, 0.3f, 1.0f);
     case DatumType::Scene:    return glm::vec4(0.3f, 0.3f, 0.9f, 1.0f);
+    case DatumType::PointCloud: return glm::vec4(0.9f, 0.55f, 0.1f, 1.0f);
+    case DatumType::Spline3D: return glm::vec4(0.3f, 0.7f, 0.9f, 1.0f);
     case DatumType::Execution: return glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     default:                  return glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
     }

@@ -1,5 +1,6 @@
 #include "NodeGraph/Nodes/FunctionNodes.h"
 #include "NodeGraph/Nodes/InputNodes.h"
+#include "NodeGraph/Nodes/VariableNodes.h"
 #include "NodeGraph/NodeGraph.h"
 #include "NodeGraph/GraphProcessor.h"
 #include "Assets/NodeGraphAsset.h"
@@ -190,6 +191,19 @@ void FunctionCallNode::Evaluate()
     // Create temp copy of the function graph
     NodeGraph tempGraph;
     tempGraph.CopyFrom(*funcGraph);
+
+    // Wire variable nodes in temp graph to same owner asset
+    for (GraphNode* node : tempGraph.GetNodes())
+    {
+        if (node->GetType() == GetVariableNode::GetStaticType())
+        {
+            static_cast<GetVariableNode*>(node)->SetOwnerAsset(mOwnerAsset);
+        }
+        else if (node->GetType() == SetVariableNode::GetStaticType())
+        {
+            static_cast<SetVariableNode*>(node)->SetOwnerAsset(mOwnerAsset);
+        }
+    }
 
     // Map FunctionCallNode input pin values → function graph's InputNode values
     uint32_t inputIdx = 0;
@@ -421,6 +435,21 @@ void FunctionCallNode::RebuildPinsFromFunction(NodeGraphAsset* asset)
                 AddOutputPin(funcOutPin.mName.c_str(), funcOutPin.mDataType);
             }
             break;
+        }
+    }
+
+    // Reassign pin IDs using graph-global counter to avoid collisions
+    if (mGraph != nullptr)
+    {
+        for (uint32_t i = 0; i < mInputPins.size(); ++i)
+        {
+            mInputPins[i].mId = mGraph->AllocPinId();
+            mInputPins[i].mOwnerNodeId = mId;
+        }
+        for (uint32_t i = 0; i < mOutputPins.size(); ++i)
+        {
+            mOutputPins[i].mId = mGraph->AllocPinId();
+            mOutputPins[i].mOwnerNodeId = mId;
         }
     }
 }

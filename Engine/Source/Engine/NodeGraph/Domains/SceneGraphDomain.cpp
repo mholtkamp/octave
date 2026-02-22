@@ -4,6 +4,8 @@
 #include "NodeGraph/Nodes/MathNodes.h"
 #include "NodeGraph/Nodes/ValueNodes.h"
 #include "NodeGraph/Nodes/SceneGraphNodes.h"
+#include "NodeGraph/Nodes/PointNodes.h"
+#include "NodeGraph/Nodes/SplineNodes.h"
 
 void SceneGraphDomain::RegisterNodeTypes()
 {
@@ -11,6 +13,10 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(StartEventNode::GetStaticType(), "Start", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
     AddNodeType(TickEventNode::GetStaticType(), "Tick", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
     AddNodeType(StopEventNode::GetStaticType(), "Stop", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(BeginOverlapEventNode::GetStaticType(), "On Overlap Begin", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(EndOverlapEventNode::GetStaticType(), "On Overlap End", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(CollisionBeginEventNode::GetStaticType(), "On Collision Begin", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(CollisionEndEventNode::GetStaticType(), "On Collision End", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
 
     // Math nodes
     AddNodeType(AddNode::GetStaticType(), "Add", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
@@ -226,6 +232,43 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(InputEventNode::GetStaticType(), "Input Event", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
     AddNodeType(InputDownNode::GetStaticType(), "Input Down", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
     AddNodeType(InputCountNode::GetStaticType(), "Input Count", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
+
+    // Point Generation nodes
+    static const glm::vec4 kPointColor(0.9f, 0.55f, 0.1f, 1.0f);
+    AddNodeType(CreatePointsGridNode::GetStaticType(), "Create Points Grid", "Point", kPointColor);
+    AddNodeType(ScatterPointsOnMeshNode::GetStaticType(), "Scatter Points On Mesh", "Point", kPointColor);
+    AddNodeType(RandomPointsInBoxNode::GetStaticType(), "Random Points In Box", "Point", kPointColor);
+    AddNodeType(PointsFromSplineNode::GetStaticType(), "Points From Spline", "Point", kPointColor);
+    AddNodeType(CreatePointsLineNode::GetStaticType(), "Create Points Line", "Point", kPointColor);
+    AddNodeType(MergePointsNode::GetStaticType(), "Merge Points", "Point", kPointColor);
+
+    // Point Attribute nodes
+    AddNodeType(SetPointAttributeFloatNode::GetStaticType(), "Set Point Attribute (Float)", "Point", kPointColor);
+    AddNodeType(SetPointAttributeVectorNode::GetStaticType(), "Set Point Attribute (Vector)", "Point", kPointColor);
+    AddNodeType(SetPointAttributeColorNode::GetStaticType(), "Set Point Attribute (Color)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeFloatNode::GetStaticType(), "Get Point Attribute (Float)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeVectorNode::GetStaticType(), "Get Point Attribute (Vector)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeColorNode::GetStaticType(), "Get Point Attribute (Color)", "Point", kPointColor);
+    AddNodeType(GetPointCountNode::GetStaticType(), "Get Point Count", "Point", kPointColor);
+    AddNodeType(GetPointPositionNode::GetStaticType(), "Get Point Position", "Point", kPointColor);
+    AddNodeType(SetPointPositionNode::GetStaticType(), "Set Point Position", "Point", kPointColor);
+
+    // Point Iteration / Transform / Output nodes
+    AddNodeType(ForEachPointNode::GetStaticType(), "For Each Point", "Point", kPointColor);
+    AddNodeType(FilterPointsNode::GetStaticType(), "Filter Points", "Point", kPointColor);
+    AddNodeType(TransformPointsNode::GetStaticType(), "Transform Points", "Point", kPointColor);
+    AddNodeType(RandomizeAttributeNode::GetStaticType(), "Randomize Attribute", "Point", kPointColor);
+    AddNodeType(CopyToPointsNode::GetStaticType(), "Copy To Points", "Point", kPointColor);
+    AddNodeType(InstantiateAtPointsNode::GetStaticType(), "Instantiate At Points", "Point", kPointColor);
+
+    // Spline nodes
+    static const glm::vec4 kSplineColor(0.3f, 0.7f, 0.9f, 1.0f);
+    AddNodeType(SplinePositionAtNode::GetStaticType(), "Spline Position At", "Spline", kSplineColor);
+    AddNodeType(SplineTangentAtNode::GetStaticType(), "Spline Tangent At", "Spline", kSplineColor);
+    AddNodeType(SplinePointCountNode::GetStaticType(), "Spline Point Count", "Spline", kSplineColor);
+    AddNodeType(SplineGetPointNode::GetStaticType(), "Spline Get Point", "Spline", kSplineColor);
+    AddNodeType(SplineNearestPercentNode::GetStaticType(), "Spline Nearest Percent", "Spline", kSplineColor);
+    AddNodeType(SplineLengthNode::GetStaticType(), "Spline Length", "Spline", kSplineColor);
 }
 
 TypeId SceneGraphDomain::GetDefaultOutputNodeType() const

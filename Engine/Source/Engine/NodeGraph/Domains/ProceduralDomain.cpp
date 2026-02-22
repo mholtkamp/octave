@@ -4,6 +4,9 @@
 #include "NodeGraph/Nodes/MathNodes.h"
 #include "NodeGraph/Nodes/ValueNodes.h"
 #include "NodeGraph/Nodes/ProceduralNodes.h"
+#include "NodeGraph/Nodes/PointNodes.h"
+#include "NodeGraph/Nodes/SplineNodes.h"
+#include "NodeGraph/Nodes/SceneGraphNodes.h"
 
 void ProceduralDomain::RegisterNodeTypes()
 {
@@ -77,6 +80,65 @@ void ProceduralDomain::RegisterNodeTypes()
     AddNodeType(NoiseNode::GetStaticType(), "Noise", "Procedural", glm::vec4(0.8f, 0.5f, 0.1f, 1.0f));
     AddNodeType(VoronoiNode::GetStaticType(), "Voronoi", "Procedural", glm::vec4(0.8f, 0.5f, 0.1f, 1.0f));
     AddNodeType(GradientNode::GetStaticType(), "Gradient", "Procedural", glm::vec4(0.8f, 0.5f, 0.1f, 1.0f));
+
+    // Event nodes (for realtime procedural use)
+    AddNodeType(StartEventNode::GetStaticType(), "Start", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(TickEventNode::GetStaticType(), "Tick", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+    AddNodeType(StopEventNode::GetStaticType(), "Stop", "Event", glm::vec4(0.8f, 0.2f, 0.2f, 1.0f));
+
+    // Flow Control nodes
+    AddNodeType(BranchNode::GetStaticType(), "Branch", "Flow Control", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    AddNodeType(ForLoopNode::GetStaticType(), "For Loop", "Flow Control", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    AddNodeType(ForEachLoopNode::GetStaticType(), "For Each Loop", "Flow Control", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    AddNodeType(SequenceNode::GetStaticType(), "Sequence", "Flow Control", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+
+    // Point Generation nodes
+    static const glm::vec4 kPointColor(0.9f, 0.55f, 0.1f, 1.0f);
+    AddNodeType(CreatePointsGridNode::GetStaticType(), "Create Points Grid", "Point", kPointColor);
+    AddNodeType(ScatterPointsOnMeshNode::GetStaticType(), "Scatter Points On Mesh", "Point", kPointColor);
+    AddNodeType(PointsFromSplineNode::GetStaticType(), "Points From Spline", "Point", kPointColor);
+    AddNodeType(CreatePointsLineNode::GetStaticType(), "Create Points Line", "Point", kPointColor);
+    AddNodeType(RandomPointsInBoxNode::GetStaticType(), "Random Points In Box", "Point", kPointColor);
+    AddNodeType(MergePointsNode::GetStaticType(), "Merge Points", "Point", kPointColor);
+
+    // Point Attribute nodes
+    AddNodeType(SetPointAttributeFloatNode::GetStaticType(), "Set Point Attribute (Float)", "Point", kPointColor);
+    AddNodeType(SetPointAttributeVectorNode::GetStaticType(), "Set Point Attribute (Vector)", "Point", kPointColor);
+    AddNodeType(SetPointAttributeColorNode::GetStaticType(), "Set Point Attribute (Color)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeFloatNode::GetStaticType(), "Get Point Attribute (Float)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeVectorNode::GetStaticType(), "Get Point Attribute (Vector)", "Point", kPointColor);
+    AddNodeType(GetPointAttributeColorNode::GetStaticType(), "Get Point Attribute (Color)", "Point", kPointColor);
+    AddNodeType(GetPointCountNode::GetStaticType(), "Get Point Count", "Point", kPointColor);
+    AddNodeType(GetPointPositionNode::GetStaticType(), "Get Point Position", "Point", kPointColor);
+    AddNodeType(SetPointPositionNode::GetStaticType(), "Set Point Position", "Point", kPointColor);
+
+    // Point Iteration / Transform nodes
+    AddNodeType(ForEachPointNode::GetStaticType(), "For Each Point", "Point", kPointColor);
+    AddNodeType(SetPointInLoopNode::GetStaticType(), "Set Point In Loop", "Point", kPointColor);
+    AddNodeType(FilterPointsNode::GetStaticType(), "Filter Points", "Point", kPointColor);
+    AddNodeType(TransformPointsNode::GetStaticType(), "Transform Points", "Point", kPointColor);
+    AddNodeType(RandomizeAttributeNode::GetStaticType(), "Randomize Attribute", "Point", kPointColor);
+
+    // Point Output / Bridge nodes
+    AddNodeType(CopyToPointsNode::GetStaticType(), "Copy To Points", "Point", kPointColor);
+    AddNodeType(InstantiateAtPointsNode::GetStaticType(), "Instantiate At Points", "Point", kPointColor);
+    AddNodeType(PointCloudToProceduralOutputNode::GetStaticType(), "Points To Output", "Point", kPointColor);
+
+    // Point Utility nodes
+    AddNodeType(PointCloudFirstPointNode::GetStaticType(), "First Point", "Point", kPointColor);
+    AddNodeType(PointCloudLastPointNode::GetStaticType(), "Last Point", "Point", kPointColor);
+    AddNodeType(RemovePointNode::GetStaticType(), "Remove Point", "Point", kPointColor);
+    AddNodeType(ReversePointsNode::GetStaticType(), "Reverse Points", "Point", kPointColor);
+    AddNodeType(SortPointsByAttributeNode::GetStaticType(), "Sort Points", "Point", kPointColor);
+
+    // Spline nodes
+    static const glm::vec4 kSplineColor(0.3f, 0.7f, 0.9f, 1.0f);
+    AddNodeType(SplinePositionAtNode::GetStaticType(), "Spline Position At", "Spline", kSplineColor);
+    AddNodeType(SplineTangentAtNode::GetStaticType(), "Spline Tangent At", "Spline", kSplineColor);
+    AddNodeType(SplinePointCountNode::GetStaticType(), "Spline Point Count", "Spline", kSplineColor);
+    AddNodeType(SplineGetPointNode::GetStaticType(), "Spline Get Point", "Spline", kSplineColor);
+    AddNodeType(SplineNearestPercentNode::GetStaticType(), "Spline Nearest Percent", "Spline", kSplineColor);
+    AddNodeType(SplineLengthNode::GetStaticType(), "Spline Length", "Spline", kSplineColor);
 }
 
 TypeId ProceduralDomain::GetDefaultOutputNodeType() const

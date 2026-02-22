@@ -5,7 +5,36 @@
 #include "NodeGraph/NodeGraph.h"
 #include "NodeGraph/GraphProcessor.h"
 
+#include <vector>
+#include <map>
+
 class NodeGraphAsset;
+class Primitive3D;
+
+struct OverlapEventData
+{
+    Node* mOtherNode = nullptr;
+};
+
+struct CollisionEventData
+{
+    Node* mOtherNode = nullptr;
+    glm::vec3 mHitPosition = glm::vec3(0.0f);
+    glm::vec3 mHitNormal = glm::vec3(0.0f);
+};
+
+struct CollisionPairKey
+{
+    Node* mThisComp = nullptr;
+    Node* mOtherComp = nullptr;
+
+    bool operator<(const CollisionPairKey& other) const
+    {
+        if (mThisComp != other.mThisComp)
+            return mThisComp < other.mThisComp;
+        return mOtherComp < other.mOtherComp;
+    }
+};
 
 class NodeGraphPlayer : public Node
 {
@@ -21,6 +50,16 @@ public:
     virtual void Tick(float deltaTime) override;
     virtual void Start() override;
     virtual void Stop() override;
+
+    // Physics event overrides
+    virtual void BeginOverlap(Primitive3D* thisComp, Primitive3D* otherComp) override;
+    virtual void EndOverlap(Primitive3D* thisComp, Primitive3D* otherComp) override;
+    virtual void OnCollision(
+        Primitive3D* thisComp,
+        Primitive3D* otherComp,
+        glm::vec3 impactPoint,
+        glm::vec3 impactNormal,
+        btPersistentManifold* manifold) override;
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     virtual const char* GetTypeName() const override;
@@ -62,12 +101,17 @@ public:
     float GetDeltaTime() const { return mDeltaTime; }
     bool HasStartFired() const { return mStartFired; }
 
+    // Physics event accessors (used by event graph nodes during Evaluate)
+    const OverlapEventData& GetCurrentOverlapEventData() const { return mCurrentOverlapEventData; }
+    const CollisionEventData& GetCurrentCollisionEventData() const { return mCurrentCollisionEventData; }
+
     NodeGraph* GetRuntimeGraph() { return mRuntimeGraph; }
 
 protected:
 
     void EnsureRuntimeGraph();
     void FireEvent(const char* eventName);
+    void ProcessPhysicsEvents();
 
     AssetRef mNodeGraphAsset;
     NodeGraph* mRuntimeGraph = nullptr;
@@ -77,4 +121,14 @@ protected:
     bool mPlayOnStart = false;
     bool mStartFired = false;
     float mDeltaTime = 0.0f;
+
+    // Physics event queues
+    std::vector<OverlapEventData> mBeginOverlapQueue;
+    std::vector<OverlapEventData> mEndOverlapQueue;
+    std::map<CollisionPairKey, CollisionEventData> mCurrentCollisions;
+    std::map<CollisionPairKey, CollisionEventData> mPreviousCollisions;
+
+    // Current event context (set during ProcessPhysicsEvents, read by event graph nodes)
+    OverlapEventData mCurrentOverlapEventData;
+    CollisionEventData mCurrentCollisionEventData;
 };

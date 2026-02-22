@@ -105,6 +105,118 @@ void StopEventNode::Evaluate()
 glm::vec4 StopEventNode::GetNodeColor() const { return kEventNodeColor; }
 
 // =============================================================================
+// BeginOverlapEventNode
+// =============================================================================
+DEFINE_GRAPH_NODE(BeginOverlapEventNode);
+
+void BeginOverlapEventNode::SetupPins()
+{
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Other", DatumType::Node);
+}
+
+void BeginOverlapEventNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        NodeGraphPlayer* player = owner->As<NodeGraphPlayer>();
+        if (player != nullptr)
+        {
+            const OverlapEventData& data = player->GetCurrentOverlapEventData();
+            SetOutputValue(1, Datum(data.mOtherNode));
+        }
+    }
+}
+
+glm::vec4 BeginOverlapEventNode::GetNodeColor() const { return kEventNodeColor; }
+
+// =============================================================================
+// EndOverlapEventNode
+// =============================================================================
+DEFINE_GRAPH_NODE(EndOverlapEventNode);
+
+void EndOverlapEventNode::SetupPins()
+{
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Other", DatumType::Node);
+}
+
+void EndOverlapEventNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        NodeGraphPlayer* player = owner->As<NodeGraphPlayer>();
+        if (player != nullptr)
+        {
+            const OverlapEventData& data = player->GetCurrentOverlapEventData();
+            SetOutputValue(1, Datum(data.mOtherNode));
+        }
+    }
+}
+
+glm::vec4 EndOverlapEventNode::GetNodeColor() const { return kEventNodeColor; }
+
+// =============================================================================
+// CollisionBeginEventNode
+// =============================================================================
+DEFINE_GRAPH_NODE(CollisionBeginEventNode);
+
+void CollisionBeginEventNode::SetupPins()
+{
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Other", DatumType::Node);
+    AddOutputPin("Hit Position", DatumType::Vector);
+    AddOutputPin("Hit Normal", DatumType::Vector);
+}
+
+void CollisionBeginEventNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        NodeGraphPlayer* player = owner->As<NodeGraphPlayer>();
+        if (player != nullptr)
+        {
+            const CollisionEventData& data = player->GetCurrentCollisionEventData();
+            SetOutputValue(1, Datum(data.mOtherNode));
+            SetOutputValue(2, Datum(data.mHitPosition));
+            SetOutputValue(3, Datum(data.mHitNormal));
+        }
+    }
+}
+
+glm::vec4 CollisionBeginEventNode::GetNodeColor() const { return kEventNodeColor; }
+
+// =============================================================================
+// CollisionEndEventNode
+// =============================================================================
+DEFINE_GRAPH_NODE(CollisionEndEventNode);
+
+void CollisionEndEventNode::SetupPins()
+{
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Other", DatumType::Node);
+}
+
+void CollisionEndEventNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        NodeGraphPlayer* player = owner->As<NodeGraphPlayer>();
+        if (player != nullptr)
+        {
+            const CollisionEventData& data = player->GetCurrentCollisionEventData();
+            SetOutputValue(1, Datum(data.mOtherNode));
+        }
+    }
+}
+
+glm::vec4 CollisionEndEventNode::GetNodeColor() const { return kEventNodeColor; }
+
+// =============================================================================
 // GraphOutputNode (flexible output sink for script readback)
 // =============================================================================
 DEFINE_GRAPH_NODE(GraphOutputNode);
