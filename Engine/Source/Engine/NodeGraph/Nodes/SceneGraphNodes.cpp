@@ -10,6 +10,7 @@
 #include "Assets/Scene.h"
 #include "Assets/SoundWave.h"
 #include "Assets/Texture.h"
+#include "UI/UIDocument.h"
 #include "World.h"
 #include "Engine.h"
 #include "Clock.h"
@@ -1363,6 +1364,286 @@ void SetWidgetColorNode::Evaluate()
 glm::vec4 SetWidgetColorNode::GetNodeColor() const { return kWidgetNodeColor; }
 
 // =============================================================================
+// UI Document Nodes
+// =============================================================================
+
+static const glm::vec4 kUINodeColor = glm::vec4(0.2f, 0.8f, 0.6f, 1.0f);
+
+// --- LoadUIDocumentNode ---
+DEFINE_GRAPH_NODE(LoadUIDocumentNode);
+
+LoadUIDocumentNode::~LoadUIDocumentNode()
+{
+    if (mDocument != nullptr)
+    {
+        mDocument->Unmount();
+        mDocument->Destroy();
+        delete mDocument;
+        mDocument = nullptr;
+    }
+}
+
+void LoadUIDocumentNode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Path", DatumType::String, Datum(std::string("")));
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Document", DatumType::Asset);
+}
+
+void LoadUIDocumentNode::Evaluate()
+{
+    std::string path = GetInputValue(1).GetString();
+
+    if (!path.empty())
+    {
+        // Clean up previous document
+        if (mDocument != nullptr)
+        {
+            mDocument->Unmount();
+            mDocument->Destroy();
+            delete mDocument;
+            mDocument = nullptr;
+        }
+
+        // Resolve relative paths against the project directory
+        std::string fullPath = GetEngineState()->mProjectDirectory + path;
+
+        mDocument = new UIDocument();
+        mDocument->Create();
+
+        if (mDocument->Import(fullPath, nullptr))
+        {
+            SetOutputValue(1, Datum((Asset*)mDocument));
+        }
+        else
+        {
+            LogError("LoadUIDocumentNode: Failed to import '%s'", path.c_str());
+            delete mDocument;
+            mDocument = nullptr;
+            SetOutputValue(1, Datum((Asset*)nullptr));
+        }
+    }
+    else
+    {
+        SetOutputValue(1, Datum((Asset*)nullptr));
+    }
+
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 LoadUIDocumentNode::GetNodeColor() const { return kUINodeColor; }
+
+// --- MountUINode ---
+DEFINE_GRAPH_NODE(MountUINode);
+
+void MountUINode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddInputPin("Parent", DatumType::Widget, Datum((Node*)nullptr));
+    AddOutputPin("Exec", DatumType::Execution);
+}
+
+void MountUINode::Evaluate()
+{
+    Asset* asset = GetInputValue(1).GetAsset();
+    Node* parentNode = GetInputValue(2).GetNode().Get();
+
+    if (asset != nullptr && parentNode != nullptr)
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        Widget* parent = parentNode->As<Widget>();
+        if (doc != nullptr && parent != nullptr)
+        {
+            doc->Mount(parent);
+        }
+    }
+
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 MountUINode::GetNodeColor() const { return kUINodeColor; }
+
+// --- UnmountUINode ---
+DEFINE_GRAPH_NODE(UnmountUINode);
+
+void UnmountUINode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddOutputPin("Exec", DatumType::Execution);
+}
+
+void UnmountUINode::Evaluate()
+{
+    Asset* asset = GetInputValue(1).GetAsset();
+
+    if (asset != nullptr)
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            doc->Unmount();
+        }
+    }
+
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 UnmountUINode::GetNodeColor() const { return kUINodeColor; }
+
+// --- SetUIDataNode ---
+DEFINE_GRAPH_NODE(SetUIDataNode);
+
+void SetUIDataNode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddInputPin("Key", DatumType::String, Datum(std::string("")));
+    AddInputPin("Value", DatumType::String, Datum(std::string("")));
+    AddOutputPin("Exec", DatumType::Execution);
+}
+
+void SetUIDataNode::Evaluate()
+{
+    Asset* asset = GetInputValue(1).GetAsset();
+    std::string key = GetInputValue(2).GetString();
+    std::string value = GetInputValue(3).GetString();
+
+    if (asset != nullptr && !key.empty())
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            doc->SetData(key, value);
+        }
+    }
+
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 SetUIDataNode::GetNodeColor() const { return kUINodeColor; }
+
+// --- UIFindByIdNode ---
+DEFINE_GRAPH_NODE(UIFindByIdNode);
+
+void UIFindByIdNode::SetupPins()
+{
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddInputPin("Id", DatumType::String, Datum(std::string("")));
+    AddOutputPin("Widget", DatumType::Widget);
+}
+
+void UIFindByIdNode::Evaluate()
+{
+    Asset* asset = GetInputValue(0).GetAsset();
+    std::string id = GetInputValue(1).GetString();
+
+    Widget* result = nullptr;
+
+    if (asset != nullptr && !id.empty())
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            result = doc->FindById(id);
+        }
+    }
+
+    SetOutputValue(0, Datum((Node*)result));
+}
+
+glm::vec4 UIFindByIdNode::GetNodeColor() const { return kUINodeColor; }
+
+// --- UIGetRootWidgetNode ---
+DEFINE_GRAPH_NODE(UIGetRootWidgetNode);
+
+void UIGetRootWidgetNode::SetupPins()
+{
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddOutputPin("Root", DatumType::Widget);
+}
+
+void UIGetRootWidgetNode::Evaluate()
+{
+    Asset* asset = GetInputValue(0).GetAsset();
+    Widget* root = nullptr;
+
+    if (asset != nullptr)
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            root = doc->GetRootWidget();
+        }
+    }
+
+    SetOutputValue(0, Datum((Node*)root));
+}
+
+glm::vec4 UIGetRootWidgetNode::GetNodeColor() const { return kUINodeColor; }
+
+// --- UITickNode ---
+DEFINE_GRAPH_NODE(UITickNode);
+
+void UITickNode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddOutputPin("Exec", DatumType::Execution);
+}
+
+void UITickNode::Evaluate()
+{
+    Asset* asset = GetInputValue(1).GetAsset();
+
+    if (asset != nullptr)
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            doc->Tick();
+        }
+    }
+
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 UITickNode::GetNodeColor() const { return kUINodeColor; }
+
+// --- InstantiateUINode ---
+DEFINE_GRAPH_NODE(InstantiateUINode);
+
+void InstantiateUINode::SetupPins()
+{
+    AddInputPin("Exec", DatumType::Execution);
+    AddInputPin("Document", DatumType::Asset, Datum((Asset*)nullptr));
+    AddOutputPin("Exec", DatumType::Execution);
+    AddOutputPin("Root", DatumType::Widget);
+}
+
+void InstantiateUINode::Evaluate()
+{
+    Asset* asset = GetInputValue(1).GetAsset();
+    Widget* root = nullptr;
+
+    if (asset != nullptr)
+    {
+        UIDocument* doc = asset->As<UIDocument>();
+        if (doc != nullptr)
+        {
+            root = doc->Instantiate();
+        }
+    }
+
+    SetOutputValue(1, Datum((Node*)root));
+    TriggerExecutionPin(0);
+}
+
+glm::vec4 InstantiateUINode::GetNodeColor() const { return kUINodeColor; }
+
+// =============================================================================
 // Audio Nodes
 // =============================================================================
 
@@ -1980,59 +2261,59 @@ static const PinEnumOption sSourceOptions[] = {
 
 static void FillKeyboardOptions(std::vector<PinEnumOption>& out)
 {
-    out.push_back({ "Space",     KEY_SPACE });
-    out.push_back({ "Enter",     KEY_ENTER });
-    out.push_back({ "Escape",    KEY_ESCAPE });
-    out.push_back({ "Tab",       KEY_TAB });
-    out.push_back({ "Backspace", KEY_BACKSPACE });
-    out.push_back({ "Shift",     KEY_SHIFT_L });
-    out.push_back({ "Ctrl",      KEY_CONTROL_L });
-    out.push_back({ "Alt",       KEY_ALT_L });
+    out.push_back({ "Space",     OCTAVE_KEY_SPACE });
+    out.push_back({ "Enter",     OCTAVE_KEY_ENTER });
+    out.push_back({ "Escape",    OCTAVE_KEY_ESCAPE });
+    out.push_back({ "Tab",       OCTAVE_KEY_TAB });
+    out.push_back({ "Backspace", OCTAVE_KEY_BACKSPACE });
+    out.push_back({ "Shift",     OCTAVE_KEY_SHIFT_L });
+    out.push_back({ "Ctrl",      OCTAVE_KEY_CONTROL_L });
+    out.push_back({ "Alt",       OCTAVE_KEY_ALT_L });
 #if !PLATFORM_3DS
-    out.push_back({ "Up",    KEY_UP });
-    out.push_back({ "Down",  KEY_DOWN });
-    out.push_back({ "Left",  KEY_LEFT });
-    out.push_back({ "Right", KEY_RIGHT });
-    out.push_back({ "A", KEY_A }); out.push_back({ "B", KEY_B });
+    out.push_back({ "Up",    OCTAVE_KEY_UP });
+    out.push_back({ "Down",  OCTAVE_KEY_DOWN });
+    out.push_back({ "Left",  OCTAVE_KEY_LEFT });
+    out.push_back({ "Right", OCTAVE_KEY_RIGHT });
+    out.push_back({ "A", OCTAVE_KEY_A }); out.push_back({ "B", OCTAVE_KEY_B });
 #endif
-    out.push_back({ "C", KEY_C }); out.push_back({ "D", KEY_D });
-    out.push_back({ "E", KEY_E }); out.push_back({ "F", KEY_F });
-    out.push_back({ "G", KEY_G }); out.push_back({ "H", KEY_H });
-    out.push_back({ "I", KEY_I }); out.push_back({ "J", KEY_J });
-    out.push_back({ "K", KEY_K });
+    out.push_back({ "C", OCTAVE_KEY_C }); out.push_back({ "D", OCTAVE_KEY_D });
+    out.push_back({ "E", OCTAVE_KEY_E }); out.push_back({ "F", OCTAVE_KEY_F });
+    out.push_back({ "G", OCTAVE_KEY_G }); out.push_back({ "H", OCTAVE_KEY_H });
+    out.push_back({ "I", OCTAVE_KEY_I }); out.push_back({ "J", OCTAVE_KEY_J });
+    out.push_back({ "K", OCTAVE_KEY_K });
 #if !PLATFORM_3DS
-    out.push_back({ "L", KEY_L });
+    out.push_back({ "L", OCTAVE_KEY_L });
 #endif
-    out.push_back({ "M", KEY_M }); out.push_back({ "N", KEY_N });
-    out.push_back({ "O", KEY_O }); out.push_back({ "P", KEY_P });
-    out.push_back({ "Q", KEY_Q });
+    out.push_back({ "M", OCTAVE_KEY_M }); out.push_back({ "N", OCTAVE_KEY_N });
+    out.push_back({ "O", OCTAVE_KEY_O }); out.push_back({ "P", OCTAVE_KEY_P });
+    out.push_back({ "Q", OCTAVE_KEY_Q });
 #if !PLATFORM_3DS
-    out.push_back({ "R", KEY_R });
+    out.push_back({ "R", OCTAVE_KEY_R });
 #endif
-    out.push_back({ "S", KEY_S }); out.push_back({ "T", KEY_T });
-    out.push_back({ "U", KEY_U }); out.push_back({ "V", KEY_V });
-    out.push_back({ "W", KEY_W });
+    out.push_back({ "S", OCTAVE_KEY_S }); out.push_back({ "T", OCTAVE_KEY_T });
+    out.push_back({ "U", OCTAVE_KEY_U }); out.push_back({ "V", OCTAVE_KEY_V });
+    out.push_back({ "W", OCTAVE_KEY_W });
 #if !PLATFORM_3DS
-    out.push_back({ "X", KEY_X }); out.push_back({ "Y", KEY_Y });
+    out.push_back({ "X", OCTAVE_KEY_X }); out.push_back({ "Y", OCTAVE_KEY_Y });
 #endif
-    out.push_back({ "Z", KEY_Z });
-    out.push_back({ "0", KEY_0 }); out.push_back({ "1", KEY_1 });
-    out.push_back({ "2", KEY_2 }); out.push_back({ "3", KEY_3 });
-    out.push_back({ "4", KEY_4 }); out.push_back({ "5", KEY_5 });
-    out.push_back({ "6", KEY_6 }); out.push_back({ "7", KEY_7 });
-    out.push_back({ "8", KEY_8 }); out.push_back({ "9", KEY_9 });
-    out.push_back({ "F1",  KEY_F1 });  out.push_back({ "F2",  KEY_F2 });
-    out.push_back({ "F3",  KEY_F3 });  out.push_back({ "F4",  KEY_F4 });
-    out.push_back({ "F5",  KEY_F5 });  out.push_back({ "F6",  KEY_F6 });
-    out.push_back({ "F7",  KEY_F7 });  out.push_back({ "F8",  KEY_F8 });
-    out.push_back({ "F9",  KEY_F9 });  out.push_back({ "F10", KEY_F10 });
-    out.push_back({ "F11", KEY_F11 }); out.push_back({ "F12", KEY_F12 });
-    out.push_back({ "Insert",    KEY_INSERT });
-    out.push_back({ "Delete",    KEY_DELETE });
-    out.push_back({ "Home",      KEY_HOME });
-    out.push_back({ "End",       KEY_END });
-    out.push_back({ "Page Up",   KEY_PAGE_UP });
-    out.push_back({ "Page Down", KEY_PAGE_DOWN });
+    out.push_back({ "Z", OCTAVE_KEY_Z });
+    out.push_back({ "0", OCTAVE_KEY_0 }); out.push_back({ "1", OCTAVE_KEY_1 });
+    out.push_back({ "2", OCTAVE_KEY_2 }); out.push_back({ "3", OCTAVE_KEY_3 });
+    out.push_back({ "4", OCTAVE_KEY_4 }); out.push_back({ "5", OCTAVE_KEY_5 });
+    out.push_back({ "6", OCTAVE_KEY_6 }); out.push_back({ "7", OCTAVE_KEY_7 });
+    out.push_back({ "8", OCTAVE_KEY_8 }); out.push_back({ "9", OCTAVE_KEY_9 });
+    out.push_back({ "F1",  OCTAVE_KEY_F1 });  out.push_back({ "F2",  OCTAVE_KEY_F2 });
+    out.push_back({ "F3",  OCTAVE_KEY_F3 });  out.push_back({ "F4",  OCTAVE_KEY_F4 });
+    out.push_back({ "F5",  OCTAVE_KEY_F5 });  out.push_back({ "F6",  OCTAVE_KEY_F6 });
+    out.push_back({ "F7",  OCTAVE_KEY_F7 });  out.push_back({ "F8",  OCTAVE_KEY_F8 });
+    out.push_back({ "F9",  OCTAVE_KEY_F9 });  out.push_back({ "F10", OCTAVE_KEY_F10 });
+    out.push_back({ "F11", OCTAVE_KEY_F11 }); out.push_back({ "F12", OCTAVE_KEY_F12 });
+    out.push_back({ "Insert",    OCTAVE_KEY_INSERT });
+    out.push_back({ "Delete",    OCTAVE_KEY_DELETE });
+    out.push_back({ "Home",      OCTAVE_KEY_HOME });
+    out.push_back({ "End",       OCTAVE_KEY_END });
+    out.push_back({ "Page Up",   OCTAVE_KEY_PAGE_UP });
+    out.push_back({ "Page Down", OCTAVE_KEY_PAGE_DOWN });
 }
 
 static const PinEnumOption sGamepadOptions[] = {

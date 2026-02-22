@@ -601,6 +601,108 @@ public:
 };
 
 // =============================================================================
+// UI Document Nodes
+// =============================================================================
+
+class LoadUIDocumentNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(LoadUIDocumentNode, GraphNode);
+    ~LoadUIDocumentNode();
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "Load UI Document"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+
+private:
+    class UIDocument* mDocument = nullptr;
+};
+
+class MountUINode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(MountUINode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "Mount UI"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class UnmountUINode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(UnmountUINode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "Unmount UI"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class SetUIDataNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(SetUIDataNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "Set UI Data"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class UIFindByIdNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(UIFindByIdNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "UI Find By Id"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class UIGetRootWidgetNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(UIGetRootWidgetNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "UI Get Root Widget"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class UITickNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(UITickNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "UI Tick"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class InstantiateUINode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(InstantiateUINode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual bool IsFlowNode() const override { return true; }
+    virtual const char* GetNodeTypeName() const override { return "Instantiate UI"; }
+    virtual const char* GetNodeCategory() const override { return "UI"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// =============================================================================
 // Audio Nodes
 // =============================================================================
 

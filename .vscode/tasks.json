@@ -186,6 +186,42 @@
             "problemMatcher": [],
             "group": "build",
             "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installer - Windows",
+            "command": "Installers\\build_installer_windows.bat",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Windows installer (.exe) with Inno Setup"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installers - WSL",
+            "command": "wsl bash Installers/build_deb_linux.sh && wsl bash Installers/build_tarball_linux.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Linux installers (.deb + .tar.gz) via WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installers - Linux",
+            "command": "bash Installers/build_deb_linux.sh && bash Installers/build_tarball_linux.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Linux installers (.deb + .tar.gz)"
         }
     ],
     "version": "2.0.0"

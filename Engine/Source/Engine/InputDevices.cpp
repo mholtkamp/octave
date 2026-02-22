@@ -31,35 +31,35 @@ bool IsKeyJustUp(int32_t key)
 
 bool IsControlDown()
 {
-    return (IsKeyDown(KEY_CONTROL_L) || IsKeyDown(KEY_CONTROL_R));
+    return (IsKeyDown(OCTAVE_KEY_CONTROL_L) || IsKeyDown(OCTAVE_KEY_CONTROL_R));
 }
 
 bool IsShiftDown()
 {
-    return (IsKeyDown(KEY_SHIFT_L) || IsKeyDown(KEY_SHIFT_R));
+    return (IsKeyDown(OCTAVE_KEY_SHIFT_L) || IsKeyDown(OCTAVE_KEY_SHIFT_R));
 }
 
 bool IsAltDown()
 {
-    return (IsKeyDown(KEY_ALT_L) || IsKeyDown(KEY_ALT_R));
+    return (IsKeyDown(OCTAVE_KEY_ALT_L) || IsKeyDown(OCTAVE_KEY_ALT_R));
 }
 
 void ClearControlDown()
 {
-    INP_ClearKey(KEY_CONTROL_L);
-    INP_ClearKey(KEY_CONTROL_R);
+    INP_ClearKey(OCTAVE_KEY_CONTROL_L);
+    INP_ClearKey(OCTAVE_KEY_CONTROL_R);
 }
 
 void ClearShiftDown()
 {
-    INP_ClearKey(KEY_SHIFT_L);
-    INP_ClearKey(KEY_SHIFT_R);
+    INP_ClearKey(OCTAVE_KEY_SHIFT_L);
+    INP_ClearKey(OCTAVE_KEY_SHIFT_R);
 }
 
 void ClearAltDown()
 {
-    INP_ClearKey(KEY_ALT_L);
-    INP_ClearKey(KEY_ALT_R);
+    INP_ClearKey(OCTAVE_KEY_ALT_L);
+    INP_ClearKey(OCTAVE_KEY_ALT_R);
 }
 
 bool IsMouseButtonDown(int32_t button)

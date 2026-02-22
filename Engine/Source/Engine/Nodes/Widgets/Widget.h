@@ -167,6 +167,7 @@ public:
 
     void SetScale(glm::vec2 scale);
     glm::vec2 GetScale() const;
+    glm::vec2 GetAbsoluteScale() const { return mAbsoluteScale; }
 
     bool IsScissorEnabled() const;
     void EnableScissor(bool enable);

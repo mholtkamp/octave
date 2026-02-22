@@ -111,113 +111,113 @@ static ImGuiKey ImGui_ImplXcb_VirtualKeyToImGuiKey(xcb_keycode_t keyCode)
 {
     switch (keyCode)
     {
-        case KEY_TAB: return ImGuiKey_Tab;
-        case KEY_LEFT: return ImGuiKey_LeftArrow;
-        case KEY_RIGHT: return ImGuiKey_RightArrow;
-        case KEY_UP: return ImGuiKey_UpArrow;
-        case KEY_DOWN: return ImGuiKey_DownArrow;
-        case KEY_PAGE_UP: return ImGuiKey_PageUp;
-        case KEY_PAGE_DOWN: return ImGuiKey_PageDown;
-        case KEY_HOME: return ImGuiKey_Home;
-        case KEY_END: return ImGuiKey_End;
-        case KEY_INSERT: return ImGuiKey_Insert;
-        case KEY_DELETE: return ImGuiKey_Delete;
-        case KEY_BACKSPACE: return ImGuiKey_Backspace;
-        case KEY_SPACE: return ImGuiKey_Space;
-        case KEY_ENTER: return ImGuiKey_Enter;
-        case KEY_ESCAPE: return ImGuiKey_Escape;
-        case KEY_QUOTE: return ImGuiKey_Apostrophe;
-        case KEY_COMMA: return ImGuiKey_Comma;
-        case KEY_MINUS: return ImGuiKey_Minus;
-        case KEY_PERIOD: return ImGuiKey_Period;
-        case KEY_QUESTION: return ImGuiKey_Slash;
-        case KEY_COLON: return ImGuiKey_Semicolon;
-        case KEY_PLUS: return ImGuiKey_Equal;
-        case KEY_LEFT_BRACKET: return ImGuiKey_LeftBracket;
-        case KEY_BACK_SLASH: return ImGuiKey_Backslash;
-        case KEY_RIGHT_BRACKET: return ImGuiKey_RightBracket;
-        case KEY_SQUIGGLE: return ImGuiKey_GraveAccent;
-        //case KEY_???: return ImGuiKey_CapsLock;
-        //case KEY_???: return ImGuiKey_ScrollLock;
-        //case KEY_???: return ImGuiKey_NumLock;
+        case OCTAVE_KEY_TAB: return ImGuiKey_Tab;
+        case OCTAVE_KEY_LEFT: return ImGuiKey_LeftArrow;
+        case OCTAVE_KEY_RIGHT: return ImGuiKey_RightArrow;
+        case OCTAVE_KEY_UP: return ImGuiKey_UpArrow;
+        case OCTAVE_KEY_DOWN: return ImGuiKey_DownArrow;
+        case OCTAVE_KEY_PAGE_UP: return ImGuiKey_PageUp;
+        case OCTAVE_KEY_PAGE_DOWN: return ImGuiKey_PageDown;
+        case OCTAVE_KEY_HOME: return ImGuiKey_Home;
+        case OCTAVE_KEY_END: return ImGuiKey_End;
+        case OCTAVE_KEY_INSERT: return ImGuiKey_Insert;
+        case OCTAVE_KEY_DELETE: return ImGuiKey_Delete;
+        case OCTAVE_KEY_BACKSPACE: return ImGuiKey_Backspace;
+        case OCTAVE_KEY_SPACE: return ImGuiKey_Space;
+        case OCTAVE_KEY_ENTER: return ImGuiKey_Enter;
+        case OCTAVE_KEY_ESCAPE: return ImGuiKey_Escape;
+        case OCTAVE_KEY_QUOTE: return ImGuiKey_Apostrophe;
+        case OCTAVE_KEY_COMMA: return ImGuiKey_Comma;
+        case OCTAVE_KEY_MINUS: return ImGuiKey_Minus;
+        case OCTAVE_KEY_PERIOD: return ImGuiKey_Period;
+        case OCTAVE_KEY_QUESTION: return ImGuiKey_Slash;
+        case OCTAVE_KEY_COLON: return ImGuiKey_Semicolon;
+        case OCTAVE_KEY_PLUS: return ImGuiKey_Equal;
+        case OCTAVE_KEY_LEFT_BRACKET: return ImGuiKey_LeftBracket;
+        case OCTAVE_KEY_BACK_SLASH: return ImGuiKey_Backslash;
+        case OCTAVE_KEY_RIGHT_BRACKET: return ImGuiKey_RightBracket;
+        case OCTAVE_KEY_SQUIGGLE: return ImGuiKey_GraveAccent;
+        //case OCTAVE_KEY_???: return ImGuiKey_CapsLock;
+        //case OCTAVE_KEY_???: return ImGuiKey_ScrollLock;
+        //case OCTAVE_KEY_???: return ImGuiKey_NumLock;
         //case VK_SNAPSHOT: return ImGuiKey_PrintScreen;
         //case VK_PAUSE: return ImGuiKey_Pause;
-        case KEY_NUMPAD0: return ImGuiKey_Keypad0;
-        case KEY_NUMPAD1: return ImGuiKey_Keypad1;
-        case KEY_NUMPAD2: return ImGuiKey_Keypad2;
-        case KEY_NUMPAD3: return ImGuiKey_Keypad3;
-        case KEY_NUMPAD4: return ImGuiKey_Keypad4;
-        case KEY_NUMPAD5: return ImGuiKey_Keypad5;
-        case KEY_NUMPAD6: return ImGuiKey_Keypad6;
-        case KEY_NUMPAD7: return ImGuiKey_Keypad7;
-        case KEY_NUMPAD8: return ImGuiKey_Keypad8;
-        case KEY_NUMPAD9: return ImGuiKey_Keypad9;
-        case KEY_DECIMAL: return ImGuiKey_KeypadDecimal;
+        case OCTAVE_KEY_NUMPAD0: return ImGuiKey_Keypad0;
+        case OCTAVE_KEY_NUMPAD1: return ImGuiKey_Keypad1;
+        case OCTAVE_KEY_NUMPAD2: return ImGuiKey_Keypad2;
+        case OCTAVE_KEY_NUMPAD3: return ImGuiKey_Keypad3;
+        case OCTAVE_KEY_NUMPAD4: return ImGuiKey_Keypad4;
+        case OCTAVE_KEY_NUMPAD5: return ImGuiKey_Keypad5;
+        case OCTAVE_KEY_NUMPAD6: return ImGuiKey_Keypad6;
+        case OCTAVE_KEY_NUMPAD7: return ImGuiKey_Keypad7;
+        case OCTAVE_KEY_NUMPAD8: return ImGuiKey_Keypad8;
+        case OCTAVE_KEY_NUMPAD9: return ImGuiKey_Keypad9;
+        case OCTAVE_KEY_DECIMAL: return ImGuiKey_KeypadDecimal;
         //case VK_DIVIDE: return ImGuiKey_KeypadDivide;
         //case VK_MULTIPLY: return ImGuiKey_KeypadMultiply;
         //case VK_SUBTRACT: return ImGuiKey_KeypadSubtract;
         //case VK_ADD: return ImGuiKey_KeypadAdd;
         //case IM_VK_KEYPAD_ENTER: return ImGuiKey_KeypadEnter;
-        case KEY_SHIFT_L: return ImGuiKey_LeftShift;
-        case KEY_CONTROL_L: return ImGuiKey_LeftCtrl;
-        case KEY_ALT_L: return ImGuiKey_LeftAlt;
+        case OCTAVE_KEY_SHIFT_L: return ImGuiKey_LeftShift;
+        case OCTAVE_KEY_CONTROL_L: return ImGuiKey_LeftCtrl;
+        case OCTAVE_KEY_ALT_L: return ImGuiKey_LeftAlt;
         //case VK_LWIN: return ImGuiKey_LeftSuper;
-        case KEY_SHIFT_R: return ImGuiKey_RightShift;
-        case KEY_CONTROL_R: return ImGuiKey_RightCtrl;
+        case OCTAVE_KEY_SHIFT_R: return ImGuiKey_RightShift;
+        case OCTAVE_KEY_CONTROL_R: return ImGuiKey_RightCtrl;
         
         // TODO: Why is ALT R the same as one of the arrow keys??
-        //case KEY_ALT_R: return ImGuiKey_RightAlt;
+        //case OCTAVE_KEY_ALT_R: return ImGuiKey_RightAlt;
         
         //case VK_RWIN: return ImGuiKey_RightSuper;
         //case VK_APPS: return ImGuiKey_Menu;
-        case KEY_0: return ImGuiKey_0;
-        case KEY_1: return ImGuiKey_1;
-        case KEY_2: return ImGuiKey_2;
-        case KEY_3: return ImGuiKey_3;
-        case KEY_4: return ImGuiKey_4;
-        case KEY_5: return ImGuiKey_5;
-        case KEY_6: return ImGuiKey_6;
-        case KEY_7: return ImGuiKey_7;
-        case KEY_8: return ImGuiKey_8;
-        case KEY_9: return ImGuiKey_9;
-        case KEY_A: return ImGuiKey_A;
-        case KEY_B: return ImGuiKey_B;
-        case KEY_C: return ImGuiKey_C;
-        case KEY_D: return ImGuiKey_D;
-        case KEY_E: return ImGuiKey_E;
-        case KEY_F: return ImGuiKey_F;
-        case KEY_G: return ImGuiKey_G;
-        case KEY_H: return ImGuiKey_H;
-        case KEY_I: return ImGuiKey_I;
-        case KEY_J: return ImGuiKey_J;
-        case KEY_K: return ImGuiKey_K;
-        case KEY_L: return ImGuiKey_L;
-        case KEY_M: return ImGuiKey_M;
-        case KEY_N: return ImGuiKey_N;
-        case KEY_O: return ImGuiKey_O;
-        case KEY_P: return ImGuiKey_P;
-        case KEY_Q: return ImGuiKey_Q;
-        case KEY_R: return ImGuiKey_R;
-        case KEY_S: return ImGuiKey_S;
-        case KEY_T: return ImGuiKey_T;
-        case KEY_U: return ImGuiKey_U;
-        case KEY_V: return ImGuiKey_V;
-        case KEY_W: return ImGuiKey_W;
-        case KEY_X: return ImGuiKey_X;
-        case KEY_Y: return ImGuiKey_Y;
-        case KEY_Z: return ImGuiKey_Z;
-        case KEY_F1: return ImGuiKey_F1;
-        case KEY_F2: return ImGuiKey_F2;
-        case KEY_F3: return ImGuiKey_F3;
-        case KEY_F4: return ImGuiKey_F4;
-        case KEY_F5: return ImGuiKey_F5;
-        case KEY_F6: return ImGuiKey_F6;
-        case KEY_F7: return ImGuiKey_F7;
-        case KEY_F8: return ImGuiKey_F8;
-        case KEY_F9: return ImGuiKey_F9;
-        case KEY_F10: return ImGuiKey_F10;
-        case KEY_F11: return ImGuiKey_F11;
-        case KEY_F12: return ImGuiKey_F12;
+        case OCTAVE_KEY_0: return ImGuiKey_0;
+        case OCTAVE_KEY_1: return ImGuiKey_1;
+        case OCTAVE_KEY_2: return ImGuiKey_2;
+        case OCTAVE_KEY_3: return ImGuiKey_3;
+        case OCTAVE_KEY_4: return ImGuiKey_4;
+        case OCTAVE_KEY_5: return ImGuiKey_5;
+        case OCTAVE_KEY_6: return ImGuiKey_6;
+        case OCTAVE_KEY_7: return ImGuiKey_7;
+        case OCTAVE_KEY_8: return ImGuiKey_8;
+        case OCTAVE_KEY_9: return ImGuiKey_9;
+        case OCTAVE_KEY_A: return ImGuiKey_A;
+        case OCTAVE_KEY_B: return ImGuiKey_B;
+        case OCTAVE_KEY_C: return ImGuiKey_C;
+        case OCTAVE_KEY_D: return ImGuiKey_D;
+        case OCTAVE_KEY_E: return ImGuiKey_E;
+        case OCTAVE_KEY_F: return ImGuiKey_F;
+        case OCTAVE_KEY_G: return ImGuiKey_G;
+        case OCTAVE_KEY_H: return ImGuiKey_H;
+        case OCTAVE_KEY_I: return ImGuiKey_I;
+        case OCTAVE_KEY_J: return ImGuiKey_J;
+        case OCTAVE_KEY_K: return ImGuiKey_K;
+        case OCTAVE_KEY_L: return ImGuiKey_L;
+        case OCTAVE_KEY_M: return ImGuiKey_M;
+        case OCTAVE_KEY_N: return ImGuiKey_N;
+        case OCTAVE_KEY_O: return ImGuiKey_O;
+        case OCTAVE_KEY_P: return ImGuiKey_P;
+        case OCTAVE_KEY_Q: return ImGuiKey_Q;
+        case OCTAVE_KEY_R: return ImGuiKey_R;
+        case OCTAVE_KEY_S: return ImGuiKey_S;
+        case OCTAVE_KEY_T: return ImGuiKey_T;
+        case OCTAVE_KEY_U: return ImGuiKey_U;
+        case OCTAVE_KEY_V: return ImGuiKey_V;
+        case OCTAVE_KEY_W: return ImGuiKey_W;
+        case OCTAVE_KEY_X: return ImGuiKey_X;
+        case OCTAVE_KEY_Y: return ImGuiKey_Y;
+        case OCTAVE_KEY_Z: return ImGuiKey_Z;
+        case OCTAVE_KEY_F1: return ImGuiKey_F1;
+        case OCTAVE_KEY_F2: return ImGuiKey_F2;
+        case OCTAVE_KEY_F3: return ImGuiKey_F3;
+        case OCTAVE_KEY_F4: return ImGuiKey_F4;
+        case OCTAVE_KEY_F5: return ImGuiKey_F5;
+        case OCTAVE_KEY_F6: return ImGuiKey_F6;
+        case OCTAVE_KEY_F7: return ImGuiKey_F7;
+        case OCTAVE_KEY_F8: return ImGuiKey_F8;
+        case OCTAVE_KEY_F9: return ImGuiKey_F9;
+        case OCTAVE_KEY_F10: return ImGuiKey_F10;
+        case OCTAVE_KEY_F11: return ImGuiKey_F11;
+        case OCTAVE_KEY_F12: return ImGuiKey_F12;
         default: return ImGuiKey_None;
     }
 }
@@ -280,7 +280,7 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
         }
         return 0;
     }
-    case XCB_KEY_PRESS:
+    case XCB_OCTAVE_KEY_PRESS:
     {
         const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
         xcb_keycode_t keyCode = keyEvent->detail;
@@ -339,7 +339,7 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
 
         return 0;
     }
-    case XCB_KEY_RELEASE:
+    case XCB_OCTAVE_KEY_RELEASE:
     {
         const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*) event;
 

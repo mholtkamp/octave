@@ -56,6 +56,7 @@
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
+#include "LuaBindings/UIDocument_Lua.h"
 #include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
@@ -123,6 +124,7 @@ void BindLuaInterface()
     Texture_Lua::Bind();
     Font_Lua::Bind();
     Timeline_Lua::Bind();
+    UIDocument_Lua::Bind();
 
     // Widgets need to be bound in hierarchy order
     Widget_Lua::Bind();

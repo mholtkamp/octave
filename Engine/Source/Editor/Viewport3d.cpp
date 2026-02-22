@@ -217,81 +217,81 @@ void Viewport3D::HandleDefaultControls()
             GetEditorState()->GetSelectedNode()->IsNode3D())
         {
             // Space+G/R/S keys set the gizmo operation mode (Blender-style shortcuts)
-            const bool spaceDown = IsKeyDown(KEY_SPACE);
+            const bool spaceDown = IsKeyDown(OCTAVE_KEY_SPACE);
 
-            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_G))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(OCTAVE_KEY_G))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
             }
-            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_G))
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(OCTAVE_KEY_G))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
             }
-            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(OCTAVE_KEY_R))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
             }
-            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && spaceDown && IsKeyJustDown(OCTAVE_KEY_S))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
             }
 
-            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(OCTAVE_KEY_R))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
             }
 
-            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(OCTAVE_KEY_S))
             {
                 GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
             }
 
-            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_R))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(OCTAVE_KEY_R))
             {
                 GetEditorState()->SetControlMode(ControlMode::Rotate);
                 SavePreTransforms();
             }
 
-            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(KEY_S))
+            if (!controlDown && !altDown && !spaceDown && IsKeyJustDown(OCTAVE_KEY_S))
             {
                 GetEditorState()->SetControlMode(ControlMode::Scale);
                 SavePreTransforms();
             }
         }
 
-        if (!cmdKeyDown && IsKeyJustDown(KEY_Z))
+        if (!cmdKeyDown && IsKeyJustDown(OCTAVE_KEY_Z))
         {
             renderer->SetDebugMode((renderer->GetDebugMode() != DEBUG_WIREFRAME) ? DEBUG_WIREFRAME : DEBUG_NONE);
         }
 
-        if (IsKeyJustDown(KEY_K))
+        if (IsKeyJustDown(OCTAVE_KEY_K))
         {
             renderer->SetDebugMode((renderer->GetDebugMode() != DEBUG_COLLISION) ? DEBUG_COLLISION : DEBUG_NONE);
         }
 
-        if (!controlDown && !altDown && IsKeyJustDown(KEY_P))
+        if (!controlDown && !altDown && IsKeyJustDown(OCTAVE_KEY_P))
         {
             renderer->EnableProxyRendering(!renderer->IsProxyRenderingEnabled());
         }
 
-        if (altDown && IsKeyJustDown(KEY_L))
+        if (altDown && IsKeyJustDown(OCTAVE_KEY_L))
         {
             renderer->EnablePathTracing(!renderer->IsPathTracingEnabled());
         }
 
-        if (!controlDown && IsKeyJustDown(KEY_B))
+        if (!controlDown && IsKeyJustDown(OCTAVE_KEY_B))
         {
             uint32_t boundsMode = (uint32_t) renderer->GetBoundsDebugMode();
             boundsMode = (boundsMode + 1) % uint32_t(BoundsDebugMode::Count);
             renderer->SetBoundsDebugMode(BoundsDebugMode(boundsMode));
         }
 
-        if (controlDown && IsKeyJustDown(KEY_G))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_G))
         {
             ToggleGrid();
         }
 
-        if (controlDown && IsKeyJustDown(KEY_T))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_T))
         {
             ToggleTransformMode();
             // Also toggle the ImGuizmo mode to stay in sync
@@ -299,13 +299,13 @@ void Viewport3D::HandleDefaultControls()
             edState->mGizmoMode = (edState->mGizmoMode == ImGuizmo::LOCAL) ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
         }
 
-        if (IsKeyJustDown(KEY_NUMPAD5))
+        if (IsKeyJustDown(OCTAVE_KEY_NUMPAD5))
         {
             GetEditorState()->ToggleEditorCameraProjection();
         }
 
-        if ((IsKeyDown(KEY_F) && GetEditorState()->GetPaintMode() == PaintMode::None) ||
-            IsKeyDown(KEY_DECIMAL))
+        if ((IsKeyDown(OCTAVE_KEY_F) && GetEditorState()->GetPaintMode() == PaintMode::None) ||
+            IsKeyDown(OCTAVE_KEY_DECIMAL))
         {
             // Focus on selected object
             Node* node = GetEditorState()->GetSelectedNode();
@@ -347,7 +347,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_NUMPAD1))
+        if (IsKeyJustDown(OCTAVE_KEY_NUMPAD1))
         {
             // Back
             if (controlDown)
@@ -363,7 +363,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_NUMPAD3))
+        if (IsKeyJustDown(OCTAVE_KEY_NUMPAD3))
         {
             // Left
             if (controlDown)
@@ -379,7 +379,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_NUMPAD7))
+        if (IsKeyJustDown(OCTAVE_KEY_NUMPAD7))
         {
             // Bottom
             if (controlDown)
@@ -396,49 +396,49 @@ void Viewport3D::HandleDefaultControls()
         }
 
         glm::vec3 spawnPos = camera->GetWorldPosition() + mFocalDistance * camera->GetForwardVector();
-        if (altDown && IsKeyJustDown(KEY_1))
+        if (altDown && IsKeyJustDown(OCTAVE_KEY_1))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_STATIC_MESH, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_2))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_2))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_POINT_LIGHT, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_3))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_3))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_NODE_3D, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_4))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_4))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_DIRECTIONAL_LIGHT, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_5))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_5))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_SKELETAL_MESH, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_6))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_6))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_BOX, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_7))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_7))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_SPHERE, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_8))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_8))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_PARTICLE, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_9))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_9))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_AUDIO, nullptr, nullptr, true, spawnPos);
         }
-        else if (altDown && IsKeyJustDown(KEY_0))
+        else if (altDown && IsKeyJustDown(OCTAVE_KEY_0))
         {
             ActionManager::Get()->SpawnBasicNode(BASIC_SCENE, nullptr, nullptr, true, spawnPos);
         }
 
 
-        if (IsKeyJustDown(KEY_DELETE))
+        if (IsKeyJustDown(OCTAVE_KEY_DELETE))
         {
             Node* selNode = GetEditorState()->GetSelectedNode();
             int32_t selInstance = GetEditorState()->GetSelectedInstance();
@@ -464,7 +464,7 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (controlDown && IsKeyJustDown(KEY_D))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_D))
         {
             // Duplicate node
             const std::vector<Node*>& selectedNodes = GetEditorState()->GetSelectedNodes();
@@ -481,11 +481,11 @@ void Viewport3D::HandleDefaultControls()
             }
         }
 
-        if (altDown && IsKeyJustDown(KEY_A))
+        if (altDown && IsKeyJustDown(OCTAVE_KEY_A))
         {
             GetEditorState()->SetSelectedNode(nullptr);
         }
-        if (controlDown && IsKeyJustDown(KEY_A))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_A))
         {
             std::vector<Node*> nodes = GetWorld(0)->GatherNodes();
 
@@ -496,7 +496,7 @@ void Viewport3D::HandleDefaultControls()
         }
 
         // Actor placement hotkeys
-        if (IsKeyJustDown(KEY_END) || IsKeyJustDown(KEY_INSERT))
+        if (IsKeyJustDown(OCTAVE_KEY_END) || IsKeyJustDown(OCTAVE_KEY_INSERT))
         {
             static glm::vec3 sLastNormal = { 0.0f, 1.0f, 0.0f };
             static float sLastPressedTime = 0.0f;
@@ -534,7 +534,7 @@ void Viewport3D::HandleDefaultControls()
                      glm::vec3 startPos = {};
                      glm::vec3 endPos = {};
 
-                     if (IsKeyJustDown(KEY_INSERT))
+                     if (IsKeyJustDown(OCTAVE_KEY_INSERT))
                      {
                          int32_t iMouseX = 0;
                          int32_t iMouseY = 0;
@@ -614,7 +614,7 @@ void Viewport3D::HandleDefaultControls()
         }
 
         // Position selected component at camera transform
-        if (IsKeyJustDown(KEY_NUMPAD0))
+        if (IsKeyJustDown(OCTAVE_KEY_NUMPAD0))
         {
             glm::mat4 camTransform = camera->GetTransform();
 
@@ -702,38 +702,38 @@ void Viewport3D::HandlePilotControls()
     float xc = cos(angleX);
     float xs = sin(angleX);
 
-    if (IsKeyDown(KEY_A))
+    if (IsKeyDown(OCTAVE_KEY_A))
     {
         cameraPosition.x -= c * (mFirstPersonMoveSpeed * deltaTime);
         cameraPosition.z += s * (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    if (IsKeyDown(KEY_D))
+    if (IsKeyDown(OCTAVE_KEY_D))
     {
         cameraPosition.x += c * (mFirstPersonMoveSpeed * deltaTime);
         cameraPosition.z -= s * (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    if (IsKeyDown(KEY_W))
+    if (IsKeyDown(OCTAVE_KEY_W))
     {
         cameraPosition.z -= xc * (c * (mFirstPersonMoveSpeed * deltaTime));
         cameraPosition.x -= xc * (s * (mFirstPersonMoveSpeed * deltaTime));
         cameraPosition.y += xs * (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    if (IsKeyDown(KEY_S))
+    if (IsKeyDown(OCTAVE_KEY_S))
     {
         cameraPosition.z += xc * (c * (mFirstPersonMoveSpeed * deltaTime));
         cameraPosition.x += xc * (s * (mFirstPersonMoveSpeed * deltaTime));
         cameraPosition.y -= xs * (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    if (IsKeyDown(KEY_E))
+    if (IsKeyDown(OCTAVE_KEY_E))
     {
         cameraPosition.y += (mFirstPersonMoveSpeed * deltaTime);
     }
 
-    if (IsKeyDown(KEY_Q))
+    if (IsKeyDown(OCTAVE_KEY_Q))
     {
         cameraPosition.y -= (mFirstPersonMoveSpeed * deltaTime);
     }
@@ -957,7 +957,7 @@ void Viewport3D::HandleTransformControls()
         }
     }
 
-    if (IsControlDown() && IsKeyJustDown(KEY_T))
+    if (IsControlDown() && IsKeyJustDown(OCTAVE_KEY_T))
     {
         ToggleTransformMode();
     }
@@ -1080,17 +1080,17 @@ void Viewport3D::HandleAxisLocking()
     // Plane locking
     if (IsShiftDown())
     {
-        if (IsKeyJustDown(KEY_X))
+        if (IsKeyJustDown(OCTAVE_KEY_X))
         {
             newLock = TransformLock::PlaneYZ;
         }
 
-        if (IsKeyJustDown(KEY_Y))
+        if (IsKeyJustDown(OCTAVE_KEY_Y))
         {
             newLock = TransformLock::PlaneXZ;
         }
 
-        if (IsKeyJustDown(KEY_Z))
+        if (IsKeyJustDown(OCTAVE_KEY_Z))
         {
             newLock = TransformLock::PlaneXY;
         }
@@ -1098,17 +1098,17 @@ void Viewport3D::HandleAxisLocking()
     // Axis locking
     else
     {
-        if (IsKeyJustDown(KEY_X))
+        if (IsKeyJustDown(OCTAVE_KEY_X))
         {
             newLock = TransformLock::AxisX;
         }
 
-        if (IsKeyJustDown(KEY_Y))
+        if (IsKeyJustDown(OCTAVE_KEY_Y))
         {
             newLock = TransformLock::AxisY;
         }
 
-        if (IsKeyJustDown(KEY_Z))
+        if (IsKeyJustDown(OCTAVE_KEY_Z))
         {
             newLock = TransformLock::AxisZ;
         }

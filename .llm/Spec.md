@@ -35,7 +35,7 @@ octave/
 ├── Plugins/                   # External plugins (e.g., Blender addon)
 ├── Standalone/                # Standalone launcher (Source/Main.cpp)
 ├── Template/                  # New project template
-├── Tools/                     # Build scripts, Lua stub generator
+├── Tools/                     # Build scripts, Lua stub generator, XSD schema generator
 ├── Documentation/             # MkDocs site (see mkdocs.yml)
 ├── Octave.sln                 # Visual Studio solution
 ├── CMakeLists.txt             # Root CMake
@@ -51,7 +51,7 @@ octave/
 | Node Graph | [NodeGraph.md](NodeGraph.md) | `Engine/Source/Engine/NodeGraph/` | Visual scripting: domains, graph processor, pins, links, functions |
 | Editor | [Editor.md](Editor.md) | `Engine/Source/Editor/` | ImGui panels, undo/redo, preferences, viewport, UI hooks |
 | Graphics | [Graphics.md](Graphics.md) | `Engine/Source/Graphics/` | Vulkan pipeline, GX/C3D backends, materials, renderer |
-| Scripting | [Scripting.md](Scripting.md) | `Engine/Source/LuaBindings/` | Lua integration, binding macros, auto-registration, stub generator |
+| Scripting | [Scripting.md](Scripting.md) | `Engine/Source/LuaBindings/` | Lua integration, binding macros, auto-registration, stub generator, XSD schema generator |
 | Asset System | [AssetSystem.md](AssetSystem.md) | `Engine/Source/Engine/Assets/` | Versioned serialization, UUID refs, async loading, 14 asset types |
 | Platforms | [Platforms.md](Platforms.md) | `Engine/Source/System/` | System API, input, audio, networking, platform abstractions |
 | Timeline | [Timeline.md](Timeline.md) | `Engine/Source/Engine/Timeline/` | Keyframe animation: tracks, clips, interpolation, TimelinePlayer |

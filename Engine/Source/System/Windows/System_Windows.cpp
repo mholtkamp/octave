@@ -350,14 +350,14 @@ void SYS_Update()
         }
     }
 
-    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    if (INP_IsKeyDown(OCTAVE_KEY_ALT_L) || INP_IsKeyDown(OCTAVE_KEY_ALT_R))
     {
-        if (INP_IsKeyJustDown(KEY_ENTER))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
         }
 
-        if (INP_IsKeyJustDown(KEY_F4))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_F4))
         {
             Quit();
         }

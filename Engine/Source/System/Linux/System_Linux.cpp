@@ -207,14 +207,14 @@ void HandleXcbEvent(xcb_generic_event_t* event)
             INP_ClearMouseButton(MouseCode::MOUSE_X2);
         break;
     }
-    case XCB_KEY_PRESS:
+    case XCB_OCTAVE_KEY_PRESS:
     {
         const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
         INP_SetKey(keyEvent->detail);
         //LogDebug("Key %d", keyEvent->detail);
         break;
     }
-    case XCB_KEY_RELEASE:
+    case XCB_OCTAVE_KEY_RELEASE:
     {
         const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*) event;
         INP_ClearKey(keyEvent->detail);
@@ -303,8 +303,8 @@ void SYS_Initialize()
     uint32_t valueList[32] = {};
     valueList[0] = 0x00000000;
     valueList[1] =
-        XCB_EVENT_MASK_KEY_RELEASE |
-        XCB_EVENT_MASK_KEY_PRESS |
+        XCB_EVENT_MASK_OCTAVE_KEY_RELEASE |
+        XCB_EVENT_MASK_OCTAVE_KEY_PRESS |
         XCB_EVENT_MASK_EXPOSURE |
         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
         XCB_EVENT_MASK_POINTER_MOTION |
@@ -507,14 +507,14 @@ void SYS_Update()
 
     sPrevWarped = warped;
 
-    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    if (INP_IsKeyDown(OCTAVE_KEY_ALT_L) || INP_IsKeyDown(OCTAVE_KEY_ALT_R))
     {
-        if (INP_IsKeyJustDown(KEY_ENTER))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
         }
 
-        if (INP_IsKeyJustDown(KEY_F4))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_F4))
         {
             Quit();
         }

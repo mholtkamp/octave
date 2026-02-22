@@ -294,7 +294,7 @@ void PaintManager::UpdateDynamicsWorld()
 
 void PaintManager::UpdateHotkeys()
 {
-    if (IsKeyJustDown(KEY_E))
+    if (IsKeyJustDown(OCTAVE_KEY_E))
     {
         mInstanceOptions.mErase = !mInstanceOptions.mErase;
     }
@@ -321,7 +321,7 @@ void PaintManager::UpdatePaintReticle()
 
     if (!mAdjustRadius && !mAdjustOpacity)
     {
-        if (IsKeyJustDown(KEY_F))
+        if (IsKeyJustDown(OCTAVE_KEY_F))
         {
             if (IsShiftDown())
             {

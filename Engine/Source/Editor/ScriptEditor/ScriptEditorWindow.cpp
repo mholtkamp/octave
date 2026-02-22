@@ -18,6 +18,8 @@
 #include "Preferences/JsonSettings.h"
 #include "Log.h"
 #include "System/System.h"
+#include "AssetManager.h"
+#include "UI/UIDocument.h"
 
 #include "imgui.h"
 #include "imgui_dock.h"
@@ -351,6 +353,37 @@ void ScriptEditorWindow::DoOpen()
     }
 }
 
+static void SyncUIDocumentAfterSave(const fs::path& filePath)
+{
+    std::string ext = filePath.extension().string();
+    if (ext != ".xml")
+        return;
+
+    std::string pathStr = filePath.string();
+    AssetManager* assetMgr = AssetManager::Get();
+    if (!assetMgr)
+        return;
+
+    auto& assetMap = assetMgr->GetAssetMap();
+    TypeId uiDocType = UIDocument::GetStaticType();
+
+    for (auto& pair : assetMap)
+    {
+        AssetStub* stub = pair.second;
+        if (!stub || stub->mType != uiDocType || !stub->mAsset)
+            continue;
+
+        UIDocument* doc = stub->mAsset->As<UIDocument>();
+        if (doc && doc->GetSourceFilePath() == pathStr)
+        {
+            doc->Import(pathStr, nullptr);
+            assetMgr->SaveAsset(*stub);
+            LogDebug("UIDocument asset synced: %s", doc->GetName().c_str());
+            break;
+        }
+    }
+}
+
 void ScriptEditorWindow::DoSave()
 {
     if (!mInitialized)
@@ -372,6 +405,7 @@ void ScriptEditorWindow::DoSave()
 
     zep->SaveBuffer(*buf);
     LogDebug("Script Editor saved: %s", filePath.string().c_str());
+    SyncUIDocumentAfterSave(filePath);
 }
 
 void ScriptEditorWindow::DoSaveAs()
@@ -391,6 +425,7 @@ void ScriptEditorWindow::DoSaveAs()
     zep->SaveBufferAs(*buf, fs::path(savePath));
     AddRecentFile(savePath);
     LogDebug("Script Editor saved as: %s", savePath.c_str());
+    SyncUIDocumentAfterSave(fs::path(savePath));
 }
 
 void ScriptEditorWindow::DoCloseCurrentBuffer()

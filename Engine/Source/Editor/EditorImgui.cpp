@@ -43,6 +43,7 @@
 #include "Assets/Timeline.h"
 #include "Assets/Font.h"
 #include "Assets/NodeGraphAsset.h"
+#include "UI/UIDocument.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -142,6 +143,7 @@ static const char* GetAssetIcon(TypeId type)
     if (type == Timeline::GetStaticType())           return ICON_TIMELINE;
     if (type == Font::GetStaticType())               return ICON_TEXTMESH;
     if (type == NodeGraphAsset::GetStaticType())    return ICON_IC_BASELINE_SHARE;
+    if (type == UIDocument::GetStaticType())         return ICON_MATERIAL_SYMBOLS_WIDGET_MEDIUM;
     return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
 }
 
@@ -293,6 +295,67 @@ static void StampDockLayoutVersion()
 
     fprintf(f, "\n##DockLayoutVersion=%u\n", kDockLayoutVersion);
     fclose(f);
+}
+
+static std::string ReadFileToString(const char* path)
+{
+    std::string result;
+    FILE* f = fopen(path, "rb");
+    if (f)
+    {
+        fseek(f, 0, SEEK_END);
+        long sz = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (sz > 0)
+        {
+            result.resize(sz);
+            fread(&result[0], 1, sz, f);
+        }
+        fclose(f);
+    }
+    return result;
+}
+
+static void RefreshUIDocuments()
+{
+    AssetManager* assetMgr = AssetManager::Get();
+    if (!assetMgr)
+        return;
+
+    auto& assetMap = assetMgr->GetAssetMap();
+    TypeId uiDocType = UIDocument::GetStaticType();
+
+    for (auto& pair : assetMap)
+    {
+        AssetStub* stub = pair.second;
+        if (!stub || stub->mType != uiDocType)
+            continue;
+
+        // Ensure asset is loaded so we can inspect it
+        if (!stub->mAsset)
+            assetMgr->LoadAsset(*stub);
+        if (!stub->mAsset)
+            continue;
+
+        UIDocument* doc = stub->mAsset->As<UIDocument>();
+        if (!doc)
+            continue;
+
+        const std::string& srcPath = doc->GetSourceFilePath();
+        if (srcPath.empty() || !SYS_DoesFileExist(srcPath.c_str(), false))
+            continue;
+
+        // Read the .xml from disk and compare with the loaded asset.
+        // If they differ, reimport from the .xml (the editable source of truth).
+        std::string diskXml = ReadFileToString(srcPath.c_str());
+
+        if (!diskXml.empty() && diskXml != doc->GetXmlSource())
+        {
+            doc->Import(srcPath, nullptr);
+            assetMgr->SaveAsset(*stub);
+            LogDebug("UIDocument reimported from XML: %s", stub->mName.c_str());
+        }
+    }
 }
 
 // Forward declarations for panel content functions (called from DrawDockspace)
@@ -1048,7 +1111,7 @@ static void DrawFileBrowser()
             ImGui::CloseCurrentPopup();
         }
 
-        if (!contextPopupOpen && IsKeyJustDown(KEY_ENTER))
+        if (!contextPopupOpen && IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             confirmOpen = true;
         }
@@ -1158,7 +1221,7 @@ static void DrawUnsavedCheck()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             GetEditorState()->mShutdownUnsavedCheck = false;
             GetEngineState()->mQuit = false;
@@ -1239,7 +1302,7 @@ static void DrawProjectUpgradeModal()
             LogWarning("Project upgrade skipped. Packaged builds may have issues with asset references.");
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
             editorState->mAssetsNeedingUpgrade.clear();
@@ -1332,6 +1395,25 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
             }
 
             AssetManager::Get()->RenameAsset(matLite, newMatName);
+        }
+    }
+
+    if (assetType == UIDocument::GetStaticType())
+    {
+        if (stub != nullptr && stub->mAsset != nullptr)
+        {
+            UIDocument* doc = stub->mAsset->As<UIDocument>();
+
+            // Write the .xml source file alongside the .oct asset
+            std::string xmlPath = currentDir->mPath + stub->mName + ".xml";
+            FILE* xmlFile = fopen(xmlPath.c_str(), "w");
+            if (xmlFile != nullptr)
+            {
+                fputs(doc->GetXmlSource().c_str(), xmlFile);
+                fclose(xmlFile);
+            }
+
+            doc->Import(xmlPath, nullptr);
         }
     }
 
@@ -1477,21 +1559,21 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
  
     if (IsControlDown())
     {
-        if (ImGui::Button("<*") && node)
+        if (ImGui::Button(ICON_MATERIAL_SYMBOLS_TARGET) && node)
         {
             GetEditorState()->SetSelectedNode(node);
         }
     }
     else if (IsAltDown())
     {
-        if (ImGui::Button("^*") && node)
+        if (ImGui::Button(ICON_INFO) && node)
         {
             GetEditorState()->InspectObject(node);
         }
     }
     else
     {
-        if (ImGui::Button("*"))
+        if (ImGui::Button(ICON_MDI_TARGET))
         {
             if (GetEditorState()->mNodePropertySelect)
             {
@@ -1505,7 +1587,7 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
 
         if (node != nullptr &&
             ImGui::IsItemHovered() &&
-            IsKeyJustDown(KEY_DELETE))
+            IsKeyJustDown(OCTAVE_KEY_DELETE))
         {
             am->EXE_EditProperty(owner, ownerType, prop.mName, index, (Node*) nullptr);
         }
@@ -1796,21 +1878,21 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
 
     if (IsControlDown())
     {
-        if (ImGui::Button("<<") && asset)
+        if (ImGui::Button(ICON_IC_BASELINE_UPLOAD) && asset)
         {
             GetEditorState()->BrowseToAsset(asset->GetName());
         }
     }
     else if (IsAltDown())
     {
-        if (ImGui::Button("^^") && asset)
+        if (ImGui::Button(ICON_INFO) && asset)
         {
             GetEditorState()->InspectObject(asset);
         }
     }
     else
     {
-        if (ImGui::Button(">>"))
+        if (ImGui::Button(ICON_IC_BASELINE_DOWNLOAD))
         {
             Asset* selAsset = GetEditorState()->GetSelectedAsset();
             if (selAsset != nullptr)
@@ -1821,7 +1903,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
 
         if (asset != nullptr &&
             ImGui::IsItemHovered() &&
-            IsKeyJustDown(KEY_DELETE))
+            IsKeyJustDown(OCTAVE_KEY_DELETE))
         {
             if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
             {
@@ -1856,7 +1938,22 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     bool textActive = ImGui::InputText("##AssetNameStr", &sTempString, flags);
     bool isInputFocused = ImGui::IsItemFocused();
     bool isInputActivated = ImGui::IsItemActivated();
-    
+
+    // Drag-and-drop target for asset assignment
+    if (ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+        {
+            AssetStub* droppedStub = *(AssetStub**)payload->Data;
+            if (droppedStub != nullptr)
+            {
+                Asset* droppedAsset = LoadAsset(droppedStub->mName);
+                AssignAssetToProperty(owner, ownerType, prop, index, droppedAsset);
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
     // If we have an extra property with type information, use it to filter assets
     TypeId assetTypeFilter = 0;
     if (prop.mExtra)
@@ -3652,11 +3749,11 @@ static void DrawScenePanel()
             Node* parent = node->GetParent();
             int32_t childIndex = parent->FindChildIndex(node);
 
-            if (IsKeyJustDown(KEY_MINUS))
+            if (IsKeyJustDown(OCTAVE_KEY_MINUS))
             {
                 am->EXE_AttachNode(node, parent, glm::max<int32_t>(childIndex - 1, 0), -1);
             }
-            else if (IsKeyJustDown(KEY_PLUS))
+            else if (IsKeyJustDown(OCTAVE_KEY_PLUS))
             {
                 am->EXE_AttachNode(node, parent, childIndex + 1, -1);
             }
@@ -3664,15 +3761,15 @@ static void DrawScenePanel()
 
         if (selNodes.size() > 0)
         {
-            if (IsKeyJustDown(KEY_DELETE))
+            if (IsKeyJustDown(OCTAVE_KEY_DELETE))
             {
                 am->EXE_DeleteNodes(selNodes);
             }
-            else if (ctrlDown && IsKeyJustDown(KEY_D))
+            else if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_D))
             {
                 am->DuplicateNodes(selNodes);
             }
-            else if (!ctrlDown && IsKeyJustDown(KEY_F2))
+            else if (!ctrlDown && IsKeyJustDown(OCTAVE_KEY_F2))
             {
                 ImGui::OpenPopup("Rename Node F2");
                 strncpy(sPopupInputBuffer, selNodes[0]->GetName().c_str(), kPopupInputBufferSize - 1);
@@ -3767,6 +3864,28 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             AssetManager::Get()->LoadAsset(*stub);
 
         GetEditorState()->InspectObject(stub->mAsset);
+    }
+
+    if (stub && stub->mType == UIDocument::GetStaticType())
+    {
+        if (ImGui::Selectable("Edit"))
+        {
+            if (!stub->mAsset)
+                AssetManager::Get()->LoadAsset(*stub);
+
+            UIDocument* doc = stub->mAsset ? stub->mAsset->As<UIDocument>() : nullptr;
+            if (doc)
+            {
+                const std::string& srcPath = doc->GetSourceFilePath();
+                if (!srcPath.empty() && SYS_DoesFileExist(srcPath.c_str(), false))
+                {
+                    PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                    EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                    if (editors)
+                        editors->OpenLuaScript(srcPath);
+                }
+            }
+        }
     }
 
     if (stub && stub->mType == Scene::GetStaticType())
@@ -3918,6 +4037,19 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 sNewAssetType = NodeGraphAsset::GetStaticType();
                 showPopup = true;
             }
+            if (ImGui::Selectable("UI Document", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = UIDocument::GetStaticType();
+                showPopup = true;
+            }
+
+            ImGui::Separator();
+
+            bool showCssPopup = false;
+            if (ImGui::Selectable("CSS Stylesheet", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                showCssPopup = true;
+            }
 
             // Draw addon create asset items
             {
@@ -3940,6 +4072,13 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 sPopupInputBuffer[0] = '\0';
                 sNewSceneType = 1;  // Default to 3D
                 sNewSceneCreateCamera = true;
+                setTextInputFocus = true;
+            }
+
+            if (showCssPopup)
+            {
+                ImGui::OpenPopup("New CSS Stylesheet");
+                sPopupInputBuffer[0] = '\0';
                 setTextInputFocus = true;
             }
         }
@@ -4042,6 +4181,39 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         ImGui::EndPopup();
     }
 
+    if (ImGui::BeginPopup("New CSS Stylesheet"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            std::string cssName = sPopupInputBuffer;
+            if (cssName.empty())
+                cssName = "style";
+
+            std::string cssPath = curDir->mPath + cssName + ".css";
+            FILE* cssFile = fopen(cssPath.c_str(), "w");
+            if (cssFile != nullptr)
+            {
+                fputs("/* Stylesheet */\n\n", cssFile);
+                fclose(cssFile);
+                LogDebug("Created CSS file: %s", cssPath.c_str());
+            }
+            else
+            {
+                LogError("Failed to create CSS file: %s", cssPath.c_str());
+            }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
     if (ImGui::BeginPopup("Capture To New Scene"))
     {
         if (setTextInputFocus)
@@ -4093,6 +4265,8 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                     assetName = "TL_Timeline";
                 else if (sNewAssetType == NodeGraphAsset::GetStaticType())
                     assetName = "NG_NodeGraph";
+                else if (sNewAssetType == UIDocument::GetStaticType())
+                    assetName = "UI_Document";
             }
 
             if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
@@ -4226,6 +4400,15 @@ static bool DirMatchesFilter(AssetDir* dir, const std::string& filterLower)
             return true;
     }
 
+    // Check if any loose file in this directory matches
+    for (const std::string& looseFile : dir->mLooseFiles)
+    {
+        std::string nameLower = looseFile;
+        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+        if (nameLower.find(filterLower) != std::string::npos)
+            return true;
+    }
+
     // Check if any descendant directory matches
     for (AssetDir* child : dir->mChildDirs)
     {
@@ -4235,6 +4418,8 @@ static bool DirMatchesFilter(AssetDir* dir, const std::string& filterLower)
 
     return false;
 }
+
+static std::string sSelectedLooseFile; // Full path of selected loose file
 
 static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
 {
@@ -4276,6 +4461,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
             if (selStub != stub)
             {
                 GetEditorState()->SetSelectedAssetStub(stub);
+                sSelectedLooseFile.clear();
 
                 if (stub != nullptr &&
                     stub->mType == NodeGraphAsset::GetStaticType())
@@ -4327,6 +4513,28 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
                         OpenNodeGraphForEditing(nodeGraph);
                     }
                 }
+                else if (stub->mType == UIDocument::GetStaticType())
+                {
+                    if (stub->mAsset)
+                    {
+                        UIDocument* doc = stub->mAsset->As<UIDocument>();
+                        const std::string& srcPath = doc->GetSourceFilePath();
+
+                        if (!srcPath.empty() && SYS_DoesFileExist(srcPath.c_str(), false))
+                        {
+                            PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                            EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                            if (editors)
+                            {
+                                editors->OpenLuaScript(srcPath);
+                            }
+                        }
+                        else
+                        {
+                            GetEditorState()->InspectObject(doc);
+                        }
+                    }
+                }
                 else if (stub->mAsset && stub->mAsset->Is(Material::ClassRuntimeId()))
                 {
                     Material* mat = stub->mAsset->As<Material>();
@@ -4349,8 +4557,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
             }
         }
 
-        if (stub->mType == StaticMesh::GetStaticType() &&
-            ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
         {
             AssetStub* dragStub = stub;
             ImGui::SetDragDropPayload(DRAGDROP_ASSET, &dragStub, sizeof(AssetStub*));
@@ -4396,6 +4603,96 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         }
         ImGui::PopID();
     }
+
+    // Draw loose files (.css, etc.)
+    static const ImVec4 kLooseFileColor = ImVec4(0.65f, 0.65f, 0.70f, 1.0f);
+
+    for (uint32_t i = 0; i < dir->mLooseFiles.size(); ++i)
+    {
+        const std::string& filename = dir->mLooseFiles[i];
+
+        // Filter check
+        if (!filterLower.empty())
+        {
+            std::string nameLower = filename;
+            std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+            if (nameLower.find(filterLower) == std::string::npos)
+                continue;
+        }
+
+        std::string fullPath = dir->mPath + filename;
+        bool isSelected = (sSelectedLooseFile == fullPath);
+
+        if (isSelected)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, kSelectedColor);
+            ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kSelectedColor);
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, kSelectedColor);
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_Text, kLooseFileColor);
+
+        std::string displayText = std::string(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX) + "  " + filename;
+
+        ImGui::PushID(fullPath.c_str());
+        if (ImGui::Selectable(displayText.c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick))
+        {
+            if (sSelectedLooseFile != fullPath)
+            {
+                sSelectedLooseFile = fullPath;
+                GetEditorState()->SetSelectedAssetStub(nullptr);
+            }
+            else if (!IsControlDown())
+            {
+                sSelectedLooseFile.clear();
+            }
+
+            if (ImGui::IsMouseDoubleClicked(0))
+            {
+                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                if (editors)
+                {
+                    editors->OpenLuaScript(fullPath);
+                }
+            }
+        }
+
+        ImGui::PopStyleColor(); // kLooseFileColor
+
+        if (isSelected)
+        {
+            ImGui::PopStyleColor(3);
+        }
+
+        if (ImGui::BeginPopupContextItem())
+        {
+            if (ImGui::MenuItem("Edit"))
+            {
+                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                if (editors)
+                {
+                    editors->OpenLuaScript(fullPath);
+                }
+            }
+
+            if (ImGui::MenuItem("Delete"))
+            {
+                SYS_RemoveFile(fullPath.c_str());
+                if (sSelectedLooseFile == fullPath)
+                    sSelectedLooseFile.clear();
+                dir->mLooseFiles.erase(dir->mLooseFiles.begin() + i);
+                --i;
+                ImGui::EndPopup();
+                ImGui::PopID();
+                continue;
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGui::PopID();
+    }
 }
 
 static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool isRoot)
@@ -4414,7 +4711,7 @@ static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool
         dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
     // Check if directory has no children (leaf directory with no subdirs)
-    bool hasChildren = !dir->mChildDirs.empty() || !dir->mAssetStubs.empty();
+    bool hasChildren = !dir->mChildDirs.empty() || !dir->mAssetStubs.empty() || !dir->mLooseFiles.empty();
     if (!hasChildren)
         dirFlags |= ImGuiTreeNodeFlags_Leaf;
 
@@ -4482,22 +4779,22 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
         AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
         if (currentDir != nullptr && !currentDir->mAddonDir)
         {
-            if (ctrlDown && IsKeyJustDown(KEY_N))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_N))
             {
                 CreateNewAsset(Scene::GetStaticType(), "SC_Scene");
             }
 
-            if (ctrlDown && IsKeyJustDown(KEY_M))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_M))
             {
                 CreateNewAsset(MaterialLite::GetStaticType(), "M_Material");
             }
 
-            if (ctrlDown && IsKeyJustDown(KEY_P))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_P))
             {
                 CreateNewAsset(ParticleSystem::GetStaticType(), "P_Particle");
             }
 
-            if (ctrlDown && IsKeyJustDown(KEY_D))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_D))
             {
                 AssetStub* srcStub = GetEditorState()->GetSelectedAssetStub();
 
@@ -4507,7 +4804,7 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
                 }
             }
 
-            if (IsKeyJustDown(KEY_DELETE))
+            if (IsKeyJustDown(OCTAVE_KEY_DELETE))
             {
                 AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
 
@@ -4884,6 +5181,23 @@ static void DrawPropertiesPanel()
                         AssetManager::Get()->SaveAsset(asset->GetName());
                     }
 
+                    if (asset->As<UIDocument>())
+                    {
+                        ImGui::SameLine();
+                        if (ImGui::Button("Edit"))
+                        {
+                            UIDocument* doc = asset->As<UIDocument>();
+                            const std::string& srcPath = doc->GetSourceFilePath();
+                            if (!srcPath.empty() && SYS_DoesFileExist(srcPath.c_str(), false))
+                            {
+                                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                                EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                                if (editors)
+                                    editors->OpenLuaScript(srcPath);
+                            }
+                        }
+                    }
+
                     if (asset->GetDirtyFlag())
                     {
                         ImGui::SameLine();
@@ -5019,7 +5333,7 @@ static void DrawPropertiesPanel()
         bool ctrlDown = IsControlDown();
 
         // Hotkey for toggling lock.
-        if (IsKeyJustDown(KEY_L))
+        if (IsKeyJustDown(OCTAVE_KEY_L))
         {
             GetEditorState()->LockInspect(!GetEditorState()->IsInspectLocked());
         }
@@ -6424,27 +6738,27 @@ static void DrawMainMenuBar()
             bool shiftDown = IsShiftDown();
             const bool altDown = IsAltDown();
 
-            if (shiftDown && IsKeyJustDown(KEY_Q))
+            if (shiftDown && IsKeyJustDown(OCTAVE_KEY_Q))
             {
                 ImGui::OpenPopup("Spawn Basic 3D");
             }
 
-            if (shiftDown && IsKeyJustDown(KEY_W))
+            if (shiftDown && IsKeyJustDown(OCTAVE_KEY_W))
             {
                 ImGui::OpenPopup("Spawn Basic Widget");
             }
 
-            if (shiftDown && IsKeyJustDown(KEY_A))
+            if (shiftDown && IsKeyJustDown(OCTAVE_KEY_A))
             {
                 ImGui::OpenPopup("Spawn Node");
             }
 
-            if (ctrlDown && IsKeyJustDown(KEY_N))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_N))
             {
                 GetEditorState()->OpenEditScene(nullptr);
             }
 
-            if (ctrlDown && IsKeyJustDown(KEY_R))
+            if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_R))
             {
                 ReloadAllScripts();
                 NativeAddonManager* nam = NativeAddonManager::Get();
@@ -6471,6 +6785,9 @@ static void DrawMainMenuBar()
                 AssetDir* pkgDir = AssetManager::Get()->FindPackagesDirectory();
                 if (pkgDir)
                     AssetManager::Get()->RefreshDirectory(pkgDir);
+
+                // Sync UIDocument .xml <-> .oct files
+                RefreshUIDocuments();
             }
         }
 

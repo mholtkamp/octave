@@ -84,6 +84,9 @@
     <Filter Include="Source Files\Engine\Nodes\Widgets">
       <UniqueIdentifier>{dc41d54e-d3cc-4f72-a638-388191adde27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\UI">
+      <UniqueIdentifier>{a7c3e1f0-8b2d-4c5e-9f1a-d3e6b4a8c702}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Engine\Nodes\3D">
       <UniqueIdentifier>{9bd20d9a-4e2e-42dd-819e-61f60afc29c5}</UniqueIdentifier>
     </Filter>
@@ -383,6 +386,9 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\UIDocument_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -520,6 +526,18 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UITypes.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UIStyleSheet.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UILoader.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UIDocument.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp">
       <Filter>Source Files\Engine\Nodes</Filter>
@@ -1221,6 +1239,18 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UITypes.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UIStyleSheet.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UILoader.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UIDocument.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h">
       <Filter>Source Files\Engine\Nodes</Filter>
     </ClInclude>
@@ -1477,6 +1507,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\UIDocument_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h">

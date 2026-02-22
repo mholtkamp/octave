@@ -1,6 +1,6 @@
 // =============================================================================
 // EditorIcons.h — Generated from selection.icomoon.json
-// Font: OctaveIcons.ttf | 165 icons | Range: U+F000..U+F0A4
+// Font: OctaveIcons.ttf | 184 icons | Range: U+F000..U+F0B7
 // =============================================================================
 #pragma once
 
@@ -10,9 +10,9 @@
 // Glyph range
 // ---------------------------------------------------------------------------
 static constexpr ImWchar kIconMin = 0xF000;
-static constexpr ImWchar kIconMax = 0xF0A4;
+static constexpr ImWchar kIconMax = 0xF0B7;
 
-static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
+static const ImWchar kIconRanges[] = { 0xF000, 0xF0B7, 0 };
 
 // ---------------------------------------------------------------------------
 // Icon definitions (sorted alphabetically by identifier)
@@ -21,6 +21,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_ASSETS                                                 u8"\uF09E"
 #define ICON_BASIL_EYE_CLOSED_SOLID                                 u8"\uF045"
 #define ICON_BEZIER                                                 u8"\uF04F"
+#define ICON_BITCOIN_ICONS_NODE_2_CONNECTIONS_FILLED                u8"\uF0B2"
 #define ICON_BI_UNITY                                               u8"\uF081"
 #define ICON_BLUETOOTH                                              u8"\uF078"
 #define ICON_BUTTON                                                 u8"\uF055"
@@ -33,6 +34,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_BX_PACKAGE                                             u8"\uF043"
 #define ICON_CANVAS                                                 u8"\uF05D"
 #define ICON_CAPSULE                                                u8"\uF051"
+#define ICON_CARBON_EDGE_NODE                                       u8"\uF0B7"
 #define ICON_CBI_DREAMCAST                                          u8"\uF065"
 #define ICON_CIB_EPIC_GAMES                                         u8"\uF08E"
 #define ICON_CIB_NINTENDO_3DS                                       u8"\uF072"
@@ -51,6 +53,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_DASHICONS_ARROW_DOWN                                   u8"\uF040"
 #define ICON_DASHICONS_ARROW_UP                                     u8"\uF03F"
 #define ICON_DASHICONS_NO_ALT                                       u8"\uF03E"
+#define ICON_EP_SET_UP                                              u8"\uF0AC"
 #define ICON_EVA_NAVIGATION_2_FILL                                  u8"\uF08D"
 #define ICON_FA6_SOLID_COMPUTER                                     u8"\uF086"
 #define ICON_FA_SOLID_MONEY_BILL_WAVE                               u8"\uF096"
@@ -69,6 +72,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_HUGEICONS_MATERIAL_AND_TEXTURE                         u8"\uF038"
 #define ICON_ICON_PARK_SOLID_INNER_SHADOW_BOTTOM_LEFT               u8"\uF030"
 #define ICON_IC_BASELINE_APPLE                                      u8"\uF084"
+#define ICON_IC_BASELINE_DOWNLOAD                                   u8"\uF0B6"
 #define ICON_IC_BASELINE_HOURGLASS_BOTTOM                           u8"\uF037"
 #define ICON_IC_BASELINE_LINK                                       u8"\uF036"
 #define ICON_IC_BASELINE_LIST                                       u8"\uF048"
@@ -76,8 +80,11 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_IC_BASELINE_SEARCH                                     u8"\uF034"
 #define ICON_IC_BASELINE_SHARE                                      u8"\uF033"
 #define ICON_IC_BASELINE_STOP                                       u8"\uF032"
+#define ICON_IC_BASELINE_UPLOAD                                     u8"\uF0B5"
 #define ICON_IC_ROUND_COMPUTER                                      u8"\uF082"
 #define ICON_IC_SHARP_EXTENSION                                     u8"\uF031"
+#define ICON_IC_SHARP_SETTINGS_BACKUP_RESTORE                       u8"\uF0A8"
+#define ICON_IC_TWOTONE_POWER_SETTINGS_NEW                          u8"\uF0AB"
 #define ICON_INFO                                                   u8"\uF05F"
 #define ICON_ION_HAMMER_SHARP                                       u8"\uF02F"
 #define ICON_IX_CODE                                                u8"\uF02E"
@@ -86,11 +93,14 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_JSON                                                   u8"\uF0A1"
 #define ICON_LAYERS                                                 u8"\uF058"
 #define ICON_LIGHTBULB                                              u8"\uF04E"
+#define ICON_LINEICONS_VECTOR_NODES_7                               u8"\uF0B4"
 #define ICON_LINE_MD_PAINT_DROP_FILLED                              u8"\uF02B"
 #define ICON_LUA                                                    u8"\uF0A3"
 #define ICON_LUCIDE_ROTATE_3D                                       u8"\uF02A"
 #define ICON_MAGE_SCALE_UP                                          u8"\uF029"
 #define ICON_MAJESTICONS_MAP_MARKER                                 u8"\uF089"
+#define ICON_MATERIAL_SYMBOLS_ADD                                   u8"\uF0AF"
+#define ICON_MATERIAL_SYMBOLS_ADD_AD_SHARP                          u8"\uF0AE"
 #define ICON_MATERIAL_SYMBOLS_ARROW_LEFT                            u8"\uF028"
 #define ICON_MATERIAL_SYMBOLS_ARROW_RIGHT                           u8"\uF027"
 #define ICON_MATERIAL_SYMBOLS_AUDIO_FILE_SHARP                      u8"\uF026"
@@ -107,12 +117,15 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_MATERIAL_SYMBOLS_LOCK_OPEN_SHARP                       u8"\uF020"
 #define ICON_MATERIAL_SYMBOLS_LOCK_SHARP                            u8"\uF01F"
 #define ICON_MATERIAL_SYMBOLS_MIC                                   u8"\uF01E"
+#define ICON_MATERIAL_SYMBOLS_NOTE_ADD_SHARP                        u8"\uF0AD"
 #define ICON_MATERIAL_SYMBOLS_PAUSE                                 u8"\uF01D"
 #define ICON_MATERIAL_SYMBOLS_PERSON                                u8"\uF01C"
+#define ICON_MATERIAL_SYMBOLS_POWER_SETTINGS_CIRCLE                 u8"\uF0AA"
 #define ICON_MATERIAL_SYMBOLS_ROCKET_LAUNCH                         u8"\uF01B"
 #define ICON_MATERIAL_SYMBOLS_SAVE_SHARP                            u8"\uF01A"
 #define ICON_MATERIAL_SYMBOLS_SETTINGS                              u8"\uF019"
 #define ICON_MATERIAL_SYMBOLS_STAR                                  u8"\uF018"
+#define ICON_MATERIAL_SYMBOLS_TARGET                                u8"\uF0B0"
 #define ICON_MATERIAL_SYMBOLS_TV_OUTLINE_ROUNDED                    u8"\uF088"
 #define ICON_MATERIAL_SYMBOLS_VIEW_TIMELINE_SHARP                   u8"\uF017"
 #define ICON_MATERIAL_SYMBOLS_WARNING                               u8"\uF09A"
@@ -127,15 +140,19 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_MDI_GIFT                                               u8"\uF09C"
 #define ICON_MDI_LINUX                                              u8"\uF074"
 #define ICON_MDI_MAGIC                                              u8"\uF011"
+#define ICON_MDI_MIXER_SETTINGS_VERTICAL                            u8"\uF0A9"
 #define ICON_MDI_NINTENDO_WIIU                                      u8"\uF062"
 #define ICON_MDI_PEOPLE_ADD                                         u8"\uF010"
 #define ICON_MDI_PLAY                                               u8"\uF00F"
+#define ICON_MDI_RESISTOR_NODES                                     u8"\uF0B3"
 #define ICON_MDI_SERVER_OUTLINE                                     u8"\uF064"
 #define ICON_MDI_STEAM                                              u8"\uF07B"
+#define ICON_MDI_TARGET                                             u8"\uF0B1"
 #define ICON_MDI_THUMBS_DOWN                                        u8"\uF00E"
 #define ICON_MDI_THUMBS_UP                                          u8"\uF00D"
 #define ICON_MDI_WEBCAM                                             u8"\uF00B"
 #define ICON_MINGCUTE_PAPER_FILL                                    u8"\uF00A"
+#define ICON_PH_CURSOR_TEXT_LIGHT                                   u8"\uF0A5"
 #define ICON_PH_MAGNET_FILL                                         u8"\uF095"
 #define ICON_PH_MUSIC_NOTE_FILL                                     u8"\uF092"
 #define ICON_PH_PAPER_PLANE_TILT_FILL                               u8"\uF009"
@@ -145,6 +162,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_RAPHAEL_NO                                             u8"\uF007"
 #define ICON_RECT                                                   u8"\uF05A"
 #define ICON_RIVET_ICONS_AUDIO_SOLID                                u8"\uF006"
+#define ICON_RI_CURSOR_FILL                                         u8"\uF0A6"
 #define ICON_RI_FIGMA_LINE                                          u8"\uF083"
 #define ICON_RI_NETWORK_FILL                                        u8"\uF063"
 #define ICON_RI_PLAYSTATION_FILL                                    u8"\uF068"
@@ -168,6 +186,7 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 #define ICON_STREAMLINE_ULTIMATE_NAVIGATION_MENU_HORIZONTAL_1_BOLD  u8"\uF08A"
 #define ICON_SUN                                                    u8"\uF04C"
 #define ICON_TABLER_CHAIR_DIRECTOR                                  u8"\uF002"
+#define ICON_TABLER_HAND_GRAB                                       u8"\uF0A7"
 #define ICON_TDESIGN_IMAGE_FILLED                                   u8"\uF001"
 #define ICON_TDESIGN_NOTIFICATION_FILLED                            u8"\uF090"
 #define ICON_TDESIGN_TABLE_FILLED                                   u8"\uF047"
@@ -197,8 +216,8 @@ static const ImWchar kIconRanges[] = { 0xF000, 0xF0A4, 0 };
 inline void MergeOctaveIcons(ImFontAtlas* atlas, float pixelSize, const char* ttfPath)
 {
     ImFontConfig cfg;
-    cfg.MergeMode = true;
-    cfg.PixelSnapH = true;
+    cfg.MergeMode        = true;
+    cfg.PixelSnapH       = true;
     cfg.GlyphMinAdvanceX = pixelSize;
     atlas->AddFontFromFileTTF(ttfPath, pixelSize, &cfg, kIconRanges);
 }

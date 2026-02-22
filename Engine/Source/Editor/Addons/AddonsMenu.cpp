@@ -602,7 +602,7 @@ static void DrawCreateAddonDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }
@@ -796,7 +796,7 @@ static void DrawCreateNativeAddonDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }
@@ -927,7 +927,7 @@ static void DrawPackageNativeAddonDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }
@@ -1112,7 +1112,7 @@ static void DrawPublishGitDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }
@@ -1244,7 +1244,7 @@ static void DrawPublishZipDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }
@@ -1461,7 +1461,7 @@ static void DrawEditPackageJsonDialog()
             closePopup = true;
         }
 
-        if (IsKeyJustDown(KEY_ESCAPE))
+        if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
         {
             closePopup = true;
         }

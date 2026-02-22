@@ -785,6 +785,10 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Engine\UI\UITypes.cpp" />
+    <ClCompile Include="Source\Engine\UI\UIStyleSheet.cpp" />
+    <ClCompile Include="Source\Engine\UI\UILoader.cpp" />
+    <ClCompile Include="Source\Engine\UI\UIDocument.cpp" />
     <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp" />
     <ClCompile Include="Source\Engine\Nodes\NodeGraphPlayer.cpp" />
     <ClCompile Include="Source\Engine\Timeline\TimelineTrack.cpp" />
@@ -943,6 +947,7 @@
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\TimelinePlayer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\NodeGraphPlayer_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\UIDocument_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Timeline_Lua.cpp" />
     <ClCompile Include="Source\Network\3DS\Network_3DS.cpp" />
     <ClCompile Include="Source\Network\Android\Network_Android.cpp" />
@@ -1124,6 +1129,10 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
+    <ClInclude Include="Source\Engine\UI\UITypes.h" />
+    <ClInclude Include="Source\Engine\UI\UIStyleSheet.h" />
+    <ClInclude Include="Source\Engine\UI\UILoader.h" />
+    <ClInclude Include="Source\Engine\UI\UIDocument.h" />
     <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h" />
     <ClInclude Include="Source\Engine\Nodes\NodeGraphPlayer.h" />
     <ClInclude Include="Source\Engine\Timeline\TimelineTrack.h" />
@@ -1287,6 +1296,7 @@
     <ClInclude Include="Source\LuaBindings\World_Lua.h" />
     <ClInclude Include="Source\LuaBindings\TimelinePlayer_Lua.h" />
     <ClInclude Include="Source\LuaBindings\NodeGraphPlayer_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\UIDocument_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Timeline_Lua.h" />
     <ClInclude Include="Source\Network\NetPlatformEpic.h" />
     <ClInclude Include="Source\Network\NetPlatformSteam.h" />

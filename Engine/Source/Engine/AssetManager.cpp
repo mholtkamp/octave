@@ -382,6 +382,13 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
                 // Pass UUID from header (may be 0 for legacy assets, RegisterAsset will generate one)
                 RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
+#if EDITOR
+            else if (extension != nullptr &&
+                strcmp(extension, ".css") == 0)
+            {
+                directory->mLooseFiles.push_back(dirEntry.mFilename);
+            }
+#endif
         }
 
         SYS_IterateDirectory(dirEntry);
@@ -402,6 +409,10 @@ void AssetManager::RefreshDirectory(AssetDir* directory)
 {
     if (directory == nullptr)
         return;
+
+#if EDITOR
+    directory->mLooseFiles.clear();
+#endif
 
     bool engineDir = directory->mEngineDir;
     std::vector<std::string> subDirectories;
@@ -427,6 +438,12 @@ void AssetManager::RefreshDirectory(AssetDir* directory)
                 AssetHeader header = Asset::ReadHeader(stream);
                 RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
+#if EDITOR
+            else if (extension != nullptr && strcmp(extension, ".css") == 0)
+            {
+                directory->mLooseFiles.push_back(dirEntry.mFilename);
+            }
+#endif
         }
 
         SYS_IterateDirectory(dirEntry);

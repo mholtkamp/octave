@@ -199,6 +199,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
     FORCE_LINK_CALL(Font);
+    FORCE_LINK_CALL(UIDocument);
     FORCE_LINK_CALL(Timeline);
     FORCE_LINK_CALL(TimelineTrack);
     FORCE_LINK_CALL(TimelineClip);
