@@ -20,7 +20,7 @@ function Poly:GetVertex(index) end
 ---@param texture Texture
 function Poly:SetTexture(texture) end
 
----@return any
+---@return Asset
 function Poly:GetTexture() end
 
 ---@return number

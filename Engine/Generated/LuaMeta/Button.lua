@@ -42,7 +42,7 @@ function Button:SetStateTextures(normal, hovered, pressed, locked) end
 ---@param locked Vector
 function Button:SetStateColors(normal, hovered, pressed, locked) end
 
----@return any, any, any, any
+---@return Asset, Asset, Asset, Asset
 function Button:GetStateTextures() end
 
 ---@return Vector, Vector, Vector, Vector

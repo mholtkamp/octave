@@ -216,6 +216,27 @@ public:
     virtual glm::vec4 GetNodeColor() const override;
 };
 
+class GetNode3DName : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GetNode3DName, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Get Node3D Name"; }
+    virtual const char* GetNodeCategory() const override { return "Scene Graph"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class GetNode3DClass : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GetNode3DClass, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Get Node3D Class"; }
+    virtual const char* GetNodeCategory() const override { return "Scene Graph"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
 // =============================================================================
 // Transform Get (pure data)
 // =============================================================================

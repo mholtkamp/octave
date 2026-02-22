@@ -165,7 +165,7 @@ function Node:EnableTick(enable) end
 ---@return boolean
 function Node:IsTickEnabled() end
 
----@return any
+---@return Asset
 function Node:GetScene() end
 
 ---@param value string

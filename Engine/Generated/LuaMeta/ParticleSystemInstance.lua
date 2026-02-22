@@ -3,5 +3,5 @@
 ---@class ParticleSystemInstance : ParticleSystem
 ParticleSystemInstance = {}
 
----@return any
+---@return Asset
 function ParticleSystemInstance:Create() end

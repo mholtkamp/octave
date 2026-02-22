@@ -3,16 +3,16 @@
 ---@class Mesh3D : Primitive3D
 Mesh3D = {}
 
----@return any
+---@return Asset
 function Mesh3D:GetMaterial() end
 
----@return any
+---@return Asset
 function Mesh3D:GetMaterialOverride() end
 
 ---@param material? Material
 function Mesh3D:SetMaterialOverride(material) end
 
----@return any
+---@return Asset
 function Mesh3D:InstantiateMaterial() end
 
 ---@return boolean

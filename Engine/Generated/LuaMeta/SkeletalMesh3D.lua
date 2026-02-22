@@ -6,7 +6,7 @@ SkeletalMesh3D = {}
 ---@param skMesh? SkeletalMesh
 function SkeletalMesh3D:SetSkeletalMesh(skMesh) end
 
----@return any
+---@return Asset
 function SkeletalMesh3D:GetSkeletalMesh() end
 
 ---@param animName string

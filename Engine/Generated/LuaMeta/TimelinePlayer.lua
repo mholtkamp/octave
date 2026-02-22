@@ -27,7 +27,7 @@ function TimelinePlayer:IsPaused() end
 ---@param arg1? Asset
 function TimelinePlayer:SetTimeline(arg1) end
 
----@return any
+---@return Asset
 function TimelinePlayer:GetTimeline() end
 
 ---@param playOnStart boolean

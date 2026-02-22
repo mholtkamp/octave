@@ -3,7 +3,7 @@
 ---@class SkeletalMesh : Asset
 SkeletalMesh = {}
 
----@return any
+---@return Asset
 function SkeletalMesh:GetMaterial() end
 
 ---@param material? Material

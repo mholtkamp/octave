@@ -8,7 +8,7 @@ MaterialLite = {}
 function MaterialLite:SetTexture(slot, texture) end
 
 ---@param slot integer
----@return any
+---@return Asset
 function MaterialLite:GetTexture(slot) end
 
 ---@return integer
@@ -112,5 +112,5 @@ function MaterialLite:SetTevMode(slot, tevMode) end
 ---@param value integer
 function MaterialLite:SetCullMode(value) end
 
----@return any
+---@return Asset
 function MaterialLite:Create() end

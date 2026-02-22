@@ -6,7 +6,7 @@ Text = {}
 ---@param font Font
 function Text:SetFont(font) end
 
----@return any
+---@return Asset
 function Text:GetFont() end
 
 ---@param value Vector

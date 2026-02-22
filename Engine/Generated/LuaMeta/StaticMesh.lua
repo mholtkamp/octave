@@ -3,7 +3,7 @@
 ---@class StaticMesh : Asset
 StaticMesh = {}
 
----@return any
+---@return Asset
 function StaticMesh:GetMaterial() end
 
 ---@param material? Material

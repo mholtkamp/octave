@@ -126,6 +126,150 @@ int NodeGraphPlayer_Lua::SetInputColor(lua_State* L)
     return 1;
 }
 
+int NodeGraphPlayer_Lua::SetInputByte(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    uint8_t value = (uint8_t)CHECK_NUMBER(L, 3);
+    lua_pushboolean(L, node->SetInputByte(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputAsset(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Asset* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_ASSET(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputAsset(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputVector2D(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    glm::vec2 value = CHECK_VECTOR(L, 3);
+    lua_pushboolean(L, node->SetInputVector2D(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputShort(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    int16_t value = (int16_t)CHECK_NUMBER(L, 3);
+    lua_pushboolean(L, node->SetInputShort(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputNode(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputNode(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputNode3D(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputNode3D(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputWidget(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputWidget(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputText(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputText(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputQuad(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputQuad(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputAudio3D(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputAudio3D(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputScene(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Asset* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_ASSET(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputScene(name, value));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::SetInputSpline3D(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    const char* name = CHECK_STRING(L, 2);
+    Node* value = nullptr;
+    if (!lua_isnil(L, 3))
+    {
+        value = CHECK_NODE(L, 3);
+    }
+    lua_pushboolean(L, node->SetInputSpline3D(name, value));
+    return 1;
+}
+
 int NodeGraphPlayer_Lua::GetOutputFloat(lua_State* L)
 {
     NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
@@ -159,12 +303,64 @@ int NodeGraphPlayer_Lua::GetOutputVector(lua_State* L)
     return 1;
 }
 
+int NodeGraphPlayer_Lua::GetOutputString(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    std::string value = node->GetOutputString(pinIndex);
+    lua_pushstring(L, value.c_str());
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::GetOutputVector2D(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    glm::vec2 value = node->GetOutputVector2D(pinIndex);
+    Vector_Lua::Create(L, value);
+    return 1;
+}
+
 int NodeGraphPlayer_Lua::GetOutputColor(lua_State* L)
 {
     NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
     uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
     glm::vec4 value = node->GetOutputColor(pinIndex);
     Vector_Lua::Create(L, value);
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::GetOutputByte(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    lua_pushinteger(L, node->GetOutputByte(pinIndex));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::GetOutputShort(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    lua_pushinteger(L, node->GetOutputShort(pinIndex));
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::GetOutputAsset(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    Asset* value = node->GetOutputAsset(pinIndex);
+    Asset_Lua::Create(L, value);
+    return 1;
+}
+
+int NodeGraphPlayer_Lua::GetOutputNode(lua_State* L)
+{
+    NodeGraphPlayer* node = CHECK_NODE_GRAPH_PLAYER(L, 1);
+    uint32_t pinIndex = (uint32_t)CHECK_NUMBER(L, 2);
+    Node* value = node->GetOutputNode(pinIndex);
+    Node_Lua::Create(L, value);
     return 1;
 }
 
@@ -207,11 +403,29 @@ void NodeGraphPlayer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetInputString);
     REGISTER_TABLE_FUNC(L, mtIndex, SetInputVector);
     REGISTER_TABLE_FUNC(L, mtIndex, SetInputColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputByte);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputAsset);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputVector2D);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputShort);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputNode);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputNode3D);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputWidget);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputText);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputQuad);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputAudio3D);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputScene);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetInputSpline3D);
     REGISTER_TABLE_FUNC(L, mtIndex, GetOutputFloat);
     REGISTER_TABLE_FUNC(L, mtIndex, GetOutputInt);
     REGISTER_TABLE_FUNC(L, mtIndex, GetOutputBool);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputString);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputVector2D);
     REGISTER_TABLE_FUNC(L, mtIndex, GetOutputVector);
     REGISTER_TABLE_FUNC(L, mtIndex, GetOutputColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputByte);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputShort);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputAsset);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetOutputNode);
     REGISTER_TABLE_FUNC(L, mtIndex, SetPlayOnStart);
     REGISTER_TABLE_FUNC(L, mtIndex, GetPlayOnStart);
 

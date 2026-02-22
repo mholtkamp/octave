@@ -6,7 +6,7 @@ Audio3D = {}
 ---@param wave? SoundWave
 function Audio3D:SetSoundWave(wave) end
 
----@return any
+---@return Asset
 function Audio3D:GetSoundWave() end
 
 ---@param value number

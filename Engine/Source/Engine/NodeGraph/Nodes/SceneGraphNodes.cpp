@@ -426,6 +426,48 @@ void FindChildGraphNode::Evaluate()
 
 glm::vec4 FindChildGraphNode::GetNodeColor() const { return kSceneGraphNodeColor; }
 
+DEFINE_GRAPH_NODE(GetNode3DName)
+void GetNode3DName::SetupPins() {
+    AddInputPin("Node", DatumType::Node3D, Datum((Node*)nullptr));
+    AddOutputPin("Name", DatumType::String);
+}
+void GetNode3DName::Evaluate() {
+    Node* node = GetInputValue(0).GetNode().Get();
+
+    if (node != nullptr)
+    {
+        Node3D* node3d = node->As<Node3D>();
+        if (node3d != nullptr)
+        {
+            SetOutputValue(0, Datum(node3d->GetName()));
+            return;
+        }
+    }
+    SetOutputValue(0, Datum(""));
+}
+glm::vec4 GetNode3DName::GetNodeColor() const { return kSceneGraphNodeColor; }
+
+DEFINE_GRAPH_NODE(GetNode3DClass)
+void GetNode3DClass::SetupPins() {
+    AddInputPin("Node", DatumType::Node3D, Datum((Node*)nullptr));
+    AddOutputPin("Name", DatumType::String);
+}
+void GetNode3DClass::Evaluate() {
+    Node* node = GetInputValue(0).GetNode().Get();
+
+    if (node != nullptr)
+    {
+        Node3D* node3d = node->As<Node3D>();
+        if (node3d != nullptr)
+        {
+            SetOutputValue(0, Datum(node3d->GetClassName()));
+            return;
+        }
+    }
+    SetOutputValue(0, Datum(""));
+}
+glm::vec4 GetNode3DClass::GetNodeColor() const { return kSceneGraphNodeColor; }
+
 // =============================================================================
 // GetPositionNode
 // =============================================================================

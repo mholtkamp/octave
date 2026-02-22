@@ -44,6 +44,8 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(GetTransformNode::GetStaticType(), "Get Transform", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
     AddNodeType(SetTransformNode::GetStaticType(), "Set Transform", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
     AddNodeType(FindNodeNode::GetStaticType(), "Find Node", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetNode3DName::GetStaticType(), "Get Node3D Name", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetNode3DClass::GetStaticType(), "Get Node3D Class", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
 
     // Scene Graph - Node Reference
     AddNodeType(GetSelfNode::GetStaticType(), "Get Self", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));

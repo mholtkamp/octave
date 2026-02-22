@@ -48,6 +48,8 @@ void GraphNode::WriteDatumToStream(Stream& stream, const Datum& datum)
     case DatumType::Vector2D: stream.WriteVec2(datum.GetVector2D()); break;
     case DatumType::Vector:   stream.WriteVec3(datum.GetVector()); break;
     case DatumType::Color:    stream.WriteVec4(datum.GetColor()); break;
+    case DatumType::Byte:     stream.WriteUint8(datum.GetByte()); break;
+    case DatumType::Short:    stream.WriteInt16(datum.GetShort()); break;
     default: break;
     }
 }
@@ -65,6 +67,8 @@ Datum GraphNode::ReadDatumFromStream(Stream& stream)
     case DatumType::Vector2D: return Datum(stream.ReadVec2());
     case DatumType::Vector:   return Datum(stream.ReadVec3());
     case DatumType::Color:    return Datum(stream.ReadVec4());
+    case DatumType::Byte:     return Datum(stream.ReadUint8());
+    case DatumType::Short:    return Datum(stream.ReadInt16());
     default: return Datum();
     }
 }
@@ -105,8 +109,15 @@ void GraphNode::LoadStream(Stream& stream, uint32_t version)
         if (i < mInputPins.size())
         {
             mInputPins[i].mId = pinId;
-            mInputPins[i].mDefaultValue = defaultValue;
-            mInputPins[i].mValue = defaultValue;
+
+            // Only overwrite pin values for serializable types.
+            // Non-serializable types (Node, Asset, etc.) deserialize as empty Datums,
+            // so keep the default value that SetupPins already established.
+            if (defaultValue.GetCount() > 0)
+            {
+                mInputPins[i].mDefaultValue = defaultValue;
+                mInputPins[i].mValue = defaultValue;
+            }
         }
     }
 
@@ -158,6 +169,9 @@ GraphPin& GraphNode::AddOutputPin(const char* name, DatumType type)
     case DatumType::Vector2D: pin.mValue = Datum(glm::vec2(0.0f)); break;
     case DatumType::Vector:   pin.mValue = Datum(glm::vec3(0.0f)); break;
     case DatumType::Color:    pin.mValue = Datum(glm::vec4(0.0f)); break;
+    case DatumType::Asset:    pin.mValue = Datum((Asset*)nullptr); break;
+    case DatumType::Byte:     pin.mValue = Datum((uint8_t)0); break;
+    case DatumType::Short:    pin.mValue = Datum((int16_t)0); break;
     case DatumType::Node:     pin.mValue = Datum((Node*)nullptr); break;
     case DatumType::Node3D:   pin.mValue = Datum((Node*)nullptr); break;
     case DatumType::Widget:   pin.mValue = Datum((Node*)nullptr); break;
@@ -165,6 +179,7 @@ GraphPin& GraphNode::AddOutputPin(const char* name, DatumType type)
     case DatumType::Quad:     pin.mValue = Datum((Node*)nullptr); break;
     case DatumType::Audio3D:  pin.mValue = Datum((Node*)nullptr); break;
     case DatumType::Scene:    pin.mValue = Datum((Asset*)nullptr); break;
+    case DatumType::Spline3D: pin.mValue = Datum((Node*)nullptr); break;
     case DatumType::Execution: pin.mName = "    "; break;
     default: break;
     }

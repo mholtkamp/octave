@@ -6,7 +6,7 @@ ParticleSystem = {}
 ---@param value? Material
 function ParticleSystem:SetMaterial(value) end
 
----@return any
+---@return Asset
 function ParticleSystem:GetMaterial() end
 
 ---@param value number

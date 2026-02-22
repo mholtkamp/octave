@@ -6,7 +6,7 @@ StaticMesh3D = {}
 ---@param mesh? StaticMesh
 function StaticMesh3D:SetStaticMesh(mesh) end
 
----@return any
+---@return Asset
 function StaticMesh3D:GetStaticMesh() end
 
 ---@param value boolean

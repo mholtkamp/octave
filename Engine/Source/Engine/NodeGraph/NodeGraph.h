@@ -85,6 +85,16 @@ public:
     bool SetInputColor(const char* inputName, const glm::vec4& value);
     bool SetInputByte(const char* inputName, uint8_t value);
     bool SetInputAsset(const char* inputName, Asset* value);
+    bool SetInputVector2D(const char* inputName, const glm::vec2& value);
+    bool SetInputShort(const char* inputName, int16_t value);
+    bool SetInputNode(const char* inputName, Node* value);
+    bool SetInputNode3D(const char* inputName, Node* value);
+    bool SetInputWidget(const char* inputName, Node* value);
+    bool SetInputText(const char* inputName, Node* value);
+    bool SetInputQuad(const char* inputName, Node* value);
+    bool SetInputAudio3D(const char* inputName, Node* value);
+    bool SetInputScene(const char* inputName, Asset* value);
+    bool SetInputSpline3D(const char* inputName, Node* value);
 
     // Read output node's computed values after evaluation
     GraphNode* FindOutputNode() const;

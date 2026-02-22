@@ -22,7 +22,7 @@ function Stream:ReadFile(path, maxSize) end
 ---@param path string
 function Stream:WriteFile(path) end
 
----@return any
+---@return Asset
 function Stream:ReadAsset() end
 
 ---@param arg1 Asset

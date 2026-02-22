@@ -36,13 +36,31 @@ struct NodeGraphPlayer_Lua
     static int SetInputString(lua_State* L);
     static int SetInputVector(lua_State* L);
     static int SetInputColor(lua_State* L);
+    static int SetInputByte(lua_State* L);
+    static int SetInputAsset(lua_State* L);
+    static int SetInputVector2D(lua_State* L);
+    static int SetInputShort(lua_State* L);
+    static int SetInputNode(lua_State* L);
+    static int SetInputNode3D(lua_State* L);
+    static int SetInputWidget(lua_State* L);
+    static int SetInputText(lua_State* L);
+    static int SetInputQuad(lua_State* L);
+    static int SetInputAudio3D(lua_State* L);
+    static int SetInputScene(lua_State* L);
+    static int SetInputSpline3D(lua_State* L);
 
     // Output getters
     static int GetOutputFloat(lua_State* L);
     static int GetOutputInt(lua_State* L);
     static int GetOutputBool(lua_State* L);
+    static int GetOutputString(lua_State* L);
+    static int GetOutputVector2D(lua_State* L);
     static int GetOutputVector(lua_State* L);
     static int GetOutputColor(lua_State* L);
+    static int GetOutputByte(lua_State* L);
+    static int GetOutputShort(lua_State* L);
+    static int GetOutputAsset(lua_State* L);
+    static int GetOutputNode(lua_State* L);
 
     // Settings
     static int SetPlayOnStart(lua_State* L);

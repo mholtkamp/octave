@@ -6,7 +6,7 @@ Quad = {}
 ---@param texture? Texture
 function Quad:SetTexture(texture) end
 
----@return any
+---@return Asset
 function Quad:GetTexture() end
 
 ---@param tl Vector

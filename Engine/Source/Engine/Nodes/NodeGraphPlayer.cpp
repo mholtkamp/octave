@@ -345,11 +345,73 @@ bool NodeGraphPlayer::SetInputAsset(const char* name, Asset* asset)
     return mRuntimeGraph ? mRuntimeGraph->SetInputAsset(name, asset) : false;
 }
 
+bool NodeGraphPlayer::SetInputVector2D(const char* name, const glm::vec2& value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputVector2D(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputShort(const char* name, int16_t value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputShort(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputNode(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputNode(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputNode3D(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputNode3D(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputWidget(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputWidget(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputText(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputText(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputQuad(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputQuad(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputAudio3D(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputAudio3D(name, value) : false;
+}
+
+bool NodeGraphPlayer::SetInputScene(const char* name, Asset* asset)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputScene(name, asset) : false;
+}
+
+bool NodeGraphPlayer::SetInputSpline3D(const char* name, Node* value)
+{
+    EnsureRuntimeGraph();
+    return mRuntimeGraph ? mRuntimeGraph->SetInputSpline3D(name, value) : false;
+}
+
 float NodeGraphPlayer::GetOutputFloat(uint32_t pinIndex) const
 {
     if (mRuntimeGraph != nullptr)
     {
-        return mRuntimeGraph->GetOutputValue(pinIndex).GetFloat();
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Float)
+            return val.GetFloat();
     }
     return 0.0f;
 }
@@ -358,7 +420,9 @@ int32_t NodeGraphPlayer::GetOutputInt(uint32_t pinIndex) const
 {
     if (mRuntimeGraph != nullptr)
     {
-        return mRuntimeGraph->GetOutputValue(pinIndex).GetInteger();
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Integer)
+            return val.GetInteger();
     }
     return 0;
 }
@@ -367,7 +431,9 @@ bool NodeGraphPlayer::GetOutputBool(uint32_t pinIndex) const
 {
     if (mRuntimeGraph != nullptr)
     {
-        return mRuntimeGraph->GetOutputValue(pinIndex).GetBool();
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Bool)
+            return val.GetBool();
     }
     return false;
 }
@@ -376,18 +442,97 @@ glm::vec3 NodeGraphPlayer::GetOutputVector(uint32_t pinIndex) const
 {
     if (mRuntimeGraph != nullptr)
     {
-        return mRuntimeGraph->GetOutputValue(pinIndex).GetVector();
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Vector)
+            return val.GetVector();
     }
     return glm::vec3(0.0f);
+}
+
+std::string NodeGraphPlayer::GetOutputString(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::String)
+            return val.GetString();
+    }
+    return std::string();
+}
+
+glm::vec2 NodeGraphPlayer::GetOutputVector2D(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Vector2D)
+            return val.GetVector2D();
+    }
+    return glm::vec2(0.0f);
 }
 
 glm::vec4 NodeGraphPlayer::GetOutputColor(uint32_t pinIndex) const
 {
     if (mRuntimeGraph != nullptr)
     {
-        return mRuntimeGraph->GetOutputValue(pinIndex).GetColor();
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Color)
+            return val.GetColor();
     }
     return glm::vec4(0.0f);
+}
+
+uint8_t NodeGraphPlayer::GetOutputByte(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Byte)
+            return val.GetByte();
+    }
+    return 0;
+}
+
+int16_t NodeGraphPlayer::GetOutputShort(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Short)
+            return val.GetShort();
+    }
+    return 0;
+}
+
+Asset* NodeGraphPlayer::GetOutputAsset(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid() && val.GetType() == DatumType::Asset)
+            return val.GetAsset();
+    }
+    return nullptr;
+}
+
+Node* NodeGraphPlayer::GetOutputNode(uint32_t pinIndex) const
+{
+    if (mRuntimeGraph != nullptr)
+    {
+        const Datum& val = mRuntimeGraph->GetOutputValue(pinIndex);
+        if (val.IsValid())
+        {
+            DatumType type = val.GetType();
+            if (type == DatumType::Node || type == DatumType::Node3D ||
+                type == DatumType::Widget || type == DatumType::Text ||
+                type == DatumType::Quad || type == DatumType::Audio3D ||
+                type == DatumType::Spline3D)
+            {
+                return val.GetNode().Get();
+            }
+        }
+    }
+    return nullptr;
 }
 
 void NodeGraphPlayer::EnsureRuntimeGraph()

@@ -23,16 +23,16 @@ function Particle3D:GetElapsedTime() end
 ---@param system? ParticleSystem
 function Particle3D:SetParticleSystem(system) end
 
----@return any
+---@return Asset
 function Particle3D:GetParticleSystem() end
 
 ---@param material? Material
 function Particle3D:SetMaterialOverride(material) end
 
----@return any
+---@return Asset
 function Particle3D:GetMaterial() end
 
----@return any
+---@return Asset
 function Particle3D:GetMaterialOverride() end
 
 ---@param value number
@@ -72,5 +72,5 @@ function Particle3D:GetParticleOrientation() end
 ---@param value boolean
 function Particle3D:EnableAutoDestroy(value) end
 
----@return any
+---@return Asset
 function Particle3D:InstantiateParticleSystem() end

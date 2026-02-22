@@ -33,7 +33,7 @@ function Material:GetScalarParameter(name) end
 function Material:GetVectorParameter(name) end
 
 ---@param name string
----@return any
+---@return Asset
 function Material:GetTextureParameter(name) end
 
 ---@return integer

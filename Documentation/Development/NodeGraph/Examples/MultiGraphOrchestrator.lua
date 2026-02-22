@@ -24,15 +24,18 @@ function MultiGraphOrchestrator:GatherProperties()
     {
         { name = "graphA_Asset", type = DatumType.Asset },
         { name = "graphB_Asset", type = DatumType.Asset },
-        { name = "offset", type = DatumType.Vector }
+        { name = "offset", type = DatumType.Vector },
+        { name = "target", type = DatumType.Node }
     }
 end
 
 function MultiGraphOrchestrator:Start()
     -- Create two players as children
+    ---@type NodeGraphPlayer
     self.playerA = Node.Construct("NodeGraphPlayer")
     self:AddChild(self.playerA)
 
+    ---@type NodeGraphPlayer
     self.playerB = Node.Construct("NodeGraphPlayer")
     self:AddChild(self.playerB)
 
@@ -50,7 +53,6 @@ end
 
 function MultiGraphOrchestrator:Tick(deltaTime)
     self.elapsed = self.elapsed + deltaTime
-
     -- Step 1: Feed time into Graph A
     if self.playerA and self.playerA:IsPlaying() then
         self.playerA:SetInputFloat("Time", self.elapsed)
@@ -62,6 +64,7 @@ function MultiGraphOrchestrator:Tick(deltaTime)
        and self.playerB:IsPlaying() then
 
         local waveValue = self.playerA:GetOutputFloat(0)
+        self.playerB:SetInputNode3D("Target", self.target)
 
         self.playerB:SetInputFloat("WaveValue", waveValue)
         self.playerB:SetInputVector("Offset", self.offset)

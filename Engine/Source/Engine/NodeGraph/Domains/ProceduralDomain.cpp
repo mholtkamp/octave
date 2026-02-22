@@ -147,6 +147,10 @@ void ProceduralDomain::RegisterNodeTypes()
     AddNodeType(SplineGetPointNode::GetStaticType(), "Spline Get Point", "Spline", kSplineColor);
     AddNodeType(SplineNearestPercentNode::GetStaticType(), "Spline Nearest Percent", "Spline", kSplineColor);
     AddNodeType(SplineLengthNode::GetStaticType(), "Spline Length", "Spline", kSplineColor);
+
+
+    AddNodeType(GetNode3DName::GetStaticType(), "Get Node3D Name", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetNode3DClass::GetStaticType(), "Get Node3D Class", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
 }
 
 TypeId ProceduralDomain::GetDefaultOutputNodeType() const

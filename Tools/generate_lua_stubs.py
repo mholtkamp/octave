@@ -70,6 +70,7 @@ CREATE_TYPE_MAP = {
     "Vector_Lua::Create": "Vector",
     "Rect_Lua::Create":   "Rect",
     "Node_Lua::Create":   "Node",
+    "Asset_Lua::Create":  "Asset",
     "World_Lua::Create":  "World",
     "Stream_Lua::Create": "Stream",
     "Signal_Lua::Create": "Signal",

@@ -12,7 +12,7 @@ function Font:GetWidth() end
 ---@return integer
 function Font:GetHeight() end
 
----@return any
+---@return Asset
 function Font:GetTexture() end
 
 ---@return boolean

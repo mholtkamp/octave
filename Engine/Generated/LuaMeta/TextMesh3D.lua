@@ -12,7 +12,7 @@ function TextMesh3D:GetText() end
 ---@param font Font
 function TextMesh3D:SetFont(font) end
 
----@return any
+---@return Asset
 function TextMesh3D:GetFont() end
 
 ---@param value Vector

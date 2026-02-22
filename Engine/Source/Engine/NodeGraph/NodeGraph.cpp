@@ -595,6 +595,77 @@ bool NodeGraph::SetInputAsset(const char* inputName, Asset* value)
     return false;
 }
 
+bool NodeGraph::SetInputVector2D(const char* inputName, const glm::vec2& value)
+{
+    GraphNode* node = FindInputNode(inputName);
+    if (node != nullptr && node->GetNumInputPins() > 0)
+    {
+        node->GetInputPins()[0].mDefaultValue = Datum(value);
+        node->GetInputPins()[0].mValue = Datum(value);
+        return true;
+    }
+    return false;
+}
+
+bool NodeGraph::SetInputShort(const char* inputName, int16_t value)
+{
+    GraphNode* node = FindInputNode(inputName);
+    if (node != nullptr && node->GetNumInputPins() > 0)
+    {
+        node->GetInputPins()[0].mDefaultValue = Datum(value);
+        node->GetInputPins()[0].mValue = Datum(value);
+        return true;
+    }
+    return false;
+}
+
+bool NodeGraph::SetInputNode(const char* inputName, Node* value)
+{
+    GraphNode* node = FindInputNode(inputName);
+    if (node != nullptr && node->GetNumInputPins() > 0)
+    {
+        node->GetInputPins()[0].mDefaultValue = Datum(value);
+        node->GetInputPins()[0].mValue = Datum(value);
+        return true;
+    }
+    return false;
+}
+
+bool NodeGraph::SetInputNode3D(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
+bool NodeGraph::SetInputWidget(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
+bool NodeGraph::SetInputText(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
+bool NodeGraph::SetInputQuad(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
+bool NodeGraph::SetInputAudio3D(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
+bool NodeGraph::SetInputScene(const char* inputName, Asset* value)
+{
+    return SetInputAsset(inputName, value);
+}
+
+bool NodeGraph::SetInputSpline3D(const char* inputName, Node* value)
+{
+    return SetInputNode(inputName, value);
+}
+
 GraphNode* NodeGraph::FindOutputNode() const
 {
     // Output nodes are sink nodes with no output pins.

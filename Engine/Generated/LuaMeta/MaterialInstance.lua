@@ -3,11 +3,11 @@
 ---@class MaterialInstance : Material
 MaterialInstance = {}
 
----@return any
+---@return Asset
 function MaterialInstance:GetBaseMaterial() end
 
 ---@param base MaterialBase
 function MaterialInstance:SetBaseMaterial(base) end
 
----@return any
+---@return Asset
 function MaterialInstance:Create() end

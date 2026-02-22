@@ -85,13 +85,29 @@ public:
     bool SetInputColor(const char* name, const glm::vec4& value);
     bool SetInputByte(const char* name, uint8_t value);
     bool SetInputAsset(const char* name, Asset* asset);
+    bool SetInputVector2D(const char* name, const glm::vec2& value);
+    bool SetInputShort(const char* name, int16_t value);
+    bool SetInputNode(const char* name, Node* value);
+    bool SetInputNode3D(const char* name, Node* value);
+    bool SetInputWidget(const char* name, Node* value);
+    bool SetInputText(const char* name, Node* value);
+    bool SetInputQuad(const char* name, Node* value);
+    bool SetInputAudio3D(const char* name, Node* value);
+    bool SetInputScene(const char* name, Asset* asset);
+    bool SetInputSpline3D(const char* name, Node* value);
 
     // Output reading (after evaluation)
     float GetOutputFloat(uint32_t pinIndex) const;
     int32_t GetOutputInt(uint32_t pinIndex) const;
     bool GetOutputBool(uint32_t pinIndex) const;
+    std::string GetOutputString(uint32_t pinIndex) const;
+    glm::vec2 GetOutputVector2D(uint32_t pinIndex) const;
     glm::vec3 GetOutputVector(uint32_t pinIndex) const;
     glm::vec4 GetOutputColor(uint32_t pinIndex) const;
+    uint8_t GetOutputByte(uint32_t pinIndex) const;
+    int16_t GetOutputShort(uint32_t pinIndex) const;
+    Asset* GetOutputAsset(uint32_t pinIndex) const;
+    Node* GetOutputNode(uint32_t pinIndex) const;
 
     // Settings
     void SetPlayOnStart(bool v) { mPlayOnStart = v; }
