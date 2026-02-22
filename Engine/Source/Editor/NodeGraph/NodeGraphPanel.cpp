@@ -63,6 +63,7 @@ static bool sRenamingFunction = false;
 static int32_t sRenamingIndex = -1;
 static char sRenameBuffer[128] = {};
 static char sNodeSearchBuffer[128] = {};
+static int sSearchSelectedIndex = 0;
 
 // Execution flash feedback
 static std::unordered_map<GraphNodeId, double> sNodeFlashTimes;
@@ -991,6 +992,8 @@ static void DrawContextMenu(NodeGraph& graph)
     static ed::LinkId sContextLinkId;
 
     // Use imgui-node-editor's built-in context menu detection.
+    // OpenPopup and BeginPopup must share the same Suspend block so they
+    // operate in the same ImGui window context.
     ed::Suspend();
     if (ed::ShowNodeContextMenu(&sContextNodeId))
     {
@@ -1013,10 +1016,6 @@ static void DrawContextMenu(NodeGraph& graph)
         sContextCanvasPos = ed::ScreenToCanvas(ImGui::GetMousePos());
         ImGui::OpenPopup("Create Node");
     }
-    ed::Resume();
-
-    // Draw popups (must be inside Suspend/Resume)
-    ed::Suspend();
 
     if (ImGui::BeginPopup("Create Node"))
     {
@@ -1024,14 +1023,25 @@ static void DrawContextMenu(NodeGraph& graph)
         if (ImGui::IsWindowAppearing())
         {
             sNodeSearchBuffer[0] = '\0';
-        }
-
-        // Auto-focus search bar on first frame
-        if (ImGui::IsWindowAppearing())
-        {
+            sSearchSelectedIndex = 0;
             ImGui::SetKeyboardFocusHere();
         }
-        ImGui::InputTextWithHint("##NodeSearch", "Search nodes...", sNodeSearchBuffer, IM_ARRAYSIZE(sNodeSearchBuffer));
+
+        bool searchChanged = ImGui::InputTextWithHint("##NodeSearch", "Search nodes...", sNodeSearchBuffer, IM_ARRAYSIZE(sNodeSearchBuffer));
+        if (searchChanged)
+        {
+            sSearchSelectedIndex = 0;
+        }
+
+        // When the search bar is empty and the mouse has moved away from it,
+        // release active state so BeginMenu category items can highlight properly.
+        // The InputText holding active state suppresses hover on other items
+        // in the same popup window.
+        if (sNodeSearchBuffer[0] == '\0' && ImGui::IsItemActive() && !ImGui::IsItemHovered())
+        {
+            ImGui::ClearActiveID();
+        }
+
         ImGui::Separator();
 
         GraphDomainManager* domainMgr = GraphDomainManager::Get();
@@ -1049,10 +1059,18 @@ static void DrawContextMenu(NodeGraph& graph)
 
             if (hasSearchFilter)
             {
-                // --- Flat filtered list ---
+                // --- Flat filtered list with keyboard navigation ---
                 std::string searchLower = sNodeSearchBuffer;
                 std::transform(searchLower.begin(), searchLower.end(), searchLower.begin(),
                     [](unsigned char c) { return (char)std::tolower(c); });
+
+                // Collect matching results: index into nodeTypes, or ~0 + func index for functions
+                struct SearchResult
+                {
+                    uint32_t nodeTypeIndex;  // index into nodeTypes, or UINT32_MAX for function
+                    uint32_t funcIndex;      // only valid when nodeTypeIndex == UINT32_MAX
+                };
+                std::vector<SearchResult> results;
 
                 for (uint32_t i = 0; i < nodeTypes.size(); ++i)
                 {
@@ -1067,20 +1085,10 @@ static void DrawContextMenu(NodeGraph& graph)
                     if (nameLower.find(searchLower) != std::string::npos ||
                         catLower.find(searchLower) != std::string::npos)
                     {
-                        ImGui::PushID((int)i);
-                        if (ImGui::Selectable(nodeTypes[i].mTypeName.c_str()))
-                        {
-                            AddNodeAtCenter(graph, nodeTypes[i].mTypeId);
-                            ImGui::CloseCurrentPopup();
-                        }
-                        // Category hint on the same line
-                        ImGui::SameLine();
-                        ImGui::TextDisabled("[%s]", nodeTypes[i].mCategory.c_str());
-                        ImGui::PopID();
+                        results.push_back({ i, 0 });
                     }
                 }
 
-                // Filter function graphs too
                 if (sEditedAsset != nullptr)
                 {
                     for (uint32_t i = 0; i < sEditedAsset->GetNumFunctionGraphs(); ++i)
@@ -1094,17 +1102,71 @@ static void DrawContextMenu(NodeGraph& graph)
 
                             if (fnameLower.find(searchLower) != std::string::npos)
                             {
-                                ImGui::PushID((int)(nodeTypes.size() + i));
-                                if (ImGui::Selectable(fg->GetGraphName().c_str()))
-                                {
-                                    AddFunctionCallNode(graph, fg->GetGraphName());
-                                    ImGui::CloseCurrentPopup();
-                                }
-                                ImGui::SameLine();
-                                ImGui::TextDisabled("[Function]");
-                                ImGui::PopID();
+                                results.push_back({ UINT32_MAX, i });
                             }
                         }
+                    }
+                }
+
+                // Keyboard navigation (Up/Down/Enter)
+                int resultCount = (int)results.size();
+                if (resultCount > 0)
+                {
+                    if (ImGui::IsKeyPressed(ImGuiKey_DownArrow))
+                    {
+                        sSearchSelectedIndex = (sSearchSelectedIndex + 1) % resultCount;
+                    }
+                    if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
+                    {
+                        sSearchSelectedIndex = (sSearchSelectedIndex - 1 + resultCount) % resultCount;
+                    }
+                    if (sSearchSelectedIndex >= resultCount)
+                    {
+                        sSearchSelectedIndex = 0;
+                    }
+                }
+
+                // Render results
+                bool enterPressed = ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter);
+                for (int r = 0; r < resultCount; ++r)
+                {
+                    bool isSelected = (r == sSearchSelectedIndex);
+                    const SearchResult& sr = results[r];
+
+                    if (sr.nodeTypeIndex != UINT32_MAX)
+                    {
+                        // Domain node
+                        ImGui::PushID((int)sr.nodeTypeIndex);
+                        if (ImGui::Selectable(nodeTypes[sr.nodeTypeIndex].mTypeName.c_str(), isSelected) ||
+                            (enterPressed && isSelected))
+                        {
+                            AddNodeAtCenter(graph, nodeTypes[sr.nodeTypeIndex].mTypeId);
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("[%s]", nodeTypes[sr.nodeTypeIndex].mCategory.c_str());
+                        ImGui::PopID();
+                    }
+                    else
+                    {
+                        // Function graph
+                        NodeGraph* fg = sEditedAsset->GetFunctionGraph(sr.funcIndex);
+                        ImGui::PushID((int)(nodeTypes.size() + sr.funcIndex));
+                        if (ImGui::Selectable(fg->GetGraphName().c_str(), isSelected) ||
+                            (enterPressed && isSelected))
+                        {
+                            AddFunctionCallNode(graph, fg->GetGraphName());
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("[Function]");
+                        ImGui::PopID();
+                    }
+
+                    // Auto-scroll to keep selected item visible
+                    if (isSelected && (ImGui::IsKeyPressed(ImGuiKey_DownArrow) || ImGui::IsKeyPressed(ImGuiKey_UpArrow)))
+                    {
+                        ImGui::SetScrollHereY();
                     }
                 }
             }
@@ -1117,7 +1179,6 @@ static void DrawContextMenu(NodeGraph& graph)
                 {
                     if (nodeTypes[i].mCategory != lastCategory)
                     {
-                        // Close previous submenu
                         if (!lastCategory.empty())
                         {
                             ImGui::EndMenu();
@@ -1144,7 +1205,6 @@ static void DrawContextMenu(NodeGraph& graph)
                     }
                 }
 
-                // Close the last open submenu
                 if (!lastCategory.empty())
                 {
                     ImGui::EndMenu();

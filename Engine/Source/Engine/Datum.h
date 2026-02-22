@@ -215,6 +215,7 @@ public:
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
     WeakPtr<Node> GetNode(uint32_t index = 0) const;
+    WeakPtr<Node3D> GetNode3D(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 

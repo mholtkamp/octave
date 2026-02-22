@@ -25,6 +25,8 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(FloatConstantNode::GetStaticType(), "Float", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));
     AddNodeType(IntConstantNode::GetStaticType(), "Integer", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));
     AddNodeType(VectorConstantNode::GetStaticType(), "Vector", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));
+    AddNodeType(TimeNode::GetStaticType(), "Time", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));
+    AddNodeType(TimeNode::GetStaticType(), "Time", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));
 
     // Utility nodes
     AddNodeType(ViewerNode::GetStaticType(), "Viewer", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
@@ -175,6 +177,8 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(IsNullNode::GetStaticType(), "Is Null", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
     AddNodeType(NodeToNode3DNode::GetStaticType(), "Node To Node3D", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
     AddNodeType(Node3DToNodeNode::GetStaticType(), "Node3D To Node", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
+    AddNodeType(NodeToTextNode::GetStaticType(), "Node To Text", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
+    AddNodeType(Node3DToTextNode::GetStaticType(), "Node3D To Text", "Utility", glm::vec4(0.2f, 0.6f, 0.3f, 1.0f));
 
     // String nodes
     AddNodeType(StringConcatenateNode::GetStaticType(), "String Concatenate", "String", glm::vec4(0.7f, 0.3f, 0.5f, 1.0f));

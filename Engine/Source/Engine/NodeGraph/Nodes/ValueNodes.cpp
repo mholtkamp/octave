@@ -1691,3 +1691,63 @@ void RerouteNode::Evaluate()
 }
 
 glm::vec4 RerouteNode::GetNodeColor() const { return kUtilityNodeColor; }
+
+
+
+// =============================================================================
+// NodeToTextNode
+// =============================================================================
+DEFINE_GRAPH_NODE(NodeToTextNode);
+
+void NodeToTextNode::SetupPins()
+{
+    AddInputPin("Node", DatumType::Node);
+    AddOutputPin("Text", DatumType::String);
+    AddOutputPin("Success", DatumType::Bool);
+}
+
+void NodeToTextNode::Evaluate()
+{
+    WeakPtr<Node> nodeRef = GetInputValue(0).GetNode();
+    Node* node = nodeRef.Get();
+    if (node)
+    {
+        SetOutputValue(0, Datum(node->GetName()));
+        SetOutputValue(1, Datum(true));
+    }
+    else
+    {
+        SetOutputValue(0, Datum(std::string("")));
+        SetOutputValue(1, Datum(false));
+    }
+}
+glm::vec4 NodeToTextNode::GetNodeColor() const { return kUtilityNodeColor; }
+
+// =============================================================================
+// NodeToTextNode
+// =============================================================================
+DEFINE_GRAPH_NODE(Node3DToTextNode);
+
+void Node3DToTextNode::SetupPins()
+{
+    AddInputPin("Node3D", DatumType::Node3D);
+    AddOutputPin("Text", DatumType::String);
+    AddOutputPin("Success", DatumType::Bool);
+}
+
+void Node3DToTextNode::Evaluate()
+{
+    WeakPtr<Node> nodeRef = GetInputValue(0).GetNode();
+    Node3D* node = nodeRef.Get() ? nodeRef.Get()->As<Node3D>() : nullptr;
+    if (node)
+    {
+        SetOutputValue(0, Datum(node->GetName()));
+        SetOutputValue(1, Datum(true));
+    }
+    else
+    {
+        SetOutputValue(0, Datum(std::string("")));
+        SetOutputValue(1, Datum(false));
+    }
+}
+glm::vec4 Node3DToTextNode::GetNodeColor() const { return kUtilityNodeColor; }

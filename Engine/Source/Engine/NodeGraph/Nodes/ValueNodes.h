@@ -725,3 +725,27 @@ public:
     virtual const char* GetNodeCategory() const override { return "Utility"; }
     virtual glm::vec4 GetNodeColor() const override;
 };
+
+// --- Node to Text ---
+class NodeToTextNode : public GraphNode
+{
+    public:
+    DECLARE_GRAPH_NODE(NodeToTextNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Node To Text"; }
+    virtual const char* GetNodeCategory() const override { return "Utility"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Node to Text ---
+class Node3DToTextNode : public GraphNode
+{
+    public:
+    DECLARE_GRAPH_NODE(Node3DToTextNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Node3D To Text"; }
+    virtual const char* GetNodeCategory() const override { return "Utility"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
