@@ -12,6 +12,12 @@
 class NodeGraph;
 class Stream;
 
+struct PinEnumOption
+{
+    const char* mName;
+    int32_t mValue;
+};
+
 #define DECLARE_GRAPH_NODE(Class, Parent) \
     DECLARE_FACTORY(Class, GraphNode); \
     DECLARE_OBJECT(Class, Parent); \
@@ -99,6 +105,10 @@ public:
     virtual void SaveStream(Stream& stream);
     virtual void LoadStream(Stream& stream, uint32_t version);
     virtual void CopyCustomData(const GraphNode* src) {}
+
+    // Override to provide dropdown options for Integer-type input pins.
+    // Return true and fill outOptions to render a combo box instead of a numeric input.
+    virtual bool GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const { return false; }
 
     // Datum serialization helpers (used by subclasses for custom pin serialization)
     static void WriteDatumToStream(Stream& stream, const Datum& datum);

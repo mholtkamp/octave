@@ -1927,6 +1927,119 @@ void MultiGateNode::Evaluate()
 glm::vec4 MultiGateNode::GetNodeColor() const { return kFlowNodeColor; }
 
 // =============================================================================
+// Input Enum Helpers
+// =============================================================================
+
+static const PinEnumOption sSourceOptions[] = {
+    { "Keyboard", 0 },
+    { "Gamepad",  1 },
+    { "Mouse",    2 },
+};
+
+static void FillKeyboardOptions(std::vector<PinEnumOption>& out)
+{
+    out.push_back({ "Space",     KEY_SPACE });
+    out.push_back({ "Enter",     KEY_ENTER });
+    out.push_back({ "Escape",    KEY_ESCAPE });
+    out.push_back({ "Tab",       KEY_TAB });
+    out.push_back({ "Backspace", KEY_BACKSPACE });
+    out.push_back({ "Shift",     KEY_SHIFT_L });
+    out.push_back({ "Ctrl",      KEY_CONTROL_L });
+    out.push_back({ "Alt",       KEY_ALT_L });
+#if !PLATFORM_3DS
+    out.push_back({ "Up",    KEY_UP });
+    out.push_back({ "Down",  KEY_DOWN });
+    out.push_back({ "Left",  KEY_LEFT });
+    out.push_back({ "Right", KEY_RIGHT });
+    out.push_back({ "A", KEY_A }); out.push_back({ "B", KEY_B });
+#endif
+    out.push_back({ "C", KEY_C }); out.push_back({ "D", KEY_D });
+    out.push_back({ "E", KEY_E }); out.push_back({ "F", KEY_F });
+    out.push_back({ "G", KEY_G }); out.push_back({ "H", KEY_H });
+    out.push_back({ "I", KEY_I }); out.push_back({ "J", KEY_J });
+    out.push_back({ "K", KEY_K });
+#if !PLATFORM_3DS
+    out.push_back({ "L", KEY_L });
+#endif
+    out.push_back({ "M", KEY_M }); out.push_back({ "N", KEY_N });
+    out.push_back({ "O", KEY_O }); out.push_back({ "P", KEY_P });
+    out.push_back({ "Q", KEY_Q });
+#if !PLATFORM_3DS
+    out.push_back({ "R", KEY_R });
+#endif
+    out.push_back({ "S", KEY_S }); out.push_back({ "T", KEY_T });
+    out.push_back({ "U", KEY_U }); out.push_back({ "V", KEY_V });
+    out.push_back({ "W", KEY_W });
+#if !PLATFORM_3DS
+    out.push_back({ "X", KEY_X }); out.push_back({ "Y", KEY_Y });
+#endif
+    out.push_back({ "Z", KEY_Z });
+    out.push_back({ "0", KEY_0 }); out.push_back({ "1", KEY_1 });
+    out.push_back({ "2", KEY_2 }); out.push_back({ "3", KEY_3 });
+    out.push_back({ "4", KEY_4 }); out.push_back({ "5", KEY_5 });
+    out.push_back({ "6", KEY_6 }); out.push_back({ "7", KEY_7 });
+    out.push_back({ "8", KEY_8 }); out.push_back({ "9", KEY_9 });
+    out.push_back({ "F1",  KEY_F1 });  out.push_back({ "F2",  KEY_F2 });
+    out.push_back({ "F3",  KEY_F3 });  out.push_back({ "F4",  KEY_F4 });
+    out.push_back({ "F5",  KEY_F5 });  out.push_back({ "F6",  KEY_F6 });
+    out.push_back({ "F7",  KEY_F7 });  out.push_back({ "F8",  KEY_F8 });
+    out.push_back({ "F9",  KEY_F9 });  out.push_back({ "F10", KEY_F10 });
+    out.push_back({ "F11", KEY_F11 }); out.push_back({ "F12", KEY_F12 });
+    out.push_back({ "Insert",    KEY_INSERT });
+    out.push_back({ "Delete",    KEY_DELETE });
+    out.push_back({ "Home",      KEY_HOME });
+    out.push_back({ "End",       KEY_END });
+    out.push_back({ "Page Up",   KEY_PAGE_UP });
+    out.push_back({ "Page Down", KEY_PAGE_DOWN });
+}
+
+static const PinEnumOption sGamepadOptions[] = {
+    { "A",       GAMEPAD_A },
+    { "B",       GAMEPAD_B },
+    { "X",       GAMEPAD_X },
+    { "Y",       GAMEPAD_Y },
+    { "L1",      GAMEPAD_L1 },
+    { "R1",      GAMEPAD_R1 },
+    { "L2",      GAMEPAD_L2 },
+    { "R2",      GAMEPAD_R2 },
+    { "Start",   GAMEPAD_START },
+    { "Select",  GAMEPAD_SELECT },
+    { "Home",    GAMEPAD_HOME },
+    { "L Stick", GAMEPAD_THUMBL },
+    { "R Stick", GAMEPAD_THUMBR },
+    { "D-Up",    GAMEPAD_UP },
+    { "D-Down",  GAMEPAD_DOWN },
+    { "D-Left",  GAMEPAD_LEFT },
+    { "D-Right", GAMEPAD_RIGHT },
+};
+
+static const PinEnumOption sMouseOptions[] = {
+    { "Left",   MOUSE_LEFT },
+    { "Right",  MOUSE_RIGHT },
+    { "Middle", MOUSE_MIDDLE },
+    { "X1",     MOUSE_X1 },
+    { "X2",     MOUSE_X2 },
+};
+
+static void FillButtonOptions(int32_t source, std::vector<PinEnumOption>& outOptions)
+{
+    if (source == 0) // Keyboard
+    {
+        FillKeyboardOptions(outOptions);
+    }
+    else if (source == 1) // Gamepad
+    {
+        for (const auto& opt : sGamepadOptions)
+            outOptions.push_back(opt);
+    }
+    else if (source == 2) // Mouse
+    {
+        for (const auto& opt : sMouseOptions)
+            outOptions.push_back(opt);
+    }
+}
+
+// =============================================================================
 // InputEventNode
 // =============================================================================
 
@@ -1979,6 +2092,23 @@ void InputEventNode::Evaluate()
 
 glm::vec4 InputEventNode::GetNodeColor() const { return kInputNodeColor; }
 
+bool InputEventNode::GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const
+{
+    if (pinIndex == 1) // Source
+    {
+        for (const auto& opt : sSourceOptions)
+            outOptions.push_back(opt);
+        return true;
+    }
+    if (pinIndex == 2) // Button
+    {
+        int32_t source = mInputPins[1].mValue.GetInteger();
+        FillButtonOptions(source, outOptions);
+        return true;
+    }
+    return false;
+}
+
 // =============================================================================
 // InputDownNode
 // =============================================================================
@@ -2012,6 +2142,23 @@ void InputDownNode::Evaluate()
 
 glm::vec4 InputDownNode::GetNodeColor() const { return kInputNodeColor; }
 
+bool InputDownNode::GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const
+{
+    if (pinIndex == 0) // Source
+    {
+        for (const auto& opt : sSourceOptions)
+            outOptions.push_back(opt);
+        return true;
+    }
+    if (pinIndex == 1) // Button
+    {
+        int32_t source = mInputPins[0].mValue.GetInteger();
+        FillButtonOptions(source, outOptions);
+        return true;
+    }
+    return false;
+}
+
 // =============================================================================
 // InputCountNode
 // =============================================================================
@@ -2035,3 +2182,87 @@ void InputCountNode::Evaluate()
 }
 
 glm::vec4 InputCountNode::GetNodeColor() const { return kInputNodeColor; }
+
+// =============================================================================
+// GamepadAxisNode
+// =============================================================================
+
+static const PinEnumOption sGamepadAxisOptions[] = {
+    { "L Stick X",  GAMEPAD_AXIS_LTHUMB_X },
+    { "L Stick Y",  GAMEPAD_AXIS_LTHUMB_Y },
+    { "R Stick X",  GAMEPAD_AXIS_RTHUMB_X },
+    { "R Stick Y",  GAMEPAD_AXIS_RTHUMB_Y },
+    { "L Trigger",  GAMEPAD_AXIS_LTRIGGER },
+    { "R Trigger",  GAMEPAD_AXIS_RTRIGGER },
+};
+
+DEFINE_GRAPH_NODE(GamepadAxisNode);
+
+void GamepadAxisNode::SetupPins()
+{
+    AddInputPin("Axis", DatumType::Integer, Datum((int32_t)GAMEPAD_AXIS_LTHUMB_X));
+    AddInputPin("Controller", DatumType::Integer, Datum(0));
+    AddOutputPin("Value", DatumType::Float);
+}
+
+void GamepadAxisNode::Evaluate()
+{
+    int32_t axis = GetInputValue(0).GetInteger();
+    int32_t controller = GetInputValue(1).GetInteger();
+
+    float value = GetGamepadAxisValue(axis, controller);
+    SetOutputValue(0, Datum(value));
+}
+
+glm::vec4 GamepadAxisNode::GetNodeColor() const { return kInputNodeColor; }
+
+bool GamepadAxisNode::GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const
+{
+    if (pinIndex == 0) // Axis
+    {
+        for (const auto& opt : sGamepadAxisOptions)
+            outOptions.push_back(opt);
+        return true;
+    }
+    return false;
+}
+
+// =============================================================================
+// MousePositionNode
+// =============================================================================
+
+DEFINE_GRAPH_NODE(MousePositionNode);
+
+void MousePositionNode::SetupPins()
+{
+    AddOutputPin("X", DatumType::Integer);
+    AddOutputPin("Y", DatumType::Integer);
+}
+
+void MousePositionNode::Evaluate()
+{
+    int32_t x = 0, y = 0;
+    GetMousePosition(x, y);
+    SetOutputValue(0, Datum(x));
+    SetOutputValue(1, Datum(y));
+}
+
+glm::vec4 MousePositionNode::GetNodeColor() const { return kInputNodeColor; }
+
+// =============================================================================
+// ScrollWheelNode
+// =============================================================================
+
+DEFINE_GRAPH_NODE(ScrollWheelNode);
+
+void ScrollWheelNode::SetupPins()
+{
+    AddOutputPin("Delta", DatumType::Integer);
+}
+
+void ScrollWheelNode::Evaluate()
+{
+    SetOutputValue(0, Datum(GetScrollWheelDelta()));
+}
+
+glm::vec4 ScrollWheelNode::GetNodeColor() const { return kInputNodeColor; }

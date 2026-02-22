@@ -54,8 +54,11 @@ Viewport3D::~Viewport3D()
 void Viewport3D::Update(float deltaTime)
 {
     ControlMode controlMode = GetEditorState()->GetControlMode();
+    bool handleInput = ShouldHandleInput();
 
-    if (ShouldHandleInput())
+    // Always process non-Default control modes so they can run and exit properly.
+    // Only gate entering new modes (Default) on ShouldHandleInput().
+    if (handleInput || controlMode != ControlMode::Default)
     {
         if (GetEditorState()->mMouseNeedsRecenter)
         {
@@ -86,13 +89,9 @@ void Viewport3D::Update(float deltaTime)
 bool Viewport3D::ShouldHandleInput() const
 {
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
-    bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-
-    // Note: Don't check ImGuizmo::IsUsing() or WantCaptureMouse here - we want right/middle
-    // click to work even while the gizmo is active. Left-click is blocked separately via IsOver().
     bool viewportHovered = EditorImguiIsViewportHovered();
-    bool handleInput = ((!imguiAnyWindowHovered || viewportHovered) && !imguiWantsText && !imguiAnyPopupUp);
+    bool handleInput = viewportHovered && !imguiWantsText && !imguiAnyPopupUp;
     return handleInput;
 }
 

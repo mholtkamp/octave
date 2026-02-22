@@ -72,13 +72,9 @@ void Viewport2D::Update(float deltaTime)
 bool Viewport2D::ShouldHandleInput() const
 {
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
-    bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-
-    // Note: Don't check ImGuizmo::IsUsing() here - we want right/middle click to work
-    // even while the gizmo is active. Left-click is blocked separately via IsOver().
     bool viewportHovered = EditorImguiIsViewportHovered();
-    bool handleInput = ((!imguiAnyWindowHovered || viewportHovered) && !imguiWantsText && !imguiAnyPopupUp);
+    bool handleInput = viewportHovered && !imguiWantsText && !imguiAnyPopupUp;
     return handleInput;
 }
 
@@ -105,7 +101,11 @@ void Viewport2D::ResetViewport()
 
 void Viewport2D::HandleInput()
 {
-    if (ShouldHandleInput())
+    bool handleInput = ShouldHandleInput();
+
+    // Always process non-Default control modes so they can run and exit properly.
+    // Only gate entering new modes (Default) on ShouldHandleInput().
+    if (handleInput || mControlMode != WidgetControlMode::Default)
     {
         if (GetEditorState()->mMouseNeedsRecenter)
         {

@@ -435,6 +435,94 @@ public:
 };
 
 // =============================================================================
+// Vector Arithmetic Nodes
+// =============================================================================
+
+// --- Add Vector ---
+class AddVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(AddVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Add Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Subtract Vector ---
+class SubtractVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(SubtractVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Subtract Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Multiply Vector (scalar) ---
+class MultiplyVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(MultiplyVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Multiply Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Divide Vector (scalar) ---
+class DivideVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(DivideVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Divide Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Multiply Vector Component (component-wise) ---
+class MultiplyVectorComponentNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(MultiplyVectorComponentNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Multiply Vector Component"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Lerp Vector ---
+class LerpVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(LerpVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Lerp Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Negate Vector ---
+class NegateVectorNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(NegateVectorNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Negate Vector"; }
+    virtual const char* GetNodeCategory() const override { return "Math"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// =============================================================================
 // Interpolation Nodes
 // =============================================================================
 

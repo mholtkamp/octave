@@ -775,6 +775,160 @@ void RotateVectorNode::Evaluate()
 glm::vec4 RotateVectorNode::GetNodeColor() const { return kMathNodeColor; }
 
 // =============================================================================
+// AddVectorNode
+// =============================================================================
+DEFINE_GRAPH_NODE(AddVectorNode);
+
+void AddVectorNode::SetupPins()
+{
+    AddInputPin("A", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("B", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void AddVectorNode::Evaluate()
+{
+    glm::vec3 a = GetInputValue(0).GetVector();
+    glm::vec3 b = GetInputValue(1).GetVector();
+    SetOutputValue(0, Datum(a + b));
+}
+
+glm::vec4 AddVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// SubtractVectorNode
+// =============================================================================
+DEFINE_GRAPH_NODE(SubtractVectorNode);
+
+void SubtractVectorNode::SetupPins()
+{
+    AddInputPin("A", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("B", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void SubtractVectorNode::Evaluate()
+{
+    glm::vec3 a = GetInputValue(0).GetVector();
+    glm::vec3 b = GetInputValue(1).GetVector();
+    SetOutputValue(0, Datum(a - b));
+}
+
+glm::vec4 SubtractVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// MultiplyVectorNode (scalar)
+// =============================================================================
+DEFINE_GRAPH_NODE(MultiplyVectorNode);
+
+void MultiplyVectorNode::SetupPins()
+{
+    AddInputPin("Vector", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("Scalar", DatumType::Float, Datum(1.0f));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void MultiplyVectorNode::Evaluate()
+{
+    glm::vec3 v = GetInputValue(0).GetVector();
+    float s = GetInputValue(1).GetFloat();
+    SetOutputValue(0, Datum(v * s));
+}
+
+glm::vec4 MultiplyVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// DivideVectorNode (scalar)
+// =============================================================================
+DEFINE_GRAPH_NODE(DivideVectorNode);
+
+void DivideVectorNode::SetupPins()
+{
+    AddInputPin("Vector", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("Scalar", DatumType::Float, Datum(1.0f));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void DivideVectorNode::Evaluate()
+{
+    glm::vec3 v = GetInputValue(0).GetVector();
+    float s = GetInputValue(1).GetFloat();
+    if (s != 0.0f)
+    {
+        SetOutputValue(0, Datum(v / s));
+    }
+    else
+    {
+        SetOutputValue(0, Datum(glm::vec3(0.0f)));
+    }
+}
+
+glm::vec4 DivideVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// MultiplyVectorComponentNode (component-wise)
+// =============================================================================
+DEFINE_GRAPH_NODE(MultiplyVectorComponentNode);
+
+void MultiplyVectorComponentNode::SetupPins()
+{
+    AddInputPin("A", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("B", DatumType::Vector, Datum(glm::vec3(1.0f)));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void MultiplyVectorComponentNode::Evaluate()
+{
+    glm::vec3 a = GetInputValue(0).GetVector();
+    glm::vec3 b = GetInputValue(1).GetVector();
+    SetOutputValue(0, Datum(a * b));
+}
+
+glm::vec4 MultiplyVectorComponentNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// LerpVectorNode
+// =============================================================================
+DEFINE_GRAPH_NODE(LerpVectorNode);
+
+void LerpVectorNode::SetupPins()
+{
+    AddInputPin("A", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddInputPin("B", DatumType::Vector, Datum(glm::vec3(1.0f)));
+    AddInputPin("Alpha", DatumType::Float, Datum(0.5f));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void LerpVectorNode::Evaluate()
+{
+    glm::vec3 a = GetInputValue(0).GetVector();
+    glm::vec3 b = GetInputValue(1).GetVector();
+    float alpha = GetInputValue(2).GetFloat();
+    SetOutputValue(0, Datum(glm::mix(a, b, alpha)));
+}
+
+glm::vec4 LerpVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
+// NegateVectorNode
+// =============================================================================
+DEFINE_GRAPH_NODE(NegateVectorNode);
+
+void NegateVectorNode::SetupPins()
+{
+    AddInputPin("Value", DatumType::Vector, Datum(glm::vec3(0.0f)));
+    AddOutputPin("Result", DatumType::Vector);
+}
+
+void NegateVectorNode::Evaluate()
+{
+    glm::vec3 value = GetInputValue(0).GetVector();
+    SetOutputValue(0, Datum(-value));
+}
+
+glm::vec4 NegateVectorNode::GetNodeColor() const { return kMathNodeColor; }
+
+// =============================================================================
 // SmoothstepNode
 // =============================================================================
 DEFINE_GRAPH_NODE(SmoothstepNode);

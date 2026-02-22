@@ -142,6 +142,15 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(FracNode::GetStaticType(), "Frac", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
     AddNodeType(OneMinusNode::GetStaticType(), "One Minus", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
 
+    // Math nodes - Vector Arithmetic
+    AddNodeType(AddVectorNode::GetStaticType(), "Add Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(SubtractVectorNode::GetStaticType(), "Subtract Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(MultiplyVectorNode::GetStaticType(), "Multiply Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(DivideVectorNode::GetStaticType(), "Divide Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(MultiplyVectorComponentNode::GetStaticType(), "Multiply Vector Component", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(LerpVectorNode::GetStaticType(), "Lerp Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(NegateVectorNode::GetStaticType(), "Negate Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+
     // Math nodes - Vector Operations
     AddNodeType(CrossProductNode::GetStaticType(), "Cross Product", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
     AddNodeType(NormalizeNode::GetStaticType(), "Normalize", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
@@ -232,6 +241,9 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(InputEventNode::GetStaticType(), "Input Event", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
     AddNodeType(InputDownNode::GetStaticType(), "Input Down", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
     AddNodeType(InputCountNode::GetStaticType(), "Input Count", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
+    AddNodeType(GamepadAxisNode::GetStaticType(), "Gamepad Axis", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
+    AddNodeType(MousePositionNode::GetStaticType(), "Mouse Position", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
+    AddNodeType(ScrollWheelNode::GetStaticType(), "Scroll Wheel", "Input", glm::vec4(0.8f, 0.6f, 0.1f, 1.0f));
 
     // Point Generation nodes
     static const glm::vec4 kPointColor(0.9f, 0.55f, 0.1f, 1.0f);

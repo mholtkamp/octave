@@ -22,6 +22,14 @@ void ProceduralDomain::RegisterNodeTypes()
     AddNodeType(RemapValueNode::GetStaticType(), "Remap Value", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
     AddNodeType(SinNode::GetStaticType(), "Sin", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
 
+    // Math nodes - Vector Arithmetic
+    AddNodeType(AddVectorNode::GetStaticType(), "Add Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(SubtractVectorNode::GetStaticType(), "Subtract Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(MultiplyVectorNode::GetStaticType(), "Multiply Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(DivideVectorNode::GetStaticType(), "Divide Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(MultiplyVectorComponentNode::GetStaticType(), "Multiply Vector Component", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(LerpVectorNode::GetStaticType(), "Lerp Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
+    AddNodeType(NegateVectorNode::GetStaticType(), "Negate Vector", "Math", glm::vec4(0.4f, 0.6f, 0.2f, 1.0f));
 
     // Value nodes
     AddNodeType(FloatConstantNode::GetStaticType(), "Float", "Value", glm::vec4(0.2f, 0.5f, 0.7f, 1.0f));

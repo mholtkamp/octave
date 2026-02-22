@@ -198,7 +198,13 @@ static bool IsPinConnected(NodeGraph& graph, GraphPinId pinId)
     return false;
 }
 
-static void DrawInputPinWidget(GraphPin& pin)
+// Deferred pin enum popup state
+static GraphPin* sPinEnumTarget = nullptr;
+static GraphNode* sPinEnumOwnerNode = nullptr;
+static uint32_t sPinEnumPinIndex = 0;
+static bool sPinEnumJustOpened = false;
+
+static void DrawInputPinWidget(GraphPin& pin, GraphNode* ownerNode = nullptr, uint32_t pinIndex = 0)
 {
     switch (pin.mDataType)
     {
@@ -215,12 +221,42 @@ static void DrawInputPinWidget(GraphPin& pin)
     }
     case DatumType::Integer:
     {
-        int32_t v = pin.mDefaultValue.GetInteger();
-        ImGui::SetNextItemWidth(60.0f);
-        if (ImGui::DragInt("##v", &v))
+        // Check if the owning node provides enum options for this pin
+        std::vector<PinEnumOption> enumOptions;
+        if (ownerNode != nullptr && ownerNode->GetPinEnumOptions(pinIndex, enumOptions) && !enumOptions.empty())
         {
-            pin.mDefaultValue = Datum(v);
-            pin.mValue = pin.mDefaultValue;
+            int32_t currentVal = pin.mDefaultValue.GetInteger();
+
+            // Find the current selection's display name
+            const char* currentName = "?";
+            for (int i = 0; i < (int)enumOptions.size(); ++i)
+            {
+                if (enumOptions[i].mValue == currentVal)
+                {
+                    currentName = enumOptions[i].mName;
+                    break;
+                }
+            }
+
+            // Render a button inside the node; the actual popup is deferred
+            ImGui::SetNextItemWidth(100.0f);
+            if (ImGui::Button(currentName, ImVec2(100.0f, 0.0f)))
+            {
+                sPinEnumTarget = &pin;
+                sPinEnumOwnerNode = ownerNode;
+                sPinEnumPinIndex = pinIndex;
+                sPinEnumJustOpened = true;
+            }
+        }
+        else
+        {
+            int32_t v = pin.mDefaultValue.GetInteger();
+            ImGui::SetNextItemWidth(60.0f);
+            if (ImGui::DragInt("##v", &v))
+            {
+                pin.mDefaultValue = Datum(v);
+                pin.mValue = pin.mDefaultValue;
+            }
         }
         break;
     }
@@ -493,7 +529,7 @@ static void DrawNodes(NodeGraph& graph)
                 {
                     ImGui::SameLine();
                     ImGui::PushID(pin.mId);
-                    DrawInputPinWidget(pin);
+                    DrawInputPinWidget(pin, node, j);
                     ImGui::PopID();
                 }
                 else if (isSinkNode)
@@ -2358,6 +2394,35 @@ void DrawNodeGraphContent()
 
     HandleDeletion(graph);
     DrawContextMenu(graph);
+
+    // Deferred pin enum popup (must be in Suspend block for correct screen-space positioning)
+    ed::Suspend();
+    if (sPinEnumJustOpened)
+    {
+        ImGui::OpenPopup("PinEnumPopup");
+        sPinEnumJustOpened = false;
+    }
+    if (ImGui::BeginPopup("PinEnumPopup"))
+    {
+        if (sPinEnumTarget != nullptr && sPinEnumOwnerNode != nullptr)
+        {
+            std::vector<PinEnumOption> enumOptions;
+            sPinEnumOwnerNode->GetPinEnumOptions(sPinEnumPinIndex, enumOptions);
+
+            int32_t currentVal = sPinEnumTarget->mDefaultValue.GetInteger();
+            for (int i = 0; i < (int)enumOptions.size(); ++i)
+            {
+                bool selected = (enumOptions[i].mValue == currentVal);
+                if (ImGui::MenuItem(enumOptions[i].mName, nullptr, selected))
+                {
+                    sPinEnumTarget->mDefaultValue = Datum(enumOptions[i].mValue);
+                    sPinEnumTarget->mValue = sPinEnumTarget->mDefaultValue;
+                }
+            }
+        }
+        ImGui::EndPopup();
+    }
+    ed::Resume();
 
     ed::End();
 

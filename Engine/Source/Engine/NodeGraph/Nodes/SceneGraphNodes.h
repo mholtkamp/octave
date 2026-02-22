@@ -862,6 +862,7 @@ public:
     virtual const char* GetNodeTypeName() const override { return "Input Event"; }
     virtual const char* GetNodeCategory() const override { return "Input"; }
     virtual glm::vec4 GetNodeColor() const override;
+    virtual bool GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const override;
 };
 
 // --- Input Down ---
@@ -874,6 +875,7 @@ public:
     virtual const char* GetNodeTypeName() const override { return "Input Down"; }
     virtual const char* GetNodeCategory() const override { return "Input"; }
     virtual glm::vec4 GetNodeColor() const override;
+    virtual bool GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const override;
 };
 
 // --- Input Count ---
@@ -884,6 +886,43 @@ public:
     virtual void SetupPins() override;
     virtual void Evaluate() override;
     virtual const char* GetNodeTypeName() const override { return "Input Count"; }
+    virtual const char* GetNodeCategory() const override { return "Input"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Gamepad Axis ---
+class GamepadAxisNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GamepadAxisNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Gamepad Axis"; }
+    virtual const char* GetNodeCategory() const override { return "Input"; }
+    virtual glm::vec4 GetNodeColor() const override;
+    virtual bool GetPinEnumOptions(uint32_t pinIndex, std::vector<PinEnumOption>& outOptions) const override;
+};
+
+// --- Mouse Position ---
+class MousePositionNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(MousePositionNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Mouse Position"; }
+    virtual const char* GetNodeCategory() const override { return "Input"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+// --- Scroll Wheel ---
+class ScrollWheelNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(ScrollWheelNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Scroll Wheel"; }
     virtual const char* GetNodeCategory() const override { return "Input"; }
     virtual glm::vec4 GetNodeColor() const override;
 };
