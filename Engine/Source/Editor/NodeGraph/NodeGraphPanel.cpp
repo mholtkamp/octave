@@ -64,6 +64,7 @@ static int32_t sRenamingIndex = -1;
 static char sRenameBuffer[128] = {};
 static char sNodeSearchBuffer[128] = {};
 static int sSearchSelectedIndex = 0;
+static int sPopupFrameCount = 0;
 
 // Execution flash feedback
 static std::unordered_map<GraphNodeId, double> sNodeFlashTimes;
@@ -1024,8 +1025,10 @@ static void DrawContextMenu(NodeGraph& graph)
         {
             sNodeSearchBuffer[0] = '\0';
             sSearchSelectedIndex = 0;
+            sPopupFrameCount = 0;
             ImGui::SetKeyboardFocusHere();
         }
+        sPopupFrameCount++;
 
         bool searchChanged = ImGui::InputTextWithHint("##NodeSearch", "Search nodes...", sNodeSearchBuffer, IM_ARRAYSIZE(sNodeSearchBuffer));
         if (searchChanged)
@@ -1037,7 +1040,9 @@ static void DrawContextMenu(NodeGraph& graph)
         // release active state so BeginMenu category items can highlight properly.
         // The InputText holding active state suppresses hover on other items
         // in the same popup window.
-        if (sNodeSearchBuffer[0] == '\0' && ImGui::IsItemActive() && !ImGui::IsItemHovered())
+        // Wait a few frames so SetKeyboardFocusHere() can take effect (it's
+        // queued and applies on the next frame's widget).
+        if (sNodeSearchBuffer[0] == '\0' && ImGui::IsItemActive() && !ImGui::IsItemHovered() && sPopupFrameCount > 3)
         {
             ImGui::ClearActiveID();
         }

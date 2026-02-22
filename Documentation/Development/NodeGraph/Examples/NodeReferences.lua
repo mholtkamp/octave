@@ -19,7 +19,6 @@
 NodeReferences = {}
 
 function NodeReferences:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.logTimer = 0.0
 end

@@ -17,7 +17,6 @@
 FlowControlPatterns = {}
 
 function FlowControlPatterns:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.tickCount = 0
 end

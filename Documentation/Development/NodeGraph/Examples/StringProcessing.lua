@@ -15,7 +15,6 @@
 StringProcessing = {}
 
 function StringProcessing:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.nameIndex = 0
 end

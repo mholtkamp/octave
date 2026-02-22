@@ -9,7 +9,6 @@
 SetInputs = {}
 
 function SetInputs:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.elapsed = 0.0
 end

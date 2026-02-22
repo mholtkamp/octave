@@ -22,7 +22,6 @@
 InputDrivenGameplay = {}
 
 function InputDrivenGameplay:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
 end
 

@@ -11,7 +11,6 @@ BasicPlayback = {}
 
 function BasicPlayback:Create()
     -- Exposed property: drag a NodeGraphAsset onto this in the editor
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
 
     -- Internal ref to the player node we create at runtime
     self.player = nil
@@ -28,7 +27,7 @@ function BasicPlayback:Start()
     -- Create a NodeGraphPlayer as a child of this node
     self.player = Node.Construct("NodeGraphPlayer")
     self:AddChild(self.player)
-
+    
     -- Assign the graph asset and start playing
     if self.graphAsset then
         self.player:SetNodeGraphAsset(self.graphAsset)

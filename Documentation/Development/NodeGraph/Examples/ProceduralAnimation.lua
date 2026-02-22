@@ -12,7 +12,6 @@
 ProceduralAnimation = {}
 
 function ProceduralAnimation:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.speed = 1.0
     self.amplitude = 2.0
     self.player = nil

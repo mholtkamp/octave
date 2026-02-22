@@ -2985,6 +2985,14 @@ static void DrawScenePanel()
 {
     ActionManager* am = ActionManager::Get();
 
+    // Drag-and-drop reparenting/reordering state
+    enum class SceneDropZone { None, Above, Into, Below };
+    static SceneDropZone sDropZone = SceneDropZone::None;
+    static Node* sDropTargetNode = nullptr;
+    static ImVec2 sDropLineP1, sDropLineP2;
+    static ImVec2 sDropHighlightMin, sDropHighlightMax;
+    sDropZone = SceneDropZone::None;
+    sDropTargetNode = nullptr;
 
     static std::string sFilterStrTemp;
     static std::string sFilterStr;
@@ -3103,9 +3111,90 @@ static void DrawScenePanel()
                 ImGui::EndDragDropSource();
             }
 
-            // Drop target for asset drag-and-drop (StaticMesh → hierarchy node)
+            // Drop target for node reparenting/reordering and asset drag-and-drop
             if (ImGui::BeginDragDropTarget())
             {
+                // --- Node reparent / reorder ---
+                if (const ImGuiPayload* peekPayload = ImGui::AcceptDragDropPayload(DRAGDROP_NODE, ImGuiDragDropFlags_AcceptPeekOnly))
+                {
+                    Node* dragNode = *(Node**)peekPayload->Data;
+
+                    // Validate: not self, not dropping onto descendant, not scene-linked target, not world root
+                    bool validDrop = (dragNode != nullptr && dragNode != node &&
+                                      !node->HasAncestor(dragNode) &&
+                                      !node->IsSceneLinkedChild() &&
+                                      node != rootNode);
+
+                    if (validDrop)
+                    {
+                        ImVec2 itemMin = ImGui::GetItemRectMin();
+                        ImVec2 itemMax = ImGui::GetItemRectMax();
+                        float itemHeight = itemMax.y - itemMin.y;
+                        float mouseY = ImGui::GetMousePos().y;
+                        float relY = mouseY - itemMin.y;
+
+                        SceneDropZone zone = SceneDropZone::Into;
+                        if (relY < itemHeight * 0.25f)
+                            zone = SceneDropZone::Above;
+                        else if (relY > itemHeight * 0.75f)
+                            zone = SceneDropZone::Below;
+
+                        // For Above/Below, the target parent must exist (not root-level reorder with no parent)
+                        if ((zone == SceneDropZone::Above || zone == SceneDropZone::Below) && node->GetParent() == nullptr)
+                            zone = SceneDropZone::Into;
+
+                        sDropZone = zone;
+                        sDropTargetNode = node;
+
+                        if (zone == SceneDropZone::Into)
+                        {
+                            sDropHighlightMin = itemMin;
+                            sDropHighlightMax = itemMax;
+                        }
+                        else if (zone == SceneDropZone::Above)
+                        {
+                            sDropLineP1 = ImVec2(itemMin.x, itemMin.y);
+                            sDropLineP2 = ImVec2(itemMax.x, itemMin.y);
+                        }
+                        else // Below
+                        {
+                            sDropLineP1 = ImVec2(itemMin.x, itemMax.y);
+                            sDropLineP2 = ImVec2(itemMax.x, itemMax.y);
+                        }
+
+                        // Actual delivery
+                        if (const ImGuiPayload* deliverPayload = ImGui::AcceptDragDropPayload(DRAGDROP_NODE))
+                        {
+                            Node* droppedNode = *(Node**)deliverPayload->Data;
+
+                            if (zone == SceneDropZone::Into)
+                            {
+                                am->EXE_AttachNode(droppedNode, node, -1, -1);
+                            }
+                            else
+                            {
+                                Node* targetParent = node->GetParent();
+                                int32_t siblingIndex = targetParent->FindChildIndex(node);
+                                int32_t insertIndex = (zone == SceneDropZone::Below) ? siblingIndex + 1 : siblingIndex;
+
+                                // If dragging within the same parent, account for removal shift
+                                if (droppedNode->GetParent() == targetParent)
+                                {
+                                    int32_t dragIndex = targetParent->FindChildIndex(droppedNode);
+                                    if (dragIndex < insertIndex)
+                                        insertIndex--;
+                                }
+
+                                am->EXE_AttachNode(droppedNode, targetParent, insertIndex, -1);
+                            }
+
+                            sDropZone = SceneDropZone::None;
+                            sDropTargetNode = nullptr;
+                        }
+                    }
+                }
+
+                // --- Asset drag-and-drop (StaticMesh → hierarchy node) ---
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
                 {
                     AssetStub* droppedStub = *(AssetStub**)payload->Data;
@@ -3480,13 +3569,46 @@ static void DrawScenePanel()
         ImGui::PopStyleVar();
     }
 
-    // Root-level drop target for asset drag-and-drop (empty space below tree)
+    // Draw drag-and-drop visual indicators
+    if (sDropZone != SceneDropZone::None && sDropTargetNode != nullptr)
+    {
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        const ImU32 dropColorFill = IM_COL32(60, 120, 220, 40);
+        const ImU32 dropColorBorder = IM_COL32(60, 120, 220, 180);
+        const ImU32 dropLineColor = IM_COL32(60, 120, 220, 255);
+
+        if (sDropZone == SceneDropZone::Into)
+        {
+            drawList->AddRectFilled(sDropHighlightMin, sDropHighlightMax, dropColorFill);
+            drawList->AddRect(sDropHighlightMin, sDropHighlightMax, dropColorBorder);
+        }
+        else
+        {
+            drawList->AddLine(sDropLineP1, sDropLineP2, dropLineColor, 2.0f);
+            drawList->AddCircleFilled(sDropLineP1, 3.0f, dropLineColor);
+        }
+    }
+
+    // Root-level drop target for node unparenting and asset drag-and-drop (empty space below tree)
     ImVec2 avail = ImGui::GetContentRegionAvail();
     if (avail.y > 0.0f)
     {
         ImGui::InvisibleButton("##SceneAssetDropTarget", ImVec2(avail.x, avail.y));
         if (ImGui::BeginDragDropTarget())
         {
+            // Node drop → unparent to root
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_NODE))
+            {
+                Node* droppedNode = *(Node**)payload->Data;
+                if (droppedNode != nullptr &&
+                    droppedNode != rootNode &&
+                    !droppedNode->IsSceneLinkedChild())
+                {
+                    am->EXE_AttachNode(droppedNode, rootNode, -1, -1);
+                }
+            }
+
+            // Asset drop
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
             {
                 AssetStub* droppedStub = *(AssetStub**)payload->Data;
@@ -3772,13 +3894,10 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 sNewAssetType = ParticleSystem::GetStaticType();
                 showPopup = true;
             }
+            bool showScenePopup = false;
             if (ImGui::Selectable("Scene", false, ImGuiSelectableFlags_DontClosePopups))
             {
-                ImGui::OpenPopup("New Scene");
-                sPopupInputBuffer[0] = '\0';
-                sNewSceneType = 1;  // Default to 3D
-                sNewSceneCreateCamera = true;
-                setTextInputFocus = true;
+                showScenePopup = true;
             }
             if (ImGui::Selectable("Timeline", false, ImGuiSelectableFlags_DontClosePopups))
             {
@@ -3803,6 +3922,15 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             {
                 ImGui::OpenPopup("New Asset Name");
                 sPopupInputBuffer[0] = '\0';
+                setTextInputFocus = true;
+            }
+
+            if (showScenePopup)
+            {
+                ImGui::OpenPopup("New Scene");
+                sPopupInputBuffer[0] = '\0';
+                sNewSceneType = 1;  // Default to 3D
+                sNewSceneCreateCamera = true;
                 setTextInputFocus = true;
             }
         }

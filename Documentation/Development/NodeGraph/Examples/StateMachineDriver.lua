@@ -18,7 +18,6 @@ local STATE_ACTIVE = 1
 local STATE_COOLDOWN = 2
 
 function StateMachineDriver:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
 
     self.currentState = STATE_IDLE

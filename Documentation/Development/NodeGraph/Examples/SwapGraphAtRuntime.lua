@@ -9,8 +9,6 @@
 SwapGraphAtRuntime = {}
 
 function SwapGraphAtRuntime:Create()
-    self.graphA = Property.Create(DatumType.Asset, nil)
-    self.graphB = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.elapsed = 0.0
     self.swapInterval = 5.0

@@ -12,8 +12,6 @@
 MultiGraphOrchestrator = {}
 
 function MultiGraphOrchestrator:Create()
-    self.graphA_Asset = Property.Create(DatumType.Asset, nil)
-    self.graphB_Asset = Property.Create(DatumType.Asset, nil)
     self.offset = Vec(0.0, 5.0, 0.0)
 
     self.playerA = nil

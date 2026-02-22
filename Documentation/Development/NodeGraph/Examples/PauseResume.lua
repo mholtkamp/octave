@@ -8,7 +8,6 @@
 PauseResume = {}
 
 function PauseResume:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.elapsed = 0.0
     self.pauseInterval = 3.0  -- toggle pause every 3 seconds

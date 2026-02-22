@@ -13,7 +13,6 @@
 InputOutputLoop = {}
 
 function InputOutputLoop:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
     self.player = nil
     self.currentValue = 0.0
     self.maxValue = 100.0

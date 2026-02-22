@@ -14,8 +14,6 @@
 MultipleOutputs = {}
 
 function MultipleOutputs:Create()
-    self.graphAsset = Property.Create(DatumType.Asset, nil)
-    self.targetNode = Property.Create(DatumType.Node, nil)
     self.player = nil
 end
 
