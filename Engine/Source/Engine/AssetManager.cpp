@@ -398,6 +398,59 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
     }
 };
 
+void AssetManager::RefreshDirectory(AssetDir* directory)
+{
+    if (directory == nullptr)
+        return;
+
+    bool engineDir = directory->mEngineDir;
+    std::vector<std::string> subDirectories;
+    DirEntry dirEntry = {};
+
+    SYS_OpenDirectory(directory->mPath, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory)
+        {
+            if (dirEntry.mFilename[0] != '.')
+                subDirectories.push_back(dirEntry.mFilename);
+        }
+        else
+        {
+            const char* extension = strrchr(dirEntry.mFilename, '.');
+            if (extension != nullptr && strcmp(extension, ".oct") == 0)
+            {
+                Stream stream;
+                std::string path = directory->mPath + dirEntry.mFilename;
+                stream.ReadFile(path.c_str(), true, sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t));
+                AssetHeader header = Asset::ReadHeader(stream);
+                RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    for (const std::string& subDirName : subDirectories)
+    {
+        AssetDir* subDir = directory->GetSubdirectory(subDirName);
+        if (subDir == nullptr)
+        {
+            subDir = directory->CreateSubdirectory(subDirName);
+            DiscoverDirectory(subDir, engineDir);
+        }
+        else
+        {
+            RefreshDirectory(subDir);
+        }
+    }
+
+    directory->SortChildrenAlphabetically();
+}
+
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
     SCOPED_STAT("DiscoverAssets");

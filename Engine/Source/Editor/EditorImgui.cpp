@@ -3733,6 +3733,15 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
     AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
+    // When right-clicking empty space (no dir/asset specified), default to root directory
+    if (dir == nullptr && stub == nullptr)
+    {
+        if (GetEditorState()->mActiveAssetTab == AssetBrowserTab::Project)
+            curDir = AssetManager::Get()->FindProjectDirectory();
+        else
+            curDir = AssetManager::Get()->FindPackagesDirectory();
+    }
+
     bool readOnly = false;
     if ((stub && stub->mEngineAsset) ||
         (dir && dir->mEngineDir) ||
@@ -4576,6 +4585,19 @@ static void DrawAssetsPanel()
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     ImGui::SetTooltip("Open in Explorer");
 
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_UNDO "##RefreshAssets"))
+                {
+                    if (hasProject)
+                    {
+                        AssetDir* projDir = AssetManager::Get()->FindProjectDirectory();
+                        if (projDir)
+                            AssetManager::Get()->RefreshDirectory(projDir);
+                    }
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                    ImGui::SetTooltip("Refresh");
+
                 if (!hasProject) ImGui::PopStyleVar();
 
                 // New Folder popup
@@ -4643,6 +4665,16 @@ static void DrawAssetsPanel()
                 }
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     ImGui::SetTooltip("Open in Explorer");
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_UNDO "##RefreshAddons"))
+                {
+                    AssetDir* pkgDir = AssetManager::Get()->FindPackagesDirectory();
+                    if (pkgDir)
+                        AssetManager::Get()->RefreshDirectory(pkgDir);
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Refresh");
 
                 ImGui::Spacing();
             }
@@ -5150,6 +5182,15 @@ static void DrawScriptsPanel()
                 }
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     ImGui::SetTooltip("Open in Explorer");
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_UNDO "##RefreshLuaScripts"))
+                {
+                    sLuaLastUpdate = 0.0;
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Refresh");
+
                 if (!hasProject) ImGui::PopStyleVar();
 
                 ImGui::Spacing();
@@ -5422,6 +5463,15 @@ static void DrawScriptsPanel()
                 }
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                     ImGui::SetTooltip("Open in Explorer");
+
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_UNDO "##RefreshCppAddons"))
+                {
+                    sCppLastUpdate = 0.0;
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Refresh");
+
                 if (!hasProject) ImGui::PopStyleVar();
 
                 ImGui::Spacing();
@@ -6413,6 +6463,14 @@ static void DrawMainMenuBar()
                     nam->ReloadAllNativeAddons();
                     LogDebug("Native addon dependencies regenerated and addons reloaded.");
                 }
+
+                // Refresh asset directories
+                AssetDir* projDir = AssetManager::Get()->FindProjectDirectory();
+                if (projDir)
+                    AssetManager::Get()->RefreshDirectory(projDir);
+                AssetDir* pkgDir = AssetManager::Get()->FindPackagesDirectory();
+                if (pkgDir)
+                    AssetManager::Get()->RefreshDirectory(pkgDir);
             }
         }
 
