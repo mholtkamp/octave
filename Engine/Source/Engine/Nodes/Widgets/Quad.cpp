@@ -157,6 +157,17 @@ glm::vec2 Quad::GetUvOffset() const
     return mUvOffset;
 }
 
+void Quad::SetObjectFit(ObjectFit fit)
+{
+    mObjectFit = fit;
+    MarkDirty();
+}
+
+ObjectFit Quad::GetObjectFit() const
+{
+    return mObjectFit;
+}
+
 void Quad::InitVertexData()
 {
     mVertices[0].mPosition.x = 0.0f;
@@ -186,25 +197,93 @@ void Quad::InitVertexData()
 
 void Quad::UpdateVertexData()
 {
-    mVertices[0].mPosition.x = mRect.mX;
-    mVertices[0].mPosition.y = mRect.mY;
-    mVertices[0].mTexcoord.x = (0.0f + mUvOffset.x) * mUvScale.x;
-    mVertices[0].mTexcoord.y = (0.0f + mUvOffset.y) * mUvScale.y;
+    float posX = mRect.mX;
+    float posY = mRect.mY;
+    float posW = mRect.mWidth;
+    float posH = mRect.mHeight;
 
-    mVertices[1].mPosition.x = mRect.mX;
-    mVertices[1].mPosition.y = mRect.mY + mRect.mHeight;
-    mVertices[1].mTexcoord.x = (0.0f + mUvOffset.x) * mUvScale.x;
-    mVertices[1].mTexcoord.y = (1.0f + mUvOffset.y) * mUvScale.y;
+    float uvX0 = 0.0f;
+    float uvY0 = 0.0f;
+    float uvX1 = 1.0f;
+    float uvY1 = 1.0f;
 
-    mVertices[2].mPosition.x = mRect.mX + mRect.mWidth;
-    mVertices[2].mPosition.y = mRect.mY;
-    mVertices[2].mTexcoord.x = (1.0f + mUvOffset.x) * mUvScale.x;
-    mVertices[2].mTexcoord.y = (0.0f + mUvOffset.y) * mUvScale.y;
+    Texture* tex = mTexture.Get<Texture>();
 
-    mVertices[3].mPosition.x = mRect.mX + mRect.mWidth;
-    mVertices[3].mPosition.y = mRect.mY + mRect.mHeight;
-    mVertices[3].mTexcoord.x = (1.0f + mUvOffset.x) * mUvScale.x;
-    mVertices[3].mTexcoord.y = (1.0f + mUvOffset.y) * mUvScale.y;
+    if (mObjectFit != ObjectFit::Fill && tex != nullptr && posW > 0.0f && posH > 0.0f)
+    {
+        float texW = (float)tex->GetWidth();
+        float texH = (float)tex->GetHeight();
+
+        if (texW > 0.0f && texH > 0.0f)
+        {
+            float texAR = texW / texH;
+            float widgetAR = posW / posH;
+
+            if (mObjectFit == ObjectFit::Contain)
+            {
+                float fitW, fitH;
+                if (widgetAR > texAR)
+                {
+                    fitH = posH;
+                    fitW = fitH * texAR;
+                }
+                else
+                {
+                    fitW = posW;
+                    fitH = fitW / texAR;
+                }
+
+                posX = mRect.mX + (posW - fitW) * 0.5f;
+                posY = mRect.mY + (posH - fitH) * 0.5f;
+                posW = fitW;
+                posH = fitH;
+            }
+            else if (mObjectFit == ObjectFit::Cover)
+            {
+                if (widgetAR > texAR)
+                {
+                    float uvH = texAR / widgetAR;
+                    uvY0 = (1.0f - uvH) * 0.5f;
+                    uvY1 = uvY0 + uvH;
+                }
+                else
+                {
+                    float uvW = widgetAR / texAR;
+                    uvX0 = (1.0f - uvW) * 0.5f;
+                    uvX1 = uvX0 + uvW;
+                }
+            }
+            else if (mObjectFit == ObjectFit::None)
+            {
+                // Display at native texture size, centered in widget
+                posX = mRect.mX + (posW - texW) * 0.5f;
+                posY = mRect.mY + (posH - texH) * 0.5f;
+                posW = texW;
+                posH = texH;
+            }
+        }
+    }
+
+    // Apply mUvScale/mUvOffset on top of computed base UVs
+    mVertices[0].mPosition.x = posX;
+    mVertices[0].mPosition.y = posY;
+    mVertices[0].mTexcoord.x = (uvX0 + mUvOffset.x) * mUvScale.x;
+    mVertices[0].mTexcoord.y = (uvY0 + mUvOffset.y) * mUvScale.y;
+
+    mVertices[1].mPosition.x = posX;
+    mVertices[1].mPosition.y = posY + posH;
+    mVertices[1].mTexcoord.x = (uvX0 + mUvOffset.x) * mUvScale.x;
+    mVertices[1].mTexcoord.y = (uvY1 + mUvOffset.y) * mUvScale.y;
+
+    mVertices[2].mPosition.x = posX + posW;
+    mVertices[2].mPosition.y = posY;
+    mVertices[2].mTexcoord.x = (uvX1 + mUvOffset.x) * mUvScale.x;
+    mVertices[2].mTexcoord.y = (uvY0 + mUvOffset.y) * mUvScale.y;
+
+    mVertices[3].mPosition.x = posX + posW;
+    mVertices[3].mPosition.y = posY + posH;
+    mVertices[3].mTexcoord.x = (uvX1 + mUvOffset.x) * mUvScale.x;
+    mVertices[3].mTexcoord.y = (uvY1 + mUvOffset.y) * mUvScale.y;
 }
 
 void Quad::Render()

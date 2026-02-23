@@ -173,6 +173,9 @@ public:
     void EnableScissor(bool enable);
     Rect GetScissorRect() const;
 
+    void SetUseGameResolution(bool use);
+    bool GetUseGameResolution() const;
+
 protected:
 
     static WeakPtr<Widget> sWidgetToClean;
@@ -204,6 +207,7 @@ protected:
     AnchorMode mAnchorMode;
     uint8_t mActiveMargins;
     bool mUseScissor;
+    bool mUseGameResolution = false;
     uint8_t mOpacity;
 
 private:

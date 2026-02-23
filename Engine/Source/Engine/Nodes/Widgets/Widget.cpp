@@ -12,6 +12,7 @@
 #if EDITOR
 #include "EditorState.h"
 #include "Viewport2d.h"
+#include "GamePreview/GamePreview.h"
 #endif
 
 FORCE_LINK_DEF(Widget);
@@ -705,6 +706,28 @@ void Widget::UpdateRect()
         mRect.mHeight = mSize.y * mAbsoluteScale.y;
     }
 
+    if (mUseGameResolution)
+    {
+        float gameW = 0.0f;
+        float gameH = 0.0f;
+#if EDITOR
+        GamePreview* gp = GetGamePreview();
+        if (gp != nullptr && gp->GetCurrentWidth() > 0)
+        {
+            gameW = (float)gp->GetCurrentWidth();
+            gameH = (float)gp->GetCurrentHeight();
+        }
+        else
+#endif
+        {
+            gameW = (float)GetEngineState()->mWindowWidth;
+            gameH = (float)GetEngineState()->mWindowHeight;
+        }
+
+        mRect.mWidth = gameW;
+        mRect.mHeight = gameH;
+    }
+
     glm::vec2 pivotPoint =
     {
         mRect.mX + mRect.mWidth * mPivot.x,
@@ -965,6 +988,17 @@ void Widget::EnableScissor(bool enable)
 Rect Widget::GetScissorRect() const
 {
     return mScissorRect;
+}
+
+void Widget::SetUseGameResolution(bool use)
+{
+    mUseGameResolution = use;
+    MarkDirty();
+}
+
+bool Widget::GetUseGameResolution() const
+{
+    return mUseGameResolution;
 }
 
 void Widget::SetParent(Node* parent)

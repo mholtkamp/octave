@@ -269,6 +269,11 @@ CSSValue ParseCSSGenericValue(const char* str)
         strcmp(str, "column") == 0 ||
         strcmp(str, "normal") == 0 ||
         strcmp(str, "break-word") == 0 ||
+        strcmp(str, "fill") == 0 ||
+        strcmp(str, "contain") == 0 ||
+        strcmp(str, "cover") == 0 ||
+        strcmp(str, "true") == 0 ||
+        strcmp(str, "false") == 0 ||
         strncmp(str, "top-", 4) == 0 ||
         strncmp(str, "center-", 7) == 0 ||
         strncmp(str, "bottom-", 7) == 0 ||
@@ -825,6 +830,40 @@ void ApplyCSSProperty(
         {
             if (isText)
                 static_cast<Text*>(widget)->EnableWordWrap(true);
+        }
+        return;
+    }
+
+    //--- Object-fit (Quad / Button) ---
+
+    if (propName == "object-fit")
+    {
+        if (value.mType == CSSValueType::Enum)
+        {
+            ObjectFit fit = ObjectFit::Fill;
+            if (value.mString == "contain") fit = ObjectFit::Contain;
+            else if (value.mString == "cover") fit = ObjectFit::Cover;
+            else if (value.mString == "none") fit = ObjectFit::None;
+
+            if (isQuad)
+                static_cast<Quad*>(widget)->SetObjectFit(fit);
+            else if (isButton)
+                static_cast<Button*>(widget)->GetQuad()->SetObjectFit(fit);
+        }
+        return;
+    }
+
+    //--- Game resolution ---
+
+    if (propName == "game-resolution")
+    {
+        if (value.mType == CSSValueType::Enum && value.mString == "true")
+        {
+            widget->SetUseGameResolution(true);
+        }
+        else if (value.mType == CSSValueType::String && value.mString == "true")
+        {
+            widget->SetUseGameResolution(true);
         }
         return;
     }

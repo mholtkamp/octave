@@ -7,6 +7,15 @@
 
 #include "glm/glm.hpp"
 
+enum class ObjectFit : uint8_t
+{
+    Fill,
+    Contain,
+    Cover,
+    None,
+    Count
+};
+
 class Quad : public Widget
 {
 public:
@@ -48,6 +57,9 @@ public:
     void SetUvOffset(glm::vec2 offset);
     glm::vec2 GetUvOffset() const;
 
+    void SetObjectFit(ObjectFit fit);
+    ObjectFit GetObjectFit() const;
+
     VertexUI* GetVertices();
 
 protected:
@@ -62,6 +74,7 @@ protected:
 
     glm::vec2 mUvScale;
     glm::vec2 mUvOffset;
+    ObjectFit mObjectFit = ObjectFit::Fill;
 
     // Graphics Resource
     QuadResource mResource;
