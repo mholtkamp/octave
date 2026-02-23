@@ -126,10 +126,7 @@ Node* ResolveNodePath(Node* src, const std::string& path)
         }
         else if (i == int32_t(path.size()) - 1)
         {
-            if (start != i)
-            {
-                tokens.push_back(path.substr(start));
-            }
+            tokens.push_back(path.substr(start));
         }
     }
 

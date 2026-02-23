@@ -627,8 +627,9 @@ void GatherSubSceneOverrides(Node* node, Node* sceneRoot, std::vector<SubSceneOv
 
     if (defaultNode == nullptr)
     {
-        LogError("Could not find ref node in GatherSubSceneOverrides()");
-        OCT_ASSERT(false);
+        // Node exists in the instance but not in the base scene (e.g. added as an extra child).
+        // Skip gathering overrides for it — there's no default to compare against.
+        LogWarning("Could not find ref node in GatherSubSceneOverrides()");
         return;
     }
 
