@@ -628,7 +628,12 @@ void Widget::UpdateRect()
     glm::uvec4 vp = Renderer::Get()->GetViewport();
 
 #if EDITOR
-    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+    // Only apply the Viewport2D wrapper parent in the main editor viewport (screen 0).
+    // When rendering to a secondary screen (e.g. Game Preview), root widgets should
+    // use the second screen's viewport as their parent rect, not the Scene2D wrapper
+    // which is sized for the editor viewport.
+    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D &&
+        Renderer::Get()->GetScreenIndex() == 0)
     {
         Widget* wrapper = GetEditorState()->GetViewport2D()->GetWrapperWidget();
         if (parent == nullptr &&

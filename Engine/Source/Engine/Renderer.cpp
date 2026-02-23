@@ -1536,6 +1536,27 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     // Gather draw data and lighting
     GatherDrawData(world);
 
+    // Debug: log viewport/resolution being used for the second screen (remove after verifying)
+    {
+        static uint32_t sLogCounter = 0;
+        if (sLogCounter++ % 300 == 0) // Log once every ~5 seconds at 60fps
+        {
+            glm::uvec4 vp = GetViewport();
+            glm::vec2 res = GetScreenResolution();
+            LogDebug("RenderSecondScreen: viewport=(%u,%u,%u,%u) resolution=(%.0f,%.0f) widgetDraws=%u",
+                     vp.x, vp.y, vp.z, vp.w, res.x, res.y, (uint32_t)mWidgetDraws.size());
+
+            // Log first widget rect if available
+            if (!mWidgetDraws.empty() && mWidgetDraws[0].mNode != nullptr && mWidgetDraws[0].mNode->IsWidget())
+            {
+                Widget* w = static_cast<Widget*>(mWidgetDraws[0].mNode);
+                Rect r = w->GetRect();
+                LogDebug("  First widget '%s': rect=(%.1f, %.1f, %.1f, %.1f)",
+                         w->GetName().c_str(), r.mX, r.mY, r.mWidth, r.mHeight);
+            }
+        }
+    }
+
     if (camera != nullptr)
     {
         camera->ComputeMatrices();
@@ -1933,7 +1954,13 @@ uint32_t Renderer::GetViewportWidth(int32_t screenIdx)
         screenIdx = mScreenIndex;
     }
 
-    uint32_t windowWidth = (screenIdx == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
+    // Non-primary screens render to standalone offscreen targets at their own resolution.
+    if (screenIdx != 0)
+    {
+        return glm::max<uint32_t>(GetEngineState()->mSecondWindowWidth, 1);
+    }
+
+    uint32_t windowWidth = GetEngineState()->mWindowWidth;
 
 #if EDITOR
     windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowWidth : GetEditorState()->mViewportWidth;
@@ -1950,7 +1977,13 @@ uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
         screenIdx = mScreenIndex;
     }
 
-    uint32_t windowHeight = (screenIdx == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
+    // Non-primary screens render to standalone offscreen targets at their own resolution.
+    if (screenIdx != 0)
+    {
+        return glm::max<uint32_t>(GetEngineState()->mSecondWindowHeight, 1);
+    }
+
+    uint32_t windowHeight = GetEngineState()->mWindowHeight;
 
 #if EDITOR
     windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowHeight : GetEditorState()->mViewportHeight;
