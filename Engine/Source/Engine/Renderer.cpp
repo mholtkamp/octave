@@ -1525,6 +1525,9 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 
     // Force widgets dirty so they recompute rects/vertices for this screen's resolution.
     // They were already marked clean during the main Render() pass for screen 0.
+    // Redirect widget MultiBuffer writes to secondary slots so the main render's
+    // vertex data (in slots 0..MAX_FRAMES-1) is not overwritten.
+    GetVulkanContext()->SetMultiBufferFrameOffset(MAX_FRAMES);
     world->GetRootNode()->Traverse([](Node* node) -> bool {
         if (node->IsWidget())
         {
@@ -1533,8 +1536,15 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         return true;
     });
 
-    // Gather draw data and lighting
+    // Gather draw data and lighting.
+    // The offset is active so widget PreRender() writes vertex data to secondary
+    // slots. 3D mesh nodes don't write to MultiBuffer during GatherDrawData, so
+    // they are unaffected.
     GatherDrawData(world);
+
+    // Clear offset before the forward pass — 3D mesh Render() calls need to read
+    // their vertex data from the primary slots.
+    GetVulkanContext()->SetMultiBufferFrameOffset(0);
 
     // Debug: log viewport/resolution being used for the second screen (remove after verifying)
     {
@@ -1622,8 +1632,11 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         GetVulkanContext()->EndVkRenderPass();
     }
 
-    // UI pass for widgets
+    // UI pass for widgets — re-enable secondary buffer offset so widget draw calls
+    // bind the secondary vertex buffers (written during GatherDrawData above).
     {
+        GetVulkanContext()->SetMultiBufferFrameOffset(MAX_FRAMES);
+
         RenderPassSetup rpSetup;
         rpSetup.mColorImages[0] = colorTarget;
         rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -1639,6 +1652,8 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         RenderDraws(mWidgetDraws);
 
         GetVulkanContext()->EndVkRenderPass();
+
+        GetVulkanContext()->SetMultiBufferFrameOffset(0);
     }
 
     // Mark widgets dirty again so the next main Render() frame
