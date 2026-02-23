@@ -23,6 +23,7 @@
 #include "AssetDir.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
+#include "GamePreview/GamePreview.h"
 #include "Assets/Scene.h"
 #include "EditorUtils.h"
 #include "EditorImgui.h"
@@ -587,6 +588,24 @@ void EditorState::BeginPlayInEditor()
     {
         ShowEditorUi(false);
         Renderer::Get()->EnableProxyRendering(false);
+
+        // Resize the window to match the Game Preview resolution so UI widgets
+        // render at the correct size regardless of the editor window dimensions.
+        GamePreview* gp = GetGamePreview();
+        if (gp != nullptr && gp->GetCurrentWidth() > 0 && gp->GetCurrentHeight() > 0)
+        {
+            SYS_GetWindowRect(mSavedWindowRect[0], mSavedWindowRect[1], mSavedWindowRect[2], mSavedWindowRect[3]);
+
+            int32_t chromeW = mSavedWindowRect[2] - (int32_t)GetEngineState()->mWindowWidth;
+            int32_t chromeH = mSavedWindowRect[3] - (int32_t)GetEngineState()->mWindowHeight;
+            int32_t outerW = (int32_t)gp->GetCurrentWidth() + chromeW;
+            int32_t outerH = (int32_t)gp->GetCurrentHeight() + chromeH;
+
+            // Center on the previous window position
+            int32_t cx = mSavedWindowRect[0] + mSavedWindowRect[2] / 2;
+            int32_t cy = mSavedWindowRect[1] + mSavedWindowRect[3] / 2;
+            SYS_SetWindowRect(cx - outerW / 2, cy - outerH / 2, outerW, outerH);
+        }
     }
 
     SetEditorMode(EditorMode::Scene);
@@ -652,6 +671,12 @@ void EditorState::EndPlayInEditor()
     {
         ShowEditorUi(true);
         Renderer::Get()->EnableProxyRendering(true);
+
+        // Restore the window to its original size
+        if (mSavedWindowRect[2] > 0 && mSavedWindowRect[3] > 0)
+        {
+            SYS_SetWindowRect(mSavedWindowRect[0], mSavedWindowRect[1], mSavedWindowRect[2], mSavedWindowRect[3]);
+        }
     }
     Renderer::Get()->SetClearColor(mSavedEditorClearColor);
 

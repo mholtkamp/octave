@@ -1420,6 +1420,25 @@ void Renderer::Render(World* world, int32_t screenIndex)
         {
             GetGamePreview()->Render();
         }
+
+        // After secondary screen rendering, widget rects contain screen 1 coordinates.
+        // Recompute them for screen 0 so that Draw2dSelections (which runs before the
+        // next Render call) reads correct editor-viewport rects.
+        if (GetSecondScreenPreview()->IsEnabled() || GetGamePreview()->IsEnabled())
+        {
+            World* w = GetWorld(0);
+            if (w != nullptr && w->GetRootNode() != nullptr)
+            {
+                w->GetRootNode()->Traverse([](Node* node) -> bool {
+                    if (node->IsWidget())
+                    {
+                        static_cast<Widget*>(node)->MarkDirty();
+                        static_cast<Widget*>(node)->UpdateRect();
+                    }
+                    return true;
+                });
+            }
+        }
 #endif
 
         {
@@ -1656,20 +1675,11 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         GetVulkanContext()->SetMultiBufferFrameOffset(0);
     }
 
-    // Mark widgets dirty again so the next main Render() frame
-    // recomputes rects for screen 0's resolution.
-    world->GetRootNode()->Traverse([](Node* node) -> bool {
-        if (node->IsWidget())
-        {
-            static_cast<Widget*>(node)->MarkDirty();
-        }
-        return true;
-    });
-
     // Clear the camera override
     world->SetCameraOverride(nullptr);
 
-    // Restore state
+    // Restore state BEFORE recomputing widget rects, so GetViewport() returns
+    // screen 0's editor viewport rather than the secondary screen's viewport.
     mCurrentWorld = prevWorld;
     mScreenIndex = prevScreenIndex;
     GetEngineState()->mSecondWindowWidth = prevSecondW;
@@ -1682,6 +1692,16 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         GetVulkanContext()->UpdateGlobalUniformData();
         GetVulkanContext()->UpdateGlobalDescriptorSet();
     }
+
+    // Mark widgets dirty so the next main Render() frame
+    // recomputes rects for screen 0's resolution.
+    world->GetRootNode()->Traverse([](Node* node) -> bool {
+        if (node->IsWidget())
+        {
+            static_cast<Widget*>(node)->MarkDirty();
+        }
+        return true;
+    });
 }
 #endif
 

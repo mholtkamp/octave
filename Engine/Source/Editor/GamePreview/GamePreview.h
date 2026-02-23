@@ -27,6 +27,8 @@ public:
     void DrawPanel();
 
     bool IsEnabled() const { return mEnabled; }
+    uint32_t GetCurrentWidth() const { return mCurrentWidth; }
+    uint32_t GetCurrentHeight() const { return mCurrentHeight; }
 
     // Hook support for addon resolution presets
     void AddResolutionPreset(const std::string& name, uint32_t w, uint32_t h);

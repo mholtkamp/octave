@@ -115,6 +115,7 @@ struct EditorState
     bool mPaused = false;
     bool mHasEjectedOnce = false;
     glm::vec4 mSavedEditorClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    int32_t mSavedWindowRect[4] = {}; // x, y, w, h — saved before Play Full Screen resize
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
     AssetBrowserTab mActiveAssetTab = AssetBrowserTab::Project;
