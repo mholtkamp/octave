@@ -16,8 +16,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Initialize submodules
+        run: |
+          git submodule sync --recursive
+          git submodule foreach --recursive git clean -ffdx
+          git submodule update --init --recursive
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -52,8 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Initialize submodules
+        run: |
+          git submodule sync --recursive
+          git submodule foreach --recursive git clean -ffdx
+          git submodule update --init --recursive
 
       - name: Install system dependencies
         run: |
@@ -68,7 +76,7 @@ jobs:
           python-version: '3.x'
 
       - name: Build Engine (Linux Editor)
-        run: make -f Standalone/Makefile_Linux_Editor -j$(nproc)
+        run: make -C Standalone -f Makefile_Linux_Editor -j$(nproc)
 
       - name: Build .deb package
         run: bash Installers/build_deb_linux.sh

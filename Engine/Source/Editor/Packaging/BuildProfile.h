@@ -25,7 +25,7 @@ struct BuildProfile
     Platform mTargetPlatform = Platform::Windows;
 
     /** @brief Whether to embed assets into the executable */
-    bool mEmbedded = false;
+    bool mEmbedded = true;
 
     /**
      * @brief Custom output directory override.
