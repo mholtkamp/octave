@@ -19,8 +19,7 @@ jobs:
 
       - name: Initialize submodules
         run: |
-          git submodule sync --recursive
-          git submodule foreach --recursive git clean -ffdx
+          git submodule deinit --all -f
           git submodule update --init --recursive
 
       - name: Setup Python
@@ -59,8 +58,7 @@ jobs:
 
       - name: Initialize submodules
         run: |
-          git submodule sync --recursive
-          git submodule foreach --recursive git clean -ffdx
+          git submodule deinit --all -f
           git submodule update --init --recursive
 
       - name: Install system dependencies
