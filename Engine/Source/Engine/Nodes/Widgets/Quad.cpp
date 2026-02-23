@@ -255,9 +255,7 @@ void Quad::UpdateVertexData()
             }
             else if (mObjectFit == ObjectFit::None)
             {
-                // Display at native texture size, centered in widget
-                posX = mRect.mX + (posW - texW) * 0.5f;
-                posY = mRect.mY + (posH - texH) * 0.5f;
+                // Display at native texture size from widget's position
                 posW = texW;
                 posH = texH;
             }
