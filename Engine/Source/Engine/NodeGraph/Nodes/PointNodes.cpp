@@ -77,9 +77,9 @@ void CreatePointsGridNode::SetupPins()
 
 void CreatePointsGridNode::Evaluate()
 {
-    int32_t cx = glm::max(GetInputValue(0).GetInteger(), 1);
-    int32_t cy = glm::max(GetInputValue(1).GetInteger(), 1);
-    int32_t cz = glm::max(GetInputValue(2).GetInteger(), 1);
+    int32_t cx = glm::max(GetInputValue(0).GetInteger(), (int32_t)1);
+    int32_t cy = glm::max(GetInputValue(1).GetInteger(), (int32_t)1);
+    int32_t cz = glm::max(GetInputValue(2).GetInteger(), (int32_t)1);
     float spacing = GetInputValue(3).GetFloat();
 
     PointCloud* cloud = new PointCloud();
@@ -119,7 +119,7 @@ void ScatterPointsOnMeshNode::SetupPins()
 void ScatterPointsOnMeshNode::Evaluate()
 {
     Asset* meshAsset = GetInputValue(0).GetAsset();
-    int32_t count = glm::max(GetInputValue(1).GetInteger(), 0);
+    int32_t count = glm::max(GetInputValue(1).GetInteger(), (int32_t)0);
     int32_t seed = GetInputValue(2).GetInteger();
 
     PointCloud* cloud = new PointCloud();
@@ -205,7 +205,7 @@ void PointsFromSplineNode::SetupPins()
 void PointsFromSplineNode::Evaluate()
 {
     Node* splineNode = GetInputValue(0).GetNode().Get();
-    int32_t count = glm::max(GetInputValue(1).GetInteger(), 2);
+    int32_t count = glm::max(GetInputValue(1).GetInteger(), (int32_t)2);
     bool closeLoop = GetInputValue(2).GetBool();
 
     PointCloud* cloud = new PointCloud();
@@ -248,7 +248,7 @@ void CreatePointsLineNode::Evaluate()
 {
     glm::vec3 start = GetInputValue(0).GetVector();
     glm::vec3 end = GetInputValue(1).GetVector();
-    int32_t count = glm::max(GetInputValue(2).GetInteger(), 2);
+    int32_t count = glm::max(GetInputValue(2).GetInteger(), (int32_t)2);
 
     PointCloud* cloud = new PointCloud();
     for (int32_t i = 0; i < count; ++i)
@@ -280,7 +280,7 @@ void RandomPointsInBoxNode::Evaluate()
 {
     glm::vec3 bmin = GetInputValue(0).GetVector();
     glm::vec3 bmax = GetInputValue(1).GetVector();
-    int32_t count = glm::max(GetInputValue(2).GetInteger(), 0);
+    int32_t count = glm::max(GetInputValue(2).GetInteger(), (int32_t)0);
     int32_t seed = GetInputValue(3).GetInteger();
 
     PointCloud* cloud = new PointCloud();

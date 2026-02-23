@@ -87,6 +87,9 @@ public:
 
     // Conversion constructors
     Datum(int32_t value);
+#if PLATFORM_3DS
+    Datum(int value);
+#endif
     Datum(uint32_t value);
     Datum(float value);
     Datum(bool value);

@@ -52,6 +52,10 @@ SOURCES		:=	Source \
 				Source/Engine/Nodes/3D \
 				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
+				Source/Engine/NodeGraph \
+				Source/Engine/NodeGraph/Nodes \
+				Source/Engine/NodeGraph/Domains \
+				Source/Engine/UI \
 				Source/Engine/Timeline \
 				Source/Engine/Timeline/Tracks \
 				Source/Plugins \
@@ -67,7 +71,8 @@ SOURCES		:=	Source \
 				Source/Network/Linux \
 				Source/LuaBindings \
 				../External/Lua \
-				../External/Vorbis
+				../External/Vorbis \
+				../External/IrrXML
 INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet

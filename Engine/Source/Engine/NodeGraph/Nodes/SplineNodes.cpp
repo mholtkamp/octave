@@ -128,7 +128,7 @@ void SplineNearestPercentNode::Evaluate()
 {
     Spline3D* spline = GetInputSpline(this, 0);
     glm::vec3 worldPos = GetInputValue(1).GetVector();
-    int32_t samples = glm::max(GetInputValue(2).GetInteger(), 2);
+    int32_t samples = glm::max(GetInputValue(2).GetInteger(), (int32_t)2);
 
     float bestT = 0.0f;
     float bestDist = FLT_MAX;
@@ -169,7 +169,7 @@ void SplineLengthNode::SetupPins()
 void SplineLengthNode::Evaluate()
 {
     Spline3D* spline = GetInputSpline(this, 0);
-    int32_t samples = glm::max(GetInputValue(1).GetInteger(), 2);
+    int32_t samples = glm::max(GetInputValue(1).GetInteger(), (int32_t)2);
 
     float length = 0.0f;
 

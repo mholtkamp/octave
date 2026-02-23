@@ -349,7 +349,7 @@ int32_t NodeGraphAsset::AddVariable(const std::string& name, DatumType type)
 
     switch (type)
     {
-    case DatumType::Integer:  var.mDefaultValue = Datum(0); break;
+    case DatumType::Integer:  var.mDefaultValue = Datum((int32_t)0); break;
     case DatumType::Float:    var.mDefaultValue = Datum(0.0f); break;
     case DatumType::Bool:     var.mDefaultValue = Datum(false); break;
     case DatumType::String:   var.mDefaultValue = Datum(std::string("")); break;

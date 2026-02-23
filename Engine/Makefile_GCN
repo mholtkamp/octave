@@ -24,6 +24,10 @@ SOURCES		:=	Source \
 				Source/Engine/Nodes/3D \
 				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
+				Source/Engine/NodeGraph \
+				Source/Engine/NodeGraph/Nodes \
+				Source/Engine/NodeGraph/Domains \
+				Source/Engine/UI \
 				Source/Engine/Timeline \
 				Source/Engine/Timeline/Tracks \
 				Source/Plugins \
@@ -39,7 +43,8 @@ SOURCES		:=	Source \
 				Source/Network/Dolphin \
 				Source/LuaBindings \
 				../External/Lua \
-				../External/Vorbis
+				../External/Vorbis \
+				../External/IrrXML
 #DATA		:=	data
 #TEXTURES	:=	textures 
 INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua

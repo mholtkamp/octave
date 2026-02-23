@@ -63,6 +63,14 @@ Datum::Datum(int32_t value)
     PushBack(value);
 }
 
+#if PLATFORM_3DS
+Datum::Datum(int value)
+{
+    Reset();
+    PushBack(static_cast<int32_t>(value));
+}
+#endif
+
 Datum::Datum(uint32_t value)
 {
     Reset();

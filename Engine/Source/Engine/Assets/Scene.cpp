@@ -415,6 +415,11 @@ NodePtr Scene::Instantiate()
 #if EDITOR
                     nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
 #endif
+
+                    for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
+                    {
+                        nativeChildren.push_back(nodePtr->GetChild(c));
+                    }
                 }
                 else
                 {

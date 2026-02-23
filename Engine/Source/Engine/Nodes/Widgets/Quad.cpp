@@ -8,6 +8,15 @@
 FORCE_LINK_DEF(Quad);
 DEFINE_NODE(Quad, Widget);
 
+static const char* sObjectFitStrings[] =
+{
+    "Fill",
+    "Contain",
+    "Cover",
+    "None"
+};
+static_assert(int32_t(ObjectFit::Count) == 4, "Need to update ObjectFit string table");
+
 bool Quad::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -72,6 +81,7 @@ void Quad::GatherProperties(std::vector<Property>& outProps)
 void Quad::GatherQuadProperties(std::vector<Property>& outProps)
 {
     outProps.push_back(Property(DatumType::Asset, "Texture", this, &mTexture, 1, Quad::HandlePropChange, int32_t(Texture::GetStaticType())));
+    outProps.push_back(Property(DatumType::Byte, "Object Fit", this, &mObjectFit, 1, Quad::HandlePropChange, NULL_DATUM, int32_t(ObjectFit::Count), sObjectFitStrings));
     outProps.push_back(Property(DatumType::Vector2D, "UV Scale", this, &mUvScale, 1, Quad::HandlePropChange));
     outProps.push_back(Property(DatumType::Vector2D, "UV Offset", this, &mUvOffset, 1, Quad::HandlePropChange));
 }

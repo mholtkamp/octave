@@ -347,7 +347,9 @@ void StringToFloatNode::Evaluate()
 {
     const std::string& str = GetInputValue(0).GetString();
     float result = 0.0f;
-    try { result = std::stof(str); } catch (...) {}
+    char* end = nullptr;
+    float parsed = strtof(str.c_str(), &end);
+    if (end != str.c_str()) { result = parsed; }
     SetOutputValue(0, Datum(result));
 }
 
@@ -368,7 +370,9 @@ void StringToIntNode::Evaluate()
 {
     const std::string& str = GetInputValue(0).GetString();
     int32_t result = 0;
-    try { result = std::stoi(str); } catch (...) {}
+    char* end = nullptr;
+    long parsed = strtol(str.c_str(), &end, 10);
+    if (end != str.c_str()) { result = (int32_t)parsed; }
     SetOutputValue(0, Datum(result));
 }
 
