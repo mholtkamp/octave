@@ -1486,9 +1486,16 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     // Save current state
     World* prevWorld = mCurrentWorld;
     uint32_t prevScreenIndex = mScreenIndex;
+    uint32_t prevSecondW = GetEngineState()->mSecondWindowWidth;
+    uint32_t prevSecondH = GetEngineState()->mSecondWindowHeight;
 
     mCurrentWorld = world;
     mScreenIndex = 1;
+
+    // Override second screen dimensions so GetScreenResolution(1) and
+    // GetViewportWidth/Height(1) return the render target size, not the monitor size.
+    GetEngineState()->mSecondWindowWidth = width;
+    GetEngineState()->mSecondWindowHeight = height;
 
     // Use the provided camera override, or find the scene's own camera.
     // Prefer the one marked "Main Camera", fall back to the first Camera3D found.
@@ -1515,6 +1522,16 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     // Set camera override so GetActiveCamera() returns this camera
     // instead of the editor camera. This ensures global uniforms use the right VP matrices.
     world->SetCameraOverride(camera);
+
+    // Force widgets dirty so they recompute rects/vertices for this screen's resolution.
+    // They were already marked clean during the main Render() pass for screen 0.
+    world->GetRootNode()->Traverse([](Node* node) -> bool {
+        if (node->IsWidget())
+        {
+            static_cast<Widget*>(node)->MarkDirty();
+        }
+        return true;
+    });
 
     // Gather draw data and lighting
     GatherDrawData(world);
@@ -1553,7 +1570,11 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         rpSetup.mDebugName = "3DS Preview Forward";
 
-        GetVulkanContext()->BeginVkRenderPass(rpSetup, true, GetClearColor());
+        // Force alpha = 1.0 so the offscreen target is fully opaque when
+        // displayed via ImGui::Image (which alpha-blends against its background).
+        glm::vec4 clearColor = GetClearColor();
+        clearColor.a = 1.0f;
+        GetVulkanContext()->BeginVkRenderPass(rpSetup, true, clearColor);
 
         if (GetDebugMode() != DEBUG_WIREFRAME)
         {
@@ -1575,7 +1596,9 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 
         GFX_DrawLines(world->GetLines());
 
-        GFX_EndRenderPass();
+        // End render pass directly — GFX_EndRenderPass() requires mCurrentRenderPassId
+        // to be set via BeginRenderPass(RenderPassId), but we used BeginVkRenderPass().
+        GetVulkanContext()->EndVkRenderPass();
     }
 
     // UI pass for widgets
@@ -1591,10 +1614,21 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         GetVulkanContext()->BeginVkRenderPass(rpSetup, true);
 
         GFX_SetViewport(0, 0, width, height, false);
+        GFX_SetScissor(0, 0, width, height, false);
         RenderDraws(mWidgetDraws);
 
-        GFX_EndRenderPass();
+        GetVulkanContext()->EndVkRenderPass();
     }
+
+    // Mark widgets dirty again so the next main Render() frame
+    // recomputes rects for screen 0's resolution.
+    world->GetRootNode()->Traverse([](Node* node) -> bool {
+        if (node->IsWidget())
+        {
+            static_cast<Widget*>(node)->MarkDirty();
+        }
+        return true;
+    });
 
     // Clear the camera override
     world->SetCameraOverride(nullptr);
@@ -1602,6 +1636,8 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     // Restore state
     mCurrentWorld = prevWorld;
     mScreenIndex = prevScreenIndex;
+    GetEngineState()->mSecondWindowWidth = prevSecondW;
+    GetEngineState()->mSecondWindowHeight = prevSecondH;
 
     // Restore global uniforms and fog for main world
     if (mCurrentWorld != nullptr)
@@ -1852,7 +1888,16 @@ glm::vec4 Renderer::GetGroundColor() const
 // TODO: Might have to adjust these to handle 3DS (two screens) and split-screen
 uint32_t Renderer::GetViewportX(int32_t screenIdx)
 {
-    OCT_UNUSED(screenIdx);
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    // Non-primary screens render to standalone offscreen targets at origin (0,0).
+    if (screenIdx != 0)
+    {
+        return 0;
+    }
 
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportX;
@@ -1863,7 +1908,16 @@ uint32_t Renderer::GetViewportX(int32_t screenIdx)
 
 uint32_t Renderer::GetViewportY(int32_t screenIdx)
 {
-    OCT_UNUSED(screenIdx);
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    // Non-primary screens render to standalone offscreen targets at origin (0,0).
+    if (screenIdx != 0)
+    {
+        return 0;
+    }
 
 #if EDITOR
     return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportY;
