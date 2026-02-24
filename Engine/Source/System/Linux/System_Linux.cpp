@@ -207,14 +207,14 @@ void HandleXcbEvent(xcb_generic_event_t* event)
             INP_ClearMouseButton(MouseCode::MOUSE_X2);
         break;
     }
-    case XCB_OCTAVE_KEY_PRESS:
+    case XCB_KEY_PRESS:
     {
         const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
         INP_SetKey(keyEvent->detail);
         //LogDebug("Key %d", keyEvent->detail);
         break;
     }
-    case XCB_OCTAVE_KEY_RELEASE:
+    case XCB_KEY_RELEASE:
     {
         const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*) event;
         INP_ClearKey(keyEvent->detail);
@@ -303,8 +303,8 @@ void SYS_Initialize()
     uint32_t valueList[32] = {};
     valueList[0] = 0x00000000;
     valueList[1] =
-        XCB_EVENT_MASK_OCTAVE_KEY_RELEASE |
-        XCB_EVENT_MASK_OCTAVE_KEY_PRESS |
+        XCB_EVENT_MASK_KEY_RELEASE |
+        XCB_EVENT_MASK_KEY_PRESS |
         XCB_EVENT_MASK_EXPOSURE |
         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
         XCB_EVENT_MASK_POINTER_MOTION |

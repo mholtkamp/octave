@@ -280,7 +280,7 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
         }
         return 0;
     }
-    case XCB_OCTAVE_KEY_PRESS:
+    case XCB_KEY_PRESS:
     {
         const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
         xcb_keycode_t keyCode = keyEvent->detail;
@@ -339,7 +339,7 @@ IMGUI_IMPL_API int32_t ImGui_ImplXcb_EventHandler(xcb_generic_event_t* event)
 
         return 0;
     }
-    case XCB_OCTAVE_KEY_RELEASE:
+    case XCB_KEY_RELEASE:
     {
         const xcb_key_release_event_t* keyEvent = (const xcb_key_release_event_t*) event;
 
