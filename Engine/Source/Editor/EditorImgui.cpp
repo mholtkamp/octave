@@ -4269,7 +4269,7 @@ static void DrawViewportPanel()
             am->DeleteAllNodes();
         if (ImGui::Selectable("Bake Lighting"))
             renderer->BeginLightBake();
-if (ImGui::Selectable("Clear Baked Lighting"))
+        if (ImGui::Selectable("Clear Baked Lighting"))
         {
             const std::vector<Node*>& nodes = GetWorld(0)->GatherNodes();
             for (uint32_t a = 0; a < nodes.size(); ++a)

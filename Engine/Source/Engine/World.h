@@ -65,6 +65,7 @@ public:
     bool FindNavPath(glm::vec3 start, glm::vec3 end, std::vector<glm::vec3>& outPath);
     bool FindRandomNavPoint(glm::vec3& outPoint);
     bool FindClosestNavPoint(glm::vec3 inPoint, glm::vec3& outPoint);
+    void InvalidateNavMesh();
     void Clear();
 
     int32_t GetIndex() const;
