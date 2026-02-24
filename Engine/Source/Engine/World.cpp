@@ -58,7 +58,8 @@ namespace
 
     static bool BuildRecastNavData(World* world, RecastNavData& outData);
 
-    static std::unordered_map<World*, std::unique_ptr<RecastNavData>> sWorldNavCache;\n    static void InvalidateWorldNavCache(World* world)
+    static std::unordered_map<World*, std::unique_ptr<RecastNavData>> sWorldNavCache;
+    static void InvalidateWorldNavCache(World* world)
     {
         sWorldNavCache.erase(world);
     }
@@ -479,6 +480,11 @@ World::World() :
     mDefaultDynamicsWorld = mDynamicsWorld;
 }
 
+World::~World()
+{
+    InvalidateWorldNavCache(this);
+}
+
 void World::Destroy()
 {
     InvalidateWorldNavCache(this);
@@ -736,20 +742,22 @@ bool World::FindNavPath(glm::vec3 start, glm::vec3 end, std::vector<glm::vec3>& 
         return false;
     }
 
-    dtPolyRef polys[2048];
+    constexpr int kMaxPathPolys = 2048;
+    std::vector<dtPolyRef> polys(kMaxPathPolys);
+
     int npolys = 0;
-    if (dtStatusFailed(nav->mQuery->findPath(startRef, endRef, nearestStart, nearestEnd, &filter, polys, &npolys, 2048)) || npolys <= 0)
+    if (dtStatusFailed(nav->mQuery->findPath(startRef, endRef, nearestStart, nearestEnd, &filter, polys.data(), &npolys, kMaxPathPolys)) || npolys <= 0)
     {
         return false;
     }
 
-    float straight[2048 * 3];
-    unsigned char straightFlags[2048];
-    dtPolyRef straightPolys[2048];
+    std::vector<float> straight(kMaxPathPolys * 3);
+    std::vector<unsigned char> straightFlags(kMaxPathPolys);
+    std::vector<dtPolyRef> straightPolys(kMaxPathPolys);
     int nstraight = 0;
 
-    if (dtStatusFailed(nav->mQuery->findStraightPath(nearestStart, nearestEnd, polys, npolys,
-        straight, straightFlags, straightPolys, &nstraight, 2048, DT_STRAIGHTPATH_ALL_CROSSINGS)) || nstraight <= 0)
+    if (dtStatusFailed(nav->mQuery->findStraightPath(nearestStart, nearestEnd, polys.data(), npolys,
+        straight.data(), straightFlags.data(), straightPolys.data(), &nstraight, kMaxPathPolys, DT_STRAIGHTPATH_ALL_CROSSINGS)) || nstraight <= 0)
     {
         return false;
     }

@@ -39,6 +39,9 @@ public:
     void SetBakeLighting(bool bake);
     bool GetBakeLighting() const;
 
+    void SetNavmeshReady(bool navmeshReady);
+    bool IsNavmeshReady() const;
+
     virtual Material* GetMaterial() override;
     virtual void Render() override;
 
@@ -66,6 +69,7 @@ protected:
     std::vector<uint32_t> mInstanceColors; // e.g. baked lighting color
     bool mUseTriangleCollision;
     bool mBakeLighting;
+    bool mNavmeshReady;
     bool mHasBakedLighting;
 
     // Graphics Resource

@@ -25,6 +25,7 @@ class World
 public:
 
     World();
+    ~World();
 
     void Destroy();
 
