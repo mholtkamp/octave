@@ -8,8 +8,11 @@
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "InputDevices.h"
+#include "Engine.h"
 #include "Assets/Scene.h"
+#include "Assets/StaticMesh.h"
 #include "Nodes/3D/StaticMesh3d.h"
+#include "Nodes/3D/NavMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
 #include "Nodes/3D/Particle3d.h"
 #include "Nodes/3D/Audio3d.h"
@@ -20,12 +23,406 @@
 
 #include <map>
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <cstring>
+#include <cctype>
+#include <memory>
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 #include <Bullet/BulletCollision/CollisionShapes/btTriangleShape.h>
 
+#include "../../../External/recastnavigation/Recast/Include/Recast.h"
+#include "../../../External/recastnavigation/Detour/Include/DetourNavMesh.h"
+#include "../../../External/recastnavigation/Detour/Include/DetourNavMeshBuilder.h"
+#include "../../../External/recastnavigation/Detour/Include/DetourNavMeshQuery.h"
+
 using namespace std;
+
+namespace
+{
+    struct RecastNavData
+    {
+        dtNavMesh* mNavMesh = nullptr;
+        dtNavMeshQuery* mQuery = nullptr;
+
+        ~RecastNavData()
+        {
+            if (mQuery) dtFreeNavMeshQuery(mQuery);
+            if (mNavMesh) dtFreeNavMesh(mNavMesh);
+            mQuery = nullptr;
+            mNavMesh = nullptr;
+        }
+    };
+
+    static bool BuildRecastNavData(World* world, RecastNavData& outData);
+
+    static std::unordered_map<World*, std::unique_ptr<RecastNavData>> sWorldNavCache;\n    static void InvalidateWorldNavCache(World* world)
+    {
+        sWorldNavCache.erase(world);
+    }
+
+    static RecastNavData* GetOrBuildWorldNav(World* world)
+    {
+        auto it = sWorldNavCache.find(world);
+        if (it != sWorldNavCache.end() && it->second && it->second->mQuery)
+        {
+            return it->second.get();
+        }
+
+        std::unique_ptr<RecastNavData> nav = std::make_unique<RecastNavData>();
+        if (!BuildRecastNavData(world, *nav))
+        {
+            return nullptr;
+        }
+
+        RecastNavData* ret = nav.get();
+        sWorldNavCache[world] = std::move(nav);
+        return ret;
+    }
+
+    static bool GatherNavTriangles(World* world, std::vector<float>& outVerts, std::vector<int>& outTris)
+    {
+        std::vector<StaticMesh3D*> navMeshes;
+        world->FindNodes<StaticMesh3D>(navMeshes);
+
+        std::vector<NavMesh3D*> navBounds;
+        world->FindNodes<NavMesh3D>(navBounds);
+
+        struct NavBoundsEntry
+        {
+            glm::mat4 invTransform;
+            glm::vec3 halfExtents;
+            bool overlay = false;
+            bool negator = false;
+            bool cullWalls = false;
+            float wallCullThreshold = 0.2f;
+        };
+        std::vector<NavBoundsEntry> activeBounds;
+
+        for (NavMesh3D* navBox : navBounds)
+        {
+            if (navBox == nullptr || !navBox->IsNavBounds())
+            {
+                continue;
+            }
+
+            NavBoundsEntry e;
+            e.invTransform = glm::inverse(navBox->GetTransform());
+            e.halfExtents = navBox->GetExtents() * 0.5f;
+            e.overlay = navBox->IsNavOverlayEnabled();
+            e.negator = navBox->IsNavNegatorEnabled();
+            e.cullWalls = navBox->IsCullWallsEnabled();
+            e.wallCullThreshold = navBox->GetWallCullThreshold();
+            activeBounds.push_back(e);
+        }
+
+        auto pointInsideAnyBounds = [&](const glm::vec3& p) -> bool
+        {
+            if (activeBounds.empty())
+            {
+                return false;
+            }
+
+            bool hasPositiveBounds = false;
+            bool insidePositiveBounds = false;
+            bool insideNegator = false;
+
+            for (const NavBoundsEntry& e : activeBounds)
+            {
+                glm::vec4 lp4 = e.invTransform * glm::vec4(p, 1.0f);
+                glm::vec3 lp(lp4.x, lp4.y, lp4.z);
+                const bool inside = (fabsf(lp.x) <= e.halfExtents.x &&
+                                     fabsf(lp.y) <= e.halfExtents.y &&
+                                     fabsf(lp.z) <= e.halfExtents.z);
+                if (!inside)
+                {
+                    continue;
+                }
+
+                if (e.negator)
+                {
+                    insideNegator = true;
+                }
+                else
+                {
+                    insidePositiveBounds = true;
+                }
+            }
+
+            for (const NavBoundsEntry& e : activeBounds)
+            {
+                if (!e.negator)
+                {
+                    hasPositiveBounds = true;
+                    break;
+                }
+            }
+
+            if (insideNegator)
+            {
+                return false;
+            }
+
+            if (hasPositiveBounds)
+            {
+                return insidePositiveBounds;
+            }
+
+            // No positive NavMesh3D bounds available yet.
+            return false;
+        };`r`n
+        auto pointInsideCullWallsBounds = [&](const glm::vec3& p, float& outThreshold) -> bool
+        {
+            if (activeBounds.empty())
+            {
+                return false;
+            }
+
+            bool found = false;
+            float bestThreshold = 0.2f;
+
+            for (const NavBoundsEntry& e : activeBounds)
+            {
+                if (!e.cullWalls)
+                {
+                    continue;
+                }
+
+                glm::vec4 lp4 = e.invTransform * glm::vec4(p, 1.0f);
+                glm::vec3 lp(lp4.x, lp4.y, lp4.z);
+                if (fabsf(lp.x) <= e.halfExtents.x &&
+                    fabsf(lp.y) <= e.halfExtents.y &&
+                    fabsf(lp.z) <= e.halfExtents.z)
+                {
+                    if (!found || e.wallCullThreshold > bestThreshold)
+                    {
+                        bestThreshold = e.wallCullThreshold;
+                    }
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                outThreshold = bestThreshold;
+            }
+            return found;
+        };
+
+        for (StaticMesh3D* meshNode : navMeshes)
+        {
+            if (meshNode == nullptr || !meshNode->IsNavmeshReady())
+            {
+                continue;
+            }
+
+            StaticMesh* staticMesh = meshNode->GetStaticMesh();
+            if (staticMesh == nullptr)
+            {
+                continue;
+            }
+
+            Vertex* vertices = staticMesh->GetVertices();
+            IndexType* indices = staticMesh->GetIndices();
+            const uint32_t numVertices = staticMesh->GetNumVertices();
+            const uint32_t numIndices = staticMesh->GetNumIndices();
+
+            if (!vertices || !indices || numVertices == 0 || numIndices < 3)
+            {
+                continue;
+            }
+
+            const glm::mat4 transform = meshNode->GetTransform();
+
+            // Build world-space vertices for this mesh and only emit triangles that
+            // fall inside at least one Nav Bounds box (if any are enabled).
+            std::vector<glm::vec3> worldVerts;
+            worldVerts.resize(numVertices);
+            for (uint32_t i = 0; i < numVertices; ++i)
+            {
+                glm::vec4 wp = transform * glm::vec4(vertices[i].mPosition, 1.0f);
+                worldVerts[i] = glm::vec3(wp.x, wp.y, wp.z);
+            }
+
+            for (uint32_t i = 0; i + 2 < numIndices; i += 3)
+            {
+                const uint32_t ia = (uint32_t)indices[i + 0];
+                const uint32_t ib = (uint32_t)indices[i + 1];
+                const uint32_t ic = (uint32_t)indices[i + 2];
+                if (ia >= numVertices || ib >= numVertices || ic >= numVertices)
+                {
+                    continue;
+                }
+
+                const glm::vec3& a = worldVerts[ia];
+                const glm::vec3& b = worldVerts[ib];
+                const glm::vec3& c = worldVerts[ic];
+                const glm::vec3 centroid = (a + b + c) / 3.0f;
+
+                if (!pointInsideAnyBounds(centroid))
+                {
+                    continue;
+                }
+
+                float wallCullThreshold = 0.2f;
+                if (pointInsideCullWallsBounds(centroid, wallCullThreshold))
+                {
+                    glm::vec3 n = glm::cross(b - a, c - a);
+                    float nlen2 = glm::dot(n, n);
+                    if (nlen2 > 1e-8f)
+                    {
+                        n = glm::normalize(n);
+                        // Cull near-vertical faces ("90 degree walls")
+                        if (fabsf(n.y) < wallCullThreshold)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                const int baseVert = (int)(outVerts.size() / 3);
+                outVerts.push_back(a.x); outVerts.push_back(a.y); outVerts.push_back(a.z);
+                outVerts.push_back(b.x); outVerts.push_back(b.y); outVerts.push_back(b.z);
+                outVerts.push_back(c.x); outVerts.push_back(c.y); outVerts.push_back(c.z);
+
+                outTris.push_back(baseVert + 0);
+                outTris.push_back(baseVert + 1);
+                outTris.push_back(baseVert + 2);`r`n            }
+        }
+
+        return !outVerts.empty() && !outTris.empty();
+    }
+
+    static bool BuildRecastNavData(World* world, RecastNavData& outData)
+    {
+        std::vector<float> verts;
+        std::vector<int> tris;
+        if (!GatherNavTriangles(world, verts, tris))
+        {
+            return false;
+        }
+
+        float bmin[3], bmax[3];
+        rcCalcBounds(verts.data(), (int)verts.size() / 3, bmin, bmax);
+
+        rcConfig cfg{};
+        cfg.cs = 0.3f;
+        cfg.ch = 0.2f;
+        cfg.walkableSlopeAngle = 55.0f;
+        cfg.walkableHeight = (int)ceilf(2.0f / cfg.ch);
+        cfg.walkableClimb = (int)floorf(0.9f / cfg.ch);
+        cfg.walkableRadius = (int)ceilf(0.4f / cfg.cs);
+        cfg.maxEdgeLen = (int)(12.0f / cfg.cs);
+        cfg.maxSimplificationError = 1.3f;
+        cfg.minRegionArea = (int)rcSqr(8);
+        cfg.mergeRegionArea = (int)rcSqr(20);
+        cfg.maxVertsPerPoly = 6;
+        cfg.detailSampleDist = 6.0f;
+        cfg.detailSampleMaxError = 1.0f;
+
+        rcVcopy(cfg.bmin, bmin);
+        rcVcopy(cfg.bmax, bmax);
+        rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
+
+        rcContext ctx(false);
+        rcHeightfield* solid = rcAllocHeightfield();
+        if (!solid) return false;
+
+        bool ok = false;
+        unsigned char* triAreas = nullptr;
+        rcCompactHeightfield* chf = nullptr;
+        rcContourSet* cset = nullptr;
+        rcPolyMesh* pmesh = nullptr;
+        rcPolyMeshDetail* dmesh = nullptr;
+
+        do {
+            if (!rcCreateHeightfield(&ctx, *solid, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)) break;
+
+            const int ntris = (int)tris.size() / 3;
+            triAreas = new unsigned char[ntris];
+            memset(triAreas, 0, ntris * sizeof(unsigned char));
+            rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts.data(), (int)verts.size() / 3, tris.data(), ntris, triAreas);
+            if (!rcRasterizeTriangles(&ctx, verts.data(), (int)verts.size() / 3, tris.data(), triAreas, ntris, *solid, cfg.walkableClimb)) break;
+
+            rcFilterLowHangingWalkableObstacles(&ctx, cfg.walkableClimb, *solid);
+            rcFilterLedgeSpans(&ctx, cfg.walkableHeight, cfg.walkableClimb, *solid);
+            rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *solid);
+
+            chf = rcAllocCompactHeightfield();
+            if (!chf) break;
+            if (!rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *solid, *chf)) break;
+
+            if (!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf)) break;
+            if (!rcBuildDistanceField(&ctx, *chf)) break;
+            if (!rcBuildRegions(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea)) break;
+
+            cset = rcAllocContourSet();
+            if (!cset) break;
+            if (!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset)) break;
+
+            pmesh = rcAllocPolyMesh();
+            if (!pmesh) break;
+            if (!rcBuildPolyMesh(&ctx, *cset, cfg.maxVertsPerPoly, *pmesh)) break;
+
+            dmesh = rcAllocPolyMeshDetail();
+            if (!dmesh) break;
+            if (!rcBuildPolyMeshDetail(&ctx, *pmesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *dmesh)) break;
+
+            for (int i = 0; i < pmesh->npolys; ++i)
+            {
+                pmesh->flags[i] = 1;
+                pmesh->areas[i] = 0;
+            }
+
+            dtNavMeshCreateParams params{};
+            params.verts = pmesh->verts;
+            params.vertCount = pmesh->nverts;
+            params.polys = pmesh->polys;
+            params.polyAreas = pmesh->areas;
+            params.polyFlags = pmesh->flags;
+            params.polyCount = pmesh->npolys;
+            params.nvp = pmesh->nvp;
+            params.detailMeshes = dmesh->meshes;
+            params.detailVerts = dmesh->verts;
+            params.detailVertsCount = dmesh->nverts;
+            params.detailTris = dmesh->tris;
+            params.detailTriCount = dmesh->ntris;
+            params.walkableHeight = 2.0f;
+            params.walkableRadius = 0.4f;
+            params.walkableClimb = 0.9f;
+            rcVcopy(params.bmin, pmesh->bmin);
+            rcVcopy(params.bmax, pmesh->bmax);
+            params.cs = cfg.cs;
+            params.ch = cfg.ch;
+            params.buildBvTree = true;
+
+            unsigned char* navData = nullptr;
+            int navDataSize = 0;
+            if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) break;
+
+            outData.mNavMesh = dtAllocNavMesh();
+            if (!outData.mNavMesh) break;
+            if (dtStatusFailed(outData.mNavMesh->init(navData, navDataSize, DT_TILE_FREE_DATA))) break;
+
+            outData.mQuery = dtAllocNavMeshQuery();
+            if (!outData.mQuery) break;
+            if (dtStatusFailed(outData.mQuery->init(outData.mNavMesh, 2048))) break;
+
+            ok = true;
+        } while (false);
+
+        delete[] triAreas;
+        rcFreePolyMeshDetail(dmesh);
+        rcFreePolyMesh(pmesh);
+        rcFreeContourSet(cset);
+        rcFreeCompactHeightfield(chf);
+        rcFreeHeightField(solid);
+
+        return ok;
+    }
+}
 
 std::unordered_set<NodePtrWeak> World::sNewlyRegisteredNodes;
 
@@ -84,6 +481,7 @@ World::World() :
 
 void World::Destroy()
 {
+    InvalidateWorldNavCache(this);
     DestroyRootNode();
 
     OCT_ASSERT(mRootNode == nullptr);
@@ -118,6 +516,7 @@ void World::SetRootNode(Node* node)
 {
     if (mRootNode != node)
     {
+        InvalidateWorldNavCache(this);
         if (mRootNode != nullptr)
         {
             if (IsPlaying())
@@ -304,8 +703,122 @@ void World::GatherNodes(std::vector<Node*>& outNodes)
     }
 }
 
+bool World::FindNavPath(glm::vec3 start, glm::vec3 end, std::vector<glm::vec3>& outPath)
+{
+    outPath.clear();
+
+    RecastNavData* nav = GetOrBuildWorldNav(this);
+    if (!nav || !nav->mQuery)
+    {
+        return false;
+    }
+
+    const float ext[3] = { 2.0f, 4.0f, 2.0f };
+    const float startPt[3] = { start.x, start.y, start.z };
+    const float endPt[3] = { end.x, end.y, end.z };
+
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xffff);
+    filter.setExcludeFlags(0);
+
+    dtPolyRef startRef = 0;
+    dtPolyRef endRef = 0;
+    float nearestStart[3];
+    float nearestEnd[3];
+
+    if (dtStatusFailed(nav->mQuery->findNearestPoly(startPt, ext, &filter, &startRef, nearestStart)) || startRef == 0)
+    {
+        return false;
+    }
+
+    if (dtStatusFailed(nav->mQuery->findNearestPoly(endPt, ext, &filter, &endRef, nearestEnd)) || endRef == 0)
+    {
+        return false;
+    }
+
+    dtPolyRef polys[2048];
+    int npolys = 0;
+    if (dtStatusFailed(nav->mQuery->findPath(startRef, endRef, nearestStart, nearestEnd, &filter, polys, &npolys, 2048)) || npolys <= 0)
+    {
+        return false;
+    }
+
+    float straight[2048 * 3];
+    unsigned char straightFlags[2048];
+    dtPolyRef straightPolys[2048];
+    int nstraight = 0;
+
+    if (dtStatusFailed(nav->mQuery->findStraightPath(nearestStart, nearestEnd, polys, npolys,
+        straight, straightFlags, straightPolys, &nstraight, 2048, DT_STRAIGHTPATH_ALL_CROSSINGS)) || nstraight <= 0)
+    {
+        return false;
+    }
+
+    outPath.reserve((size_t)nstraight);
+    for (int i = 0; i < nstraight; ++i)
+    {
+        outPath.push_back(glm::vec3(straight[i * 3 + 0], straight[i * 3 + 1], straight[i * 3 + 2]));
+    }
+
+    return !outPath.empty();
+}
+
+bool World::FindRandomNavPoint(glm::vec3& outPoint)
+{
+    RecastNavData* nav = GetOrBuildWorldNav(this);
+    if (!nav || !nav->mQuery)
+    {
+        return false;
+    }
+
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xffff);
+    filter.setExcludeFlags(0);
+
+    dtPolyRef ref = 0;
+    float pt[3] = {};
+    auto frand = []() -> float { return Maths::RandRange(0.0f, 1.0f); };
+
+    if (dtStatusFailed(nav->mQuery->findRandomPoint(&filter, frand, &ref, pt)) || ref == 0)
+    {
+        return false;
+    }
+
+    outPoint = glm::vec3(pt[0], pt[1], pt[2]);
+    return true;
+}
+
+bool World::FindClosestNavPoint(glm::vec3 inPoint, glm::vec3& outPoint)
+{
+    RecastNavData* nav = GetOrBuildWorldNav(this);
+    if (!nav || !nav->mQuery)
+    {
+        return false;
+    }
+
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xffff);
+    filter.setExcludeFlags(0);
+
+    const float ext[3] = { 2.0f, 4.0f, 2.0f };
+    const float inPt[3] = { inPoint.x, inPoint.y, inPoint.z };
+    dtPolyRef ref = 0;
+    float outPt[3] = {};
+
+    if (dtStatusFailed(nav->mQuery->findNearestPoly(inPt, ext, &filter, &ref, outPt)) || ref == 0)
+    {
+        return false;
+    }
+
+    outPoint = glm::vec3(outPt[0], outPt[1], outPt[2]);
+    return true;
+}
+
+
+
 void World::Clear()
 {
+    InvalidateWorldNavCache(this);
     DestroyRootNode();
 }
 
@@ -1242,3 +1755,22 @@ Node* World::SpawnDefaultRoot()
 
     return mRootNode.Get();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

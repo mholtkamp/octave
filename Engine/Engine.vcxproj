@@ -349,7 +349,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)../External/recastnavigation/Recast/Include;$(ProjectDir)../External/recastnavigation/Detour/Include;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -501,7 +501,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)../External/recastnavigation/Recast/Include;$(ProjectDir)../External/recastnavigation/Detour/Include;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -610,7 +610,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="FeatureFlags.cpp" />
+    <ClCompile Include="FeatureFlags.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\Recast.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastAlloc.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastArea.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastAssert.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastContour.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastFilter.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastLayers.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastMesh.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastMeshDetail.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastRasterization.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastRegion.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourAlloc.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourAssert.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourCommon.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMesh.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMeshBuilder.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMeshQuery.cpp" />`r`n    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNode.cpp" />
     <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
@@ -682,7 +682,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\Camera3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Capsule3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLight3d.cpp" />
-    <ClCompile Include="Source\Engine\Nodes\3D\InstancedMesh3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\InstancedMesh3d.cpp" />`r`n    <ClCompile Include="Source\Engine\Nodes\3D\NavMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Light3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Mesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Particle3d.cpp" />
@@ -937,7 +937,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\Camera3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Capsule3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLight3d.h" />
-    <ClInclude Include="Source\Engine\Nodes\3D\InstancedMesh3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\InstancedMesh3d.h" />`r`n    <ClInclude Include="Source\Engine\Nodes\3D\NavMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Light3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Mesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Particle3d.h" />
@@ -1092,3 +1092,5 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
+
+

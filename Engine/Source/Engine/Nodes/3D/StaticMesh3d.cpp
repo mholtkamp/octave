@@ -30,6 +30,11 @@ bool StaticMesh3D::HandlePropChange(Datum* datum, uint32_t index, const void* ne
         meshComp->SetUseTriangleCollision(*(bool*)newValue);
         success = true;
     }
+    else if (prop->mName == "Navmesh Ready")
+    {
+        meshComp->SetNavmeshReady(*(bool*)newValue);
+        success = true;
+    }
     else if (prop->mName == "Clear Instance Colors")
     {
         meshComp->ClearInstanceColors();
@@ -49,6 +54,7 @@ static StaticMesh* GetDefaultMesh()
 StaticMesh3D::StaticMesh3D() :
     mStaticMesh(nullptr),
     mUseTriangleCollision(false),
+    mNavmeshReady(false),
     mBakeLighting(false),
     mHasBakedLighting(false)
 {
@@ -74,6 +80,7 @@ void StaticMesh3D::GatherProperties(std::vector<Property>& outProps)
     static bool sFakeBool = false;
     outProps.push_back(Property(DatumType::Asset, "Static Mesh", this, &mStaticMesh, 1, HandlePropChange, int32_t(StaticMesh::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Use Triangle Collision", this, &mUseTriangleCollision, 1, HandlePropChange));
+    outProps.push_back(Property(DatumType::Bool, "Navmesh Ready", this, &mNavmeshReady, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Bake Lighting", this, &mBakeLighting, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Bool, "Clear Instance Colors", this, &sFakeBool, 1, HandlePropChange));
 }
@@ -172,6 +179,16 @@ void StaticMesh3D::SetUseTriangleCollision(bool triangleCol)
 bool StaticMesh3D::GetUseTriangleCollision() const
 {
     return mUseTriangleCollision;
+}
+
+void StaticMesh3D::SetNavmeshReady(bool navmeshReady)
+{
+    mNavmeshReady = navmeshReady;
+}
+
+bool StaticMesh3D::IsNavmeshReady() const
+{
+    return mNavmeshReady;
 }
 
 void StaticMesh3D::SetBakeLighting(bool bake)
