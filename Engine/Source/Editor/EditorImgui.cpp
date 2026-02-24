@@ -7900,24 +7900,16 @@ static std::string ResolveEditorFontPath()
 
 static std::string ResolveEditorIconFontPath()
 {
-    const std::string defaultPath = GetDefaultEditorFontPath();
-    const std::string desiredFontName = ResolveEditorFontName();
-
-    if (desiredFontName.empty() || desiredFontName == "Default")
-    {
-        return defaultPath;
-    }
-
-    const std::string relativePath = "Engine/Assets/Fonts/OctaveEngineIcons.ttf" ;
+    const std::string relativePath = "Engine/Assets/Fonts/OctaveEngineIcons.ttf";
     const std::string absolutePath = SYS_GetAbsolutePath(relativePath.c_str());
 
     if (!SYS_DoesFileExist(absolutePath.c_str(), false))
     {
-        LogWarning("Editor Icon font '%s' not found at %s. Falling back to default font.", desiredFontName.c_str(), absolutePath.c_str());
-        GetMutableEngineConfig()->mCurrentFont = "Default";
-        return defaultPath;
+        LogWarning("Editor Icon font '%s' not found at %s.", relativePath.c_str(), absolutePath.c_str());
+        return "";
     }
 
+    LogDebug("Using editor icon font at %s", absolutePath.c_str());
     return absolutePath;
 }
 
@@ -7955,7 +7947,11 @@ void EditorImguiInit()
         }
 
 
-    MergeOctaveIcons(io.Fonts, 14.0f,  ResolveEditorIconFontPath().c_str());
+    std::string iconFontPath = ResolveEditorIconFontPath();
+    if (!iconFontPath.empty())
+    {
+        MergeOctaveIcons(io.Fonts, 14.0f, iconFontPath.c_str());
+    }
 
     //ImGui::StyleColorsLight();
 
