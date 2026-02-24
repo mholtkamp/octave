@@ -82,6 +82,29 @@ Sig: `nodes = World:FindNodesWithName(name)`
  - Arg: `string name` Name to search for
  - Ret: `table nodes` Array of Node elements
 ---
+### FindNavPath
+Find a navigation path between two world positions.
+
+Sig: `res = World:FindNavPath(start, goal)`
+ - Arg: `Vector start` Start world position
+ - Arg: `Vector goal` Goal world position
+ - Ret: `table res`
+   - `boolean success` True if a path was found
+   - `table points` Array of `Vector` waypoints
+---
+### FindRandomNavPoint
+Find a random point on the current navmesh.
+
+Sig: `point = World:FindRandomNavPoint()`
+ - Ret: `Vector point` Random nav point (or `nil` if unavailable)
+---
+### FindClosestNavPoint
+Project a position to the closest point on the current navmesh.
+
+Sig: `point = World:FindClosestNavPoint(pos)`
+ - Arg: `Vector pos` Input world position
+ - Ret: `Vector point` Closest nav point (or `nil` if unavailable)
+---
 ### SetAmbientLightColor
 Set the world's ambient light color.
 

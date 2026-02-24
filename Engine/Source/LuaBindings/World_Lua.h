@@ -55,6 +55,10 @@ struct World_Lua
 
     static int SpawnParticle(lua_State* L);
 
+    static int FindNavPath(lua_State* L);
+    static int FindRandomNavPoint(lua_State* L);
+    static int FindClosestNavPoint(lua_State* L);
+
     static void Bind();
 };
 

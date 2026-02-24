@@ -495,6 +495,66 @@ int World_Lua::SpawnParticle(lua_State* L)
     return 1;
 }
 
+int World_Lua::FindNavPath(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    glm::vec3 start = CHECK_VECTOR(L, 2);
+    glm::vec3 end = CHECK_VECTOR(L, 3);
+
+    std::vector<glm::vec3> path;
+    bool success = world->FindNavPath(start, end, path);
+
+    lua_newtable(L);
+    lua_pushboolean(L, success);
+    lua_setfield(L, -2, "success");
+
+    lua_newtable(L);
+    for (uint32_t i = 0; i < path.size(); ++i)
+    {
+        lua_pushinteger(L, int(i + 1));
+        Vector_Lua::Create(L, path[i]);
+        lua_settable(L, -3);
+    }
+    lua_setfield(L, -2, "points");
+
+    return 1;
+}
+
+int World_Lua::FindRandomNavPoint(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+
+    glm::vec3 point;
+    bool success = world->FindRandomNavPoint(point);
+
+    if (!success)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Vector_Lua::Create(L, point);
+    return 1;
+}
+
+int World_Lua::FindClosestNavPoint(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    glm::vec3 inPoint = CHECK_VECTOR(L, 2);
+
+    glm::vec3 outPoint;
+    bool success = world->FindClosestNavPoint(inPoint, outPoint);
+
+    if (!success)
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Vector_Lua::Create(L, outPoint);
+    return 1;
+}
+
 void World_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -561,6 +621,10 @@ void World_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsInternalEdgeSmoothingEnabled);
 
     REGISTER_TABLE_FUNC(L, mtIndex, SpawnParticle);
+
+    REGISTER_TABLE_FUNC(L, mtIndex, FindNavPath);
+    REGISTER_TABLE_FUNC(L, mtIndex, FindRandomNavPoint);
+    REGISTER_TABLE_FUNC(L, mtIndex, FindClosestNavPoint);
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);
