@@ -19,7 +19,6 @@ jobs:
 
       - name: Initialize submodules
         run: |
-          git submodule deinit --all -f
           git submodule init -- External/bullet3 External/doxygen-awesome-css External/zep Plugins/Blender/octave-gameengine-connect
           git submodule update --recursive
 
@@ -72,7 +71,6 @@ jobs:
 
       - name: Initialize submodules
         run: |
-          git submodule deinit --all -f
           git submodule init -- External/bullet3 External/doxygen-awesome-css External/zep Plugins/Blender/octave-gameengine-connect
           git submodule update --recursive
 
