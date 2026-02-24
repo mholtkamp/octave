@@ -21,22 +21,23 @@
 static bool sRunning = true;
 static bool sFatInit = false;
 
-static void ResetCallback()
+#if PLATFORM_WII
+static void ResetCallback(u32 irq, void* ctx)
 {
     sRunning = false;
 }
 
-#if PLATFORM_WII
 static void PowerCallback()
+{
+    sRunning = false;
+}
+#else
+static void ResetCallback()
 {
     sRunning = false;
 }
 #endif
 
-static bool SYS_MainLoop()
-{
-    return sRunning;
-}
 static void InitFAT()
 {
     if (!sFatInit)
@@ -118,7 +119,11 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
+#if PLATFORM_WII
     GetEngineState()->mQuit = !SYS_MainLoop();
+#else
+    GetEngineState()->mQuit = !sRunning;
+#endif
 }
 
 // Files

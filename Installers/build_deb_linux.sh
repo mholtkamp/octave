@@ -78,9 +78,11 @@ set -e
 # Make binary executable
 chmod +x /opt/octave/OctaveEditor
 
-# Create writable saves directory
+# Create writable directories for runtime output
 mkdir -p /opt/octave/Engine/Saves
 chmod 777 /opt/octave/Engine/Saves
+mkdir -p /opt/octave/Standalone
+chmod 777 /opt/octave/Standalone
 
 # Create wrapper script that cds to install dir (required for path detection)
 cat > /usr/local/bin/octave-editor << 'WRAPPER'
