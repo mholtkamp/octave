@@ -234,15 +234,21 @@ void ThemeModule::Render()
                 }
 
                 ImGui::TableNextColumn();
-                if (ImGui::SmallButton("Reimport"))
+                if (!customThemes[i].IsBundled)
                 {
-                    reimportIdx = i;
+                    if (ImGui::SmallButton("Reimport"))
+                    {
+                        reimportIdx = i;
+                    }
                 }
 
                 ImGui::TableNextColumn();
-                if (ImGui::SmallButton("Remove"))
+                if (!customThemes[i].IsBundled)
                 {
-                    removeIdx = i;
+                    if (ImGui::SmallButton("Remove"))
+                    {
+                        removeIdx = i;
+                    }
                 }
 
                 ImGui::PopID();
@@ -344,7 +350,7 @@ void ThemeModule::LoadSettings(const rapidjson::Document& doc)
         return;
 	}
 
-    std::string themeName = JsonSettings::GetString(doc, "theme", "Dark");
+    std::string themeName = JsonSettings::GetString(doc, "theme", "Material Original");
     mCurrentTheme = EditorTheme::GetThemeTypeFromName(themeName);
 
     // Convert theme type to flat index for combo box

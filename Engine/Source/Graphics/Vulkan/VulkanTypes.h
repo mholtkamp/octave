@@ -224,6 +224,7 @@ struct QuadUniformData
 {
     glm::mat4 mTransform;
     glm::vec4 mColor;
+    glm::vec4 mQuadParams; // x = cornerRadius, y = width, z = height, w = unused
 };
 
 struct TextUniformData

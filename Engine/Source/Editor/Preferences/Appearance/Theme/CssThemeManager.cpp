@@ -14,6 +14,7 @@
 #include "Log.h"
 
 #include <algorithm>
+#include <cstring>
 
 static const std::string sEmptyString;
 
@@ -157,9 +158,82 @@ void CssThemeManager::ApplyTheme(int index)
     }
 }
 
+static std::string DeriveBundledThemeName(const std::string& filename)
+{
+    // Strip .css extension
+    std::string name = filename;
+    size_t dot = name.find_last_of('.');
+    if (dot != std::string::npos)
+        name = name.substr(0, dot);
+
+    // Convert hyphens/underscores to spaces and capitalize each word
+    std::string result;
+    bool capitalizeNext = true;
+    for (char c : name)
+    {
+        if (c == '-' || c == '_')
+        {
+            result += ' ';
+            capitalizeNext = true;
+        }
+        else
+        {
+            if (capitalizeNext && c >= 'a' && c <= 'z')
+                result += (char)(c - 32);
+            else
+                result += c;
+            capitalizeNext = false;
+        }
+    }
+    return result;
+}
+
+void CssThemeManager::LoadBundledThemes()
+{
+    std::string themesDir = SYS_GetOctavePath() + "Engine/Assets/Themes/";
+
+    DirEntry dirEntry;
+    SYS_OpenDirectory(themesDir, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (!dirEntry.mDirectory &&
+            strcmp(dirEntry.mFilename, ".") != 0 &&
+            strcmp(dirEntry.mFilename, "..") != 0)
+        {
+            std::string filename = dirEntry.mFilename;
+            size_t dot = filename.find_last_of('.');
+            if (dot != std::string::npos && filename.substr(dot) == ".css")
+            {
+                std::string fullPath = themesDir + filename;
+
+                CustomThemeEntry entry;
+                entry.Name = DeriveBundledThemeName(filename);
+                entry.FileName = filename;
+                entry.IsBundled = true;
+                entry.IsValid = CssThemeParser::ParseFile(fullPath, entry.ParsedData);
+
+                if (!entry.IsValid)
+                {
+                    LogWarning("CSS Theme: Could not parse bundled theme '%s'", filename.c_str());
+                }
+
+                mThemes.push_back(entry);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+}
+
 void CssThemeManager::LoadThemeList()
 {
     mThemes.clear();
+
+    // Load bundled themes first (from Engine/Assets/Themes/)
+    LoadBundledThemes();
 
     rapidjson::Document doc;
     std::string listPath = GetThemeListPath();
@@ -209,6 +283,9 @@ void CssThemeManager::SaveThemeList()
 
     for (const auto& theme : mThemes)
     {
+        if (theme.IsBundled)
+            continue;
+
         rapidjson::Value entry(rapidjson::kObjectType);
         entry.AddMember("name",
             rapidjson::Value(theme.Name.c_str(), allocator),

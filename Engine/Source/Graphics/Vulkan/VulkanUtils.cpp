@@ -2240,7 +2240,7 @@ void CreateQuadResource(Quad* quad)
     QuadResource* resource = quad->GetResource();
 
     OCT_ASSERT(resource->mVertexBuffer == nullptr);
-    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
+    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, Quad::kMaxQuadVertices * sizeof(VertexUI), "Quad Vertices");
 }
 
 void DestroyQuadResource(Quad* quad)
@@ -2257,7 +2257,7 @@ void DestroyQuadResource(Quad* quad)
 void UpdateQuadResourceVertexData(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
-    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * 4, 0);
+    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * quad->GetNumVertices(), 0);
 }
 
 void BindGeometryDescriptorSet(Quad* quad)
@@ -2268,6 +2268,10 @@ void BindGeometryDescriptorSet(Quad* quad)
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
     ubo.mColor = quad->GetColor();
+
+    // Corner rounding is now handled by geometry (triangle fan), so pass 0 for shader SDF.
+    ubo.mQuadParams = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
@@ -2298,7 +2302,66 @@ void DrawQuad(Quad* quad)
 
     BindGeometryDescriptorSet(quad);
 
-    vkCmdDraw(cb, 4, 1, 0, 0);
+    vkCmdDraw(cb, quad->GetNumVertices(), 1, 0, 0);
+}
+
+void CreateQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+
+    OCT_ASSERT(resource->mVertexBuffer == nullptr);
+    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, Quad::kMaxQuadVertices * sizeof(VertexUI), "Quad Border Vertices");
+}
+
+void DestroyQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+
+    if (resource->mVertexBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+    }
+}
+
+void UpdateQuadBorderResourceVertexData(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    resource->mVertexBuffer->Update(quad->GetBorderVertices(), sizeof(VertexUI) * quad->GetBorderNumVertices(), 0);
+}
+
+void DrawQuadBorder(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    VkCommandBuffer cb = GetCommandBuffer();
+    VulkanContext* context = GetVulkanContext();
+
+    BindPipelineConfig(PipelineConfig::Quad);
+
+    VkDeviceSize offset = 0;
+    VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
+    vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
+
+    context->CommitPipeline();
+
+    // Use border color and white texture for solid fill
+    QuadUniformData ubo = {};
+    ubo.mTransform = glm::mat4(quad->GetTransform());
+    ubo.mColor = quad->GetBorderColor();
+    ubo.mQuadParams = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+
+    Renderer* renderer = Renderer::Get();
+    Texture* texture = renderer->mWhiteTexture.Get<Texture>();
+
+    DescriptorSet::Begin("Quad Border DS")
+        .WriteUniformBuffer(0, uniformBlock)
+        .WriteImage(1, texture->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 1);
+
+    vkCmdDraw(cb, quad->GetBorderNumVertices(), 1, 0, 0);
 }
 
 void CreateTextResource(Text* text)

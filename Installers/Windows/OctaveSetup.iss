@@ -18,7 +18,7 @@
 #ifexist VersionFile
   #define MyAppVersion ReadIni(VersionFile, "Octave", "Version", "5")
 #else
-  #define MyAppVersion "5"
+  #define MyAppVersion "5.0.1.4"
 #endif
 
 [Setup]
@@ -29,7 +29,7 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
-DefaultDirName={autopf}\Octave
+DefaultDirName={sd}\Octave
 DefaultGroupName={#MyAppName}
 LicenseFile=..\..\dist\Editor\LICENSE
 OutputDir=..\..\dist
@@ -37,8 +37,8 @@ OutputBaseFilename=OctaveSetup-{#MyAppVersion}
 SetupIconFile=..\..\dist\Editor\Standalone\Octave.ico
 Compression=lzma2
 SolidCompression=yes
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
 UninstallDisplayIcon={app}\Standalone\Octave.ico
 PrivilegesRequired=admin
@@ -82,21 +82,29 @@ Source: "..\..\dist\Editor\Engine\Generated\*"; DestDir: "{app}\Engine\Generated
 ; --- Core: Template ---
 Source: "..\..\dist\Editor\Template\*"; DestDir: "{app}\Template"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: core
 
-; --- Core: Standalone sentinel ---
-Source: "..\..\dist\Editor\Standalone\Standalone.rc"; DestDir: "{app}\Standalone"; Flags: ignoreversion; Components: core
-Source: "..\..\dist\Editor\Standalone\resource.h"; DestDir: "{app}\Standalone"; Flags: ignoreversion; Components: core
-Source: "..\..\dist\Editor\Standalone\Octave.ico"; DestDir: "{app}\Standalone"; Flags: ignoreversion skipifsourcedoesntexist; Components: core
+; --- Core: Standalone (full directory for builds and C++ project creation) ---
+Source: "..\..\dist\Editor\Standalone\*"; DestDir: "{app}\Standalone"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: core
+
+; --- Core: Engine Makefiles (referenced by Standalone Makefiles via ../Engine/) ---
+Source: "..\..\dist\Editor\Engine\Makefile_*"; DestDir: "{app}\Engine"; Flags: ignoreversion skipifsourcedoesntexist; Components: core
 
 ; --- Core: Root files ---
 Source: "..\..\dist\Editor\LICENSE"; DestDir: "{app}"; Flags: ignoreversion; Components: core
 Source: "..\..\dist\Editor\OctaveLogo_128.png"; DestDir: "{app}"; Flags: ignoreversion; Components: core
 Source: "..\..\dist\Editor\OctaveLogo_256.png"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist; Components: core
 Source: "..\..\dist\Editor\version.txt"; DestDir: "{app}"; Flags: ignoreversion; Components: core
+Source: "..\..\dist\Editor\Octave.sln"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist; Components: core
 
-; --- SDK: Engine Source Headers ---
+; --- Core: .vscode (for C++ project creation) ---
+Source: "..\..\dist\Editor\.vscode\*"; DestDir: "{app}\.vscode"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Components: core
+
+; --- SDK: Engine Source ---
 Source: "..\..\dist\Editor\Engine\Source\*"; DestDir: "{app}\Engine\Source"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: sdk
+Source: "..\..\dist\Editor\Engine\Engine.vcxproj"; DestDir: "{app}\Engine"; Flags: ignoreversion skipifsourcedoesntexist; Components: sdk
+Source: "..\..\dist\Editor\Engine\Engine.vcxproj.filters"; DestDir: "{app}\Engine"; Flags: ignoreversion skipifsourcedoesntexist; Components: sdk
+Source: "..\..\dist\Editor\Engine\CMakeLists.txt"; DestDir: "{app}\Engine"; Flags: ignoreversion skipifsourcedoesntexist; Components: sdk
 
-; --- SDK: External Headers ---
+; --- SDK: External ---
 Source: "..\..\dist\Editor\External\*"; DestDir: "{app}\External"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: sdk
 
 ; --- Tools ---
@@ -106,8 +114,8 @@ Source: "..\..\dist\Editor\Tools\*"; DestDir: "{app}\Tools"; Flags: ignoreversio
 Source: "..\..\dist\Editor\Documentation\*"; DestDir: "{app}\Documentation"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: docs
 
 [Dirs]
-; Ensure Engine/Saves is writable by all users (preferences, editor state, shader cache)
-Name: "{app}\Engine\Saves"; Permissions: users-modify
+; Engine/Saves for preferences, editor state, shader cache (writable under per-user install)
+Name: "{app}\Engine\Saves"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
@@ -119,10 +127,10 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Registry]
 ; .octp file association
-Root: HKLM; Subkey: "Software\Classes\.octp"; ValueType: string; ValueData: "OctaveProject"; Flags: uninsdeletevalue; Tasks: associateoctp
-Root: HKLM; Subkey: "Software\Classes\OctaveProject"; ValueType: string; ValueData: "Octave Engine Project"; Flags: uninsdeletekey; Tasks: associateoctp
-Root: HKLM; Subkey: "Software\Classes\OctaveProject\DefaultIcon"; ValueType: string; ValueData: "{app}\Standalone\Octave.ico,0"; Tasks: associateoctp
-Root: HKLM; Subkey: "Software\Classes\OctaveProject\shell\open\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" -project ""%1"""; Tasks: associateoctp
+Root: HKCU; Subkey: "Software\Classes\.octp"; ValueType: string; ValueData: "OctaveProject"; Flags: uninsdeletevalue; Tasks: associateoctp
+Root: HKCU; Subkey: "Software\Classes\OctaveProject"; ValueType: string; ValueData: "Octave Engine Project"; Flags: uninsdeletekey; Tasks: associateoctp
+Root: HKCU; Subkey: "Software\Classes\OctaveProject\DefaultIcon"; ValueType: string; ValueData: "{app}\Standalone\Octave.ico,0"; Tasks: associateoctp
+Root: HKCU; Subkey: "Software\Classes\OctaveProject\shell\open\command"; ValueType: string; ValueData: """{app}\{#MyAppExeName}"" -project ""%1"""; Tasks: associateoctp
 
 [UninstallDelete]
 ; Clean up imgui.ini and any temp files at app root, but NOT Engine/Saves

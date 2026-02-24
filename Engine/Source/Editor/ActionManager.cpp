@@ -680,7 +680,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 #if PLATFORM_WINDOWS
         SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"").c_str());
 #else
-        SYS_Exec(("cd " + octaveDirectory + "Engine/Shaders/GLSL && \"./compile.sh\"").c_str());
+        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.sh\"").c_str());
 #endif
 
         // Then copy over the binaries.
@@ -872,7 +872,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             // Inject native addon sources into the build (for addons with target: engine)
             InjectNativeAddonSources(tmpMakefile, buildProjDir);
 
-            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
+            std::string makeCmd = std::string("make -C \"") + (buildProjDir) + "\" -f Makefile_TEMP -j 12";
             SYS_Exec(makeCmd.c_str());
 
             // Delete the temp makefile (disabled for debugging)
@@ -884,7 +884,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             {
                 // Strip out debug symbols to keep the file size small.
                 std::string exeName = standalone ? "Octave" : projectName;
-                std::string stripCmd = std::string("strip --strip-debug ") + buildProjDir + "Build/Linux/" + exeName + ".elf";
+                std::string stripCmd = std::string("strip --strip-debug \"") + buildProjDir + "Build/Linux/" + exeName + ".elf\"";
                 SYS_Exec(stripCmd.c_str());
             }
           

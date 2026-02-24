@@ -853,6 +853,42 @@ void ApplyCSSProperty(
         return;
     }
 
+    if (propName == "border-radius" || propName == "corner-radius")
+    {
+        if (value.mType == CSSValueType::Number)
+        {
+            if (isQuad)
+                static_cast<Quad*>(widget)->SetCornerRadius(value.mNumber);
+            else if (isButton)
+                static_cast<Button*>(widget)->GetQuad()->SetCornerRadius(value.mNumber);
+        }
+        return;
+    }
+
+    if (propName == "border-width")
+    {
+        if (value.mType == CSSValueType::Number)
+        {
+            if (isQuad)
+                static_cast<Quad*>(widget)->SetBorderWidth(value.mNumber);
+            else if (isButton)
+                static_cast<Button*>(widget)->GetQuad()->SetBorderWidth(value.mNumber);
+        }
+        return;
+    }
+
+    if (propName == "border-color")
+    {
+        if (value.mType == CSSValueType::Color)
+        {
+            if (isQuad)
+                static_cast<Quad*>(widget)->SetBorderColor(value.mColor);
+            else if (isButton)
+                static_cast<Button*>(widget)->GetQuad()->SetBorderColor(value.mColor);
+        }
+        return;
+    }
+
     //--- Game resolution ---
 
     if (propName == "game-resolution")

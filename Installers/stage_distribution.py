@@ -24,22 +24,16 @@ from pathlib import Path
 
 # Directories to exclude everywhere
 EXCLUDED_DIRS = {
-    ".git", ".vs", ".claude", ".dev", ".vscode", ".llm",
+    ".git", ".vs", ".claude", ".dev", ".llm",
     "__pycache__", "node_modules", "Build", "doxygen_xml",
 }
 
 # File extensions to exclude everywhere
 EXCLUDED_EXTENSIONS = {
     ".pdb", ".ilk", ".exp", ".lib", ".obj", ".o", ".a",
-    ".sln", ".vcxproj", ".filters", ".user",
+    ".user",
     ".log", ".tmp", ".bak",
 }
-
-# External libraries to include (headers only, except glm which is all files)
-EXTERNAL_SDK_DIRS = ["Lua", "glm", "Imgui", "ImGuizmo", "bullet3", "IrrXML"]
-
-# Header extensions for SDK filtering
-HEADER_EXTENSIONS = {".h", ".hpp", ".hxx", ".inl"}
 
 
 def log(msg, verbose=False):
@@ -108,10 +102,6 @@ def copy_file(src, dst, verbose=False):
     shutil.copy2(src, dst)
     return True
 
-
-def headers_only(path):
-    """Filter: only header files."""
-    return path.suffix.lower() in HEADER_EXTENSIONS
 
 
 def run_generators(engine_root, verbose=False):
@@ -204,51 +194,61 @@ def stage(platform, output_dir, engine_root, verbose=False):
     n = copy_tree(engine_root / "Engine" / "Generated", dist / "Engine" / "Generated", verbose)
     log(f"  {n} files", verbose)
 
-    # --- Engine Source Headers (SDK) ---
-    print("Staging Engine/Source headers (SDK)...")
+    # --- Engine Source (full source for builds and SDK) ---
+    print("Staging Engine/Source...")
     n = copy_tree(
         engine_root / "Engine" / "Source",
         dist / "Engine" / "Source",
         verbose,
-        file_filter=headers_only,
     )
-    log(f"  {n} header files", verbose)
+    log(f"  {n} files", verbose)
 
-    # --- External Headers (SDK) ---
-    print("Staging External headers (SDK)...")
-    total_ext = 0
-    for ext_name in EXTERNAL_SDK_DIRS:
-        ext_src = engine_root / "External" / ext_name
-        ext_dst = dist / "External" / ext_name
-        if ext_name == "glm":
-            # glm is header-only math lib, copy everything
-            n = copy_tree(ext_src, ext_dst, verbose)
-        elif ext_name == "Imgui":
-            # Imgui needs .cpp files too for addon compilation
-            n = copy_tree(ext_src, ext_dst, verbose)
-        else:
-            n = copy_tree(ext_src, ext_dst, verbose, file_filter=headers_only)
-        total_ext += n
-        log(f"  {ext_name}: {n} files", verbose)
-    log(f"  Total external: {total_ext} files", verbose)
+    # --- Engine project/build files ---
+    print("Staging Engine project files...")
+    for fname in ["Engine.vcxproj", "Engine.vcxproj.filters", "CMakeLists.txt",
+                   "Makefile_3DS", "Makefile_GCN", "Makefile_Wii", "Makefile_Linux"]:
+        copy_file(engine_root / "Engine" / fname, dist / "Engine" / fname, verbose)
+
+    # --- External (full directory for builds) ---
+    print("Staging External/...")
+    n = copy_tree(engine_root / "External", dist / "External", verbose)
+    log(f"  {n} files", verbose)
 
     # --- Template ---
     print("Staging Template/...")
     n = copy_tree(engine_root / "Template", dist / "Template", verbose)
     log(f"  {n} files", verbose)
 
-    # --- Standalone sentinel files ---
-    print("Staging Standalone sentinel files...")
-    copy_file(
-        engine_root / "Standalone" / "Standalone.rc",
-        dist / "Standalone" / "Standalone.rc",
-        verbose,
-    )
-    copy_file(
-        engine_root / "Standalone" / "resource.h",
-        dist / "Standalone" / "resource.h",
-        verbose,
-    )
+    # --- Standalone (full directory for builds and C++ project creation) ---
+    print("Staging Standalone/...")
+    n = copy_tree(engine_root / "Standalone", dist / "Standalone", verbose)
+    log(f"  {n} files", verbose)
+
+    # --- Prebuilt game executable (for standalone packaging without recompile) ---
+    print("Staging prebuilt game executable...")
+    if platform == "windows":
+        game_exe = engine_root / "Standalone" / "Build" / "Windows" / "x64" / "Release" / "Octave.exe"
+        game_dst = dist / "Standalone" / "Build" / "Windows" / "x64" / "Release" / "Octave.exe"
+        if copy_file(game_exe, game_dst, verbose):
+            log(f"Game exe: {game_exe}", verbose)
+        else:
+            print("  WARNING: Prebuilt game exe not found (builds will require compilation)")
+    else:
+        game_exe = engine_root / "Standalone" / "Build" / "Linux" / "Octave.elf"
+        game_dst = dist / "Standalone" / "Build" / "Linux" / "Octave.elf"
+        if copy_file(game_exe, game_dst, verbose):
+            log(f"Game exe: {game_exe}", verbose)
+        else:
+            print("  WARNING: Prebuilt game exe not found (builds will require compilation)")
+
+    # --- Octave.sln (needed for C++ project creation) ---
+    print("Staging Octave.sln...")
+    copy_file(engine_root / "Octave.sln", dist / "Octave.sln", verbose)
+
+    # --- .vscode (needed for C++ project creation) ---
+    print("Staging .vscode/...")
+    n = copy_tree(engine_root / ".vscode", dist / ".vscode", verbose)
+    log(f"  {n} files", verbose)
 
     # --- Tools ---
     print("Staging Tools/...")
@@ -264,12 +264,6 @@ def stage(platform, output_dir, engine_root, verbose=False):
     print("Staging root files...")
     for fname in ["LICENSE", "OctaveLogo_128.png", "OctaveLogo_256.png"]:
         copy_file(engine_root / fname, dist / fname, verbose)
-
-    # --- Standalone icon (Windows) ---
-    if platform == "windows":
-        icon_src = engine_root / "Standalone" / "Octave.ico"
-        if icon_src.exists():
-            copy_file(icon_src, dist / "Standalone" / "Octave.ico", verbose)
 
     # --- Create Engine/Saves directory (writable at runtime) ---
     (dist / "Engine" / "Saves").mkdir(parents=True, exist_ok=True)

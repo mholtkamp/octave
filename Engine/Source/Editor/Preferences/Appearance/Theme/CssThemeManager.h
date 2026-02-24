@@ -12,6 +12,7 @@ struct CustomThemeEntry
     std::string FileName;       // filename within Preferences/Themes/ directory
     CssThemeData ParsedData;
     bool IsValid = false;
+    bool IsBundled = false;     // true for themes loaded from Engine/Assets/Themes/
 };
 
 class CssThemeManager
@@ -33,6 +34,9 @@ public:
 
     // Apply a custom theme by index
     void ApplyTheme(int index);
+
+    // Load bundled themes from Engine/Assets/Themes/
+    void LoadBundledThemes();
 
     // Persistence
     void LoadThemeList();

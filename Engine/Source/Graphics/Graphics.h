@@ -125,6 +125,12 @@ void GFX_DestroyQuadResource(Quad* quad);
 void GFX_UpdateQuadResourceVertexData(Quad* quad);
 void GFX_DrawQuad(Quad* quad);
 
+// Quad Border
+void GFX_CreateQuadBorderResource(Quad* quad);
+void GFX_DestroyQuadBorderResource(Quad* quad);
+void GFX_UpdateQuadBorderResourceVertexData(Quad* quad);
+void GFX_DrawQuadBorder(Quad* quad);
+
 // Text
 void GFX_CreateTextResource(Text* text);
 void GFX_DestroyTextResource(Text* text);

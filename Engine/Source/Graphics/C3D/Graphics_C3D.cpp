@@ -1317,7 +1317,7 @@ void GFX_CreateQuadResource(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
 
-    resource->mVertexData.Alloc(4 * sizeof(VertexUI), quad->GetVertices());
+    resource->mVertexData.Alloc(Quad::kMaxQuadVertices * sizeof(VertexUI), quad->GetVertices());
 }
 
 void GFX_DestroyQuadResource(Quad* quad)
@@ -1329,7 +1329,7 @@ void GFX_DestroyQuadResource(Quad* quad)
 void GFX_UpdateQuadResourceVertexData(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
-    resource->mVertexData.Update(quad->GetVertices(), 4 * sizeof(VertexUI));
+    resource->mVertexData.Update(quad->GetVertices(), quad->GetNumVertices() * sizeof(VertexUI));
 }
 
 void GFX_DrawQuad(Quad* quad)
@@ -1395,7 +1395,82 @@ void GFX_DrawQuad(Quad* quad)
     C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_COLOR);
 
     // Draw
-    C3D_DrawArrays(GPU_TRIANGLE_STRIP, 0, 4);
+    C3D_DrawArrays(GPU_TRIANGLE_FAN, 0, quad->GetNumVertices());
+}
+
+// Quad Border
+void GFX_CreateQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    resource->mVertexData.Alloc(Quad::kMaxQuadVertices * sizeof(VertexUI), quad->GetBorderVertices());
+}
+
+void GFX_DestroyQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    resource->mVertexData.Free();
+}
+
+void GFX_UpdateQuadBorderResourceVertexData(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    resource->mVertexData.Update(quad->GetBorderVertices(), quad->GetBorderNumVertices() * sizeof(VertexUI));
+}
+
+void GFX_DrawQuadBorder(Quad* quad)
+{
+    ResetTexEnv();
+    ResetLightingEnv();
+
+    QuadResource* resource = quad->GetBorderResource();
+    Texture* texture = Renderer::Get()->mWhiteTexture.Get<Texture>();
+
+    BindVertexShader(ShaderId::Quad);
+
+    C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
+    AttrInfo_Init(attrInfo);
+    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 2);
+    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2);
+    AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4);
+
+    C3D_BufInfo* bufInfo = C3D_GetBufInfo();
+    BufInfo_Init(bufInfo);
+    BufInfo_Add(bufInfo, resource->mVertexData.Get(), sizeof(VertexUI), 3, 0x210);
+
+    C3D_TexBind(0, &texture->GetResource()->mTex);
+    C3D_TexEnv* env = C3D_GetTexEnv(0);
+    C3D_TexEnvInit(env);
+    C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+
+    env = C3D_GetTexEnv(1);
+    C3D_TexEnvInit(env);
+    C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, GPU_PRIMARY_COLOR);
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    glm::vec4 borderColor = glm::clamp(quad->GetBorderColor(), 0.0f, 1.0f);
+    uint8_t borderColor4[4] =
+    {
+        uint8_t(borderColor.r * 255.0f),
+        uint8_t(borderColor.g * 255.0f),
+        uint8_t(borderColor.b * 255.0f),
+        uint8_t(borderColor.a * 255.0f)
+    };
+    C3D_TexEnvColor(env, *reinterpret_cast<uint32_t*>(borderColor4));
+
+    C3D_Mtx modelViewMtx;
+    Mtx_Identity(&modelViewMtx);
+    ApplyWidgetRotation(modelViewMtx, quad);
+    C3D_Mtx projMtx;
+    glm::vec2 ires = Renderer::Get()->GetScreenResolution(gC3dContext.mCurrentScreen);
+    Mtx_OrthoTilt(&projMtx, 0.0, ires.x, ires.y, 0.0f, -1.0, 1.0, false);
+    C3D_Mtx mvpMtx;
+    Mtx_Multiply(&mvpMtx, &projMtx, &modelViewMtx);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, gC3dContext.mQuadLocs.mProjMtx, &mvpMtx);
+
+    C3D_CullFace(GPU_CULL_NONE);
+    C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_COLOR);
+
+    C3D_DrawArrays(GPU_TRIANGLE_FAN, 0, quad->GetBorderNumVertices());
 }
 
 // Text
