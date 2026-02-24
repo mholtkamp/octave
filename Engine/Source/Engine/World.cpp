@@ -196,7 +196,8 @@ namespace
 
             // No positive NavMesh3D bounds available yet.
             return false;
-        };`r`n
+        };
+
         auto pointInsideCullWallsBounds = [&](const glm::vec3& p, float& outThreshold) -> bool
         {
             if (activeBounds.empty())
@@ -313,7 +314,8 @@ namespace
 
                 outTris.push_back(baseVert + 0);
                 outTris.push_back(baseVert + 1);
-                outTris.push_back(baseVert + 2);`r`n            }
+                outTris.push_back(baseVert + 2);
+            }
         }
 
         return !outVerts.empty() && !outTris.empty();
