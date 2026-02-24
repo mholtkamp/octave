@@ -18,7 +18,25 @@
 
 #define ENABLE_LIBOGC_CONSOLE 0
 
+static bool sRunning = true;
 static bool sFatInit = false;
+
+static void ResetCallback()
+{
+    sRunning = false;
+}
+
+#if PLATFORM_WII
+static void PowerCallback()
+{
+    sRunning = false;
+}
+#endif
+
+static bool SYS_MainLoop()
+{
+    return sRunning;
+}
 static void InitFAT()
 {
     if (!sFatInit)
@@ -83,6 +101,11 @@ void SYS_Initialize()
     CON_Init(system.mConsoleBuffer, 0, 0, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     //printf("\x1b[2;0H");
+#endif
+
+    SYS_SetResetCallback(ResetCallback);
+#if PLATFORM_WII
+    SYS_SetPowerCallback(PowerCallback);
 #endif
 
     InitFAT();
