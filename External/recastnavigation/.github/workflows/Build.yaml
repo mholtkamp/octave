@@ -1,0 +1,193 @@
+name: Build
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  macOS-premake:
+    strategy:
+      matrix:
+        conf:
+          - Debug
+          - Release
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-macos
+
+    - name: Download & install premake
+      working-directory: RecastDemo
+      run: |
+        curl -L -o premake.tar.gz https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-macosx.tar.gz
+        tar -xzf premake.tar.gz
+        rm premake.tar.gz
+        chmod 777 ./premake5
+
+    - name: Run premake
+      working-directory: RecastDemo
+      run: ./premake5 xcode4
+
+    - name: Build With Xcode
+      working-directory: RecastDemo/Build/xcode4/
+      run: xcodebuild -scheme RecastDemo -configuration ${{matrix.conf}} -project RecastDemo.xcodeproj build
+
+    - name: Build Unit Tests With Xcode
+      working-directory: RecastDemo/Build/xcode4/
+      run: xcodebuild -scheme Tests -configuration ${{matrix.conf}} -project Tests.xcodeproj build
+
+  macos-cmake:
+    strategy:
+      matrix:
+        conf:
+          - Debug
+          - Release
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-macos
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.conf}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.conf}}
+
+  linux-premake:
+    strategy:
+      matrix:
+        conf:
+          - debug
+          - release
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-linux
+
+    - name: Install clang
+      run: |
+        sudo apt-get install -y clang
+        clang --version
+
+    - name: Download & Install premake
+      working-directory: RecastDemo
+      run: |
+        curl -L -o premake.tar.gz https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz
+        tar -xzf premake.tar.gz
+        rm premake.tar.gz
+        chmod 777 ./premake5
+
+    - name: Run premake
+      working-directory: RecastDemo
+      run: ./premake5 --cc=clang gmake
+
+    - name: Build
+      working-directory: RecastDemo/Build/gmake
+      run: make config=${{matrix.conf}} verbose=true
+
+  linux-cmake:
+    strategy:
+      matrix:
+        conf:
+          - Debug
+          - Release
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-linux
+
+    - name: Install clang
+      run: |
+        sudo apt-get install -y clang
+        clang --version
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.conf}} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.conf}}
+
+  windows-premake:
+    strategy:
+      matrix:
+        conf:
+          - Debug
+          - Release
+        vs-version:
+          - vs2022
+        include:
+          - vs-version: vs2022
+            version-range: '17.0'
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        vs-version: ${{matrix.version-range}}
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-windows
+
+    - name: Download and Install Premake
+      working-directory: RecastDemo
+      shell: pwsh
+      run: |
+        (new-object System.Net.WebClient).DownloadFile("https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-windows.zip","${{github.workspace}}/RecastDemo/premake.zip")
+        tar -xf premake.zip
+        del premake.zip
+
+    - name: Run Premake
+      working-directory: RecastDemo
+      run: ./premake5.exe ${{matrix.vs-version}}
+
+    - name: Build
+      working-directory: RecastDemo/Build/${{matrix.vs-version}}
+      run: msbuild RecastDemo.vcxproj -property:Configuration=${{matrix.conf}} -property:Platform=x64
+
+  windows-cmake:
+    strategy:
+      matrix:
+        conf:
+          - Debug
+          - Release
+        vs-version:
+          - vs2022
+        include:
+          - vs-version: vs2022
+            cmake-generator: Visual Studio 17 2022
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup SDL2
+      uses: ./.github/actions/setup-sdl2-windows
+
+    - name: Configure CMake
+      run: cmake -G "${{matrix.cmake-generator}}" -B ${{github.workspace}}/build -D CMAKE_BUILD_TYPE=${{matrix.conf}} -D CMAKE_INSTALL_PREFIX=${{github.workspace}}/build
+
+    - name: Build with CMake
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.conf}}
