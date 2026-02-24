@@ -1090,7 +1090,7 @@ void EditorState::OpenEditScene(int32_t idx)
 
             for (auto& prop : props)
             {
-                if (prop.GetType() == DatumType::Node &&
+                if (IsNodeDatumType(prop.GetType()) &&
                     prop.GetCount() > 0 &&
                     prop.GetNode() != nullptr)
                 {
@@ -1152,7 +1152,7 @@ void EditorState::OpenEditScene(int32_t idx)
                         // Manually copy node path extras to ScriptProps
                         for (uint32_t p = 0; p < srcProps.size(); ++p)
                         {
-                            if (srcProps[p].mType == DatumType::Node &&
+                            if (IsNodeDatumType(srcProps[p].mType) &&
                                 srcProps[p].mExtra != nullptr)
                             {
                                 Property* dstProp = FindProperty(scriptProps, srcProps[p].mName);
@@ -1196,7 +1196,7 @@ void EditorState::OpenEditScene(int32_t idx)
 
                 for (auto& prop : props)
                 {
-                    if (prop.GetType() == DatumType::Node)
+                    if (IsNodeDatumType(prop.GetType()))
                     {
                         for (uint32_t nodeIdx = 0; nodeIdx < prop.GetCount(); ++nodeIdx)
                         {

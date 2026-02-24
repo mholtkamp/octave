@@ -11,6 +11,7 @@
 #include <map>
 #include <cstring>
 #include <cstdio>
+#include <cstdint>
 
 using namespace ImGui;
 

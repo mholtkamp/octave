@@ -317,7 +317,7 @@ uint32_t Datum::GetDataTypeSerializationSize(bool net) const
             }
         }
     }
-    else if (mType == DatumType::Node)
+    else if (IsNodeDatumType(mType))
     {
         if (net)
         {
@@ -414,6 +414,12 @@ void Datum::ReadStream(Stream& stream, uint32_t version, bool net, bool external
                 }
 
                 case DatumType::Node:
+                case DatumType::Node3D:
+                case DatumType::Audio3D:
+                case DatumType::Widget:
+                case DatumType::Text:
+                case DatumType::Quad:
+                case DatumType::Spline3D:
                 {
                     if (net)
                     {
@@ -464,9 +470,15 @@ void Datum::WriteStream(Stream& stream, bool net) const
             case DatumType::Byte: stream.WriteUint8(mData.by[i]); break;
             case DatumType::Table: mData.t[i].WriteStream(stream, net); break;
             case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D:
             {
                 // Node Datums are only serialized over the network.
-                // If this Datum is a Property, then a nodepath will stored in the 
+                // If this Datum is a Property, then a nodepath will stored in the
                 // Property's mExtra data (see Propery::WriteStream())
                 if (net)
                 {
@@ -577,7 +589,8 @@ void Datum::SetTableDatum(const TableDatum& value, uint32_t index)
 
 void Datum::SetNode(const WeakPtr<Node>& value, uint32_t index)
 {
-    PreSet(index, DatumType::Node);
+    OCT_ASSERT(index < mCount);
+    OCT_ASSERT(IsNodeDatumType(mType));
     if (mOwner == nullptr || !mChangeHandler || !mChangeHandler(this, index, &value))
         mData.n[index] = value;
 }
@@ -622,7 +635,13 @@ void Datum::SetValue(const void* value, uint32_t index, uint32_t count)
             case DatumType::Asset: SetAsset((reinterpret_cast<const AssetRef*>(value) + i)->Get(),    index + i); break;
             case DatumType::Byte: SetByte(*(reinterpret_cast<const uint8_t*>(value) + i),             index + i); break;
             case DatumType::Table: SetTableDatum(*(reinterpret_cast<const TableDatum*>(value) + i),   index + i); break;
-            case DatumType::Node: SetNode(*(reinterpret_cast<const WeakPtr<Node>*>(value) + i),       index + i); break;
+            case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D: SetNode(*(reinterpret_cast<const WeakPtr<Node>*>(value) + i),       index + i); break;
             case DatumType::Short: SetShort(*(reinterpret_cast<const int16_t*>(value) + i),           index + i); break;
             case DatumType::Function: SetFunction(*(reinterpret_cast<const ScriptFunc*>(value) + i),  index + i); break;
             case DatumType::Count: break;
@@ -645,7 +664,13 @@ void Datum::SetValueRaw(const void* value, uint32_t index)
     case DatumType::Asset: mData.as[index] = *reinterpret_cast<const Asset* const*>(value); break;
     case DatumType::Byte: mData.by[index] = *reinterpret_cast<const uint8_t*>(value); break;
     case DatumType::Table: mData.t[index] = *reinterpret_cast<const TableDatum*>(value); break;
-    case DatumType::Node: mData.n[index] = *reinterpret_cast<const WeakPtr<Node>*>(value); break;
+    case DatumType::Node:
+    case DatumType::Node3D:
+    case DatumType::Audio3D:
+    case DatumType::Widget:
+    case DatumType::Text:
+    case DatumType::Quad:
+    case DatumType::Spline3D: mData.n[index] = *reinterpret_cast<const WeakPtr<Node>*>(value); break;
     case DatumType::Short: mData.sh[index] = *reinterpret_cast<const int16_t*>(value); break;
     case DatumType::Function: mData.fn[index] = *reinterpret_cast<const ScriptFunc*>(value); break;
 
@@ -804,7 +829,8 @@ const TableDatum& Datum::GetTableDatum(uint32_t index) const
 
 WeakPtr<Node> Datum::GetNode(uint32_t index) const
 {
-    PreGet(index, DatumType::Node);
+    OCT_ASSERT(index < mCount);
+    OCT_ASSERT(IsNodeDatumType(mType));
     return mData.n[index];
 }
 
@@ -1051,7 +1077,16 @@ void Datum::PushBack(const SharedPtr<Node>& value)
 
 void Datum::PushBack(const WeakPtr<Node>& value)
 {
-    PrePushBack(DatumType::Node);
+    // Node subtypes (Node3D, Audio3D, Widget, etc.) all use WeakPtr<Node> storage.
+    // Preserve the datum's existing subtype if it's already set.
+    DatumType pushType = DatumType::Node;
+    if (mType == DatumType::Node3D || mType == DatumType::Audio3D ||
+        mType == DatumType::Widget || mType == DatumType::Text ||
+        mType == DatumType::Quad || mType == DatumType::Spline3D)
+    {
+        pushType = mType;
+    }
+    PrePushBack(pushType);
     new (mData.n + mCount) WeakPtr<Node>(value);
     mCount++;
 }
@@ -1894,6 +1929,12 @@ void Datum::DeepCopy(const Datum& src, bool forceInternalStorage)
                 PushBackTableDatum(*(src.mData.t + i));
                 break;
             case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D:
                 PushBack(*(src.mData.n + i));
                 break;
             case DatumType::Short:
@@ -2075,6 +2116,12 @@ void Datum::ConstructData(DatumData& dataUnion, uint32_t index)
         new (dataUnion.t + index) TableDatum();
         break;
     case DatumType::Node:
+    case DatumType::Node3D:
+    case DatumType::Audio3D:
+    case DatumType::Widget:
+    case DatumType::Text:
+    case DatumType::Quad:
+    case DatumType::Spline3D:
         new (dataUnion.n + index) WeakPtr<Node>();
         break;
     case DatumType::Short:
@@ -2104,6 +2151,12 @@ void Datum::DestructData(DatumData& dataUnion, uint32_t index)
         dataUnion.as[index].AssetRef::~AssetRef();
         break;
     case DatumType::Node:
+    case DatumType::Node3D:
+    case DatumType::Audio3D:
+    case DatumType::Widget:
+    case DatumType::Text:
+    case DatumType::Quad:
+    case DatumType::Spline3D:
         dataUnion.n[index].WeakPtr<Node>::~WeakPtr<Node>();
         break;
     case DatumType::Table:

@@ -594,7 +594,7 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePt
                 Property& prop = props.back();
                 prop.DeepCopy(extProps[i], true);
 
-                if (prop.mType == DatumType::Node)
+                if (IsNodeDatumType(prop.mType))
                 {
                     prop.CreateExtraData();
                     prop.mExtra->Destroy();

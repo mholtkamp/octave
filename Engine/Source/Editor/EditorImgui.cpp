@@ -2548,6 +2548,12 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 break;
             }
             case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D:
             {
                 DrawNodeProperty(prop, i, owner, ownerType);
                 break;

@@ -376,6 +376,12 @@ void Script::GatherScriptProperties()
                                     }
 
                                     case DatumType::Node:
+                                    case DatumType::Node3D:
+                                    case DatumType::Audio3D:
+                                    case DatumType::Widget:
+                                    case DatumType::Text:
+                                    case DatumType::Quad:
+                                    case DatumType::Spline3D:
                                     {
                                         Node* node = nullptr;
                                         if (luaL_testudata(L, -1, NODE_WRAPPER_TABLE_NAME))
@@ -541,6 +547,12 @@ void Script::GatherAutoProperties()
                     newProp.PushBack(value.GetAsset());
                     break;
                 case DatumType::Node:
+                case DatumType::Node3D:
+                case DatumType::Audio3D:
+                case DatumType::Widget:
+                case DatumType::Text:
+                case DatumType::Quad:
+                case DatumType::Spline3D:
                     newProp.PushBack(value.GetNode());
                     break;
                 case DatumType::Byte:
@@ -584,6 +596,12 @@ void Script::GatherAutoProperties()
                 newProp.PushBack(autoProp.mDefaultValue.GetAsset());
                 break;
             case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D:
                 newProp.PushBack(autoProp.mDefaultValue.GetNode());
                 break;
             case DatumType::Byte:
@@ -779,6 +797,12 @@ void Script::GatherReplicatedData()
                                 }
 
                                 case DatumType::Node:
+                                case DatumType::Node3D:
+                                case DatumType::Audio3D:
+                                case DatumType::Widget:
+                                case DatumType::Text:
+                                case DatumType::Quad:
+                                case DatumType::Spline3D:
                                 {
                                     Node* nodePointer = CHECK_NODE(L, -1);
                                     newDatum.PushBack(nodePointer);
@@ -1142,6 +1166,12 @@ bool Script::DownloadDatum(lua_State* L, Datum& datum, int udIdx, const char* va
         }
 
         case DatumType::Node:
+        case DatumType::Node3D:
+        case DatumType::Audio3D:
+        case DatumType::Widget:
+        case DatumType::Text:
+        case DatumType::Quad:
+        case DatumType::Spline3D:
         {
             Node* node = nullptr;
             if (!lua_isnil(L, -1))
@@ -1220,7 +1250,14 @@ void Script::UploadDatum(Datum& datum, const char* varName)
             case DatumType::Asset: Asset_Lua::Create(L, datum.GetAsset(i)); break;
             case DatumType::Byte: lua_pushinteger(L, (int32_t)datum.GetByte(i)); break;
             case DatumType::Short: lua_pushinteger(L, (int32_t)datum.GetShort(i)); break;
-            case DatumType::Node: Node_Lua::Create(L, datum.GetNode(i).Get()); break;
+            case DatumType::Node:
+            case DatumType::Node3D:
+            case DatumType::Audio3D:
+            case DatumType::Widget:
+            case DatumType::Text:
+            case DatumType::Quad:
+            case DatumType::Spline3D:
+                Node_Lua::Create(L, datum.GetNode(i).Get()); break;
 
             case DatumType::Table:
             case DatumType::Function:

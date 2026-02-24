@@ -51,6 +51,17 @@ enum class DatumType : uint8_t
     Count
 };
 
+inline bool IsNodeDatumType(DatumType type)
+{
+    return type == DatumType::Node ||
+           type == DatumType::Node3D ||
+           type == DatumType::Audio3D ||
+           type == DatumType::Widget ||
+           type == DatumType::Text ||
+           type == DatumType::Quad ||
+           type == DatumType::Spline3D;
+}
+
 union DatumData
 {
     int32_t* i;

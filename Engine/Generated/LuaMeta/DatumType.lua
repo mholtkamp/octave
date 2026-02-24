@@ -13,6 +13,12 @@ DatumType = {
     Byte = 0,
     Table = 0,
     Node = 0,
+    Node3D = 0,
+    Audio3D = 0,
+    Widget = 0,
+    Text = 0,
+    Quad = 0,
+    Spline3D = 0,
     Short = 0,
     Count = 0
 }

@@ -579,6 +579,8 @@ std::string SYS_GetClipboardText()
 }
 
 // Misc
+static FILE* sLogFile = nullptr;
+
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
     char buffer[256];
@@ -588,6 +590,17 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     outStr += "\n";
 
     svcOutputDebugString(outStr.data(), (int32_t)outStr.size());
+
+    if (sLogFile == nullptr)
+    {
+        sLogFile = fopen("sdmc:/octave_log.txt", "w");
+    }
+
+    if (sLogFile != nullptr)
+    {
+        fputs(outStr.c_str(), sLogFile);
+        fflush(sLogFile);
+    }
 }
 
 void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)

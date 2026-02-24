@@ -482,7 +482,7 @@ NodePtr Scene::Instantiate()
 
                     for (const auto& prop : over.mProperties)
                     {
-                        if (prop.mType == DatumType::Node)
+                        if (IsNodeDatumType(prop.mType))
                         {
                             Node* targ = ResolveNodePath(node, over.mPath);
 
@@ -499,7 +499,7 @@ NodePtr Scene::Instantiate()
             // See if there are any nodepaths that need to be resolved.
             for (auto& prop : mNodeDefs[i].mProperties)
             {
-                if (prop.mType == DatumType::Node &&
+                if (IsNodeDatumType(prop.mType) &&
                     prop.mExtra != nullptr &&
                     prop.mCount > 0)
                 {
@@ -762,7 +762,7 @@ bool Scene::CheckForNodeProps(std::vector<Property>& props)
     bool hasNodeProp = false;
     for (uint32_t i = 0; i < props.size(); ++i)
     {
-        if (props[i].GetType() == DatumType::Node)
+        if (IsNodeDatumType(props[i].GetType()))
         {
             hasNodeProp = true;
             break;

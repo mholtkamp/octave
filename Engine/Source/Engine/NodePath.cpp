@@ -85,7 +85,7 @@ void ResolveNodePaths(Node* node, bool recurseChildren)
 
     for (uint32_t p = 0; p < props.size(); ++p)
     {
-        if (props[p].mType == DatumType::Node &&
+        if (IsNodeDatumType(props[p].mType) &&
             props[p].mExtra != nullptr)
         {
             Property& prop = props[p];
@@ -180,7 +180,7 @@ void ResolvePendingNodePaths(std::vector<PendingNodePath>& pending)
                 if (prop.mName != propName)
                     continue;
 
-                if (prop.mType == DatumType::Node &&
+                if (IsNodeDatumType(prop.mType) &&
                     prop.mCount == path.mCount)
                 {
                     for (uint32_t n = 0; n < prop.mCount; ++n)
@@ -209,7 +209,7 @@ void ResolveAllNodePathsRecursive(Node* node)
         for (uint32_t p = 0; p < props.size(); ++p)
         {
             Property& prop = props[p];
-            if (prop.mType == DatumType::Node &&
+            if (IsNodeDatumType(prop.mType) &&
                 prop.mExtra != nullptr)
             {
                 for (uint32_t c = 0; c < prop.GetCount(); ++c)
@@ -243,7 +243,7 @@ void RecordNodePaths(Node* node, std::vector<Property>& props)
     for (uint32_t i = 0; i < props.size(); ++i)
     {
         Property& prop = props[i];
-        if (prop.mType == DatumType::Node)
+        if (IsNodeDatumType(prop.mType))
         {
             prop.CreateExtraData();
             prop.mExtra->Destroy();

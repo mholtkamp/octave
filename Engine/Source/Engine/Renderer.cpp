@@ -1572,16 +1572,13 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         {
             glm::uvec4 vp = GetViewport();
             glm::vec2 res = GetScreenResolution();
-            LogDebug("Renderer viewport=(%u,%u,%u,%u) res=(%.1f,%.1f) widgets=%u",
-                     vp.x, vp.y, vp.z, vp.w, res.x, res.y, (uint32_t)mWidgetDraws.size());
 
             // Log first widget rect if available
             if (!mWidgetDraws.empty() && mWidgetDraws[0].mNode != nullptr && mWidgetDraws[0].mNode->IsWidget())
             {
                 Widget* w = static_cast<Widget*>(mWidgetDraws[0].mNode);
                 Rect r = w->GetRect();
-                LogDebug("  First widget '%s': rect=(%.1f, %.1f, %.1f, %.1f)",
-                         w->GetName().c_str(), r.mX, r.mY, r.mWidth, r.mHeight);
+
             }
         }
     }

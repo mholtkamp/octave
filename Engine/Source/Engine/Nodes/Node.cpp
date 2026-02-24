@@ -939,7 +939,7 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
 
             for (auto& prop : props)
             {
-                if (prop.mType == DatumType::Node &&
+                if (IsNodeDatumType(prop.mType) &&
                     prop.mCount > 0)
                 {
                     Datum extraData;
