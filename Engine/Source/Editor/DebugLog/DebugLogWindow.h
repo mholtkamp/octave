@@ -6,6 +6,7 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <set>
 #include <mutex>
 
 struct DebugLogEntry
@@ -40,8 +41,12 @@ private:
     int mCurrentMatchIndex = -1;
     bool mNeedScrollToMatch = false;
 
+    std::set<int> mSelectedEntries;
+    int mLastClickedRow = -1;
+
     void DrainPendingEntries();
     void CopyAllToClipboard();
+    void CopySelectedToClipboard();
     void UpdateSearchMatches();
     void GoToNextMatch();
     void GoToPrevMatch();

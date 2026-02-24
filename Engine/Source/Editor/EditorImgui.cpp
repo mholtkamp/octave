@@ -364,6 +364,10 @@ static void DrawAssetsPanel();
 static void DrawPropertiesPanel();
 static void DrawScriptsPanel();
 
+// Alternating row background helpers
+static void BeginAlternatingRows();
+static void AlternatingRowBackground();
+
 static void DrawDockspace()
 {
     float topBarH = GetTopBarHeight();
@@ -2720,6 +2724,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
             }
         }
 
+        AlternatingRowBackground();
         ImGui::PopID();
     }
 
@@ -3031,57 +3036,32 @@ static void DrawPackageMenu()
     //}
 }
 
-static void ItemRowsBackground(float lineHeight = -1.0f)
-{
-    auto* drawList = ImGui::GetWindowDrawList();
-    const auto& style = ImGui::GetStyle();
+static int sAltRowIndex = 0;
+static ImU32 sAltRowColor = 0;
 
-    // Derive row color from theme's WindowBg — slightly lighter or darker for contrast
+static void BeginAlternatingRows()
+{
+    sAltRowIndex = 0;
+    const auto& style = ImGui::GetStyle();
     ImVec4 windowBg = style.Colors[ImGuiCol_WindowBg];
     float luminance = windowBg.x * 0.299f + windowBg.y * 0.587f + windowBg.z * 0.114f;
-    ImU32 rowColor;
     if (luminance < 0.5f)
-        rowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.04f));
+        sAltRowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.02f));
     else
-        rowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.06f));
+        sAltRowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.03f));
+}
 
-    if (lineHeight < 0)
+static void AlternatingRowBackground()
+{
+    if (sAltRowIndex % 2 == 1)
     {
-        lineHeight = ImGui::GetFrameHeight();
+        ImVec2 min = ImGui::GetItemRectMin();
+        ImVec2 max = ImGui::GetItemRectMax();
+        min.x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMin().x;
+        max.x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+        ImGui::GetWindowDrawList()->AddRectFilled(min, max, sAltRowColor);
     }
-    lineHeight += style.ItemSpacing.y;
-
-    float scrollOffsetH = ImGui::GetScrollX();
-    float scrollOffsetV = ImGui::GetScrollY();
-    float scrolledOutLines = floorf(scrollOffsetV / lineHeight);
-    scrollOffsetV -= lineHeight * scrolledOutLines;
-
-    ImVec2 clipRectMin(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
-    ImVec2 clipRectMax(clipRectMin.x + ImGui::GetWindowWidth(), clipRectMin.y + ImGui::GetWindowHeight());
-
-    if (ImGui::GetScrollMaxX() > 0)
-    {
-        clipRectMax.y -= style.ScrollbarSize;
-    }
-
-    drawList->PushClipRect(clipRectMin, clipRectMax);
-
-    bool isOdd = (static_cast<int>(scrolledOutLines) % 2) == 0;
-
-    float yMin = clipRectMin.y - scrollOffsetV + ImGui::GetCursorPosY();
-    float yMax = clipRectMax.y - scrollOffsetV + lineHeight;
-    float xMin = clipRectMin.x + scrollOffsetH + ImGui::GetWindowContentRegionMin().x;
-    float xMax = clipRectMin.x + scrollOffsetH + ImGui::GetWindowContentRegionMax().x;
-
-    for (float y = yMin; y < yMax; y += lineHeight, isOdd = !isOdd)
-    {
-        if (isOdd)
-        {
-            drawList->AddRectFilled({ xMin, y - style.ItemSpacing.y }, { xMax, y + lineHeight }, rowColor);
-        }
-    }
-
-    drawList->PopClipRect();
+    sAltRowIndex++;
 }
 
 static void DrawScenePanel()
@@ -3183,6 +3163,7 @@ static void DrawScenePanel()
             const char* nodeIcon = GetNodeIcon(node);
             std::string nodeLabel = std::string(nodeIcon) + " " + node->GetName();
             bool nodeOpen = ImGui::TreeNodeEx(nodeLabel.c_str(), nodeFlags);
+            AlternatingRowBackground();
             bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
             bool nodeMiddleClicked = ImGui::IsItemClicked(ImGuiMouseButton_Middle);
             bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
@@ -3664,6 +3645,8 @@ static void DrawScenePanel()
             }
         }
     };
+
+    BeginAlternatingRows();
 
     if (rootNode != nullptr)
     {
@@ -4462,7 +4445,9 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         }
 
         ImGui::PushID(stub);
-        if (ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick))
+        bool assetClicked = ImGui::Selectable(assetDispText.c_str(), isSelectedStub, ImGuiSelectableFlags_AllowDoubleClick);
+        AlternatingRowBackground();
+        if (assetClicked)
         {
             if (selStub != stub)
             {
@@ -4641,7 +4626,9 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         std::string displayText = std::string(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX) + "  " + filename;
 
         ImGui::PushID(fullPath.c_str());
-        if (ImGui::Selectable(displayText.c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick))
+        bool looseClicked = ImGui::Selectable(displayText.c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick);
+        AlternatingRowBackground();
+        if (looseClicked)
         {
             if (sSelectedLooseFile != fullPath)
             {
@@ -4724,6 +4711,7 @@ static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool
     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + dir->mName;
     ImGui::PushID(dir);
     bool nodeOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
+    AlternatingRowBackground();
 
     if (ImGui::BeginPopupContextItem())
     {
@@ -4940,6 +4928,7 @@ static void DrawAssetsPanel()
                 ImGui::Spacing();
             }
 
+            BeginAlternatingRows();
             ImGui::Indent(kAssetPanelIndent);
             AssetDir* projectDir = AssetManager::Get()->FindProjectDirectory();
             // Initialize current dir to project root if not set
@@ -4982,6 +4971,7 @@ static void DrawAssetsPanel()
                 ImGui::Spacing();
             }
 
+            BeginAlternatingRows();
             ImGui::Indent(kAssetPanelIndent);
             AssetDir* packagesDir = AssetManager::Get()->FindPackagesDirectory();
             DrawAssetBrowser(packagesDir, filterLower, true);
@@ -5165,6 +5155,7 @@ static void DrawPropertiesPanel()
         if (ImGui::BeginTabItem(ICON_FLUENT_MDL2_CUBE_SHAPE "  Object"))
         {
             sObjectTabOpen = true;
+            BeginAlternatingRows();
             Object* obj = GetEditorState()->GetInspectedObject();
 
             if (obj != nullptr)
@@ -5306,6 +5297,7 @@ static void DrawPropertiesPanel()
         }
         if (ImGui::BeginTabItem(ICON_SCENE "  Scene"))
         {
+            BeginAlternatingRows();
             EditScene* editScene = GetEditorState()->GetEditScene();
             Scene* scene = editScene ? editScene->mSceneAsset.Get<Scene>() : nullptr;
 
@@ -5321,6 +5313,7 @@ static void DrawPropertiesPanel()
         }
         if (ImGui::BeginTabItem(ICON_GLOBE "  Global"))
         {
+            BeginAlternatingRows();
             std::vector<Property> globalProps;
             GatherGlobalProperties(globalProps);
 
@@ -5653,7 +5646,9 @@ static void DrawScriptsPanel()
                         dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
                     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + pair.first;
-                    if (ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags))
+                    bool dirOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
+                    AlternatingRowBackground();
+                    if (dirOpen)
                     {
                         drawTree(pair.second);
                         ImGui::TreePop();
@@ -5672,6 +5667,7 @@ static void DrawScriptsPanel()
                     ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
                     std::string labelWithIcon = std::string(ICON_LUA) + " " + fileName;
                     ImGui::TreeNodeEx(labelWithIcon.c_str(), leafFlags);
+                    AlternatingRowBackground();
 
                     if (ImGui::IsItemHovered())
                     {
@@ -5691,6 +5687,7 @@ static void DrawScriptsPanel()
             };
 
             ImGui::BeginChild("##LuaScriptsList", ImVec2(0, 0), false);
+            BeginAlternatingRows();
             drawTree(root);
             ImGui::EndChild();
 
@@ -5827,6 +5824,7 @@ static void DrawScriptsPanel()
             }
 
             ImGui::BeginChild("##CppAddonsList", ImVec2(0, 0), false);
+            BeginAlternatingRows();
 
             if (!nam)
             {
@@ -5874,7 +5872,9 @@ static void DrawScriptsPanel()
                     if (!filterLower.empty())
                         addonFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-                    if (ImGui::TreeNodeEx(addon.mAddonId.c_str(), addonFlags, "%s %s", ICON_MATERIAL_SYMBOLS_FOLDER_SHARP, addon.mAddonName.c_str()))
+                    bool addonOpen = ImGui::TreeNodeEx(addon.mAddonId.c_str(), addonFlags, "%s %s", ICON_MATERIAL_SYMBOLS_FOLDER_SHARP, addon.mAddonName.c_str());
+                    AlternatingRowBackground();
+                    if (addonOpen)
                     {
                         for (const std::string& srcFile : addon.mSourceFiles)
                         {
@@ -5911,6 +5911,7 @@ static void DrawScriptsPanel()
                                 }
                             }
                             ImGui::TreeNodeEx(srcFile.c_str(), leafFlags, "%s %s", fileIcon, fileName.c_str());
+                            AlternatingRowBackground();
 
                             if (ImGui::IsItemHovered())
                             {

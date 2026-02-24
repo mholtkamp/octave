@@ -65,6 +65,8 @@ void DebugLogWindow::Clear()
     mSearchMatches.clear();
     mCurrentMatchIndex = -1;
     mNeedScrollToMatch = false;
+    mSelectedEntries.clear();
+    mLastClickedRow = -1;
 }
 
 void DebugLogWindow::CopyAllToClipboard()
@@ -80,6 +82,33 @@ void DebugLogWindow::CopyAllToClipboard()
         if (entry.mSeverity == LogSeverity::Error && !mShowErrors) show = false;
         if (!show) continue;
 
+        int totalSec = (int)entry.mTimestamp;
+        int hours = totalSec / 3600;
+        int mins = (totalSec % 3600) / 60;
+        int secs = totalSec % 60;
+
+        char line[1280];
+        snprintf(line, sizeof(line), "[%02d:%02d:%02d] %s\n", hours, mins, secs, entry.mMessage.c_str());
+        text += line;
+    }
+
+    if (!text.empty())
+    {
+        ImGui::SetClipboardText(text.c_str());
+    }
+}
+
+void DebugLogWindow::CopySelectedToClipboard()
+{
+    std::string text;
+    text.reserve(mSelectedEntries.size() * 80);
+
+    for (int idx : mSelectedEntries)
+    {
+        if (idx < 0 || idx >= (int)mEntries.size())
+            continue;
+
+        const auto& entry = mEntries[idx];
         int totalSec = (int)entry.mTimestamp;
         int hours = totalSec / 3600;
         int mins = (totalSec % 3600) / 60;
@@ -320,6 +349,18 @@ void DebugLogWindow::DrawContent()
 
     ImGui::BeginChild("LogScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
+    // Alternating row color (theme-aware)
+    ImU32 altRowColor;
+    {
+        const auto& style = ImGui::GetStyle();
+        ImVec4 windowBg = style.Colors[ImGuiCol_WindowBg];
+        float luminance = windowBg.x * 0.299f + windowBg.y * 0.587f + windowBg.z * 0.114f;
+        if (luminance < 0.5f)
+            altRowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 1.0f, 1.0f, 0.02f));
+        else
+            altRowColor = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 0.03f));
+    }
+
     ImGuiListClipper clipper;
     clipper.Begin((int)filteredIndices.size());
 
@@ -370,6 +411,8 @@ void DebugLogWindow::DrawContent()
                 }
             }
 
+            bool isSelected = mSelectedEntries.count(entryIdx) > 0;
+
             if (isCurrentMatch)
             {
                 ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.4f, 0.4f, 0.1f, 1.0f));
@@ -380,19 +423,66 @@ void DebugLogWindow::DrawContent()
                 ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.2f, 0.05f, 1.0f));
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.3f, 0.3f, 0.1f, 1.0f));
             }
+            else if (isSelected)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.15f, 0.35f, 0.6f, 0.6f));
+                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.4f, 0.65f, 0.7f));
+            }
 
             ImGui::PushStyleColor(ImGuiCol_Text, color);
 
             ImGui::PushID(entryIdx);
-            bool selected = isCurrentMatch || isSearchMatch;
-            ImGui::Selectable(label, selected, ImGuiSelectableFlags_AllowDoubleClick);
+            bool highlight = isSelected || isCurrentMatch || isSearchMatch;
+            if (ImGui::Selectable(label, highlight, ImGuiSelectableFlags_AllowDoubleClick))
+            {
+                const ImGuiIO& io = ImGui::GetIO();
+                if (io.KeyCtrl)
+                {
+                    // Ctrl+Click: toggle this entry
+                    if (isSelected)
+                        mSelectedEntries.erase(entryIdx);
+                    else
+                        mSelectedEntries.insert(entryIdx);
+                }
+                else if (io.KeyShift && mLastClickedRow >= 0)
+                {
+                    // Shift+Click: select range
+                    int rangeStart = std::min(mLastClickedRow, row);
+                    int rangeEnd = std::max(mLastClickedRow, row);
+                    for (int r = rangeStart; r <= rangeEnd; ++r)
+                    {
+                        if (r >= 0 && r < (int)filteredIndices.size())
+                            mSelectedEntries.insert(filteredIndices[r]);
+                    }
+                }
+                else
+                {
+                    // Plain click: select only this entry
+                    mSelectedEntries.clear();
+                    mSelectedEntries.insert(entryIdx);
+                }
+                mLastClickedRow = row;
+            }
+
+            // Alternating row background
+            if (row % 2 == 1)
+            {
+                ImVec2 rMin = ImGui::GetItemRectMin();
+                ImVec2 rMax = ImGui::GetItemRectMax();
+                rMin.x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMin().x;
+                rMax.x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+                ImGui::GetWindowDrawList()->AddRectFilled(rMin, rMax, altRowColor);
+            }
 
             // Right-click context menu
             if (ImGui::BeginPopupContextItem("LogEntryCtx"))
             {
                 if (ImGui::Selectable("Copy"))
                 {
-                    ImGui::SetClipboardText(label);
+                    if (mSelectedEntries.size() > 1)
+                        CopySelectedToClipboard();
+                    else
+                        ImGui::SetClipboardText(label);
                 }
                 if (ImGui::Selectable("Copy All"))
                 {
@@ -412,7 +502,7 @@ void DebugLogWindow::DrawContent()
             ImGui::PopID();
             ImGui::PopStyleColor(); // Text color
 
-            if (isCurrentMatch || isSearchMatch)
+            if (isCurrentMatch || isSearchMatch || isSelected)
             {
                 ImGui::PopStyleColor(2); // Header colors
             }
@@ -439,6 +529,23 @@ void DebugLogWindow::DrawContent()
     else if (mAutoScroll && !mSearchActive && ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 10.0f)
     {
         ImGui::SetScrollHereY(1.0f);
+    }
+
+    // Keyboard shortcuts (when log child is hovered and no popup open)
+    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
+    {
+        const ImGuiIO& io = ImGui::GetIO();
+        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C))
+        {
+            if (!mSelectedEntries.empty())
+                CopySelectedToClipboard();
+        }
+        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_A))
+        {
+            mSelectedEntries.clear();
+            for (int idx : filteredIndices)
+                mSelectedEntries.insert(idx);
+        }
     }
 
     ImGui::EndChild();
