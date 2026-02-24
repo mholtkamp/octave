@@ -1572,6 +1572,7 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
         {
             glm::uvec4 vp = GetViewport();
             glm::vec2 res = GetScreenResolution();
+            LogDebug("Renderer viewport=(%u,%u,%u,%u) res=(%.1f,%.1f) widgets=%u",
                      vp.x, vp.y, vp.z, vp.w, res.x, res.y, (uint32_t)mWidgetDraws.size());
 
             // Log first widget rect if available
