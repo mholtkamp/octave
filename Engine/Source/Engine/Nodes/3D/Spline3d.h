@@ -107,6 +107,8 @@ protected:
     bool mPlaying = false;
     bool mLoop = true;
     bool mCloseLoop = false;
+    bool mPingPong = false;
+    bool mPingPongForward = true;
     bool mSmoothCurve = true;
     bool mSmoothRotate = false;
     bool mPause = false;

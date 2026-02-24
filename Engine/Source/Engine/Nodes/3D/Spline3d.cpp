@@ -83,6 +83,7 @@ void Spline3D::Start()
 {
     Node3D::Start();
     mTravel = 0.0f;
+    mPingPongForward = true;
 
     mGeneratedLinkCount = glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64);
     EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
@@ -640,6 +641,7 @@ void Spline3D::Tick(float deltaTime)
                 // Preserve target spline topology settings only
                 const bool targetLoop = targetSpline->mLoop;
                 const bool targetClose = targetSpline->mCloseLoop;
+                const bool targetPingPong = targetSpline->mPingPong;
 
                 // Transfer attachments
                 targetSpline->mAttachmentCamera = mAttachmentCamera;
@@ -657,6 +659,7 @@ void Spline3D::Tick(float deltaTime)
                 // Restore topology from target, movement mode from source
                 targetSpline->mLoop = targetLoop;
                 targetSpline->mCloseLoop = targetClose;
+                targetSpline->mPingPong = targetPingPong;
                 targetSpline->mSmoothCurve = mSmoothCurve;
                 targetSpline->mSmoothRotate = mSmoothRotate;
 
@@ -670,6 +673,12 @@ void Spline3D::Tick(float deltaTime)
                 mAttachmentNode3D = WeakPtr<Node>();
 
                 targetSpline->mTravel = mLinkTargetStartDist;
+                if (targetSpline->mPingPong)
+                {
+                    // If linked near the end, start moving backward instead of wrapping to point1.
+                    targetSpline->mPingPongForward = (mLinkTargetStartDist < (mLinkTargetTotalLen - 0.001f));
+                }
+
                 if (targetSpline->mDisableBounce)
                 {
                     for (uint32_t li = 0; li < targetSpline->mLinks.size(); ++li)
@@ -786,24 +795,43 @@ void Spline3D::Tick(float deltaTime)
     if (totalLen <= 0.0001f)
         return;
 
-    mTravel += mSpeed * deltaTime;
-
-    if (mLoop)
+    if (mPingPong)
     {
-        while (mTravel >= totalLen)
-            mTravel -= totalLen;
+        float dir = mPingPongForward ? 1.0f : -1.0f;
+        mTravel += (mSpeed * deltaTime * dir);
+
+        if (mTravel >= totalLen)
+        {
+            mTravel = totalLen;
+            mPingPongForward = false;
+        }
+        else if (mTravel <= 0.0f)
+        {
+            mTravel = 0.0f;
+            mPingPongForward = true;
+        }
     }
     else
     {
-        if (mTravel >= totalLen)
-            mTravel = totalLen;
+        mTravel += mSpeed * deltaTime;
+
+        if (mLoop)
+        {
+            while (mTravel >= totalLen)
+                mTravel -= totalLen;
+        }
+        else
+        {
+            if (mTravel >= totalLen)
+                mTravel = totalLen;
+        }
     }
 
     float dist = mTravel;
-    uint32_t segIndex = 0;
+    uint32_t segIndex = (uint32_t)glm::max<int32_t>(0, (int32_t)segLens.size() - 1);
     for (uint32_t i = 0; i < segLens.size(); ++i)
     {
-        if (dist <= segLens[i])
+        if (dist <= segLens[i] || i == segLens.size() - 1)
         {
             segIndex = i;
             break;
@@ -936,6 +964,17 @@ void Spline3D::Tick(float deltaTime)
 
             if (!link.mTriggered && distToFrom <= kLinkEpsilon)
             {
+                if (mPingPong && !mLoop && !mCloseLoop && points.size() >= 2)
+                {
+                    // In ping-pong mode on open splines, endpoints should bounce, not auto-link out.
+                    Node3D* firstPoint = points.front().node;
+                    Node3D* lastPoint = points.back().node;
+                    if (from3d == firstPoint || from3d == lastPoint)
+                    {
+                        return false;
+                    }
+                }
+
                 Node* targetParent = to3d->GetParent();
                 Spline3D* targetSpline = targetParent ? targetParent->As<Spline3D>() : nullptr;
                 if (!targetSpline) return false;
@@ -1252,6 +1291,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
+        props.push_back(Property(DatumType::Bool, "Ping Pong", this, &mPingPong));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
         props.push_back(Property(DatumType::Bool, "Smooth Rotate", this, &mSmoothRotate));
         props.push_back(Property(DatumType::Bool, "Face Tangent", this, &mFaceTangent));
