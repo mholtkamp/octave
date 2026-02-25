@@ -3,6 +3,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#if PLATFORM_LINUX
+#include <sys/types.h>
+#endif
 
 #include "EngineTypes.h"
 #include "EditorTypes.h"
@@ -17,6 +23,89 @@ class InstancedMesh3D;
 class Timeline;
 struct ActionSetInstanceColorsData;
 struct MeshInstanceData;
+
+/**
+ * @brief State for async local build operations.
+ */
+struct LocalBuildState
+{
+    std::thread mBuildThread;
+    std::atomic<bool> mRunning{false};
+    std::atomic<bool> mCancelRequested{false};
+    std::atomic<bool> mComplete{false};
+    std::atomic<bool> mSuccess{false};
+    std::atomic<int> mExitCode{0};
+
+    std::mutex mOutputMutex;
+    std::string mOutput;
+    bool mOutputDirty{false};
+
+    // Build config (set in BuildData, used by Phase1 and compile thread)
+    Platform mPlatform{Platform::Linux};
+    bool mEmbedded{false};
+    std::string mPackagedDir;
+    std::string mBuildProjDir;
+    std::string mProjectDir;
+    std::string mProjectName;
+    std::string mExeSrc;
+    std::string mExtension;
+    bool mStandalone{false};
+    bool mNeedCompile{true};
+    bool mUseSteam{false};
+    std::string mCompileCommand;
+    std::string mPrebuiltExePath;
+    std::string mTmpMakefile;
+    std::string mShaderCompileCommand;
+    std::string mStripCommand;
+
+    // Post-build flags
+    bool mRunAfterBuild{false};
+    bool mRunOnDevice{false};
+
+    void Reset()
+    {
+        // Thread must be joined before calling Reset
+        mRunning.store(false);
+        mCancelRequested.store(false);
+        mComplete.store(false);
+        mSuccess.store(false);
+        mExitCode.store(0);
+        {
+            std::lock_guard<std::mutex> lock(mOutputMutex);
+            mOutput.clear();
+            mOutputDirty = false;
+        }
+        mPlatform = Platform::Linux;
+        mEmbedded = false;
+        mPackagedDir.clear();
+        mBuildProjDir.clear();
+        mProjectDir.clear();
+        mProjectName.clear();
+        mExeSrc.clear();
+        mExtension.clear();
+        mStandalone = false;
+        mNeedCompile = true;
+        mUseSteam = false;
+        mCompileCommand.clear();
+        mPrebuiltExePath.clear();
+        mTmpMakefile.clear();
+        mShaderCompileCommand.clear();
+        mStripCommand.clear();
+        mRunAfterBuild = false;
+        mRunOnDevice = false;
+#if PLATFORM_LINUX
+        mProcessId = 0;
+#elif PLATFORM_WINDOWS
+        mProcessHandle = nullptr;
+#endif
+    }
+
+#if PLATFORM_LINUX
+    pid_t mProcessId{0};
+#elif PLATFORM_WINDOWS
+    void* mProcessHandle{nullptr};
+#endif
+};
 
 class Action
 {
@@ -125,6 +214,19 @@ protected:
     std::vector<Action*> mActionFuture;
     std::vector<NodePtr> mExiledNodes;
 
+    // Non-blocking build state
+    LocalBuildState mBuildState;
+    bool mShowBuildModal = false;
+    std::string mBuildDisplayOutput;
+    bool mBuildAutoScroll = true;
+    bool mBuildPending = false;
+
+    void BuildPhase1();
+    void BuildCompileThreadFunc();
+    void FinalizeLocalBuild();
+    void AppendBuildOutput(const std::string& text);
+    void CancelBuild();
+
 public:
 
     // Actions
@@ -145,6 +247,9 @@ public:
     void BeginReimportScene(AssetStub* sceneStub);
     void BeginImportCamera();
     void BuildData(Platform platform, bool embedded);
+    void DrawBuildModal();
+    bool IsBuildRunning() const;
+    LocalBuildState& GetBuildState() { return mBuildState; }
     void PrepareRelease();
     void ClearWorld();
     void DeleteAllNodes();

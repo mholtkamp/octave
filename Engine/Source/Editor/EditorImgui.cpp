@@ -3007,29 +3007,30 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
 static void DrawPackageMenu()
 {
     ActionManager* am = ActionManager::Get();
+    bool buildRunning = am->IsBuildRunning();
 
     //if (ImGui::BeginPopup("PackagePopup"))
     //{
 #if PLATFORM_WINDOWS
-    if (ImGui::MenuItem("Windows"))
+    if (ImGui::MenuItem("Windows", nullptr, false, !buildRunning))
         am->BuildData(Platform::Windows, false);
 #elif PLATFORM_LINUX
-    if (ImGui::MenuItem("Linux"))
+    if (ImGui::MenuItem("Linux", nullptr, false, !buildRunning))
         am->BuildData(Platform::Linux, false);
 #endif
-    if (ImGui::MenuItem("Android"))
+    if (ImGui::MenuItem("Android", nullptr, false, !buildRunning))
         am->BuildData(Platform::Android, false);
-    if (ImGui::MenuItem("GameCube"))
+    if (ImGui::MenuItem("GameCube", nullptr, false, !buildRunning))
         am->BuildData(Platform::GameCube, false);
-    if (ImGui::MenuItem("Wii"))
+    if (ImGui::MenuItem("Wii", nullptr, false, !buildRunning))
         am->BuildData(Platform::Wii, false);
-    if (ImGui::MenuItem("3DS"))
+    if (ImGui::MenuItem("3DS", nullptr, false, !buildRunning))
         am->BuildData(Platform::N3DS, false);
-    if (ImGui::MenuItem("GameCube Embedded"))
+    if (ImGui::MenuItem("GameCube Embedded", nullptr, false, !buildRunning))
         am->BuildData(Platform::GameCube, true);
-    if (ImGui::MenuItem("Wii Embedded"))
+    if (ImGui::MenuItem("Wii Embedded", nullptr, false, !buildRunning))
         am->BuildData(Platform::Wii, true);
-    if (ImGui::MenuItem("3DS Embedded"))
+    if (ImGui::MenuItem("3DS Embedded", nullptr, false, !buildRunning))
         am->BuildData(Platform::N3DS, true);
 
     //    ImGui::EndPopup();
@@ -8042,6 +8043,7 @@ void EditorImguiDraw()
 
         GetPreferencesWindow()->Draw();
         GetPackagingWindow()->Draw();
+        ActionManager::Get()->DrawBuildModal();
         GetProjectSelectWindow()->Draw();
         GetAddonsWindow()->Draw();
         GetThemeEditorWindow()->Draw();

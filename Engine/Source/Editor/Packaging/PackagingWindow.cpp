@@ -660,34 +660,17 @@ void PackagingWindow::ExecuteLocalBuild(const BuildProfile& profile, bool runAft
 
     mBuildInProgress = true;
 
-    // Delegate to ActionManager's BuildData
+    // Delegate to ActionManager's BuildData (now non-blocking)
     ActionManager* am = ActionManager::Get();
     if (am != nullptr)
     {
         am->BuildData(profile.mTargetPlatform, profile.mEmbedded);
+        // Set run-after-build flags after BuildData (which resets state for non-headless)
+        am->GetBuildState().mRunAfterBuild = runAfterBuild;
+        am->GetBuildState().mRunOnDevice = runOnDevice;
     }
 
     mBuildInProgress = false;
-
-    if (runAfterBuild)
-    {
-        std::string outputDir = GetOutputDirectory(profile);
-        const EngineState* engine = GetEngineState();
-        std::string projectName = engine->mProjectName;
-        std::string extension = GetPlatformOutputExtension(profile.mTargetPlatform);
-        std::string outputPath = outputDir + projectName + extension;
-
-        if (runOnDevice && profile.mTargetPlatform == Platform::N3DS)
-        {
-            // Show 3dslink warning popup
-            mPendingOutputPath = outputPath;
-            mShow3dsLinkWarning = true;
-        }
-        else
-        {
-            LaunchEmulator(profile, outputPath);
-        }
-    }
 }
 
 void PackagingWindow::LaunchEmulator(const BuildProfile& profile, const std::string& outputPath)

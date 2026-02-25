@@ -7,6 +7,11 @@
 #include <ShlObj.h>
 #endif
 
+#if PLATFORM_LINUX
+#include <sys/wait.h>
+#include <signal.h>
+#endif
+
 #include <stdint.h>
 #include <cstdlib>
 
@@ -67,9 +72,13 @@
 #include "Addons/NativeAddonManager.h"
 #include "Addons/AddonManager.h"
 #include "EditorUIHookManager.h"
+#include "Packaging/PackagingWindow.h"
+#include "Preferences/PreferencesManager.h"
+#include "Preferences/External/LaunchersModule.h"
 
 #include "Stream.h"
 #include "document.h"
+#include "imgui.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -140,7 +149,11 @@ ActionManager::~ActionManager()
 
 void ActionManager::Update()
 {
-
+    if (mBuildPending)
+    {
+        mBuildPending = false;
+        BuildPhase1();
+    }
 }
 
 void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
@@ -396,6 +409,74 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
+    if (IsBuildRunning())
+    {
+        LogError("A build is already in progress.");
+        return;
+    }
+
+    // In headless mode, run the entire build synchronously (original behavior)
+    if (IsHeadless())
+    {
+        // Reset state for synchronous use
+        mBuildState.mPlatform = platform;
+        mBuildState.mEmbedded = embedded;
+        mBuildState.mRunAfterBuild = false;
+        mBuildState.mRunOnDevice = false;
+        BuildPhase1();
+        if (mBuildState.mNeedCompile)
+        {
+            BuildCompileThreadFunc();
+        }
+        FinalizeLocalBuild();
+        return;
+    }
+
+    // Non-headless: open modal, defer Phase 1 to next frame
+    mBuildState.Reset();
+    mBuildState.mPlatform = platform;
+    mBuildState.mEmbedded = embedded;
+    mBuildDisplayOutput.clear();
+    mBuildAutoScroll = true;
+    mShowBuildModal = true;
+    mBuildPending = true;
+    AppendBuildOutput("Preparing build...\n");
+}
+
+bool ActionManager::IsBuildRunning() const
+{
+    return mBuildPending || mBuildState.mRunning.load() || (mShowBuildModal && !mBuildState.mComplete.load());
+}
+
+void ActionManager::AppendBuildOutput(const std::string& text)
+{
+    std::lock_guard<std::mutex> lock(mBuildState.mOutputMutex);
+    mBuildState.mOutput += text;
+    mBuildState.mOutputDirty = true;
+}
+
+void ActionManager::CancelBuild()
+{
+    mBuildState.mCancelRequested.store(true);
+
+#if PLATFORM_LINUX
+    if (mBuildState.mProcessId > 0)
+    {
+        kill(mBuildState.mProcessId, SIGTERM);
+    }
+#elif PLATFORM_WINDOWS
+    if (mBuildState.mProcessHandle != nullptr)
+    {
+        TerminateProcess(static_cast<HANDLE>(mBuildState.mProcessHandle), 1);
+    }
+#endif
+}
+
+void ActionManager::BuildPhase1()
+{
+    Platform platform = mBuildState.mPlatform;
+    bool embedded = mBuildState.mEmbedded;
+
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
 
     // Fire OnPreBuild hook (can cancel the build)
@@ -404,6 +485,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         if (!hookMgr->FireOnPreBuild((int32_t)platform))
         {
             LogWarning("Build cancelled by addon hook.");
+            AppendBuildOutput("Build cancelled by addon hook.\n");
+            mBuildState.mComplete.store(true);
+            mBuildState.mSuccess.store(false);
             return;
         }
     }
@@ -414,6 +498,7 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         hookMgr->FireOnPackageStarted((int32_t)platform);
     }
 
+    AppendBuildOutput("Firing pre-build hooks...\n");
     LogDebug("Begin packaging...");
     std::string octaveDirectory = SYS_GetOctavePath();
 
@@ -428,25 +513,31 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (projectDir == "")
     {
         LogError("Project directory not set?");
+        AppendBuildOutput("ERROR: Project directory not set.\n");
+        mBuildState.mComplete.store(true);
+        mBuildState.mSuccess.store(false);
         return;
     }
 
+    // Store config for later phases
+    mBuildState.mProjectDir = projectDir;
+    mBuildState.mProjectName = projectName;
+    mBuildState.mStandalone = standalone;
+    mBuildState.mUseSteam = GetEngineConfig()->mPackageForSteam;
+
     std::string dkpPath = GetDevkitproPath();
     bool dkpInstalled = (dkpPath != "");
-
     LogDebug("DevkitPro is %s.", dkpInstalled ? "installed" : "not installed");
 
-    // Build Data is responsible for 3 things
-    // (1) Create a Packaged directory in ProjectDir/Packaged. Erase previous packaged first.
+    // (1) Create a Packaged directory
+    AppendBuildOutput("Creating packaged directory...\n");
     std::string packagedDir = projectDir + "Packaged/";
 
-    // Create top level Packaged dir first.
     if (!DoesDirExist(packagedDir.c_str()))
     {
         CreateDir(packagedDir.c_str());
     }
 
-    // Create platform-specific packaged dir. Delete old platform dir if it exists.
     packagedDir += GetPlatformString(platform);
     packagedDir += "/";
     if (DoesDirExist(packagedDir.c_str()))
@@ -455,8 +546,10 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     CreateDir(packagedDir.c_str());
+    mBuildState.mPackagedDir = packagedDir;
 
-    // (2) Iterate over AssetDirs and save each file (platform-specific save) to the Packaged folder.
+    // (2) Cook assets
+    AppendBuildOutput("Cooking assets...\n");
     std::function<void(AssetDir*, bool)> saveDir = [&](AssetDir* dir, bool engine)
     {
         std::string packDir;
@@ -476,7 +569,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             CreateDir(packDir.c_str());
         }
 
-        // Cook the assets into our packaged folder
         for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i)
         {
             AssetStub* stub = dir->mAssetStubs[i];
@@ -492,13 +584,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             if (true)
             {
-                // Save the asset in the src location. There is probably a better time and place for this.
                 AssetManager::Get()->SaveAsset(*stub);
             }
 
-            // Currently either embed everything or embed nothing...
-            // Embed flag on Asset does nothing, but if we want to keep that feature, then 
-            // we need to load the asset if it's not loaded, add to embedded list if it's flagged and then probably unload it after.
             if (embedded && !useRomfs)
             {
                 embeddedAssets.push_back({ stub, packFile });
@@ -510,7 +598,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             }
         }
 
-        // Cook child dirs
         for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i)
         {
             saveDir(dir->mChildDirs[i], engine);
@@ -527,8 +614,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     saveDir(engineAssetDir, true);
     saveDir(projectAssetDir, false);
 
-    // (3) Generate .cpp / .h files (empty if not embedded) using the .oct files in the Packaged folder.
-    // (4) Create and save an asset registry file with simple list of asset paths into Packaged folder.
+    // (3) Generate embedded files and asset registry
+    AppendBuildOutput("Generating asset registry...\n");
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
     FILE* registryFile = nullptr;
 
@@ -565,7 +652,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         registryFile = nullptr;
     }
 
-    // Create a Generated folder inside the project folder if it doesn't exist
     if (!DoesDirExist((projectDir + "Generated").c_str()))
     {
         CreateDir((projectDir + "Generated").c_str());
@@ -575,7 +661,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string embeddedSourcePath = projectDir + "Generated/EmbeddedAssets.cpp";
     GenerateEmbeddedAssetFiles(embeddedAssets, embeddedHeaderPath.c_str(), embeddedSourcePath.c_str());
 
-    // Generate embedded script source files. If not doing an embedded build, copy over the script folders.
+    // Generate embedded script source files
+    AppendBuildOutput("Copying scripts...\n");
     std::vector<std::string> scriptFiles;
 
     if (embedded && !useRomfs)
@@ -583,7 +670,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         GatherScriptFiles((octaveDirectory + "Engine/Scripts/").c_str(), scriptFiles);
         GatherScriptFiles((projectDir + "/Scripts/").c_str(), scriptFiles);
 
-        // Also gather scripts from local Packages
         std::string packagesDir = projectDir + "Packages/";
         if (DoesDirExist(packagesDir.c_str()))
         {
@@ -612,7 +698,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         SYS_CopyDirectory((octaveDirectory + "Engine/Scripts/").c_str(), (packagedDir + "Engine/Scripts/").c_str());
         SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
 
-        // Also copy scripts from local Packages
         std::string packagesDir = projectDir + "Packages/";
         if (DoesDirExist(packagesDir.c_str()))
         {
@@ -640,14 +725,10 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
         if (platform != Platform::Windows && platform != Platform::Linux)
         {
-            // Remove LuaPanda on consoles (it's a 148 KB file)
             SYS_RemoveFile((packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
-            //SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
         }
     }
 
-    // Generate embedded script source files, even if not doing an embedded build. 
-    // So we don't need to worry about whether we include code that links to the embedded script array / script count.
     std::string scriptHeaderPath = projectDir + "Generated/EmbeddedScripts.h";
     std::string scriptSourcePath = projectDir + "Generated/EmbeddedScripts.cpp";
     GenerateEmbeddedScriptFiles(scriptFiles, scriptHeaderPath.c_str(), scriptSourcePath.c_str());
@@ -655,45 +736,40 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (standalone)
     {
         SYS_CopyDirectory((projectDir + "Generated").c_str(), "Standalone");
-        //std::string copyGeneratedFolder = "cp -R " + projectDir + "Generated " + "Standalone";
-        //SYS_Exec(copyGeneratedFolder.c_str());
     }
 
     // Copy .octp and Config.ini
     {
         SYS_CopyFile((projectDir + projectName + ".octp").c_str(), (packagedDir + projectName + ".octp").c_str());
-        //std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
-        //SYS_Exec(copyOctpCmd.c_str());
-
         SYS_CopyFile((projectDir + "Config.ini").c_str(), (packagedDir + "Config.ini").c_str());
-        //std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
-        //SYS_Exec(copyConfigCmd.c_str());
     }
 
     // Handle SpirV shaders on Vulkan platforms
-    // Make sure to do this before copying everything to "assets/" directory in the Android build.
     if (platform == Platform::Windows ||
         platform == Platform::Linux ||
         platform == Platform::Android)
     {
-        // Compile shaders
+        AppendBuildOutput("Compiling shaders...\n");
 #if PLATFORM_WINDOWS
-        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"").c_str());
+        std::string shaderCmd = "cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"";
 #else
-        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.sh\"").c_str());
+        std::string shaderCmd = "cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.sh\"";
 #endif
+        mBuildState.mShaderCompileCommand = shaderCmd;
 
-        // Then copy over the binaries.
+        // In headless mode, compile shaders synchronously here
+        if (IsHeadless())
+        {
+            SYS_Exec(shaderCmd.c_str());
+        }
+
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
         SYS_CopyDirectory((octaveDirectory+"Engine/Shaders/GLSL/bin/").c_str(), (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
-        //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
-    // If we are running a 3DS build, copy all the packaged data to the
-    // Intermediate/Romfs directory.
-    // Clear existing Romfs directory first.
+    // Romfs setup for 3DS
     std::string intermediateDir = standalone ? octaveDirectory+"Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
@@ -709,17 +785,15 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     #endif
     }
 
-    // ( ) Run the makefile to compile the game.
+    // Determine compilation needs
     bool needCompile = true;
 
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? octaveDirectory+"Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
 
-    bool useSteam = GetEngineConfig()->mPackageForSteam;
+    bool useSteam = mBuildState.mUseSteam;
 
-    // Build the full path to the prebuilt Release executable so we don't
-    // accidentally pick up the editor exe from the working directory.
     std::string prebuiltExePath;
     if (platform == Platform::Windows)
     {
@@ -732,25 +806,24 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         prebuiltExePath = buildProjDir + "Build/Linux/Octave.elf";
     }
 
-    // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
-    // But in headless mode, always compile since we're doing a full build.
     if (standalone && !IsHeadless() &&
         (platform == Platform::Windows || platform == Platform::Linux))
     {
         needCompile = !SYS_DoesFileExist(prebuiltExePath.c_str(), false);
     }
 
+    mBuildState.mNeedCompile = needCompile;
+    mBuildState.mBuildProjDir = buildProjDir;
+    mBuildState.mPrebuiltExePath = prebuiltExePath;
+
     LogWarning("[BUILD] needCompile=%d plat=%d", needCompile ? 1 : 0, (int)platform);
+
     if (needCompile)
     {
-        LogWarning("[BUILD] Compiling...");
+        AppendBuildOutput("Setting up compilation...\n");
 
         if (platform == Platform::Windows)
         {
-            // If devenv can't be found, add it to your PATH
-            // My devenv for VS2017 community was found here:
-            // C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE
-
             std::string solutionPath = "Octave.sln";
             if (engineState->mSolutionPath != "")
             {
@@ -767,37 +840,24 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 devenvCmd += std::string(" ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
             }
             devenvCmd += "\"";
-
-            SYS_Exec(devenvCmd.c_str());
+            mBuildState.mCompileCommand = devenvCmd;
         }
         else if (platform == Platform::Android)
         {
-            // Copy contents of Packaged/Android folder into Android/app/src/main/assets folder so they get put into the APK.
             std::string androidAssetsDir = buildProjDir + "Android/app/src/main/assets/";
             if (!DoesDirExist(androidAssetsDir.c_str()))
             {
                 CreateDir(androidAssetsDir.c_str());
             }
             SYS_CopyDirectory(packagedDir.c_str(), androidAssetsDir.c_str());
-            //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
 
-            // Invoke the gradle build
             std::string gradleDir = buildProjDir + "Android/";
 #if PLATFORM_WINDOWS
             std::string gradleCmd = "cd " + gradleDir + " && gradlew.bat assembleRelease";
 #else
             std::string gradleCmd = "cd " + gradleDir + " && \"./gradlew assembleRelease\"";
 #endif
-            SYS_Exec(gradleCmd.c_str());
-
-            // Rename the executable
-            std::string srcExeName = StringToLower(buildProjName);
-            srcExeName += "-release.apk";
-
-            std::string dstExeName = buildDstExeName + ".apk";
-
-            std::string renameCmd = std::string("mv ") + buildProjDir + "/Android/app/build/outputs/apk/release/" + srcExeName + " " + buildProjDir + "/Android/app/build/outputs/apk/release/" + dstExeName;
-            SYS_Exec(renameCmd.c_str());
+            mBuildState.mCompileCommand = gradleCmd;
         }
         else
         {
@@ -806,17 +866,16 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             switch (platform)
             {
-            case Platform::Linux: makefilePath += "Linux_Game"; LogWarning("[BUILD] Linux"); break;
-            case Platform::GameCube: makefilePath += "GCN"; LogWarning("[BUILD] GCN"); break;
-            case Platform::Wii: makefilePath += "Wii"; LogWarning("[BUILD] Wii"); break;
-            case Platform::N3DS: makefilePath += "3DS"; LogWarning("[BUILD] 3DS"); break;
+            case Platform::Linux: makefilePath += "Linux_Game"; break;
+            case Platform::GameCube: makefilePath += "GCN"; break;
+            case Platform::Wii: makefilePath += "Wii"; break;
+            case Platform::N3DS: makefilePath += "3DS"; break;
             default: OCT_ASSERT(0); break;
             }
 
-            std::string srcMakefile = buildProjDir  + makefilePath;
+            std::string srcMakefile = buildProjDir + makefilePath;
             std::string tmpMakefile = buildProjDir + "Makefile_TEMP";
 
-            // Check if makefile exists in project directory, otherwise fall back to Standalone
             if (!SYS_DoesFileExist(srcMakefile.c_str(), false))
             {
                 std::string standaloneMakefile = "Standalone/" + makefilePath;
@@ -828,27 +887,21 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 else
                 {
                     LogError("Makefile not found: %s or %s", srcMakefile.c_str(), standaloneMakefile.c_str());
+                    AppendBuildOutput("ERROR: Makefile not found: " + srcMakefile + "\n");
+                    mBuildState.mComplete.store(true);
+                    mBuildState.mSuccess.store(false);
                     return;
                 }
             }
 
-            // Make a copy of the makefile so we can change the app name and things like that
             SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
 
-            // This is fragile, but we're going to modify the temp makefile to compile
-            // the way we need to for a given platform.
             if (platform == Platform::N3DS)
             {
                 ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
                 ReplaceStringInFile(tmpMakefile, "$(CURDIR)/Makefile_3DS", "$(CURDIR)/Makefile_TEMP");
-
-                //if (!useRomfs)
-                //{
-                //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
-                //}
             }
 
-            // Copy Source folder from Standalone if it doesn't exist in project
             std::string projSourceDir = buildProjDir + "Source";
             if (!DoesDirExist(projSourceDir.c_str()))
             {
@@ -862,93 +915,274 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             SYS_CreateDirectory((buildProjDir + "Generated").c_str());
 
-			// Copy over Generated files, sometimes they may have been modified or deleted.
-			SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
-			SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
-			SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
-			SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
+            SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
+            SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
+            SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
+            SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
 
-
-            // Inject native addon sources into the build (for addons with target: engine)
             InjectNativeAddonSources(tmpMakefile, buildProjDir);
 
-            std::string makeCmd = std::string("make -C \"") + (buildProjDir) + "\" -f Makefile_TEMP -j 12";
-            SYS_Exec(makeCmd.c_str());
-
-            // Delete the temp makefile (disabled for debugging)
-            SYS_RemoveFile(tmpMakefile.c_str());
-            // LogWarning("[BUILD] Kept temp makefile: %s", tmpMakefile.c_str());
-            //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
+            mBuildState.mCompileCommand = std::string("make -C \"") + buildProjDir + "\" -f Makefile_TEMP -j 12";
+            mBuildState.mTmpMakefile = tmpMakefile;
 
             if (platform == Platform::Linux)
             {
-                // Strip out debug symbols to keep the file size small.
                 std::string exeName = standalone ? "Octave" : projectName;
-                std::string stripCmd = std::string("strip --strip-debug \"") + buildProjDir + "Build/Linux/" + exeName + ".elf\"";
-                SYS_Exec(stripCmd.c_str());
+                mBuildState.mStripCommand = std::string("strip --strip-debug \"") + buildProjDir + "Build/Linux/" + exeName + ".elf\"";
             }
-          
+        }
+
+        // Compute exe source path and extension for post-build
+        std::string exeSrc = buildProjDir + "/Build/";
+        if (platform == Platform::Android)
+        {
+            exeSrc = buildProjDir;
+        }
+
+        switch (platform)
+        {
+        case Platform::Windows: exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
+        case Platform::Linux: exeSrc += "Linux/"; break;
+        case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
+        case Platform::GameCube: exeSrc += "GCN/"; break;
+        case Platform::Wii: exeSrc += "Wii/"; break;
+        case Platform::N3DS: exeSrc += "3DS/"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        std::string exeNameBase = standalone ? "Octave" : projectName;
+        std::string extension = ".exe";
+
+        switch (platform)
+        {
+        case Platform::Windows: extension = ".exe"; break;
+        case Platform::Linux: extension = ".elf"; break;
+        case Platform::Android: extension = ".apk"; break;
+        case Platform::GameCube: extension = ".dol"; break;
+        case Platform::Wii: extension = ".dol"; break;
+        case Platform::N3DS: extension = ".3dsx"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        exeSrc += exeNameBase + extension;
+        mBuildState.mExeSrc = exeSrc;
+        mBuildState.mExtension = extension;
+
+        // Launch compile thread (or run synchronously in headless)
+        if (IsHeadless())
+        {
+            // Headless: handled by caller (BuildData)
+        }
+        else
+        {
+            AppendBuildOutput("Compiling...\n");
+            mBuildState.mRunning.store(true);
+            mBuildState.mBuildThread = std::thread(&ActionManager::BuildCompileThreadFunc, this);
         }
     }
     else
     {
         LogDebug("Reusing pre-compiled game executable.");
-        // When running the standalone editor, we don't need to compile 
-        // (unless we are embeddeding assets into the executable).
-        // But we do need to copy over the Octave.exe and ideally rename it to the project name to make it more official :)
+        AppendBuildOutput("Reusing pre-compiled executable.\n");
+
+        // Compute exe path for the no-compile case
+        std::string exeSrc = buildProjDir + "/Build/";
+        if (platform == Platform::Android) exeSrc = buildProjDir;
+
+        switch (platform)
+        {
+        case Platform::Windows: exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
+        case Platform::Linux: exeSrc += "Linux/"; break;
+        case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
+        case Platform::GameCube: exeSrc += "GCN/"; break;
+        case Platform::Wii: exeSrc += "Wii/"; break;
+        case Platform::N3DS: exeSrc += "3DS/"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        std::string exeNameBase = standalone ? "Octave" : projectName;
+        std::string extension = ".exe";
+        switch (platform)
+        {
+        case Platform::Windows: extension = ".exe"; break;
+        case Platform::Linux: extension = ".elf"; break;
+        case Platform::Android: extension = ".apk"; break;
+        case Platform::GameCube: extension = ".dol"; break;
+        case Platform::Wii: extension = ".dol"; break;
+        case Platform::N3DS: extension = ".3dsx"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        mBuildState.mExeSrc = prebuiltExePath;
+        mBuildState.mExtension = extension;
+
+        // No compilation needed — mark complete and go straight to finalize
+        mBuildState.mComplete.store(true);
+        mBuildState.mSuccess.store(true);
+
+        if (IsHeadless())
+        {
+            // Headless: handled by caller (BuildData)
+        }
+        else
+        {
+            // Auto-finalize on next modal draw
+        }
     }
+}
 
-    // ( ) Copy the executable into the Packaged folder.
-    std::string exeSrc = buildProjDir + "/Build/";
+void ActionManager::BuildCompileThreadFunc()
+{
+#if PLATFORM_WINDOWS
+#define popen _popen
+#define pclose _pclose
+#endif
 
-    if (platform == Platform::Android)
+    auto runStreamedCommand = [this](const std::string& cmd, const std::string& label) -> int
     {
-        exeSrc = buildProjDir;
-    }
+        AppendBuildOutput(label + "\n");
+        LogDebug("[BuildThread] %s", cmd.c_str());
 
-    switch (platform)
+        std::string fullCmd = cmd + " 2>&1";
+        FILE* pipe = popen(fullCmd.c_str(), "r");
+        if (pipe == nullptr)
+        {
+            AppendBuildOutput("ERROR: Failed to run command: " + cmd + "\n");
+            return -1;
+        }
+
+        char buffer[4096];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
+        {
+            if (mBuildState.mCancelRequested.load())
+            {
+                pclose(pipe);
+                AppendBuildOutput("Build cancelled.\n");
+                return -1;
+            }
+            AppendBuildOutput(buffer);
+        }
+
+        int status = pclose(pipe);
+#if PLATFORM_WINDOWS || PLATFORM_3DS || PLATFORM_DOLPHIN
+        int exitCode = status;
+#else
+        int exitCode = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+#endif
+        return exitCode;
+    };
+
+    // Compile shaders if needed (Vulkan platforms)
+    if (!mBuildState.mShaderCompileCommand.empty() && !mBuildState.mCancelRequested.load())
     {
-    case Platform::Windows:exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
-    case Platform::Linux: exeSrc += "Linux/"; break;
-    case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
-    case Platform::GameCube: exeSrc += "GCN/"; break;
-    case Platform::Wii: exeSrc += "Wii/"; break;
-    case Platform::N3DS: exeSrc += "3DS/"; break;
-    default: OCT_ASSERT(0); break;
+        int shaderExit = runStreamedCommand(mBuildState.mShaderCompileCommand, "--- Compiling shaders ---");
+        if (shaderExit != 0)
+        {
+            AppendBuildOutput("Shader compilation failed (exit code: " + std::to_string(shaderExit) + ")\n");
+            mBuildState.mExitCode.store(shaderExit);
+            mBuildState.mSuccess.store(false);
+            mBuildState.mComplete.store(true);
+            mBuildState.mRunning.store(false);
+            return;
+        }
     }
 
-    std::string exeNameBase = standalone ? "Octave" : projectName;
-    std::string exeName = exeNameBase;
-
-    std::string extension = ".exe";
-
-    switch (platform)
+    if (mBuildState.mCancelRequested.load())
     {
-    case Platform::Windows: extension = ".exe"; break;
-    case Platform::Linux: extension = ".elf"; break;
-    case Platform::Android: extension = ".apk"; break;
-    case Platform::GameCube: extension = ".dol"; break;
-    case Platform::Wii: extension = ".dol"; break;
-    case Platform::N3DS: extension = ".3dsx"; break;
-    default: OCT_ASSERT(0); break;
+        AppendBuildOutput("Build cancelled.\n");
+        mBuildState.mSuccess.store(false);
+        mBuildState.mComplete.store(true);
+        mBuildState.mRunning.store(false);
+        return;
     }
 
-    exeName += extension;
-    exeSrc += exeName;
+    // Run the main compile command
+    int exitCode = runStreamedCommand(mBuildState.mCompileCommand, "--- Compiling game ---");
+
+    if (exitCode != 0 || mBuildState.mCancelRequested.load())
+    {
+        if (mBuildState.mCancelRequested.load())
+        {
+            AppendBuildOutput("Build cancelled.\n");
+        }
+        else
+        {
+            AppendBuildOutput("Compilation failed (exit code: " + std::to_string(exitCode) + ")\n");
+        }
+        mBuildState.mExitCode.store(exitCode);
+        mBuildState.mSuccess.store(false);
+        mBuildState.mComplete.store(true);
+        mBuildState.mRunning.store(false);
+
+        // Clean up temp makefile even on failure
+        if (!mBuildState.mTmpMakefile.empty())
+        {
+            SYS_RemoveFile(mBuildState.mTmpMakefile.c_str());
+        }
+        return;
+    }
+
+    // Clean up temp makefile
+    if (!mBuildState.mTmpMakefile.empty())
+    {
+        SYS_RemoveFile(mBuildState.mTmpMakefile.c_str());
+    }
+
+    // Strip on Linux
+    if (!mBuildState.mStripCommand.empty())
+    {
+        AppendBuildOutput("Stripping debug symbols...\n");
+        runStreamedCommand(mBuildState.mStripCommand, "");
+    }
+
+    AppendBuildOutput("Compilation successful.\n");
+    mBuildState.mExitCode.store(0);
+    mBuildState.mSuccess.store(true);
+    mBuildState.mComplete.store(true);
+    mBuildState.mRunning.store(false);
+
+#if PLATFORM_WINDOWS
+#undef popen
+#undef pclose
+#endif
+}
+
+void ActionManager::FinalizeLocalBuild()
+{
+    // Join thread if joinable
+    if (mBuildState.mBuildThread.joinable())
+    {
+        mBuildState.mBuildThread.join();
+    }
+
+    Platform platform = mBuildState.mPlatform;
+    bool standalone = mBuildState.mStandalone;
+    std::string packagedDir = mBuildState.mPackagedDir;
+    std::string projectName = mBuildState.mProjectName;
+    std::string projectDir = mBuildState.mProjectDir;
+    std::string extension = mBuildState.mExtension;
+    std::string exeSrc = mBuildState.mExeSrc;
+    bool useSteam = mBuildState.mUseSteam;
+    bool needCompile = mBuildState.mNeedCompile;
+
+    if (!mBuildState.mSuccess.load())
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, false);
+        if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, false);
+        mShowBuildModal = false;
+        return;
+    }
 
     if (!needCompile)
     {
-        // Override exe path for uncompiled standalone builds
-        exeSrc = prebuiltExePath;
+        exeSrc = mBuildState.mPrebuiltExePath;
     }
 
-
+    // Copy the executable into the Packaged folder
     SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
 
-    //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
-    //SYS_Exec(exeCopyCmd.c_str());
-
-    // Delete the built binary so a stale file isn't copied on a subsequent failed build.
+    // Delete the built binary so a stale file isn't copied on a subsequent failed build
     if (needCompile)
     {
         SYS_RemoveFile(exeSrc.c_str());
@@ -956,47 +1190,206 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
     if (standalone)
     {
-        // Rename the executable to the project name
         SYS_MoveFile((packagedDir + "Octave" + extension).c_str(), (packagedDir + projectName + extension).c_str());
-        //std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
-        //SYS_Exec(renameCmd.c_str());
     }
 
     if (platform == Platform::Windows && useSteam)
     {
-        // (1) Copy over redistributable DLL
         SYS_CopyDirectory((projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll").c_str(), packagedDir.c_str());
-        //std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
-        //SYS_Exec(cpSteamDllCmd1.c_str());
 
-        // (2) Create a steam_appid.txt with 480
         Stream idStream;
         const char* txtId = "480";
         idStream.WriteBytes((uint8_t*)txtId, (uint32_t)strlen(txtId));
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
 
-    // Verify that the executable exists in the packaged directory
+    // Verify executable
     if (!SYS_DoesFileExist((packagedDir + projectName + extension).c_str(), false))
     {
         LogError("Packaged executable not found: %s", (packagedDir + projectName + extension).c_str());
         LogError("Packaging failed. Please check the log for errors.");
 
-        // Fire OnPackageFinished with failure
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
         if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, false);
         if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, false);
         return;
     }
-      if(!IsHeadless()){
-                // Show the build output directory
-                SYS_ExplorerOpenDirectory((packagedDir ).c_str());
-            }
+
+    if (!IsHeadless())
+    {
+        SYS_ExplorerOpenDirectory(packagedDir.c_str());
+    }
 
     LogDebug("Finished packaging!");
 
-    // Fire OnPackageFinished with success
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, true);
     if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, true);
+
+    // Handle run-after-build
+    if (mBuildState.mRunAfterBuild)
+    {
+        std::string outputPath = packagedDir + projectName + extension;
+
+        if (mBuildState.mRunOnDevice && platform == Platform::N3DS)
+        {
+            // Delegate to PackagingWindow for 3dslink
+            GetPackagingWindow()->BuildAndRunWithProfile(platform, mBuildState.mEmbedded, true);
+        }
+        else
+        {
+            LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                PreferencesManager::Get()->FindModule("External/Launchers"));
+
+            if (launchers != nullptr && launchers->IsEmulatorConfigured(platform))
+            {
+                std::string cmd = launchers->BuildLaunchCommand(platform, outputPath);
+                LogDebug("Launching emulator: %s", cmd.c_str());
+                SYS_Exec(cmd.c_str());
+            }
+            else
+            {
+                LogError("Emulator not configured for %s", GetPlatformString(platform));
+            }
+        }
+    }
+
+    mShowBuildModal = false;
+}
+
+void ActionManager::DrawBuildModal()
+{
+    if (!mShowBuildModal)
+    {
+        return;
+    }
+
+    // Update display output from shared buffer
+    {
+        std::lock_guard<std::mutex> lock(mBuildState.mOutputMutex);
+        if (mBuildState.mOutputDirty)
+        {
+            mBuildDisplayOutput = mBuildState.mOutput;
+            mBuildState.mOutputDirty = false;
+        }
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(720, 500), ImGuiCond_FirstUseEver);
+
+    ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoCollapse;
+
+    if (ImGui::Begin("Local Build", &mShowBuildModal, modalFlags))
+    {
+        bool isComplete = mBuildState.mComplete.load();
+        bool isSuccess = mBuildState.mSuccess.load();
+        bool isCancelled = mBuildState.mCancelRequested.load();
+        bool isRunning = mBuildState.mRunning.load();
+
+        // Status header
+        if (!isComplete && !isRunning)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Preparing...");
+        }
+        else if (!isComplete)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Compiling...");
+        }
+        else if (isCancelled)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Build Cancelled");
+        }
+        else if (isSuccess)
+        {
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Build Successful!");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Build Failed (exit code: %d)", mBuildState.mExitCode.load());
+        }
+
+        ImGui::Separator();
+
+        // Collapsible output section
+        if (ImGui::CollapsingHeader("Build Output", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            float footerHeight = ImGui::GetFrameHeightWithSpacing() + 8.0f;
+            ImVec2 outputSize(0, -footerHeight);
+
+            ImGui::BeginChild("BuildOutput", outputSize, true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::TextUnformatted(mBuildDisplayOutput.c_str());
+
+            if (mBuildAutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 10.0f)
+            {
+                ImGui::SetScrollHereY(1.0f);
+            }
+            ImGui::EndChild();
+        }
+
+        // Footer buttons
+        ImGui::Checkbox("Auto-scroll", &mBuildAutoScroll);
+
+        ImGui::SameLine();
+        if (ImGui::Button("Copy"))
+        {
+            ImGui::SetClipboardText(mBuildDisplayOutput.c_str());
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Save Log"))
+        {
+            std::string logPath = mBuildState.mProjectDir + "build_log.txt";
+            Stream logStream;
+            logStream.WriteBytes((uint8_t*)mBuildDisplayOutput.c_str(), (uint32_t)mBuildDisplayOutput.size());
+            logStream.WriteFile(logPath.c_str());
+            AppendBuildOutput("Log saved to: " + logPath + "\n");
+        }
+
+        ImGui::SameLine();
+        float buttonWidth = 80.0f;
+        float availWidth = ImGui::GetContentRegionAvail().x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - buttonWidth);
+
+        // Auto-finalize on successful completion
+        if (isComplete && isSuccess && !isCancelled)
+        {
+            FinalizeLocalBuild();
+        }
+        else if (isComplete)
+        {
+            if (ImGui::Button("Close", ImVec2(buttonWidth, 0)))
+            {
+                FinalizeLocalBuild();
+            }
+        }
+        else if (isRunning)
+        {
+            if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0)))
+            {
+                CancelBuild();
+            }
+        }
+    }
+    ImGui::End();
+
+    // Handle window close via X button
+    if (!mShowBuildModal)
+    {
+        if (mBuildState.mRunning.load())
+        {
+            CancelBuild();
+            mShowBuildModal = true; // Re-show until build completes
+        }
+        else if (mBuildState.mComplete.load())
+        {
+            FinalizeLocalBuild();
+        }
+        else
+        {
+            mShowBuildModal = true;
+        }
+    }
 }
 
 void ActionManager::PrepareRelease()
