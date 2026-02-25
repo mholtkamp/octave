@@ -12,6 +12,7 @@
 #include "EditorState.h"
 #include "EditorIcons.h"
 #include "EditorUIHookManager.h"
+#include "Input/Input.h"
 
 #include "imgui.h"
 
@@ -517,7 +518,70 @@ void GamePreview::DrawPanel()
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
 
         ImGui::Image(mImGuiTexId, ImVec2(drawW, drawH));
+        mImageMin = ImGui::GetItemRectMin();
+        mImageMax = ImGui::GetItemRectMax();
     }
+}
+
+void GamePreview::BeginInputRemap()
+{
+    mInputRemapActive = false;
+
+    if (!IsPlayingInEditor() || !GetEditorState()->mPlayInGameWindow)
+        return;
+    if (mCurrentWidth == 0 || mCurrentHeight == 0)
+        return;
+
+    float imgW = mImageMax.x - mImageMin.x;
+    float imgH = mImageMax.y - mImageMin.y;
+    if (imgW <= 0.0f || imgH <= 0.0f)
+        return;
+
+    EditorState* edState = GetEditorState();
+
+    // Save and override viewport to game resolution
+    mSavedVpX = edState->mViewportX;
+    mSavedVpY = edState->mViewportY;
+    mSavedVpW = edState->mViewportWidth;
+    mSavedVpH = edState->mViewportHeight;
+    edState->mViewportX = 0;
+    edState->mViewportY = 0;
+    edState->mViewportWidth = mCurrentWidth;
+    edState->mViewportHeight = mCurrentHeight;
+
+    // Save and remap mouse from window-space to game-resolution-space.
+    // ImGui rects are in logical (scaled) coords, but INP mouse is in raw pixels,
+    // so convert the image rect to raw pixel space first.
+    float scale = GetEngineConfig()->mEditorInterfaceScale;
+    if (scale <= 0.0f) scale = 1.0f;
+
+    float rawMinX = mImageMin.x * scale;
+    float rawMinY = mImageMin.y * scale;
+    float rawImgW = imgW * scale;
+    float rawImgH = imgH * scale;
+
+    INP_GetMousePosition(mSavedMouseX, mSavedMouseY);
+    float relX = ((float)mSavedMouseX - rawMinX) / rawImgW;
+    float relY = ((float)mSavedMouseY - rawMinY) / rawImgH;
+    INP_SetMousePosition((int32_t)(relX * (float)mCurrentWidth),
+                         (int32_t)(relY * (float)mCurrentHeight));
+
+    mInputRemapActive = true;
+}
+
+void GamePreview::EndInputRemap()
+{
+    if (!mInputRemapActive)
+        return;
+
+    EditorState* edState = GetEditorState();
+    edState->mViewportX = mSavedVpX;
+    edState->mViewportY = mSavedVpY;
+    edState->mViewportWidth = mSavedVpW;
+    edState->mViewportHeight = mSavedVpH;
+
+    INP_SetMousePosition(mSavedMouseX, mSavedMouseY);
+    mInputRemapActive = false;
 }
 
 #endif

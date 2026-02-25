@@ -30,6 +30,9 @@ public:
     uint32_t GetCurrentWidth() const { return mCurrentWidth; }
     uint32_t GetCurrentHeight() const { return mCurrentHeight; }
 
+    void BeginInputRemap();
+    void EndInputRemap();
+
     // Hook support for addon resolution presets
     void AddResolutionPreset(const std::string& name, uint32_t w, uint32_t h);
     void RemoveResolutionPreset(const std::string& name);
@@ -59,6 +62,19 @@ private:
 
     // Cached camera list
     std::vector<Camera3D*> mCachedCameras;
+
+    // Image display rect in window coords (captured by DrawPanel, used next frame)
+    ImVec2 mImageMin = {0, 0};
+    ImVec2 mImageMax = {0, 0};
+
+    // Saved state for input remap
+    int32_t mSavedMouseX = 0;
+    int32_t mSavedMouseY = 0;
+    uint32_t mSavedVpX = 0;
+    uint32_t mSavedVpY = 0;
+    uint32_t mSavedVpW = 0;
+    uint32_t mSavedVpH = 0;
+    bool mInputRemapActive = false;
 
     void CreateRenderTargets(uint32_t w, uint32_t h);
     void DestroyRenderTargets();

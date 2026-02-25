@@ -1696,6 +1696,29 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         instMeshNode->SetCollisionMask(~ColGroup1);
         instMeshNode->AddInstanceData(MeshInstanceData());
     }
+    else if (name == BASIC_SKYBOX_TEXTURED || name == BASIC_SKYBOX_VERTEX_COLOR)
+    {
+        StaticMesh3D* skyNode = EXE_SpawnNode(StaticMesh3D::GetStaticType())->As<StaticMesh3D>();
+        skyNode->SetName("Skybox");
+
+        StaticMesh* mesh = (StaticMesh*)LoadAsset("SM_Sphere");
+        skyNode->SetStaticMesh(mesh);
+
+        if (srcAsset != nullptr && srcAsset->Is(Material::ClassRuntimeId()))
+        {
+            skyNode->SetMaterialOverride(static_cast<Material*>(srcAsset));
+        }
+
+        skyNode->EnableCollision(false);
+        skyNode->EnableOverlaps(false);
+        skyNode->EnablePhysics(false);
+        skyNode->EnableCastShadows(false);
+        skyNode->EnableReceiveShadows(false);
+        skyNode->EnableReceiveSimpleShadows(false);
+        skyNode->SetScale(glm::vec3(500.0f));
+
+        spawnedNode = skyNode;
+    }
 
     if (spawnedNode != nullptr)
     {

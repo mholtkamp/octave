@@ -2778,6 +2778,16 @@ static void DrawAddNodeMenu(Node* node)
             }
         }
 
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Skybox"))
+        {
+            if (ImGui::MenuItem(BASIC_SKYBOX_TEXTURED))
+                am->SpawnBasicNode(BASIC_SKYBOX_TEXTURED, node, nullptr, false, {});
+            if (ImGui::MenuItem(BASIC_SKYBOX_VERTEX_COLOR))
+                am->SpawnBasicNode(BASIC_SKYBOX_VERTEX_COLOR, node, nullptr, false, {});
+            ImGui::EndMenu();
+        }
+
         // Draw addon node menu items for "3D" category
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -2954,6 +2964,15 @@ static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
         am->SpawnBasicNode(BASIC_TEXT_MESH, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_INSTANCED_MESH))
         am->SpawnBasicNode(BASIC_INSTANCED_MESH, node, selAsset, setFocusPos, spawnPos);
+
+    if (ImGui::BeginMenu("Skybox"))
+    {
+        if (ImGui::MenuItem(BASIC_SKYBOX_TEXTURED))
+            am->SpawnBasicNode(BASIC_SKYBOX_TEXTURED, node, selAsset, setFocusPos, spawnPos);
+        if (ImGui::MenuItem(BASIC_SKYBOX_VERTEX_COLOR))
+            am->SpawnBasicNode(BASIC_SKYBOX_VERTEX_COLOR, node, selAsset, setFocusPos, spawnPos);
+        ImGui::EndMenu();
+    }
 
     // Draw addon spawn basic 3D items
     {

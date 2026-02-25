@@ -67,6 +67,7 @@
 #include "EditorState.h"
 #include "EditorImgui.h"
 #include "SecondScreenPreview/SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
@@ -672,10 +673,18 @@ bool Update()
 
     GetTimerManager()->Update(gameDeltaTime);
 
+#if EDITOR
+    GetGamePreview()->BeginInputRemap();
+#endif
+
     for (uint32_t i = 0; i < sWorlds.size(); ++i)
     {
         sWorlds[i]->Update(gameDeltaTime);
     }
+
+#if EDITOR
+    GetGamePreview()->EndInputRemap();
+#endif
 
 #if EDITOR
     if (GetSecondScreenPreview()->IsEnabled())

@@ -15,6 +15,8 @@
 #define BASIC_TEXT_MESH "Text Mesh"
 #define BASIC_INSTANCED_MESH "Instanced Mesh"
 #define BASIC_TIMELINE_PLAYER "Timeline Player"
+#define BASIC_SKYBOX_TEXTURED "Skybox Textured"
+#define BASIC_SKYBOX_VERTEX_COLOR "Skybox Vertex Color"
 
 #define DRAGDROP_NODE "DND_NODE"
 #define DRAGDROP_ASSET "DND_ASSET"
