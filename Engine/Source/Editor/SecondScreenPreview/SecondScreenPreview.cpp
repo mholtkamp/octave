@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include "SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 #include "World.h"
 #include "Renderer.h"
 #include "Engine.h"
@@ -18,6 +19,7 @@
 #include "Graphics/Vulkan/VulkanUtils.h"
 #include "backends/imgui_impl_vulkan.h"
 #endif
+#include <EditorIcons.h>
 
 static SecondScreenPreview sSecondScreenPreview;
 
@@ -28,6 +30,8 @@ SecondScreenPreview* GetSecondScreenPreview()
 
 void SecondScreenPreview::Enable()
 {
+    GetGamePreview()->Disable();
+
     if (mEnabled)
         return;
 
@@ -251,7 +255,7 @@ void SecondScreenPreview::Render()
                 edState->mViewportWidth = kTopWidth;
                 edState->mViewportHeight = kTopHeight;
                 Renderer::Get()->RenderSecondScreen(gameWorld, mTop.mColorTarget, mTop.mDepthTarget,
-                                                     kTopWidth, kTopHeight, topCam);
+                                                     kTopWidth, kTopHeight, topCam, 0);
             }
 
             if (mBottom.mColorTarget != nullptr)
@@ -260,7 +264,7 @@ void SecondScreenPreview::Render()
                 edState->mViewportWidth = kBottomWidth;
                 edState->mViewportHeight = kBottomHeight;
                 Renderer::Get()->RenderSecondScreen(gameWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
-                                                     kBottomWidth, kBottomHeight, botCam);
+                                                     kBottomWidth, kBottomHeight, botCam, 1);
             }
         }
     }
@@ -310,7 +314,7 @@ void SecondScreenPreview::DrawPanel()
 {
     bool wasEnabled = mEnabled;
     bool enableToggle = mEnabled;
-    ImGui::Checkbox("Enable Preview", &enableToggle);
+    ImGui::Checkbox(ICON_MDI_EYE, &enableToggle);
 
     if (enableToggle && !wasEnabled)
         Enable();

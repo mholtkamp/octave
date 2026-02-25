@@ -185,6 +185,7 @@ public:
     Scene* GetScene();
 
     uint8_t GetTargetScreen() const { return mTargetScreen; }
+    void SetTargetScreen(uint8_t screen) { mTargetScreen = screen; }
 
     std::vector<NetDatum>& GetReplicatedData();
 

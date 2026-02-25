@@ -40,7 +40,8 @@ public:
     void Render(World* world, int32_t screenIndex);
 #if EDITOR
     void RenderSecondScreen(World* world, class Image* colorTarget, class Image* depthTarget,
-                            uint32_t width, uint32_t height, class Camera3D* cameraOverride = nullptr);
+                            uint32_t width, uint32_t height, class Camera3D* cameraOverride = nullptr,
+                            int32_t targetScreen = -1);
 #endif
     ~Renderer();
     void Initialize();
@@ -228,6 +229,7 @@ private:
     World* mCurrentWorld = nullptr;
     uint32_t mFrameIndex = 0;
     uint32_t mScreenIndex = 0;
+    int32_t mTargetScreenFilter = -1;  // -1 = no filter, 0 = top screen, 1 = bottom screen
     uint32_t mFrameNumber = 0;
     float mGlobalUiScale = 1.0f;
     DebugMode mDebugMode = DEBUG_NONE;

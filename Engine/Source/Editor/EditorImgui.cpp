@@ -3102,6 +3102,17 @@ static void DrawScenePanel()
         GetEditorState()->mTrackSelectedNode = true;
     }
 
+    // Screen filter combo for 3DS dual-screen filtering
+    {
+        static const char* sScreenFilterNames[] = { "All Screens", "Top Screen", "Bottom Screen" };
+        int screenFilterIdx = GetEditorState()->mSceneScreenFilter + 1; // -1->0, 0->1, 1->2
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        if (ImGui::Combo("##ScreenFilter", &screenFilterIdx, sScreenFilterNames, 3))
+        {
+            GetEditorState()->mSceneScreenFilter = screenFilterIdx - 1; // 0->-1, 1->0, 2->1
+        }
+    }
+
     ImGuiTreeNodeFlags treeNodeFlags =
         ImGuiTreeNodeFlags_OpenOnArrow
         | ImGuiTreeNodeFlags_OpenOnDoubleClick
@@ -3125,6 +3136,15 @@ static void DrawScenePanel()
         bool nodeHasScene = (node->GetScene() != nullptr);
 
         bool drawTreeNode = true;
+
+        // Screen filter: hide subtrees targeting a different screen
+        if (GetEditorState()->mSceneScreenFilter >= 0 && node->GetParent() == rootNode)
+        {
+            if (node->GetTargetScreen() != (uint8_t)GetEditorState()->mSceneScreenFilter)
+            {
+                return; // Skip this subtree entirely in the hierarchy
+            }
+        }
 
         if (filterStrUpper != "")
         {

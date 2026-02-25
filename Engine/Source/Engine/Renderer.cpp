@@ -522,6 +522,15 @@ void Renderer::GatherDrawData(World* world)
                 return false;
             }
 
+            // Filter by target screen for dual-screen rendering (3DS preview)
+            if (mTargetScreenFilter >= 0 && node->GetParent() == world->GetRootNode())
+            {
+                if (node->GetTargetScreen() != (uint8_t)mTargetScreenFilter)
+                {
+                    return false; // Skip entire subtree -- belongs to another screen
+                }
+            }
+
 #if EDITOR
             if (onlySelected &&
                 !GetEditorState()->IsNodeSelected(node))
@@ -1188,6 +1197,12 @@ void Renderer::Render(World* world, int32_t screenIndex)
     mCurrentWorld = world;
     mScreenIndex = screenIndex;
 
+#if SUPPORTS_SECOND_SCREEN
+    mTargetScreenFilter = screenIndex;
+#else
+    mTargetScreenFilter = -1;
+#endif
+
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
     float realDeltatime = GetEngineState()->mRealDeltaTime;
@@ -1197,6 +1212,11 @@ void Renderer::Render(World* world, int32_t screenIndex)
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
     {
         enable3D = false;
+    }
+
+    if (!IsPlayingInEditor() && GetEditorState()->mSceneScreenFilter >= 0)
+    {
+        mTargetScreenFilter = GetEditorState()->mSceneScreenFilter;
     }
 #endif
 
@@ -1451,6 +1471,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
     UpdateDebugDraws();
 
+    mTargetScreenFilter = -1;
     mCurrentWorld = nullptr;
 }
 
@@ -1497,7 +1518,8 @@ void Renderer::RenderSelectedGeometry(World* world)
 
 #if EDITOR
 void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depthTarget,
-                                   uint32_t width, uint32_t height, Camera3D* cameraOverride)
+                                   uint32_t width, uint32_t height, Camera3D* cameraOverride,
+                                   int32_t targetScreen)
 {
     if (world == nullptr || colorTarget == nullptr || depthTarget == nullptr)
         return;
@@ -1510,6 +1532,7 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 
     mCurrentWorld = world;
     mScreenIndex = 1;
+    mTargetScreenFilter = targetScreen;
 
     // Override second screen dimensions so GetScreenResolution(1) and
     // GetViewportWidth/Height(1) return the render target size, not the monitor size.
@@ -1564,24 +1587,6 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
     // Clear offset before the forward pass — 3D mesh Render() calls need to read
     // their vertex data from the primary slots.
     GetVulkanContext()->SetMultiBufferFrameOffset(0);
-
-    // Debug: log viewport/resolution being used for the second screen (remove after verifying)
-    {
-        static uint32_t sLogCounter = 0;
-        if (sLogCounter++ % 300 == 0) // Log once every ~5 seconds at 60fps
-        {
-            glm::uvec4 vp = GetViewport();
-            glm::vec2 res = GetScreenResolution();
-
-            // Log first widget rect if available
-            if (!mWidgetDraws.empty() && mWidgetDraws[0].mNode != nullptr && mWidgetDraws[0].mNode->IsWidget())
-            {
-                Widget* w = static_cast<Widget*>(mWidgetDraws[0].mNode);
-                Rect r = w->GetRect();
-
-            }
-        }
-    }
 
     if (camera != nullptr)
     {
@@ -1677,6 +1682,7 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 
     // Restore state BEFORE recomputing widget rects, so GetViewport() returns
     // screen 0's editor viewport rather than the secondary screen's viewport.
+    mTargetScreenFilter = -1;
     mCurrentWorld = prevWorld;
     mScreenIndex = prevScreenIndex;
     GetEngineState()->mSecondWindowWidth = prevSecondW;

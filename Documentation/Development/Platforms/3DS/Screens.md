@@ -163,6 +163,38 @@ What developers **can** control:
 - Querying screen dimensions and current screen index for adaptive UI
 - Independent scene graphs, physics, and node hierarchies per world
 
+## Editor 3DS Preview Filtering
+
+### How It Works
+
+During Play-In-Editor, all scenes live in a single shared game world. The 3DS Preview panel renders this world twice (once per screen), using `mTargetScreenFilter` on the Renderer to filter nodes by their `mTargetScreen` property at the scene-root level.
+
+The filter is applied in `GatherDrawData()`: when `mTargetScreenFilter >= 0`, direct children of the world root whose `GetTargetScreen()` does not match the filter are skipped entirely (including their whole subtree of 3D nodes and widgets).
+
+On actual 3DS hardware, the two worlds are already separate, so the filter acts as a safety net (set to `screenIndex` via `SUPPORTS_SECOND_SCREEN`).
+
+### Scene Panel Screen Filter
+
+The Scene Panel includes a **Screen Filter** combo dropdown with three options:
+
+- **All Screens** (default) -- shows all nodes in both the hierarchy and viewport
+- **Top Screen** -- only shows subtrees whose root has `mTargetScreen == 0`
+- **Bottom Screen** -- only shows subtrees whose root has `mTargetScreen == 1`
+
+This filter affects:
+- The scene hierarchy tree (subtrees are hidden)
+- The editor viewport (via `mTargetScreenFilter` in `GatherDrawData()`)
+
+During PIE, the viewport filter is disabled (shows everything), but the 3DS Preview panel still applies per-screen filtering.
+
+### Target Screen Property
+
+Set `mTargetScreen` on scene root nodes to control which 3DS screen the subtree renders on. The convention matches `FindSceneForScreen()`: root children with `GetTargetScreen() == 0` are top-screen, `1` are bottom-screen.
+
+### UIDocument Interaction
+
+When a UIDocument is mounted to a widget via `UIDocument::Mount()`, the entire widget tree inherits the parent's `mTargetScreen` value. This ensures consistency even though the scene-root subtree filter already handles rendering.
+
 ## Key Source Files
 
 | File | Contents |
@@ -172,8 +204,10 @@ What developers **can** control:
 | `Engine/Source/Graphics/C3D/C3dTypes.h` | `C3dContext` struct (render targets, IOD, current screen) |
 | `Engine/Source/Graphics/GraphicsConstants.h` | `SUPPORTS_SECOND_SCREEN` constant |
 | `Engine/Source/Engine/Engine.cpp` | World creation and render loop |
-| `Engine/Source/Engine/Renderer.cpp` | Screen index tracking, resolution queries |
+| `Engine/Source/Engine/Renderer.cpp` | Screen index tracking, resolution queries, `mTargetScreenFilter` |
 | `Engine/Source/Engine/EngineTypes.h` | `mWindowWidth/Height`, `mSecondWindowWidth/Height` |
 | `Engine/Source/System/SystemTypes.h` | `SystemState` 3DS fields (`mSlider`, `mNew3DS`) |
 | `Engine/Source/LuaBindings/Renderer_Lua.cpp` | `GetScreenIndex`, `GetScreenResolution` bindings |
 | `Engine/Source/LuaBindings/Engine_Lua.cpp` | `Engine.GetWorld()` binding |
+| `Engine/Source/Editor/SecondScreenPreview/SecondScreenPreview.cpp` | 3DS Preview panel, PIE screen filtering |
+| `Engine/Source/Editor/EditorState.h` | `mSceneScreenFilter` for Scene Panel filter |

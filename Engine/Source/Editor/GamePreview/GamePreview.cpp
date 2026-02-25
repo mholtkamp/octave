@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include "GamePreview.h"
+#include "SecondScreenPreview/SecondScreenPreview.h"
 #include "World.h"
 #include "Renderer.h"
 #include "Engine.h"
@@ -9,6 +10,7 @@
 #include "System/System.h"
 #include "Nodes/3D/Camera3d.h"
 #include "EditorState.h"
+#include "EditorIcons.h"
 #include "EditorUIHookManager.h"
 
 #include "imgui.h"
@@ -43,6 +45,8 @@ const std::vector<ResolutionPreset> GamePreview::sBuiltInPresets = {
 
 void GamePreview::Enable()
 {
+    GetSecondScreenPreview()->Disable();
+
     if (mEnabled)
         return;
 
@@ -234,6 +238,10 @@ void GamePreview::Render()
     if (world == nullptr || mColorTarget == nullptr || mDepthTarget == nullptr)
         return;
 
+    // Refresh camera list to avoid dangling pointers
+    // (e.g., after PIE ends and the game world's cameras are destroyed)
+    RefreshCameraList();
+
     // Determine the selected camera to pass as override
     Camera3D* selectedCamera = nullptr;
     if (mSelectedCameraIndex >= 0 && mSelectedCameraIndex < (int32_t)mCachedCameras.size())
@@ -370,7 +378,7 @@ void GamePreview::DrawPanel()
     // Enable/Disable toggle
     bool wasEnabled = mEnabled;
     bool enableToggle = mEnabled;
-    ImGui::Checkbox("Enable Preview", &enableToggle);
+    ImGui::Checkbox(ICON_MDI_EYE, &enableToggle);
 
     if (enableToggle && !wasEnabled)
         Enable();

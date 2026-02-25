@@ -167,6 +167,7 @@ struct EditorState
 
     // 3DS Preview Panel state
     bool mShow3DSPreview = false;
+    int32_t mSceneScreenFilter = -1;  // -1 = All Screens, 0 = Top Screen, 1 = Bottom Screen
 
     // Game Preview Panel state
     bool mShowGamePreview = false;

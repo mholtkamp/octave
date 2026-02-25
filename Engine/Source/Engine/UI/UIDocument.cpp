@@ -226,6 +226,13 @@ void UIDocument::Mount(Widget* parent)
     {
         mMountParent = parent;
         parent->AddChild(mRootWidget);
+
+        // Propagate the parent's target screen to the entire UI widget tree
+        uint8_t targetScreen = parent->GetTargetScreen();
+        mRootWidget->Traverse([targetScreen](Node* node) -> bool {
+            node->SetTargetScreen(targetScreen);
+            return true;
+        });
     }
 }
 
