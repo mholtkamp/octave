@@ -518,7 +518,7 @@ static void DrawDockspace()
         ImVec4 bg = CssThemeParser::GetPanelDebugLogBg(debugBg) ? debugBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
         ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
     }
-    if (ImGui::BeginDock(ICON_STREAMLINE_LOG_SOLID "  Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse))
+    if (ImGui::BeginDock(ICON_STREAMLINE_LOG_SOLID "  Debug Log", &debugLogOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         GetDebugLogWindow()->DrawContent();
     }
@@ -554,7 +554,7 @@ static void DrawDockspace()
         ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
         ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
     }
-    if (ImGui::BeginDock(ICON_CIB_NINTENDO_3DS "  3DS Preview", nullptr))
+    if (ImGui::BeginDock(ICON_CIB_NINTENDO_3DS "  3DS Preview", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         GetSecondScreenPreview()->DrawPanel();
     }
