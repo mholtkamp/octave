@@ -9,6 +9,7 @@
 #include "Utilities.h"
 #include "System/System.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Nodes/Widgets/Widget.h"
 #include "EditorState.h"
 #include "EditorIcons.h"
 #include "EditorUIHookManager.h"
@@ -481,6 +482,7 @@ void GamePreview::DrawPanel()
                 GetEditorState()->BeginPlayInEditor();
             }
         }
+
     }
 
     // Rendered image, aspect-ratio preserved, centered
@@ -520,6 +522,7 @@ void GamePreview::DrawPanel()
         ImGui::Image(mImGuiTexId, ImVec2(drawW, drawH));
         mImageMin = ImGui::GetItemRectMin();
         mImageMax = ImGui::GetItemRectMax();
+
     }
 }
 
@@ -563,8 +566,24 @@ void GamePreview::BeginInputRemap()
     INP_GetMousePosition(mSavedMouseX, mSavedMouseY);
     float relX = ((float)mSavedMouseX - rawMinX) / rawImgW;
     float relY = ((float)mSavedMouseY - rawMinY) / rawImgH;
-    INP_SetMousePosition((int32_t)(relX * (float)mCurrentWidth),
-                         (int32_t)(relY * (float)mCurrentHeight));
+    int32_t finalX = (int32_t)(relX * (float)mCurrentWidth);
+    int32_t finalY = (int32_t)(relY * (float)mCurrentHeight);
+    INP_SetMousePosition(finalX, finalY);
+
+    // Force all widgets to recompute their rects with the game viewport.
+    // UpdateRect() is normally only called from PreRender() (during rendering),
+    // but Button::Tick() needs correct rects during World::Update() for hit-testing.
+    World* world = GetWorld(0);
+    if (world != nullptr && world->GetRootNode() != nullptr)
+    {
+        world->GetRootNode()->Traverse([](Node* node) -> bool {
+            if (node->IsWidget())
+            {
+                static_cast<Widget*>(node)->UpdateRect();
+            }
+            return true;
+        });
+    }
 
     mInputRemapActive = true;
 }
@@ -573,6 +592,20 @@ void GamePreview::EndInputRemap()
 {
     if (!mInputRemapActive)
         return;
+
+    // Mark widgets dirty so they recompute rects with the editor viewport
+    // during the next PreRender() call.
+    World* world = GetWorld(0);
+    if (world != nullptr && world->GetRootNode() != nullptr)
+    {
+        world->GetRootNode()->Traverse([](Node* node) -> bool {
+            if (node->IsWidget())
+            {
+                static_cast<Widget*>(node)->MarkDirty();
+            }
+            return true;
+        });
+    }
 
     EditorState* edState = GetEditorState();
     edState->mViewportX = mSavedVpX;

@@ -634,7 +634,8 @@ void Widget::UpdateRect()
     // use the second screen's viewport as their parent rect, not the Scene2D wrapper
     // which is sized for the editor viewport.
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D &&
-        Renderer::Get()->GetScreenIndex() == 0)
+        Renderer::Get()->GetScreenIndex() == 0 &&
+        !(IsPlayingInEditor() && GetEditorState()->mPlayInGameWindow))
     {
         Widget* wrapper = GetEditorState()->GetViewport2D()->GetWrapperWidget();
         if (parent == nullptr &&
