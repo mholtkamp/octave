@@ -1220,11 +1220,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
     mCurrentWorld = world;
     mScreenIndex = screenIndex;
 
-#if SUPPORTS_SECOND_SCREEN
-    mTargetScreenFilter = screenIndex;
-#else
     mTargetScreenFilter = -1;
-#endif
 
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
