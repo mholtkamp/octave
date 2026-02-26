@@ -435,6 +435,82 @@ bool MaterialLite::IsLite() const
     return true;
 }
 
+void MaterialLite::SaveLiteParams(Stream& stream)
+{
+    stream.WriteUint32(uint32_t(mLiteParams.mShadingModel));
+    stream.WriteUint32(uint32_t(mLiteParams.mBlendMode));
+    stream.WriteUint32(uint32_t(mLiteParams.mVertexColorMode));
+
+    stream.WriteUint32(mLiteParams.mNumTextures);
+
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+    {
+        stream.WriteAsset(mLiteParams.mTextures[i]);
+        stream.WriteUint8(mLiteParams.mUvMaps[i]);
+        stream.WriteUint8((uint8_t)mLiteParams.mTevModes[i]);
+    }
+
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
+    {
+        stream.WriteVec2(mLiteParams.mUvOffsets[i]);
+        stream.WriteVec2(mLiteParams.mUvScales[i]);
+    }
+
+    stream.WriteVec4(mLiteParams.mColor);
+    stream.WriteVec4(mLiteParams.mFresnelColor);
+    stream.WriteFloat(mLiteParams.mFresnelPower);
+    stream.WriteFloat(mLiteParams.mEmission);
+    stream.WriteFloat(mLiteParams.mWrapLighting);
+    stream.WriteFloat(mLiteParams.mSpecular);
+    stream.WriteUint32(mLiteParams.mToonSteps);
+    stream.WriteFloat(mLiteParams.mOpacity);
+    stream.WriteFloat(mLiteParams.mMaskCutoff);
+    stream.WriteFloat(mLiteParams.mShininess);
+    stream.WriteInt32(mLiteParams.mSortPriority);
+    stream.WriteBool(mLiteParams.mDisableDepthTest);
+    stream.WriteBool(mLiteParams.mFresnelEnabled);
+    stream.WriteBool(mLiteParams.mApplyFog);
+    stream.WriteUint8((uint8_t)mLiteParams.mCullMode);
+}
+
+void MaterialLite::LoadLiteParams(Stream& stream, uint32_t version)
+{
+    mLiteParams.mShadingModel = ShadingModel(stream.ReadUint32());
+    mLiteParams.mBlendMode = BlendMode(stream.ReadUint32());
+    mLiteParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
+
+    mLiteParams.mNumTextures = stream.ReadUint32();
+
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+    {
+        stream.ReadAsset(mLiteParams.mTextures[i]);
+        mLiteParams.mUvMaps[i] = stream.ReadUint8();
+        mLiteParams.mTevModes[i] = (TevMode)stream.ReadUint8();
+    }
+
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
+    {
+        mLiteParams.mUvOffsets[i] = stream.ReadVec2();
+        mLiteParams.mUvScales[i] = stream.ReadVec2();
+    }
+
+    mLiteParams.mColor = stream.ReadVec4();
+    mLiteParams.mFresnelColor = stream.ReadVec4();
+    mLiteParams.mFresnelPower = stream.ReadFloat();
+    mLiteParams.mEmission = stream.ReadFloat();
+    mLiteParams.mWrapLighting = stream.ReadFloat();
+    mLiteParams.mSpecular = stream.ReadFloat();
+    mLiteParams.mToonSteps = stream.ReadUint32();
+    mLiteParams.mOpacity = stream.ReadFloat();
+    mLiteParams.mMaskCutoff = stream.ReadFloat();
+    mLiteParams.mShininess = stream.ReadFloat();
+    mLiteParams.mSortPriority = stream.ReadInt32();
+    mLiteParams.mDisableDepthTest = stream.ReadBool();
+    mLiteParams.mFresnelEnabled = stream.ReadBool();
+    mLiteParams.mApplyFog = stream.ReadBool();
+    mLiteParams.mCullMode = (CullMode)stream.ReadUint8();
+}
+
 const MaterialLiteParams& MaterialLite::GetLiteParams() const
 {
     return mLiteParams;

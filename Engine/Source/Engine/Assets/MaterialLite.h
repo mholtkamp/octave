@@ -57,6 +57,9 @@ public:
 
     virtual bool IsLite() const override;
 
+    void SaveLiteParams(Stream& stream);
+    void LoadLiteParams(Stream& stream, uint32_t version);
+
     // Node graph integration
     virtual bool HasNodeGraph() const override { return mUseNodeGraph; }
     virtual NodeGraph* GetNodeGraph() override { return &mGraph; }
