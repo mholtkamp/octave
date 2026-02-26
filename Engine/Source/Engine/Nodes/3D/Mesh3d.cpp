@@ -67,6 +67,30 @@ void Mesh3D::SaveStream(Stream& stream, Platform platform)
     }
 }
 
+static MaterialLite* LoadInlineMaterial(Mesh3D* mesh, Stream& stream, uint32_t version)
+{
+    // Create material through the normal pipeline to ensure textures are
+    // obtained via the standard asset loading path (works on all platforms).
+    MaterialLite* mat = MaterialLite::New(mesh->GetMaterial());
+
+    // Save the textures that New() set up (from the mesh's base material).
+    Texture* baseTex[MATERIAL_LITE_MAX_TEXTURES];
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+        baseTex[i] = mat->GetTexture(i);
+
+    // Load all saved params from stream (advances stream position correctly).
+    // This overwrites everything including texture refs from the stream.
+    mat->LoadLiteParams(stream, version);
+
+    // Restore textures from the normal pipeline. Inline texture references
+    // can fail to resolve correctly during the headless Docker cook, causing
+    // garbage rendering on console platforms (3DS/Wii/GCN).
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+        mat->SetTexture(i, baseTex[i]);
+
+    return mat;
+}
+
 void Mesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
 {
     uint32_t startPos = stream.GetPos();
@@ -81,10 +105,7 @@ void Mesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
 
             if (hasInlineMat)
             {
-                MaterialLite* mat = NewTransientAsset<MaterialLite>();
-                mat->LoadLiteParams(stream, version);
-                mat->Create();
-                mMaterialOverride = mat;
+                mMaterialOverride = LoadInlineMaterial(this, stream, version);
             }
         }
         else
@@ -100,10 +121,7 @@ void Mesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
 
                 if (hasInlineMat)
                 {
-                    MaterialLite* mat = NewTransientAsset<MaterialLite>();
-                    mat->LoadLiteParams(stream, version);
-                    mat->Create();
-                    mMaterialOverride = mat;
+                    mMaterialOverride = LoadInlineMaterial(this, stream, version);
                 }
             }
         }
@@ -114,6 +132,7 @@ void Mesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
     if (mMaterialOverride.Get() == nullptr && GetName() == "Skybox")
     {
         MaterialLite* skyMat = MaterialLite::New(GetMaterial());
+        skyMat->SetShadingModel(ShadingModel::Unlit);
         skyMat->SetCullMode(CullMode::Front);
         skyMat->SetDepthTestDisabled(true);
         skyMat->SetSortPriority(-1000);
