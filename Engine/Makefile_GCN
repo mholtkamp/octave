@@ -36,10 +36,12 @@ SOURCES		:=	Source \
 				Source/Network/Dolphin \
 				Source/LuaBindings \
 				../External/Lua \
-				../External/Vorbis
+				../External/Vorbis \
+				../External/recastnavigation/Recast/Source/ \
+				../External/recastnavigation/Detour/Source/ \
 #DATA		:=	data
-#TEXTURES	:=	textures 
-INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis 
+#TEXTURES	:=	textures
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/GCN
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 
@@ -130,7 +132,7 @@ OutputDir:
 MakeBullet:
 	@$(MAKE) --no-print-directory -C $(BULLET_DIR) -f $(BULLET_DIR)/Makefile_GCN
 
-$(BUILD): MakeBullet OutputDir 
+$(BUILD): MakeBullet OutputDir
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_GCN
 

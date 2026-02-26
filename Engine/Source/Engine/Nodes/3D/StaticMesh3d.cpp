@@ -54,8 +54,8 @@ static StaticMesh* GetDefaultMesh()
 StaticMesh3D::StaticMesh3D() :
     mStaticMesh(nullptr),
     mUseTriangleCollision(false),
-    mNavmeshReady(false),
     mBakeLighting(false),
+    mNavmeshReady(false),
     mHasBakedLighting(false)
 {
     mName = "Static Mesh";

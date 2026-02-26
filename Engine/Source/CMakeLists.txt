@@ -61,6 +61,8 @@ set(COMMON_DEPS
     lua
     BulletCollision
     BulletDynamics
+    Recast
+    Detour
 )
 
 set(TARGET EngineEditorLib)

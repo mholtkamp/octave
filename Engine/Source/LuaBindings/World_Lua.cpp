@@ -555,6 +555,25 @@ int World_Lua::FindClosestNavPoint(lua_State* L)
     return 1;
 }
 
+int World_Lua::BuildNavData(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+
+    world->BuildNavigationData();
+
+    return 0;
+}
+
+int World_Lua::EnableAutoNavRebuild(lua_State* L)
+{
+    World* world = CHECK_WORLD(L, 1);
+    bool enable = CHECK_BOOLEAN(L, 2);
+
+    world->EnableAutoNavRebuild(enable);
+
+    return 0;
+}
+
 void World_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -625,6 +644,8 @@ void World_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, FindNavPath);
     REGISTER_TABLE_FUNC(L, mtIndex, FindRandomNavPoint);
     REGISTER_TABLE_FUNC(L, mtIndex, FindClosestNavPoint);
+    REGISTER_TABLE_FUNC(L, mtIndex, BuildNavData);
+    REGISTER_TABLE_FUNC(L, mtIndex, EnableAutoNavRebuild);
 
     // Set the __index metamethod to itself
     lua_pushvalue(L, mtIndex);

@@ -34,10 +34,10 @@
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 #include <Bullet/BulletCollision/CollisionShapes/btTriangleShape.h>
 
-#include "../../../External/recastnavigation/Recast/Include/Recast.h"
-#include "../../../External/recastnavigation/Detour/Include/DetourNavMesh.h"
-#include "../../../External/recastnavigation/Detour/Include/DetourNavMeshBuilder.h"
-#include "../../../External/recastnavigation/Detour/Include/DetourNavMeshQuery.h"
+#include "Recast.h"
+#include "DetourNavMesh.h"
+#include "DetourNavMeshBuilder.h"
+#include "DetourNavMeshQuery.h"
 
 using namespace std;
 
@@ -81,18 +81,9 @@ namespace
         sWorldNavCache.erase(world);
     }
 
-    static RecastNavData* GetOrBuildWorldNav(World* world)
+    static RecastNavData* BuildWorldNav(World* world)
     {
-        {
-            std::lock_guard<std::mutex> lock(sWorldNavCacheMutex);
-            auto it = sWorldNavCache.find(world);
-            if (it != sWorldNavCache.end() && it->second && it->second->mQuery)
-            {
-                return it->second.get();
-            }
-        }
-
-        std::unique_ptr<RecastNavData> nav = std::make_unique<RecastNavData>();
+        std::unique_ptr<RecastNavData> nav(new RecastNavData());
         if (!BuildRecastNavData(world, *nav))
         {
             return nullptr;
@@ -104,6 +95,25 @@ namespace
             sWorldNavCache[world] = std::move(nav);
         }
         return ret;
+    }
+
+    static RecastNavData* GetOrBuildWorldNav(World* world)
+    {
+        {
+            std::lock_guard<std::mutex> lock(sWorldNavCacheMutex);
+            auto it = sWorldNavCache.find(world);
+            if (it != sWorldNavCache.end() && it->second && it->second->mQuery)
+            {
+                return it->second.get();
+            }
+        }
+
+        if (!world->IsAutoNavRebuildEnabled())
+        {
+            return nullptr;
+        }
+
+        return BuildWorldNav(world);
     }
 
     static bool GatherNavTriangles(World* world, std::vector<float>& outVerts, std::vector<int>& outTris)
@@ -847,7 +857,20 @@ bool World::FindClosestNavPoint(glm::vec3 inPoint, glm::vec3& outPoint)
     return true;
 }
 
+void World::BuildNavigationData()
+{
+    BuildWorldNav(this);
+}
 
+void World::EnableAutoNavRebuild(bool enable)
+{
+    mAutoNavRebuild = enable;
+}
+
+bool World::IsAutoNavRebuildEnabled() const
+{
+    return mAutoNavRebuild;
+}
 
 void World::InvalidateNavMesh()
 {
@@ -1145,7 +1168,7 @@ void World::SweepTest(
 
 void World::RegisterNode(Node* node, bool subRoot)
 {
-    if (node && (node->As<StaticMesh3D>() != nullptr || node->As<NavMesh3D>() != nullptr))
+    if (mAutoNavRebuild && node && (node->As<StaticMesh3D>() != nullptr || node->As<NavMesh3D>() != nullptr))
     {
         InvalidateWorldNavCache(this);
     }
@@ -1185,7 +1208,7 @@ void World::RegisterNode(Node* node, bool subRoot)
 
 void World::UnregisterNode(Node* node, bool subRoot)
 {
-    if (node && (node->As<StaticMesh3D>() != nullptr || node->As<NavMesh3D>() != nullptr))
+    if (mAutoNavRebuild && node && (node->As<StaticMesh3D>() != nullptr || node->As<NavMesh3D>() != nullptr))
     {
         InvalidateWorldNavCache(this);
     }
@@ -1655,7 +1678,7 @@ Node* World::SpawnScene(Scene* scene, glm::vec3 position)
     }
     else
     {
-        LogError("Failed to spawn scene with type: %s.", scene->GetName());
+        LogError("Failed to spawn scene with type: %s.", scene->GetName().c_str());
     }
 
     return newNode.Get();

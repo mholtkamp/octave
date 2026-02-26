@@ -156,6 +156,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(ShadowMesh3D);
     FORCE_LINK_CALL(TextMesh3D);
     FORCE_LINK_CALL(InstancedMesh3D);
+    FORCE_LINK_CALL(Spline3D);
+    FORCE_LINK_CALL(NavMesh3D);
 
     // Asset Types
     FORCE_LINK_CALL(Scene);

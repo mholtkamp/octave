@@ -105,6 +105,18 @@ Sig: `point = World:FindClosestNavPoint(pos)`
  - Arg: `Vector pos` Input world position
  - Ret: `Vector point` Closest nav point (or `nil` if unavailable)
 ---
+### BuildNavData
+Build navigation data for the world in its current state. This function must be called before any navigation-related functions will work properly.
+
+Sig: `World:BuildNavData()`
+
+---
+### EnableAutoNavRebuild
+Enable automatic generation of navigation data. This feature is disable dy default. When disabled, BuildNavData() must be called before any navigation-related functions will work properly.
+
+Sig: `World:EnableAutoNavRebuild(enable)`
+ - Arg: `boolean enable` Whether to enable auto rebuild
+---
 ### SetAmbientLightColor
 Set the world's ambient light color.
 

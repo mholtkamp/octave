@@ -52,9 +52,11 @@ SOURCES		:=	Source \
 				Source/LuaBindings \
 				../External/Lua \
 				../External/Vorbis \
+				../External/recastnavigation/Recast/Source/ \
+				../External/recastnavigation/Detour/Source/ \
 				Shaders/PICA200
 DATA		:=	Data
-INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis 
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs

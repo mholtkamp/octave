@@ -23,6 +23,7 @@
 #include "EditorState.h"
 #endif
 
+FORCE_LINK_DEF(Spline3D);
 DEFINE_NODE(Spline3D, Node3D);
 
 static bool sGeneratePoint = false;
