@@ -26,6 +26,7 @@ public:
     float GetGridSize() const { return mGridSize; }
     glm::vec4 GetSelectedColor() const { return mSelectedColor; }
     float GetSelectedCheckerSize() const { return mSelectedCheckerSize; }
+    float GetMenuBarPadding() const { return mMenuBarPadding; }
 
     static ViewportModule* Get();
     static void HandleExternalGridToggle(bool enabled);
@@ -41,6 +42,7 @@ private:
     float mGridSize = 1.0f;
     glm::vec4 mSelectedColor = glm::vec4(0.2f, 0.1f, 1.0f, 0.6f);
     float mSelectedCheckerSize = 8.0f;
+    float mMenuBarPadding = 8.0f;
 
     static ViewportModule* sInstance;
     static bool sSyncingGridState;

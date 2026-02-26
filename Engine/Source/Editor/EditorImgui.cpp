@@ -51,6 +51,7 @@
 #include "EditorState.h"
 #include "Preferences/PreferencesWindow.h"
 #include "Preferences/Appearance/Theme/ThemeModule.h"
+#include "Preferences/Appearance/Viewport/ViewportModule.h"
 #include "Packaging/PackagingWindow.h"
 #include "ProjectSelect/ProjectSelectWindow.h"
 #include "Addons/AddonsWindow.h"
@@ -155,9 +156,16 @@ struct FileBrowserDirEntry
     bool mSelected = false;
 };
 
+static float GetMenuBarPadding()
+{
+    ViewportModule* vm = ViewportModule::Get();
+    return vm ? vm->GetMenuBarPadding() : 8.0f;
+}
+
 static float GetMainMenuBarHeight()
 {
-    return ImGui::GetFrameHeight();
+    float padding = GetMenuBarPadding();
+    return ImGui::GetFontSize() + padding * 2.0f + 1.0f;
 }
 static float GetTopBarHeight()
 {
@@ -5989,6 +5997,9 @@ static void DrawMainMenuBar()
 
     bool openSaveSceneAsModal = false;
 
+    float menuPadding = GetMenuBarPadding();
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetStyle().FramePadding.x, menuPadding));
+
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -6976,6 +6987,8 @@ static void DrawMainMenuBar()
 
         ImGui::EndMainMenuBar();
     }
+
+    ImGui::PopStyleVar();
 
     // Set up ImGuizmo rect for the viewport area
     {

@@ -32,6 +32,16 @@ void ViewportModule::Render()
 {
     bool changed = false;
 
+    ImGui::Text("Menu Bar Padding");
+    if (ImGui::SliderFloat("##MenuBarPadding", &mMenuBarPadding, 1.0f, 12.0f, "%.0f px"))
+    {
+        changed = true;
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set the vertical padding of the main menu bar.");
+
+    ImGui::Separator();
+    ImGui::Spacing();
+
     ImGui::Text("Background Color");
     if (ImGui::ColorEdit4("##BackgroundColor", &mBackgroundColor.x, ImGuiColorEditFlags_NoInputs))
     {
@@ -107,6 +117,7 @@ void ViewportModule::LoadSettings(const rapidjson::Document& doc)
     mGridSize = JsonSettings::GetFloat(doc, "gridSize", 1.0f);
     mSelectedColor = JsonSettings::GetVec4(doc, "selectedColor", glm::vec4(0.2f, 0.1f, 1.0f, 0.6f));
     mSelectedCheckerSize = JsonSettings::GetFloat(doc, "selectedCheckerSize", 8.0f);
+    mMenuBarPadding = JsonSettings::GetFloat(doc, "menuBarPadding", 8.0f);
 
     ApplyBackgroundColorToRenderer();
     SetGridColor(mGridColor);
@@ -122,6 +133,7 @@ void ViewportModule::SaveSettings(rapidjson::Document& doc)
     JsonSettings::SetFloat(doc, "gridSize", mGridSize);
     JsonSettings::SetVec4(doc, "selectedColor", mSelectedColor);
     JsonSettings::SetFloat(doc, "selectedCheckerSize", mSelectedCheckerSize);
+    JsonSettings::SetFloat(doc, "menuBarPadding", mMenuBarPadding);
 }
 
 void ViewportModule::ApplyBackgroundColorToRenderer() const

@@ -584,10 +584,16 @@ void EditorState::BeginPlayInEditor()
     GetWorld(0)->Clear();
     OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
 
+    Renderer::Get()->EnableProxyRendering(false);
+    mSavedGridEnabled = IsGridEnabled();
+    if (mSavedGridEnabled)
+    {
+        EnableGrid(false);
+    }
+
     if (!mPlayInGameWindow)
     {
         ShowEditorUi(false);
-        Renderer::Get()->EnableProxyRendering(false);
 
         // Resize the window to match the Game Preview resolution so UI widgets
         // render at the correct size regardless of the editor window dimensions.
@@ -667,10 +673,15 @@ void EditorState::EndPlayInEditor()
 
     ActionManager::Get()->ResetUndoRedo();
 
+    Renderer::Get()->EnableProxyRendering(true);
+    if (mSavedGridEnabled)
+    {
+        EnableGrid(true);
+    }
+
     if (!mPlayInGameWindow)
     {
         ShowEditorUi(true);
-        Renderer::Get()->EnableProxyRendering(true);
 
         // Restore the window to its original size
         if (mSavedWindowRect[2] > 0 && mSavedWindowRect[3] > 0)

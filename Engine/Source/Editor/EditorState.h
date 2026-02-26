@@ -114,6 +114,7 @@ struct EditorState
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
+    bool mSavedGridEnabled = false;
     glm::vec4 mSavedEditorClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     int32_t mSavedWindowRect[4] = {}; // x, y, w, h — saved before Play Full Screen resize
     int32_t mEditSceneIndex = -1;
