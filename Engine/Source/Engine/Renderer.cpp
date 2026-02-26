@@ -578,7 +578,7 @@ void Renderer::GatherDrawData(World* world)
                         {
                         case BlendMode::Opaque:
                         case BlendMode::Masked:
-                            if (prim->ShouldReceiveSimpleShadows())
+                            if (data.mDepthless || prim->ShouldReceiveSimpleShadows())
                             {
                                 mOpaqueDraws.push_back(data);
                             }
@@ -686,6 +686,12 @@ void Renderer::GatherDrawData(World* world)
 
         auto materialSort = [](const DrawData& l, const DrawData& r)
         {
+            // Sort by priority first (e.g. skybox uses negative priority to render first).
+            if (l.mSortPriority != r.mSortPriority)
+            {
+                return l.mSortPriority < r.mSortPriority;
+            }
+
             // Depthless materials should render last.
             if (l.mDepthless != r.mDepthless)
             {

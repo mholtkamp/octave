@@ -1370,7 +1370,7 @@ static void DiscoverNodeClasses()
     }
 }
 
-static void CreateNewAsset(TypeId assetType, const char* assetName)
+static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybox = false)
 {
     AssetStub* stub = nullptr;
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
@@ -1379,6 +1379,20 @@ static void CreateNewAsset(TypeId assetType, const char* assetName)
         return;
 
     stub = EditorAddUniqueAsset(assetName, currentDir, assetType, true);
+
+    if (isSkybox && stub != nullptr && stub->mAsset != nullptr)
+    {
+        MaterialLite* skyMat = stub->mAsset->As<MaterialLite>();
+        if (skyMat != nullptr)
+        {
+            skyMat->SetShadingModel(ShadingModel::Unlit);
+            skyMat->SetCullMode(CullMode::Front);
+            skyMat->SetDepthTestDisabled(true);
+            skyMat->SetSortPriority(-1000);
+            skyMat->SetApplyFog(false);
+            skyMat->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+    }
 
     if (assetType == MaterialLite::GetStaticType())
     {
@@ -3861,6 +3875,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
     bool setTextInputFocus = false;
     bool closeContextPopup = false;
     static TypeId sNewAssetType = INVALID_TYPE_ID;
+    static bool sNewAssetIsSkybox = false;
 
     ActionManager* actMan = ActionManager::Get();
     AssetManager* assMan = AssetManager::Get();
@@ -4052,6 +4067,12 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (ImGui::Selectable("Material (Instance)", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 sNewAssetType = MaterialInstance::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Skybox Material", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = MaterialLite::GetStaticType();
+                sNewAssetIsSkybox = true;
                 showPopup = true;
             }
             if (ImGui::Selectable("Particle System", false, ImGuiSelectableFlags_DontClosePopups))
@@ -4290,7 +4311,9 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             if (assetName == "")
             {
-                if (sNewAssetType == MaterialLite::GetStaticType())
+                if (sNewAssetIsSkybox)
+                    assetName = "M_Skybox";
+                else if (sNewAssetType == MaterialLite::GetStaticType())
                     assetName = "M_Material";
                 else if (sNewAssetType == MaterialBase::GetStaticType())
                     assetName = "MB_Material";
@@ -4308,9 +4331,10 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
             {
-                CreateNewAsset(sNewAssetType, assetName.c_str());
+                CreateNewAsset(sNewAssetType, assetName.c_str(), sNewAssetIsSkybox);
             }
 
+            sNewAssetIsSkybox = false;
             ImGui::CloseCurrentPopup();
             closeContextPopup = true;
         }

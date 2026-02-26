@@ -1709,6 +1709,13 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
             skyNode->SetMaterialOverride(static_cast<Material*>(srcAsset));
         }
 
+        // Create a MaterialLite override with skybox render properties.
+        MaterialLite* skyMat = MaterialLite::New(skyNode->GetMaterial());
+        skyMat->SetCullMode(CullMode::Front);      // Show inside of sphere
+        skyMat->SetDepthTestDisabled(true);         // Don't affect depth buffer
+        skyMat->SetSortPriority(-1000);             // Render before everything
+        skyNode->SetMaterialOverride(skyMat);
+
         skyNode->EnableCollision(false);
         skyNode->EnableOverlaps(false);
         skyNode->EnablePhysics(false);
