@@ -675,6 +675,7 @@ bool Update()
 
 #if EDITOR
     GetGamePreview()->BeginInputRemap();
+    GetSecondScreenPreview()->BeginInputRemap();
 #endif
 
     for (uint32_t i = 0; i < sWorlds.size(); ++i)
@@ -683,6 +684,7 @@ bool Update()
     }
 
 #if EDITOR
+    GetSecondScreenPreview()->EndInputRemap();
     GetGamePreview()->EndInputRemap();
 #endif
 

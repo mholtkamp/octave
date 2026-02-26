@@ -8,6 +8,8 @@
 #include "Log.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Nodes/Widgets/Widget.h"
+#include "Input/Input.h"
 #include "Assets/Scene.h"
 #include "EditorState.h"
 
@@ -321,6 +323,19 @@ void SecondScreenPreview::DrawPanel()
     else if (!enableToggle && wasEnabled)
         Disable();
 
+    ImGui::SameLine();
+    bool inPie = GetEditorState()->mPlayInEditor;
+    if (ImGui::Button(inPie ? "Stop" : "Play"))
+    {
+        if (inPie)
+            GetEditorState()->EndPlayInEditor();
+        else
+        {
+            GetEditorState()->mPlayInGameWindow = true;
+            GetEditorState()->BeginPlayInEditor();
+        }
+    }
+
     if (!mEnabled)
     {
         ImGui::TextDisabled("Preview is disabled. Enable to see the 3DS screens.");
@@ -359,6 +374,94 @@ void SecondScreenPreview::DrawPanel()
 
     // Bottom screen (narrower, centered)
     DrawScreenImage(mBottom.mImGuiTexId, kBottomWidth, kBottomHeight, botW);
+    mBottomImageMin = ImGui::GetItemRectMin();
+    mBottomImageMax = ImGui::GetItemRectMax();
+}
+
+void SecondScreenPreview::BeginInputRemap()
+{
+    mInputRemapActive = false;
+
+    if (!IsPlayingInEditor() || !mEnabled || !GetEditorState()->mPlayInGameWindow)
+        return;
+
+    float imgW = mBottomImageMax.x - mBottomImageMin.x;
+    float imgH = mBottomImageMax.y - mBottomImageMin.y;
+    if (imgW <= 0.0f || imgH <= 0.0f)
+        return;
+
+    EditorState* edState = GetEditorState();
+
+    // Save and override viewport to bottom screen resolution
+    mSavedVpX = edState->mViewportX;
+    mSavedVpY = edState->mViewportY;
+    mSavedVpW = edState->mViewportWidth;
+    mSavedVpH = edState->mViewportHeight;
+    edState->mViewportX = 0;
+    edState->mViewportY = 0;
+    edState->mViewportWidth = kBottomWidth;
+    edState->mViewportHeight = kBottomHeight;
+
+    // Save and remap mouse from window-space to bottom-screen-resolution-space.
+    // ImGui rects are in logical (scaled) coords, but INP mouse is in raw pixels,
+    // so convert the image rect to raw pixel space first.
+    float scale = GetEngineConfig()->mEditorInterfaceScale;
+    if (scale <= 0.0f) scale = 1.0f;
+
+    float rawMinX = mBottomImageMin.x * scale;
+    float rawMinY = mBottomImageMin.y * scale;
+    float rawImgW = imgW * scale;
+    float rawImgH = imgH * scale;
+
+    INP_GetMousePosition(mSavedMouseX, mSavedMouseY);
+    float relX = ((float)mSavedMouseX - rawMinX) / rawImgW;
+    float relY = ((float)mSavedMouseY - rawMinY) / rawImgH;
+    int32_t finalX = (int32_t)(relX * (float)kBottomWidth);
+    int32_t finalY = (int32_t)(relY * (float)kBottomHeight);
+    INP_SetMousePosition(finalX, finalY);
+
+    // Force all widgets to recompute their rects with the bottom screen viewport.
+    World* world = GetWorld(0);
+    if (world != nullptr && world->GetRootNode() != nullptr)
+    {
+        world->GetRootNode()->Traverse([](Node* node) -> bool {
+            if (node->IsWidget())
+            {
+                static_cast<Widget*>(node)->UpdateRect();
+            }
+            return true;
+        });
+    }
+
+    mInputRemapActive = true;
+}
+
+void SecondScreenPreview::EndInputRemap()
+{
+    if (!mInputRemapActive)
+        return;
+
+    // Mark widgets dirty so they recompute rects with the editor viewport
+    World* world = GetWorld(0);
+    if (world != nullptr && world->GetRootNode() != nullptr)
+    {
+        world->GetRootNode()->Traverse([](Node* node) -> bool {
+            if (node->IsWidget())
+            {
+                static_cast<Widget*>(node)->MarkDirty();
+            }
+            return true;
+        });
+    }
+
+    EditorState* edState = GetEditorState();
+    edState->mViewportX = mSavedVpX;
+    edState->mViewportY = mSavedVpY;
+    edState->mViewportWidth = mSavedVpW;
+    edState->mViewportHeight = mSavedVpH;
+
+    INP_SetMousePosition(mSavedMouseX, mSavedMouseY);
+    mInputRemapActive = false;
 }
 
 #endif
