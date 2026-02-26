@@ -340,6 +340,80 @@ struct OctaveEngineAPI
      */
     float (*GetElapsedTime)();
 
+    // ===== Gizmos =====
+
+    /**
+     * @brief Set the gizmo drawing color.
+     * @param r Red component (0.0 - 1.0)
+     * @param g Green component (0.0 - 1.0)
+     * @param b Blue component (0.0 - 1.0)
+     * @param a Alpha component (0.0 - 1.0)
+     */
+    void (*Gizmos_SetColor)(float r, float g, float b, float a);
+
+    /**
+     * @brief Set the gizmo transformation matrix (column-major, 16 floats).
+     * @param matrix16 Pointer to 16 floats (column-major 4x4 matrix)
+     */
+    void (*Gizmos_SetMatrix)(const float* matrix16);
+
+    /**
+     * @brief Reset gizmo state to default (white color, identity matrix).
+     */
+    void (*Gizmos_ResetState)();
+
+    /**
+     * @brief Draw a solid cube gizmo.
+     * @param cx Center X
+     * @param cy Center Y
+     * @param cz Center Z
+     * @param sx Size X
+     * @param sy Size Y
+     * @param sz Size Z
+     */
+    void (*Gizmos_DrawCube)(float cx, float cy, float cz, float sx, float sy, float sz);
+
+    /**
+     * @brief Draw a wireframe cube gizmo.
+     */
+    void (*Gizmos_DrawWireCube)(float cx, float cy, float cz, float sx, float sy, float sz);
+
+    /**
+     * @brief Draw a solid sphere gizmo.
+     * @param cx Center X
+     * @param cy Center Y
+     * @param cz Center Z
+     * @param radius Sphere radius
+     */
+    void (*Gizmos_DrawSphere)(float cx, float cy, float cz, float radius);
+
+    /**
+     * @brief Draw a wireframe sphere gizmo.
+     */
+    void (*Gizmos_DrawWireSphere)(float cx, float cy, float cz, float radius);
+
+    /**
+     * @brief Draw a line gizmo.
+     * @param x0 Start X
+     * @param y0 Start Y
+     * @param z0 Start Z
+     * @param x1 End X
+     * @param y1 End Y
+     * @param z1 End Z
+     */
+    void (*Gizmos_DrawLine)(float x0, float y0, float z0, float x1, float y1, float z1);
+
+    /**
+     * @brief Draw a ray gizmo (from origin along direction).
+     * @param ox Origin X
+     * @param oy Origin Y
+     * @param oz Origin Z
+     * @param dx Direction X
+     * @param dy Direction Y
+     * @param dz Direction Z
+     */
+    void (*Gizmos_DrawRay)(float ox, float oy, float oz, float dx, float dy, float dz);
+
     // ===== Editor UI Hooks (Editor builds only) =====
 
     /**

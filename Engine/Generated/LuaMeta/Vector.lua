@@ -13,6 +13,7 @@
 --- Vector == Vector -> boolean
 Vector = {}
 
+---@return Vector
 function Vector:Create() end
 
 ---@param srcVec Vector
@@ -127,4 +128,5 @@ function Vector:MagnitudeSquared() end
 ---@return number
 function Vector:DistanceSquared(b) end
 
+---@return Vector
 function Vec(...) end

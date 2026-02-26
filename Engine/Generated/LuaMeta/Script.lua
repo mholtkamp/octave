@@ -9,11 +9,13 @@ function Script.Load(filename) end
 ---@param filename string
 function Script.Run(filename) end
 
+---@param arg1 table
 ---@param className string
-function Script.Inherit(className) end
+function Script.Inherit(arg1, className) end
 
+---@param arg1 table
 ---@return any
-function Script.New() end
+function Script.New(arg1) end
 
 function Script.GarbageCollect() end
 
@@ -24,5 +26,6 @@ function Script.LoadDirectory(dirStr, recurse) end
 ---@param filename string
 function Script.Require(filename) end
 
+---@param arg1 table
 ---@param className string
-function Script.Extend(className) end
+function Script.Extend(arg1, className) end

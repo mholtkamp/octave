@@ -22,7 +22,7 @@
 #endif
 
 // Plugin API version - increment when breaking changes are made
-#define OCTAVE_PLUGIN_API_VERSION 2
+#define OCTAVE_PLUGIN_API_VERSION 3
 
 // Forward declarations
 struct OctaveEngineAPI;

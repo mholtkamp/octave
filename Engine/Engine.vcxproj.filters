@@ -218,6 +218,9 @@
     <ClCompile Include="Source\Engine\Engine.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Gizmos.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Maths.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -354,6 +357,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Gizmos_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Log_Lua.cpp">
@@ -1061,6 +1067,9 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp">
       <Filter>Source Files\Engine\NodeGraph</Filter>
     </ClCompile>
@@ -1371,6 +1380,9 @@
     <ClInclude Include="Source\Engine\InputDevices.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Gizmos.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Line.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -1507,6 +1519,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Gizmos_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\UIDocument_Lua.h">
@@ -2044,6 +2059,9 @@
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h">

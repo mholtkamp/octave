@@ -8,6 +8,7 @@
 #include "LuaBindings/Script_Lua.h"
 #include "LuaBindings/Input_Lua.h"
 #include "LuaBindings/Audio_Lua.h"
+#include "LuaBindings/Gizmos_Lua.h"
 #include "LuaBindings/Maths_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Renderer_Lua.h"
@@ -74,6 +75,7 @@ void BindLuaInterface()
     Script_Lua::Bind();
     Input_Lua::Bind();
     Audio_Lua::Bind();
+    Gizmos_Lua::Bind();
     Log_Lua::Bind();
     Maths_Lua::Bind();
     Network_Lua::Bind();

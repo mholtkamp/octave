@@ -14,6 +14,7 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/ShadowMesh3d.h"
 #include "Nodes/3D/Spline3d.h"
+#include "Gizmos.h"
 #include "Log.h"
 #include "Line.h"
 #include "Maths.h"
@@ -642,6 +643,20 @@ void Renderer::GatherDrawData(World* world)
             }
 #endif
 
+#if EDITOR
+            if (Gizmos::IsEnabled() && node->IsNode3D())
+            {
+                Node3D* node3d = (Node3D*)node;
+                Gizmos::ResetState();
+                node3d->OnDrawGizmos();
+                if (GetEditorState()->IsNodeSelected(node))
+                {
+                    Gizmos::ResetState();
+                    node3d->OnDrawGizmosSelected();
+                }
+            }
+#endif
+
             return true;
         };
 
@@ -1256,6 +1271,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
     {
         SCOPED_FRAME_STAT("Culling");
 
+        Gizmos::BeginFrame();
         GatherDrawData(world);
 
         if (enable3D)
@@ -1372,12 +1388,14 @@ void Renderer::Render(World* world, int32_t screenIndex)
                         RenderDraws(mTranslucentDraws);
 
                         RenderDebugDraws(mDebugDraws);
+                        RenderDebugDraws(Gizmos::GetSolidDraws());
 
                         GFX_EnableMaterials(false);
                     }
 
                     RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
                     RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
+                    RenderDebugDraws(Gizmos::GetWireDraws(), PipelineConfig::Wireframe);
 
                     if (GetDebugMode() == DEBUG_COLLISION)
                     {
@@ -1385,6 +1403,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
                     }
 
                     GFX_DrawLines(world->GetLines());
+                    GFX_DrawLines(Gizmos::GetLines());
 
                     GFX_EndRenderPass();
                 }
@@ -1639,14 +1658,17 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
             RenderDraws(mPostShadowOpaqueDraws);
             RenderDraws(mTranslucentDraws);
             RenderDebugDraws(mDebugDraws);
+            RenderDebugDraws(Gizmos::GetSolidDraws());
 
             GFX_EnableMaterials(false);
         }
 
         RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
         RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
+        RenderDebugDraws(Gizmos::GetWireDraws(), PipelineConfig::Wireframe);
 
         GFX_DrawLines(world->GetLines());
+        GFX_DrawLines(Gizmos::GetLines());
 
         // End render pass directly — GFX_EndRenderPass() requires mCurrentRenderPassId
         // to be set via BeginRenderPass(RenderPassId), but we used BeginVkRenderPass().

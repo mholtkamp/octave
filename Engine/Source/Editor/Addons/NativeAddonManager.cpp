@@ -12,6 +12,7 @@
 #include "Engine/Clock.h"
 #include "Engine/Nodes/Node.h"
 #include "Engine/Nodes/3D/Node3d.h"
+#include "Engine/Gizmos.h"
 #include "Input/Input.h"
 #include "Log.h"
 #include "Stream.h"
@@ -394,6 +395,17 @@ static const char* Plugin_luaL_checkstring(lua_State* L, int arg) { return luaL_
 static void Plugin_luaL_setfuncs(lua_State* L, const void* l, int nup) { luaL_setfuncs(L, (const luaL_Reg*)l, nup); }
 static void Plugin_luaL_getmetatable(lua_State* L, const char* tname) { luaL_getmetatable(L, tname); }
 
+// ===== Gizmos Wrappers =====
+static void PluginGizmos_SetColor(float r, float g, float b, float a) { Gizmos::SetColor(glm::vec4(r, g, b, a)); }
+static void PluginGizmos_SetMatrix(const float* m) { Gizmos::SetMatrix(glm::make_mat4(m)); }
+static void PluginGizmos_ResetState() { Gizmos::ResetState(); }
+static void PluginGizmos_DrawCube(float cx, float cy, float cz, float sx, float sy, float sz) { Gizmos::DrawCube({cx,cy,cz}, {sx,sy,sz}); }
+static void PluginGizmos_DrawWireCube(float cx, float cy, float cz, float sx, float sy, float sz) { Gizmos::DrawWireCube({cx,cy,cz}, {sx,sy,sz}); }
+static void PluginGizmos_DrawSphere(float cx, float cy, float cz, float radius) { Gizmos::DrawSphere({cx,cy,cz}, radius); }
+static void PluginGizmos_DrawWireSphere(float cx, float cy, float cz, float radius) { Gizmos::DrawWireSphere({cx,cy,cz}, radius); }
+static void PluginGizmos_DrawLine(float x0, float y0, float z0, float x1, float y1, float z1) { Gizmos::DrawLine({x0,y0,z0}, {x1,y1,z1}); }
+static void PluginGizmos_DrawRay(float ox, float oy, float oz, float dx, float dy, float dz) { Gizmos::DrawRay({ox,oy,oz}, {dx,dy,dz}); }
+
 // ===== NativeAddonManager Implementation =====
 
 void NativeAddonManager::Create()
@@ -534,6 +546,17 @@ void NativeAddonManager::InitializeEngineAPI()
     // Time
     mEngineAPI.GetDeltaTime = PluginGetDeltaTime;
     mEngineAPI.GetElapsedTime = PluginGetElapsedTime;
+
+    // Gizmos
+    mEngineAPI.Gizmos_SetColor = PluginGizmos_SetColor;
+    mEngineAPI.Gizmos_SetMatrix = PluginGizmos_SetMatrix;
+    mEngineAPI.Gizmos_ResetState = PluginGizmos_ResetState;
+    mEngineAPI.Gizmos_DrawCube = PluginGizmos_DrawCube;
+    mEngineAPI.Gizmos_DrawWireCube = PluginGizmos_DrawWireCube;
+    mEngineAPI.Gizmos_DrawSphere = PluginGizmos_DrawSphere;
+    mEngineAPI.Gizmos_DrawWireSphere = PluginGizmos_DrawWireSphere;
+    mEngineAPI.Gizmos_DrawLine = PluginGizmos_DrawLine;
+    mEngineAPI.Gizmos_DrawRay = PluginGizmos_DrawRay;
 
     // Editor UI (will be set when EditorUIHookManager is initialized)
     mEngineAPI.editorUI = nullptr;

@@ -259,6 +259,35 @@ def parse_check_macros_from_body(body, is_self_type):
             optional=is_optional
         )
 
+    # Detect luaL_checktype(L, N, LUA_T*) calls (e.g. luaL_checktype(L, 1, LUA_TTABLE))
+    LUA_TYPE_MAP = {
+        "LUA_TTABLE": "table",
+        "LUA_TFUNCTION": "function",
+        "LUA_TSTRING": "string",
+        "LUA_TNUMBER": "number",
+        "LUA_TBOOLEAN": "boolean",
+        "LUA_TUSERDATA": "userdata",
+    }
+    checktype_pattern = re.compile(
+        r'luaL_checktype\s*\(\s*L\s*,\s*(\d+)\s*,\s*(\w+)\s*\)'
+    )
+    for m in checktype_pattern.finditer(body):
+        arg_idx = int(m.group(1))
+        lua_const = m.group(2)
+        if is_self_type and arg_idx == 1:
+            continue
+        if arg_idx in seen_args:
+            continue
+        lua_type = LUA_TYPE_MAP.get(lua_const)
+        if lua_type is None:
+            continue
+        offset = 1 if is_self_type else 0
+        seen_args[arg_idx] = ParamInfo(
+            name=f"arg{arg_idx - offset}",
+            lua_type=lua_type,
+            optional=False
+        )
+
     # Also detect optional params that use lua_isinteger/lua_isnumber patterns
     # like: int index = lua_isinteger(L, 2) ? lua_tointeger(L, 2) - 1 : 0;
     optional_pattern = re.compile(r'lua_is(?:integer|number)\s*\(\s*L\s*,\s*(\d+)\s*\)\s*\?')
@@ -790,6 +819,11 @@ def process_binding_file(filepath, name_map, check_map, verbose=False):
         table_aliases=table_aliases
     )
 
+    # Fix constructor methods: Create() on value/class types should return own type
+    for method in type_info.methods:
+        if method.name == "Create" and not method.returns:
+            method.returns = [global_name]
+
     # Add fields for value types
     if kind == "value":
         if global_name == "Vector":
@@ -917,6 +951,9 @@ def generate_value_stub(type_info):
                 lines.append(f"---@param {p.name}{opt} {p.lua_type}")
             for ret in m.returns:
                 lines.append(f"---@return {ret}")
+        elif func_name == "Create":
+            # Constructor shortcut (e.g. Vec -> Vector_Lua::Create)
+            lines.append(f"---@return {type_info.lua_name}")
         lines.append(f"function {global_name}(...) end")
         lines.append(f"")
 

@@ -6,6 +6,7 @@
 #include "NodeGraph/Nodes/SceneGraphNodes.h"
 #include "NodeGraph/Nodes/PointNodes.h"
 #include "NodeGraph/Nodes/SplineNodes.h"
+#include "NodeGraph/Nodes/GizmoNodes.h"
 
 void SceneGraphDomain::RegisterNodeTypes()
 {
@@ -283,6 +284,18 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(SplineGetPointNode::GetStaticType(), "Spline Get Point", "Spline", kSplineColor);
     AddNodeType(SplineNearestPercentNode::GetStaticType(), "Spline Nearest Percent", "Spline", kSplineColor);
     AddNodeType(SplineLengthNode::GetStaticType(), "Spline Length", "Spline", kSplineColor);
+
+    // Gizmo nodes
+    static const glm::vec4 kGizmoColor(0.85f, 0.4f, 0.9f, 1.0f);
+    AddNodeType(GizmoSetColorNode::GetStaticType(), "Set Gizmo Color", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoSetMatrixNode::GetStaticType(), "Set Gizmo Matrix", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoResetStateNode::GetStaticType(), "Reset Gizmo State", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawCubeNode::GetStaticType(), "Draw Cube", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawWireCubeNode::GetStaticType(), "Draw Wire Cube", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawSphereNode::GetStaticType(), "Draw Sphere", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawWireSphereNode::GetStaticType(), "Draw Wire Sphere", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawLineNode::GetStaticType(), "Draw Line", "Gizmo", kGizmoColor);
+    AddNodeType(GizmoDrawRayNode::GetStaticType(), "Draw Ray", "Gizmo", kGizmoColor);
 }
 
 TypeId SceneGraphDomain::GetDefaultOutputNodeType() const

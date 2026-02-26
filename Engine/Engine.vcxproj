@@ -744,6 +744,7 @@
     <ClCompile Include="Source\Engine\Clock.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
+    <ClCompile Include="Source\Engine\Gizmos.cpp" />
     <ClCompile Include="Source\Engine\EngineTypes.cpp" />
     <ClCompile Include="Source\Engine\FileWatcher.cpp" />
     <ClCompile Include="Source\Engine\CameraFrustum.cpp" />
@@ -819,6 +820,7 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\PointNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp" />
@@ -889,6 +891,7 @@
     <ClCompile Include="Source\LuaBindings\Asset_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Gizmos_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Box3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
@@ -1091,6 +1094,7 @@
     <ClInclude Include="Source\Engine\Factory.h" />
     <ClInclude Include="Source\Engine\FileWatcher.h" />
     <ClInclude Include="Source\Engine\InputDevices.h" />
+    <ClInclude Include="Source\Engine\Gizmos.h" />
     <ClInclude Include="Source\Engine\Line.h" />
     <ClInclude Include="Source\Engine\Log.h" />
     <ClInclude Include="Source\Engine\Maths.h" />
@@ -1166,6 +1170,7 @@
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\PointNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h" />
@@ -1239,6 +1244,7 @@
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Gizmos_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Box3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Button_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
