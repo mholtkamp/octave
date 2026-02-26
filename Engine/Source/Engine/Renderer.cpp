@@ -523,10 +523,12 @@ void Renderer::GatherDrawData(World* world)
                 return false;
             }
 
-            // Filter by target screen for dual-screen rendering (3DS preview)
+            // Filter by target screen for dual-screen rendering (3DS preview).
+            // Nodes with targetScreen == 0xFF render on all screens (e.g. Skybox).
             if (mTargetScreenFilter >= 0 && node->GetParent() == world->GetRootNode())
             {
-                if (node->GetTargetScreen() != (uint8_t)mTargetScreenFilter)
+                if (node->GetTargetScreen() != (uint8_t)mTargetScreenFilter &&
+                    node->GetTargetScreen() != 0xFF)
                 {
                     return false; // Skip entire subtree -- belongs to another screen
                 }

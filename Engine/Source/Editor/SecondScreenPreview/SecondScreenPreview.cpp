@@ -272,21 +272,28 @@ void SecondScreenPreview::Render()
     }
     else
     {
-        // Normal editor preview — render from separate preview worlds
-        if (mTop.mWorld != nullptr && mTop.mColorTarget != nullptr)
+        // Normal editor preview — render the main world with target screen filtering
+        // so all shared nodes (Skybox, etc.) are visible alongside screen-specific content.
+        World* mainWorld = GetWorld(0);
+        if (mainWorld != nullptr)
         {
-            edState->mViewportWidth = kTopWidth;
-            edState->mViewportHeight = kTopHeight;
-            Renderer::Get()->RenderSecondScreen(mTop.mWorld, mTop.mColorTarget, mTop.mDepthTarget,
-                                                kTopWidth, kTopHeight);
-        }
+            if (mTop.mColorTarget != nullptr)
+            {
+                Camera3D* topCam = FindCameraForScreen(mainWorld, 0);
+                edState->mViewportWidth = kTopWidth;
+                edState->mViewportHeight = kTopHeight;
+                Renderer::Get()->RenderSecondScreen(mainWorld, mTop.mColorTarget, mTop.mDepthTarget,
+                                                    kTopWidth, kTopHeight, topCam, 0);
+            }
 
-        if (mBottom.mWorld != nullptr && mBottom.mColorTarget != nullptr)
-        {
-            edState->mViewportWidth = kBottomWidth;
-            edState->mViewportHeight = kBottomHeight;
-            Renderer::Get()->RenderSecondScreen(mBottom.mWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
-                                                kBottomWidth, kBottomHeight);
+            if (mBottom.mColorTarget != nullptr)
+            {
+                Camera3D* botCam = FindCameraForScreen(mainWorld, 1);
+                edState->mViewportWidth = kBottomWidth;
+                edState->mViewportHeight = kBottomHeight;
+                Renderer::Get()->RenderSecondScreen(mainWorld, mBottom.mColorTarget, mBottom.mDepthTarget,
+                                                    kBottomWidth, kBottomHeight, botCam, 1);
+            }
         }
     }
 

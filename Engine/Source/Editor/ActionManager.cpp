@@ -1716,6 +1716,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         skyNode->EnableReceiveShadows(false);
         skyNode->EnableReceiveSimpleShadows(false);
         skyNode->SetScale(glm::vec3(500.0f));
+        skyNode->SetTargetScreen(0xFF); // Render on all screens
 
         spawnedNode = skyNode;
     }
