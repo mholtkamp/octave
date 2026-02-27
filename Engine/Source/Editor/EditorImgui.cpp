@@ -446,6 +446,31 @@ static void DrawDockspace()
                             sAssetDropScreenX = (int32_t)(dropPos.x * scale);
                             sAssetDropScreenY = (int32_t)(dropPos.y * scale);
                         }
+                        else if (droppedStub != nullptr && droppedStub->mType == Scene::GetStaticType())
+                        {
+                            if (droppedStub->mAsset == nullptr)
+                                AssetManager::Get()->LoadAsset(*droppedStub);
+                            if (droppedStub->mAsset != nullptr)
+                            {
+                                glm::vec3 spawnPos = EditorGetFocusPosition();
+                                Camera3D* camera = GetEditorState()->GetEditorCamera();
+                                if (camera != nullptr)
+                                {
+                                    ImVec2 dropPos = ImGui::GetMousePos();
+                                    float scale = GetEngineConfig()->mEditorInterfaceScale;
+                                    if (scale == 0.0f) scale = 1.0f;
+                                    int32_t screenX = (int32_t)(dropPos.x * scale);
+                                    int32_t screenY = (int32_t)(dropPos.y * scale);
+
+                                    RayTestResult rayResult;
+                                    camera->TraceScreenToWorld(screenX, screenY, ColGroupAll, rayResult);
+                                    if (rayResult.mHitNode != nullptr)
+                                        spawnPos = rayResult.mHitPosition;
+                                }
+                                ActionManager::Get()->SpawnBasicNode(BASIC_SCENE,
+                                    nullptr, droppedStub->mAsset, true, spawnPos);
+                            }
+                        }
                     }
                     ImGui::EndDragDropTarget();
                 }
@@ -3353,6 +3378,16 @@ static void DrawScenePanel()
                         sAssetDropPopupPos = ImGui::GetMousePos();
                         sAssetDropPopupPending = true;
                     }
+                    else if (droppedStub != nullptr && droppedStub->mType == Scene::GetStaticType())
+                    {
+                        if (droppedStub->mAsset == nullptr)
+                            AssetManager::Get()->LoadAsset(*droppedStub);
+                        if (droppedStub->mAsset != nullptr)
+                        {
+                            ActionManager::Get()->SpawnBasicNode(BASIC_SCENE,
+                                node, droppedStub->mAsset, false, glm::vec3(0.0f));
+                        }
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -3768,6 +3803,16 @@ static void DrawScenePanel()
                     sAssetDropInViewport = false;
                     sAssetDropPopupPos = ImGui::GetMousePos();
                     sAssetDropPopupPending = true;
+                }
+                else if (droppedStub != nullptr && droppedStub->mType == Scene::GetStaticType())
+                {
+                    if (droppedStub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*droppedStub);
+                    if (droppedStub->mAsset != nullptr)
+                    {
+                        ActionManager::Get()->SpawnBasicNode(BASIC_SCENE,
+                            nullptr, droppedStub->mAsset, false, glm::vec3(0.0f));
+                    }
                 }
             }
             ImGui::EndDragDropTarget();
