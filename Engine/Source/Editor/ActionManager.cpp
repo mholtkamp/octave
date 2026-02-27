@@ -1715,6 +1715,7 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         skyMat->SetCullMode(CullMode::Front);      // Show inside of sphere
         skyMat->SetDepthTestDisabled(true);         // Don't affect depth buffer
         skyMat->SetSortPriority(-1000);             // Render before everything
+        skyMat->SetApplyFog(false);                 // No fog on skybox
         skyNode->SetMaterialOverride(skyMat);
 
         skyNode->EnableCollision(false);

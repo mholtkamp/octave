@@ -1391,6 +1391,7 @@ static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybo
             skyMat->SetSortPriority(-1000);
             skyMat->SetApplyFog(false);
             skyMat->SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            AssetManager::Get()->SaveAsset(*stub);
         }
     }
 

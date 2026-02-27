@@ -1546,6 +1546,8 @@ void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depth
 {
     if (world == nullptr || colorTarget == nullptr || depthTarget == nullptr)
         return;
+    if (world->GetRootNode() == nullptr)
+        return;
 
     // Save current state
     World* prevWorld = mCurrentWorld;
