@@ -1798,7 +1798,7 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
     }
 }
 
-void EditorState::DuplicateAsset(AssetStub* srcStub)
+void EditorState::DuplicateAsset(AssetStub* srcStub, const char* overrideName)
 {
     if (srcStub != nullptr)
     {
@@ -1812,7 +1812,9 @@ void EditorState::DuplicateAsset(AssetStub* srcStub)
 
         if (srcAsset != nullptr)
         {
-            AssetStub* stub = EditorAddUniqueAsset(srcAsset->GetName().c_str(), mTabCurrentDir[ActiveTab()], srcAsset->GetType(), false);
+            const char* baseName = overrideName ? overrideName : srcAsset->GetName().c_str();
+            AssetDir* destDir = srcStub->mDirectory ? srcStub->mDirectory : mTabCurrentDir[ActiveTab()];
+            AssetStub* stub = EditorAddUniqueAsset(baseName, destDir, srcAsset->GetType(), false);
 
             if (stub != nullptr)
             {

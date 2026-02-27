@@ -92,7 +92,17 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 - `Minus` Move node up in child list
 - `Plus` Move node down in child list
 - `Delete` Delete the selected nodes
-- `Ctrl + D` Duplicate nodes
+- `Ctrl + D` Duplicate node (opens name input popup for single selection, auto-names for multi-selection)
+- `F2` Rename selected node
+
+### Assets Panel
+
+- `Ctrl + N` Create new Scene asset
+- `Ctrl + M` Create new Material asset
+- `Ctrl + P` Create new Particle asset
+- `Ctrl + D` Duplicate selected asset (opens name input popup)
+- `F2` Rename selected asset
+- `Delete` Delete selected asset(s)
 
 ### Properties Panel
 

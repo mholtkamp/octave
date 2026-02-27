@@ -186,6 +186,9 @@ static int32_t sZooColumns = 5;
 static float sZooSpacing = 3.0f;
 
 static bool sF2RenameAssetFocus = false;
+static bool sDuplicateAssetFocus = false;
+static bool sDuplicateNodeFocus = false;
+static AssetStub* sDuplicateAssetStub = nullptr;
 static bool sNodesDiscovered = false;
 static bool showTheming = false;
 static std::vector<std::string> sNode3dNames;
@@ -3759,9 +3762,13 @@ static void DrawScenePanel()
                     sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
                     setTextInputFocus = true;
                 }
-                if (!inSubScene && ImGui::Selectable("Duplicate"))
+                if (!inSubScene && ImGui::Selectable("Duplicate", false, ImGuiSelectableFlags_DontClosePopups))
                 {
-                    am->DuplicateNodes({ node });
+                    ImGui::OpenPopup("Duplicate Node (Context)");
+                    std::string defaultName = node->GetName() + "_00";
+                    strncpy(sPopupInputBuffer, defaultName.c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    setTextInputFocus = true;
                 }
                 if (!nodeSceneLinked && !inSubScene && ImGui::Selectable("Attach Selected"))
                 {
@@ -3946,6 +3953,31 @@ static void DrawScenePanel()
                     {
                         std::string newName = sPopupInputBuffer;
                         am->EXE_EditProperty(node, PropertyOwnerType::Node, "Name", 0, newName);
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (!inSubScene && ImGui::BeginPopup("Duplicate Node (Context)"))
+                {
+                    if (setTextInputFocus)
+                    {
+                        ImGui::SetKeyboardFocusHere();
+                    }
+
+                    if (ImGui::InputText("New Name##DupNodeCtx", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        am->DuplicateNodes({ node });
+
+                        const std::vector<Node*>& newSelNodes = GetEditorState()->GetSelectedNodes();
+                        if (!newSelNodes.empty())
+                        {
+                            std::string newName = sPopupInputBuffer;
+                            am->EXE_EditProperty(newSelNodes[0], PropertyOwnerType::Node, "Name", 0, newName);
+                        }
+
+                        ImGui::CloseCurrentPopup();
+                        closeContextPopup = true;
                     }
 
                     ImGui::EndPopup();
@@ -4243,7 +4275,18 @@ static void DrawScenePanel()
             }
             else if (ctrlDown && IsKeyJustDown(OCTAVE_KEY_D))
             {
-                am->DuplicateNodes(selNodes);
+                if (selNodes.size() == 1)
+                {
+                    ImGui::OpenPopup("Duplicate Node Name");
+                    std::string defaultName = selNodes[0]->GetName() + "_00";
+                    strncpy(sPopupInputBuffer, defaultName.c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    sDuplicateNodeFocus = true;
+                }
+                else
+                {
+                    am->DuplicateNodes(selNodes);
+                }
             }
             else if (!ctrlDown && IsKeyJustDown(OCTAVE_KEY_F2))
             {
@@ -4267,6 +4310,34 @@ static void DrawScenePanel()
             const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
             std::string newName = sPopupInputBuffer;
             am->EXE_EditProperty(selNodes[0], PropertyOwnerType::Node, "Name", 0, newName);
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Duplicate Node Name"))
+    {
+        if (sDuplicateNodeFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+            sDuplicateNodeFocus = false;
+        }
+
+        if (ImGui::InputText("New Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+            if (selNodes.size() == 1)
+            {
+                am->DuplicateNodes({ selNodes[0] });
+
+                const std::vector<Node*>& newSelNodes = GetEditorState()->GetSelectedNodes();
+                if (!newSelNodes.empty())
+                {
+                    std::string newName = sPopupInputBuffer;
+                    am->EXE_EditProperty(newSelNodes[0], PropertyOwnerType::Node, "Name", 0, newName);
+                }
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -4483,9 +4554,14 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             }
         }
 
-        if (stub && ImGui::Selectable("Duplicate"))
+        if (stub && ImGui::Selectable("Duplicate", false, ImGuiSelectableFlags_DontClosePopups))
         {
-            GetEditorState()->DuplicateAsset(stub);
+            sDuplicateAssetStub = stub;
+            ImGui::OpenPopup("Duplicate Asset (Context)");
+            std::string defaultName = stub->mName + "_00";
+            strncpy(sPopupInputBuffer, defaultName.c_str(), kPopupInputBufferSize - 1);
+            sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+            setTextInputFocus = true;
         }
     }
 
@@ -4685,6 +4761,27 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
                 AssetManager::Get()->RenameDirectory(dir, sPopupInputBuffer);
             }
 
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Duplicate Asset (Context)"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        if (ImGui::InputText("New Name##DupAssetCtx", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            if (sDuplicateAssetStub != nullptr)
+            {
+                GetEditorState()->DuplicateAsset(sDuplicateAssetStub, sPopupInputBuffer);
+                sDuplicateAssetStub = nullptr;
+            }
             ImGui::CloseCurrentPopup();
             closeContextPopup = true;
         }
@@ -5525,7 +5622,12 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
 
                 if (srcStub != nullptr)
                 {
-                    GetEditorState()->DuplicateAsset(srcStub);
+                    sDuplicateAssetStub = srcStub;
+                    ImGui::OpenPopup("Duplicate Asset Name");
+                    std::string defaultName = srcStub->mName + "_00";
+                    strncpy(sPopupInputBuffer, defaultName.c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    sDuplicateAssetFocus = true;
                 }
             }
 
@@ -5573,6 +5675,27 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
                 Asset* asset = AssetManager::Get()->LoadAsset(*selStub);
                 AssetManager::Get()->RenameAsset(asset, sPopupInputBuffer);
                 AssetManager::Get()->SaveAsset(*selStub);
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("Duplicate Asset Name"))
+    {
+        if (sDuplicateAssetFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+            sDuplicateAssetFocus = false;
+        }
+
+        if (ImGui::InputText("New Name##DupAssetF2", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            if (sDuplicateAssetStub != nullptr)
+            {
+                GetEditorState()->DuplicateAsset(sDuplicateAssetStub, sPopupInputBuffer);
+                sDuplicateAssetStub = nullptr;
             }
             ImGui::CloseCurrentPopup();
         }

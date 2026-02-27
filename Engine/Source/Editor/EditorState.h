@@ -289,7 +289,7 @@ struct EditorState
     void BrowseToAsset(const std::string& name);
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
-    void DuplicateAsset(AssetStub* srcStub);
+    void DuplicateAsset(AssetStub* srcStub, const char* overrideName = nullptr);
 
     void ProgressDirFuture();
     void RegressDirPast();
