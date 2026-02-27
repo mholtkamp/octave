@@ -44,6 +44,7 @@
 #include "Assets/Font.h"
 #include "Assets/NodeGraphAsset.h"
 #include "UI/UIDocument.h"
+#include "UI/UITypes.h"
 
 #include "Viewport3d.h"
 #include "Viewport2d.h"
@@ -1462,6 +1463,172 @@ static bool MoveDirectoryToDirectory(AssetDir* dir, AssetDir* newParent)
     updatePaths(dir);
 
     return true;
+}
+
+static const char* AnchorModeToCSS(AnchorMode mode)
+{
+    switch (mode)
+    {
+    case AnchorMode::TopLeft:                return "top-left";
+    case AnchorMode::TopMid:                 return "top-center";
+    case AnchorMode::TopRight:               return "top-right";
+    case AnchorMode::MidLeft:                return "center-left";
+    case AnchorMode::Mid:                    return "center";
+    case AnchorMode::MidRight:               return "center-right";
+    case AnchorMode::BottomLeft:             return "bottom-left";
+    case AnchorMode::BottomMid:              return "bottom-center";
+    case AnchorMode::BottomRight:            return "bottom-right";
+    case AnchorMode::TopStretch:             return "top-stretch";
+    case AnchorMode::MidHorizontalStretch:   return "center-h-stretch";
+    case AnchorMode::BottomStretch:          return "bottom-stretch";
+    case AnchorMode::LeftStretch:            return "left-stretch";
+    case AnchorMode::MidVerticalStretch:     return "center-v-stretch";
+    case AnchorMode::RightStretch:           return "right-stretch";
+    case AnchorMode::FullStretch:            return "full-stretch";
+    default:                                 return "top-left";
+    }
+}
+
+static void ExportWidgetTreeToXML(Widget* widget, std::string& outXml, int indent = 0)
+{
+    if (widget == nullptr)
+        return;
+
+    const char* typeName = widget->GetTypeName();
+    const char* element = UIWidgetTypeToElement(typeName);
+
+    std::string pad(indent * 2, ' ');
+    outXml += pad + "<" + element;
+
+    // id attribute from widget name
+    const std::string& name = widget->GetName();
+    if (!name.empty())
+    {
+        outXml += " id=\"" + name + "\"";
+    }
+
+    // Build inline style
+    std::string style;
+
+    // Anchor mode (skip default top-left)
+    AnchorMode anchor = widget->GetAnchorMode();
+    if (anchor != AnchorMode::TopLeft)
+    {
+        style += "anchor: " + std::string(AnchorModeToCSS(anchor)) + "; ";
+    }
+
+    // Position
+    glm::vec2 offset = widget->GetOffset();
+    if (offset.x != 0.0f || offset.y != 0.0f)
+    {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "left: %.0fpx; top: %.0fpx; ", offset.x, offset.y);
+        style += buf;
+    }
+
+    // Size
+    glm::vec2 size = widget->GetSize();
+    if (size.x != 0.0f || size.y != 0.0f)
+    {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "width: %.0fpx; height: %.0fpx; ", size.x, size.y);
+        style += buf;
+    }
+
+    // Color (skip default white)
+    glm::vec4 color = widget->GetColor();
+    if (color.r != 1.0f || color.g != 1.0f || color.b != 1.0f || color.a != 1.0f)
+    {
+        char buf[80];
+        snprintf(buf, sizeof(buf), "color: rgba(%.0f, %.0f, %.0f, %.2f); ",
+                 color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a);
+        style += buf;
+    }
+
+    // Opacity (skip default 255)
+    uint8_t opacity = widget->GetOpacity();
+    if (opacity != 255)
+    {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "opacity: %.2f; ", opacity / 255.0f);
+        style += buf;
+    }
+
+    // Visibility
+    if (!widget->IsVisible())
+    {
+        style += "display: none; ";
+    }
+
+    // Text-specific: font-size
+    Text* textWidget = widget->As<Text>();
+    if (textWidget)
+    {
+        float textSize = textWidget->GetTextSize();
+        if (textSize != 32.0f) // skip default
+        {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "font-size: %.0fpx; ", textSize);
+            style += buf;
+        }
+    }
+
+    // Quad-specific: src attribute
+    Quad* quadWidget = widget->As<Quad>();
+    if (quadWidget && quadWidget->GetTexture())
+    {
+        outXml += " src=\"" + quadWidget->GetTexture()->GetName() + "\"";
+    }
+
+    // Trim trailing space from style
+    if (!style.empty() && style.back() == ' ')
+        style.pop_back();
+
+    if (!style.empty())
+    {
+        outXml += " style=\"" + style + "\"";
+    }
+
+    // Check for text content and children
+    std::string textContent;
+    if (textWidget)
+    {
+        textContent = textWidget->GetText();
+    }
+
+    // Button: skip internal Quad/Text children (they're auto-created)
+    bool isButton = (widget->As<Button>() != nullptr);
+    uint32_t childCount = isButton ? 0 : widget->GetNumChildren();
+
+    if (textContent.empty() && childCount == 0)
+    {
+        outXml += " />\n";
+    }
+    else
+    {
+        outXml += ">";
+
+        if (!textContent.empty())
+        {
+            outXml += textContent;
+        }
+
+        if (childCount > 0)
+        {
+            outXml += "\n";
+            for (uint32_t i = 0; i < widget->GetNumChildren(); ++i)
+            {
+                Widget* child = widget->GetChild(i)->As<Widget>();
+                if (child)
+                {
+                    ExportWidgetTreeToXML(child, outXml, indent + 1);
+                }
+            }
+            outXml += pad;
+        }
+
+        outXml += "</" + std::string(element) + ">\n";
+    }
 }
 
 static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybox = false, bool userProvidedName = false)
@@ -3696,6 +3863,60 @@ static void DrawScenePanel()
                     DrawSpawnBasicWidgetMenu(node);
                     ImGui::EndMenu();
                 }
+
+                // Widget XML export options
+                if (node->As<Widget>())
+                {
+                    ImGui::Separator();
+                    if (ImGui::Selectable("Export XML..."))
+                    {
+                        std::string xml;
+                        ExportWidgetTreeToXML(node->As<Widget>(), xml);
+
+                        std::string savePath = SYS_SaveFileDialog();
+                        if (!savePath.empty())
+                        {
+                            // Ensure .xml extension
+                            if (savePath.size() < 4 || savePath.substr(savePath.size() - 4) != ".xml")
+                                savePath += ".xml";
+
+                            FILE* f = fopen(savePath.c_str(), "w");
+                            if (f)
+                            {
+                                fwrite(xml.c_str(), 1, xml.size(), f);
+                                fclose(f);
+                                LogDebug("Exported XML to: %s", savePath.c_str());
+                            }
+                            else
+                            {
+                                LogError("Failed to write XML file: %s", savePath.c_str());
+                            }
+                        }
+                    }
+                    if (ImGui::Selectable("Create UIDocument From Hierarchy"))
+                    {
+                        std::string xml;
+                        ExportWidgetTreeToXML(node->As<Widget>(), xml);
+
+                        AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+                        if (currentDir)
+                        {
+                            std::string assetName = "UI_" + node->GetName();
+                            AssetStub* stub = EditorAddUniqueAsset(assetName.c_str(), currentDir, UIDocument::GetStaticType(), true);
+                            if (stub && stub->mAsset)
+                            {
+                                UIDocument* uiDoc = stub->mAsset->As<UIDocument>();
+                                if (uiDoc)
+                                {
+                                    uiDoc->SetXmlSource(xml);
+                                    AssetManager::Get()->SaveAsset(*stub);
+                                    LogDebug("Created UIDocument '%s' from widget hierarchy.", assetName.c_str());
+                                }
+                            }
+                        }
+                    }
+                }
+
                 //if (ImGui::Selectable("Add Scene..."))
                 //{
 

@@ -92,7 +92,7 @@ RUN dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE
 RUN echo '[extremscorner-devkitpro]\nServer = https://packages.extremscorner.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf
 
 # Install console dev packages
-RUN dkp-pacman -Syyu --noconfirm 3ds-dev gamecube-tools-git libogc2 libogc2-libdvm
+RUN dkp-pacman -Syyu --noconfirm 3ds-dev wii-dev gamecube-tools-git libogc2 libogc2-libdvm
 
 # Clean pacman cache
 RUN yes | dkp-pacman -Scc

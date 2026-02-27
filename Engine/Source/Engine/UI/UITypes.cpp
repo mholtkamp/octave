@@ -93,6 +93,22 @@ const char* UIElementToWidgetType(const char* elementName)
     return nullptr;
 }
 
+const char* UIWidgetTypeToElement(const char* widgetType)
+{
+    if (!widgetType) return "div";
+
+    if (strcmp(widgetType, "Canvas") == 0)       return "div";
+    if (strcmp(widgetType, "ArrayWidget") == 0)   return "flex";
+    if (strcmp(widgetType, "Quad") == 0)          return "img";
+    if (strcmp(widgetType, "Text") == 0)          return "text";
+    if (strcmp(widgetType, "Button") == 0)        return "button";
+    if (strcmp(widgetType, "Poly") == 0)          return "poly";
+    if (strcmp(widgetType, "PolyRect") == 0)      return "polyrect";
+    if (strcmp(widgetType, "Widget") == 0)        return "div";
+
+    return "div";
+}
+
 //------------------------------------------------------------
 // CSS color parsing
 //------------------------------------------------------------

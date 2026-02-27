@@ -44,6 +44,7 @@ struct CSSValue
 //------------------------------------------------------------
 
 const char* UIElementToWidgetType(const char* elementName);
+const char* UIWidgetTypeToElement(const char* widgetType);
 
 //------------------------------------------------------------
 // CSS parsing utilities
