@@ -250,7 +250,7 @@ void ColorInputNode::LoadStream(Stream& stream, uint32_t version)
 // =============================================================================
 void NodeInputNode::SetupPins()
 {
-    AddInputPin("Value", DatumType::Node);
+    AddInputPin("Value", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Out", DatumType::Node);
 }
 
@@ -276,7 +276,7 @@ void NodeInputNode::LoadStream(Stream& stream, uint32_t version)
 // =============================================================================
 void Node3DInputNode::SetupPins()
 {
-    AddInputPin("Value", DatumType::Node3D);
+    AddInputPin("Value", DatumType::Node3D, Datum((Node*)nullptr));
     AddOutputPin("Out", DatumType::Node3D);
 }
 

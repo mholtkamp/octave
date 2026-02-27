@@ -194,6 +194,39 @@ public:
     virtual glm::vec4 GetNodeColor() const override;
 };
 
+class GetParent3DGraphNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GetParent3DGraphNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Get Parent 3D"; }
+    virtual const char* GetNodeCategory() const override { return "Scene Graph"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class GetSelfParentNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GetSelfParentNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Get Self Parent"; }
+    virtual const char* GetNodeCategory() const override { return "Scene Graph"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
+class GetSelfParent3DNode : public GraphNode
+{
+public:
+    DECLARE_GRAPH_NODE(GetSelfParent3DNode, GraphNode);
+    virtual void SetupPins() override;
+    virtual void Evaluate() override;
+    virtual const char* GetNodeTypeName() const override { return "Get Self Parent 3D"; }
+    virtual const char* GetNodeCategory() const override { return "Scene Graph"; }
+    virtual glm::vec4 GetNodeColor() const override;
+};
+
 class FindInSceneNode : public GraphNode
 {
 public:

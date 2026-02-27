@@ -93,6 +93,19 @@ void GetVariableNode::LoadStream(Stream& stream, uint32_t version)
         {
             mOutputPins[0].mName = mVariableName;
             mOutputPins[0].mDataType = mCachedType;
+
+            // Re-initialize mValue to match the actual type (placeholder was Float)
+            switch (mCachedType)
+            {
+            case DatumType::Integer:  mOutputPins[0].mValue = Datum(0); break;
+            case DatumType::Float:    mOutputPins[0].mValue = Datum(0.0f); break;
+            case DatumType::Bool:     mOutputPins[0].mValue = Datum(false); break;
+            case DatumType::String:   mOutputPins[0].mValue = Datum(std::string("")); break;
+            case DatumType::Vector2D: mOutputPins[0].mValue = Datum(glm::vec2(0.0f)); break;
+            case DatumType::Vector:   mOutputPins[0].mValue = Datum(glm::vec3(0.0f)); break;
+            case DatumType::Color:    mOutputPins[0].mValue = Datum(glm::vec4(0.0f)); break;
+            default: break;
+            }
         }
     }
 }
@@ -274,6 +287,19 @@ void SetVariableNode::LoadStream(Stream& stream, uint32_t version)
         {
             mOutputPins[1].mName = mVariableName;
             mOutputPins[1].mDataType = mCachedType;
+
+            // Re-initialize mValue to match the actual type (placeholder was Float)
+            switch (mCachedType)
+            {
+            case DatumType::Integer:  mOutputPins[1].mValue = Datum(0); break;
+            case DatumType::Float:    mOutputPins[1].mValue = Datum(0.0f); break;
+            case DatumType::Bool:     mOutputPins[1].mValue = Datum(false); break;
+            case DatumType::String:   mOutputPins[1].mValue = Datum(std::string("")); break;
+            case DatumType::Vector2D: mOutputPins[1].mValue = Datum(glm::vec2(0.0f)); break;
+            case DatumType::Vector:   mOutputPins[1].mValue = Datum(glm::vec3(0.0f)); break;
+            case DatumType::Color:    mOutputPins[1].mValue = Datum(glm::vec4(0.0f)); break;
+            default: break;
+            }
         }
     }
 }

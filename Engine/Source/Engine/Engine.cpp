@@ -232,6 +232,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(InputNodes);
     FORCE_LINK_CALL(FunctionNodes);
     FORCE_LINK_CALL(GizmoNodes);
+    FORCE_LINK_CALL(NavMeshNodes);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);

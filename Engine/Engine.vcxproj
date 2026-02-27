@@ -840,6 +840,7 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\PointNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp" />
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp" />
@@ -1191,6 +1192,7 @@
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\PointNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h" />
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h" />

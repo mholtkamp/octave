@@ -2241,6 +2241,26 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     bool isInputFocused = ImGui::IsItemFocused();
     bool isInputActivated = ImGui::IsItemActivated();
 
+    // Save InputText rect/ID for the autocomplete dropdown positioning
+    ImGuiID inputTextId = ImGui::GetItemID();
+    ImVec2 inputTextRectMin = ImGui::GetItemRectMin();
+    ImVec2 inputTextRectMax = ImGui::GetItemRectMax();
+
+    // Drag-and-drop target on the input text field
+    if (ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+        {
+            AssetStub* droppedStub = *(AssetStub**)payload->Data;
+            if (droppedStub != nullptr)
+            {
+                Asset* droppedAsset = LoadAsset(droppedStub->mName);
+                AssignAssetToProperty(owner, ownerType, prop, index, droppedAsset);
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
     // Clear button
     ImGui::SameLine(0.0f, 2.0f);
     if (ImGui::Button(ICON_DASHICONS_NO_ALT "##AssetClear"))
@@ -2254,21 +2274,6 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         {
             prop.SetAsset(nullAsset, index);
         }
-    }
-
-    // Drag-and-drop target for asset assignment
-    if (ImGui::BeginDragDropTarget())
-    {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
-        {
-            AssetStub* droppedStub = *(AssetStub**)payload->Data;
-            if (droppedStub != nullptr)
-            {
-                Asset* droppedAsset = LoadAsset(droppedStub->mName);
-                AssignAssetToProperty(owner, ownerType, prop, index, droppedAsset);
-            }
-        }
-        ImGui::EndDragDropTarget();
     }
 
     // If we have an extra property with type information, use it to filter assets
@@ -2340,8 +2345,10 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
 
     // Draw the autocomplete dropdown for asset selection
     // Force the dropdown to be active when the input is activated or text changes
-    bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter, 
-                                                isInputActivated || textActive || willBeActivated);
+    // Use saved InputText rect so the dropdown positions below the input field, not the clear button
+    bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter,
+                                                isInputActivated || textActive || willBeActivated,
+                                                inputTextId, inputTextRectMin, inputTextRectMax);
     
     // Pop the ID we pushed earlier
     ImGui::PopID();

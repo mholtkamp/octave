@@ -1070,6 +1070,9 @@
     <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp">
       <Filter>Source Files\Engine\NodeGraph</Filter>
     </ClCompile>
@@ -2062,6 +2065,9 @@
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.h">
       <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h">

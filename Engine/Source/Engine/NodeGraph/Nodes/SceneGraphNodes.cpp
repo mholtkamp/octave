@@ -361,6 +361,73 @@ void GetParentGraphNode::Evaluate()
 glm::vec4 GetParentGraphNode::GetNodeColor() const { return kSceneGraphNodeColor; }
 
 // =============================================================================
+// GetParent3DGraphNode
+// =============================================================================
+DEFINE_GRAPH_NODE(GetParent3DGraphNode);
+
+void GetParent3DGraphNode::SetupPins()
+{
+    AddInputPin("Node", DatumType::Node3D, Datum((Node*)nullptr));
+    AddOutputPin("Parent", DatumType::Node3D);
+}
+
+void GetParent3DGraphNode::Evaluate()
+{
+    Node* node = GetInputValue(0).GetNode().Get();
+    if (node != nullptr)
+    {
+        Node* parent = node->GetParent();
+        SetOutputValue(0, Datum(parent));
+    }
+}
+
+glm::vec4 GetParent3DGraphNode::GetNodeColor() const { return kSceneGraphNodeColor; }
+
+// =============================================================================
+// GetSelfParentNode
+// =============================================================================
+DEFINE_GRAPH_NODE(GetSelfParentNode);
+
+void GetSelfParentNode::SetupPins()
+{
+    AddOutputPin("Parent", DatumType::Node);
+}
+
+void GetSelfParentNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        Node* parent = owner->GetParent();
+        SetOutputValue(0, Datum(parent));
+    }
+}
+
+glm::vec4 GetSelfParentNode::GetNodeColor() const { return kSceneGraphNodeColor; }
+
+// =============================================================================
+// GetSelfParent3DNode
+// =============================================================================
+DEFINE_GRAPH_NODE(GetSelfParent3DNode);
+
+void GetSelfParent3DNode::SetupPins()
+{
+    AddOutputPin("Parent", DatumType::Node3D);
+}
+
+void GetSelfParent3DNode::Evaluate()
+{
+    Node* owner = GetOwnerNode(this);
+    if (owner != nullptr)
+    {
+        Node* parent = owner->GetParent();
+        SetOutputValue(0, Datum(parent));
+    }
+}
+
+glm::vec4 GetSelfParent3DNode::GetNodeColor() const { return kSceneGraphNodeColor; }
+
+// =============================================================================
 // FindInSceneNode
 // =============================================================================
 DEFINE_GRAPH_NODE(FindInSceneNode);

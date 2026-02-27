@@ -1366,7 +1366,7 @@ DEFINE_GRAPH_NODE(IsValidNode);
 
 void IsValidNode::SetupPins()
 {
-    AddInputPin("Node", DatumType::Node);
+    AddInputPin("Node", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Valid", DatumType::Bool);
 }
 
@@ -1384,7 +1384,7 @@ DEFINE_GRAPH_NODE(IsNullNode);
 
 void IsNullNode::SetupPins()
 {
-    AddInputPin("Node", DatumType::Node);
+    AddInputPin("Node", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Is Null", DatumType::Bool);
 }
 

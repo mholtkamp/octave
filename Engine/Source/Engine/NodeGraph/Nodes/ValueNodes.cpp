@@ -285,7 +285,7 @@ DEFINE_GRAPH_NODE(NodeToStringNode);
 
 void NodeToStringNode::SetupPins()
 {
-    AddInputPin("Node", DatumType::Node);
+    AddInputPin("Node", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Out", DatumType::String);
 }
 
@@ -312,7 +312,7 @@ DEFINE_GRAPH_NODE(Node3DToStringNode);
 
 void Node3DToStringNode::SetupPins()
 {
-    AddInputPin("Node3D", DatumType::Node3D);
+    AddInputPin("Node3D", DatumType::Node3D, Datum((Node*)nullptr));
     AddOutputPin("Out", DatumType::String);
 }
 
@@ -1639,7 +1639,7 @@ DEFINE_GRAPH_NODE(NodeToNode3DNode);
 
 void NodeToNode3DNode::SetupPins()
 {
-    AddInputPin("Node", DatumType::Node);
+    AddInputPin("Node", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Node3D", DatumType::Node3D);
     AddOutputPin("Success", DatumType::Bool);
 }
@@ -1663,7 +1663,7 @@ DEFINE_GRAPH_NODE(Node3DToNodeNode);
 
 void Node3DToNodeNode::SetupPins()
 {
-    AddInputPin("Node3D", DatumType::Node3D);
+    AddInputPin("Node3D", DatumType::Node3D, Datum((Node*)nullptr));
     AddOutputPin("Node", DatumType::Node);
     AddOutputPin("Success", DatumType::Bool);
 }
@@ -1706,7 +1706,7 @@ DEFINE_GRAPH_NODE(NodeToTextNode);
 
 void NodeToTextNode::SetupPins()
 {
-    AddInputPin("Node", DatumType::Node);
+    AddInputPin("Node", DatumType::Node, Datum((Node*)nullptr));
     AddOutputPin("Text", DatumType::Text);
     AddOutputPin("Success", DatumType::Bool);
 }
@@ -1729,7 +1729,7 @@ DEFINE_GRAPH_NODE(Node3DToTextNode);
 
 void Node3DToTextNode::SetupPins()
 {
-    AddInputPin("Node3D", DatumType::Node3D);
+    AddInputPin("Node3D", DatumType::Node3D, Datum((Node*)nullptr));
     AddOutputPin("Text", DatumType::Text);
     AddOutputPin("Success", DatumType::Bool);
 }

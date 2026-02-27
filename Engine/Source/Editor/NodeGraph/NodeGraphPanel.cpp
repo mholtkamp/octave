@@ -1269,7 +1269,7 @@ static void DrawContextMenu(NodeGraph& graph)
                     bool isSelected = (r == sSearchSelectedIndex);
                     const SearchResult& sr = results[r];
 
-                    if (sr.nodeTypeIndex != UINT32_MAX)
+                    if (sr.nodeTypeIndex < nodeTypes.size())
                     {
                         // Domain node
                         ImGui::PushID((int)sr.nodeTypeIndex);

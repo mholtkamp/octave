@@ -7,6 +7,7 @@
 #include "NodeGraph/Nodes/PointNodes.h"
 #include "NodeGraph/Nodes/SplineNodes.h"
 #include "NodeGraph/Nodes/GizmoNodes.h"
+#include "NodeGraph/Nodes/NavMeshNodes.h"
 
 void SceneGraphDomain::RegisterNodeTypes()
 {
@@ -51,6 +52,9 @@ void SceneGraphDomain::RegisterNodeTypes()
     // Scene Graph - Node Reference
     AddNodeType(GetSelfNode::GetStaticType(), "Get Self", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
     AddNodeType(GetParentGraphNode::GetStaticType(), "Get Parent", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetParent3DGraphNode::GetStaticType(), "Get Parent 3D", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetSelfParentNode::GetStaticType(), "Get Self Parent", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
+    AddNodeType(GetSelfParent3DNode::GetStaticType(), "Get Self Parent 3D", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
     AddNodeType(FindInSceneNode::GetStaticType(), "Find In Scene", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
     AddNodeType(FindChildGraphNode::GetStaticType(), "Find Child", "Scene Graph", glm::vec4(0.1f, 0.6f, 0.6f, 1.0f));
 
@@ -296,6 +300,16 @@ void SceneGraphDomain::RegisterNodeTypes()
     AddNodeType(GizmoDrawWireSphereNode::GetStaticType(), "Draw Wire Sphere", "Gizmo", kGizmoColor);
     AddNodeType(GizmoDrawLineNode::GetStaticType(), "Draw Line", "Gizmo", kGizmoColor);
     AddNodeType(GizmoDrawRayNode::GetStaticType(), "Draw Ray", "Gizmo", kGizmoColor);
+
+    // NavMesh nodes
+    static const glm::vec4 kNavMeshColor(0.2f, 0.7f, 0.5f, 1.0f);
+    AddNodeType(FindNavPathNode::GetStaticType(), "Find Nav Path", "NavMesh", kNavMeshColor);
+    AddNodeType(FindRandomNavPointNode::GetStaticType(), "Find Random Nav Point", "NavMesh", kNavMeshColor);
+    AddNodeType(FindClosestNavPointNode::GetStaticType(), "Find Closest Nav Point", "NavMesh", kNavMeshColor);
+    AddNodeType(IsAutoNavRebuildNode::GetStaticType(), "Is Auto Nav Rebuild", "NavMesh", kNavMeshColor);
+    AddNodeType(BuildNavDataNode::GetStaticType(), "Build Nav Data", "NavMesh", kNavMeshColor);
+    AddNodeType(EnableAutoNavRebuildNode::GetStaticType(), "Enable Auto Nav Rebuild", "NavMesh", kNavMeshColor);
+    AddNodeType(InvalidateNavMeshNode::GetStaticType(), "Invalidate Nav Mesh", "NavMesh", kNavMeshColor);
 }
 
 TypeId SceneGraphDomain::GetDefaultOutputNodeType() const
