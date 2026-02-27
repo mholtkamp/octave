@@ -53,6 +53,7 @@ static Asset* sEditedOwner = nullptr;
 static NodeGraphAsset* sEditedAsset = nullptr;
 static GraphProcessor sProcessor;
 static bool sNeedsPositionSync = false;
+static int sFocusOnOutputCountdown = 0;
 static bool sPreviewEnabled = false;
 static ImVec2 sCanvasCenter = ImVec2(0, 0);
 static GraphNodeId sPendingNodeId = 0;
@@ -2259,6 +2260,26 @@ void DrawNodeGraphContent()
         SyncPositionsToEditor(graph);
         sNeedsPositionSync = false;
     }
+    else if (sFocusOnOutputCountdown > 0)
+    {
+        // Wait a couple of frames after position sync so the editor has fully
+        // laid out node bounds before we try to navigate the camera.
+        --sFocusOnOutputCountdown;
+        if (sFocusOnOutputCountdown == 0)
+        {
+            GraphNode* outputNode = graph.FindOutputNode();
+            if (outputNode != nullptr)
+            {
+                ed::SelectNode(MakeNodeId(outputNode->GetId()));
+                ed::NavigateToSelection(true, 0.0f);
+                ed::ClearSelection();
+            }
+            else
+            {
+                ed::NavigateToContent(0.0f);
+            }
+        }
+    }
 
     // Apply pending node position from AddNodeAtCenter (deferred to when editor is active)
     if (sPendingNodeId != 0)
@@ -2299,8 +2320,35 @@ void DrawNodeGraphContent()
     DrawLinks(graph);
     HandleCreation(graph);
 
+    // F key — Focus on selected node(s), or fit all content if nothing selected
+    if (ImGui::IsKeyPressed(ImGuiKey_F) && !ImGui::GetIO().WantTextInput)
+    {
+        int selectedCount = ed::GetSelectedObjectCount();
+        if (selectedCount > 0)
+        {
+            ed::NavigateToSelection(true, 0.35f);
+        }
+        else
+        {
+            // No selection: try to focus on the output node, otherwise fit all content
+            GraphNode* outputNode = graph.FindOutputNode();
+            if (outputNode != nullptr)
+            {
+                ed::SelectNode(MakeNodeId(outputNode->GetId()));
+                ed::NavigateToSelection(true, 0.35f);
+                ed::ClearSelection();
+            }
+            else
+            {
+                ed::NavigateToContent(0.35f);
+            }
+        }
+    }
+
     // Delete key hotkey — remove selected items directly from the graph
-    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::IsAnyItemActive())
+    // Use WantTextInput instead of IsAnyItemActive so Delete works while the
+    // node-editor canvas is active (which it always is when interacting with nodes).
+    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::GetIO().WantTextInput)
     {
         int selectedCount = ed::GetSelectedObjectCount();
         if (selectedCount > 0)
@@ -2324,7 +2372,7 @@ void DrawNodeGraphContent()
     }
 
     // Ctrl+C — Copy selected nodes to clipboard
-    if (ImGui::IsKeyPressed(ImGuiKey_C) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    if (ImGui::IsKeyPressed(ImGuiKey_C) && ImGui::GetIO().KeyCtrl && !ImGui::GetIO().WantTextInput)
     {
         int selectedCount = ed::GetSelectedObjectCount();
         if (selectedCount > 0)
@@ -2344,14 +2392,14 @@ void DrawNodeGraphContent()
     }
 
     // Ctrl+V — Paste from clipboard
-    if (ImGui::IsKeyPressed(ImGuiKey_V) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    if (ImGui::IsKeyPressed(ImGuiKey_V) && ImGui::GetIO().KeyCtrl && !ImGui::GetIO().WantTextInput)
     {
         glm::vec2 pastePos(sCanvasCenter.x, sCanvasCenter.y);
         GraphClipboard::PasteFromClipboard(graph, pastePos, sEditedAsset);
     }
 
     // Ctrl+D — Duplicate selection
-    if (ImGui::IsKeyPressed(ImGuiKey_D) && ImGui::GetIO().KeyCtrl && !ImGui::IsAnyItemActive())
+    if (ImGui::IsKeyPressed(ImGuiKey_D) && ImGui::GetIO().KeyCtrl && !ImGui::GetIO().WantTextInput)
     {
         int selectedCount = ed::GetSelectedObjectCount();
         if (selectedCount > 0)
@@ -2455,6 +2503,7 @@ void OpenNodeGraphForEditing(NodeGraphAsset* asset)
     sRenamingVarIndex = -1;
     GetEditorState()->mShowNodeGraphPanel = true;
     sNeedsPositionSync = true;
+    sFocusOnOutputCountdown = 2;
 
     // Wire FunctionCallNodes and VariableNodes in asset
     asset->ResolveFunctionCallNodes();
@@ -2490,6 +2539,7 @@ void OpenNodeGraphForEditing(NodeGraph* graph, Asset* owner)
     sEditedAsset = nullptr;
     GetEditorState()->mShowNodeGraphPanel = true;
     sNeedsPositionSync = true;
+    sFocusOnOutputCountdown = 2;
 
     // Reset editor context for new graph
     if (sEditorContext != nullptr)

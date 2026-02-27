@@ -109,6 +109,23 @@ function World:IsInternalEdgeSmoothingEnabled() end
 ---@return Node
 function World:SpawnParticle(particleSys, pos) end
 
+---@param start Vector
+---@param end Vector
+---@return Vector
+function World:FindNavPath(start, end) end
+
+---@return Vector
+function World:FindRandomNavPoint() end
+
+---@param inPoint Vector
+---@return Vector
+function World:FindClosestNavPoint(inPoint) end
+
+function World:BuildNavData() end
+
+---@param enable boolean
+function World:EnableAutoNavRebuild(enable) end
+
 function World:Clear() end
 
 ---@param arg1 table
