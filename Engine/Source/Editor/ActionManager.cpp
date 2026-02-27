@@ -44,6 +44,7 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Box3d.h"
 #include "Nodes/3D/NavMesh3d.h"
+#include "Nodes/3D/Spline3d.h"
 #include "Nodes/3D/Sphere3d.h"
 #include "Nodes/3D/Capsule3d.h"
 #include "Nodes/3D/Particle3d.h"
@@ -962,6 +963,10 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         instMeshNode->SetCollisionGroup(ColGroup1);
         instMeshNode->SetCollisionMask(~ColGroup1);
         instMeshNode->AddInstanceData(MeshInstanceData());
+    }
+    else if (name == BASIC_SPLINE)
+    {
+        spawnedNode = EXE_SpawnNode(Spline3D::GetStaticType())->As<Spline3D>();
     }
 
     if (spawnedNode != nullptr)
