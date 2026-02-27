@@ -83,6 +83,7 @@ void Spline3D::Start()
 {
     Node3D::Start();
     mTravel = 0.0f;
+    mPingPongForward = true;
 
     mGeneratedLinkCount = glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64);
     EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
@@ -637,10 +638,10 @@ void Spline3D::Tick(float deltaTime)
             Spline3D* targetSpline = mLinkTargetSpline.Get() ? mLinkTargetSpline.Get()->As<Spline3D>() : nullptr;
             if (targetSpline)
             {
-                // Preserve target spline path settings
+                // Preserve target spline topology settings only
                 const bool targetLoop = targetSpline->mLoop;
                 const bool targetClose = targetSpline->mCloseLoop;
-                const bool targetSmooth = targetSpline->mSmoothCurve;
+                const bool targetPingPong = targetSpline->mPingPong;
 
                 // Transfer attachments
                 targetSpline->mAttachmentCamera = mAttachmentCamera;
@@ -655,10 +656,12 @@ void Spline3D::Tick(float deltaTime)
                 targetSpline->mFaceTangent = mFaceTangent;
                 targetSpline->mReverseFaceTangent = mReverseFaceTangent;
 
-                // Restore path settings (no inheritance)
+                // Restore topology from target, movement mode from source
                 targetSpline->mLoop = targetLoop;
                 targetSpline->mCloseLoop = targetClose;
-                targetSpline->mSmoothCurve = targetSmooth;
+                targetSpline->mPingPong = targetPingPong;
+                targetSpline->mSmoothCurve = mSmoothCurve;
+                targetSpline->mSmoothRotate = mSmoothRotate;
 
                 // Clear attachments on source
                 mAttachmentCamera = WeakPtr<Node>();
@@ -670,6 +673,12 @@ void Spline3D::Tick(float deltaTime)
                 mAttachmentNode3D = WeakPtr<Node>();
 
                 targetSpline->mTravel = mLinkTargetStartDist;
+                if (targetSpline->mPingPong)
+                {
+                    // If linked near the end, start moving backward instead of wrapping to point1.
+                    targetSpline->mPingPongForward = (mLinkTargetStartDist < (mLinkTargetTotalLen - 0.001f));
+                }
+
                 if (targetSpline->mDisableBounce)
                 {
                     for (uint32_t li = 0; li < targetSpline->mLinks.size(); ++li)
@@ -731,6 +740,36 @@ void Spline3D::Tick(float deltaTime)
         return 1.0f;
     };
 
+    auto getPointSmoothIn = [&](const std::string& pointName)
+    {
+        for (uint32_t i = 0; i < mPointSpeedEntries.size(); ++i)
+        {
+            if (mPointSpeedEntries[i].name == pointName)
+                return mPointSpeedEntries[i].smoothIn;
+        }
+        return false;
+    };
+
+    auto getPointSmoothOut = [&](const std::string& pointName)
+    {
+        for (uint32_t i = 0; i < mPointSpeedEntries.size(); ++i)
+        {
+            if (mPointSpeedEntries[i].name == pointName)
+                return mPointSpeedEntries[i].smoothOut;
+        }
+        return false;
+    };
+
+    auto getPointSmoothCurve = [&](const std::string& pointName)
+    {
+        for (uint32_t i = 0; i < mPointSpeedEntries.size(); ++i)
+        {
+            if (mPointSpeedEntries[i].name == pointName)
+                return mPointSpeedEntries[i].smoothCurve;
+        }
+        return false;
+    };
+
     for (uint32_t i = 1; i < points.size(); ++i)
     {
         glm::vec3 p0 = points[i - 1].node->GetWorldPosition();
@@ -756,24 +795,43 @@ void Spline3D::Tick(float deltaTime)
     if (totalLen <= 0.0001f)
         return;
 
-    mTravel += mSpeed * deltaTime;
-
-    if (mLoop)
+    if (mPingPong)
     {
-        while (mTravel >= totalLen)
-            mTravel -= totalLen;
+        float dir = mPingPongForward ? 1.0f : -1.0f;
+        mTravel += (mSpeed * deltaTime * dir);
+
+        if (mTravel >= totalLen)
+        {
+            mTravel = totalLen;
+            mPingPongForward = false;
+        }
+        else if (mTravel <= 0.0f)
+        {
+            mTravel = 0.0f;
+            mPingPongForward = true;
+        }
     }
     else
     {
-        if (mTravel >= totalLen)
-            mTravel = totalLen;
+        mTravel += mSpeed * deltaTime;
+
+        if (mLoop)
+        {
+            while (mTravel >= totalLen)
+                mTravel -= totalLen;
+        }
+        else
+        {
+            if (mTravel >= totalLen)
+                mTravel = totalLen;
+        }
     }
 
     float dist = mTravel;
-    uint32_t segIndex = 0;
+    uint32_t segIndex = (uint32_t)glm::max<int32_t>(0, (int32_t)segLens.size() - 1);
     for (uint32_t i = 0; i < segLens.size(); ++i)
     {
-        if (dist <= segLens[i])
+        if (dist <= segLens[i] || i == segLens.size() - 1)
         {
             segIndex = i;
             break;
@@ -798,10 +856,43 @@ void Spline3D::Tick(float deltaTime)
     float segLen = segLens[segIndex];
     float t = (segLen > 0.0001f) ? (dist / segLen) : 0.0f;
 
-    glm::vec3 pos = glm::mix(a, b, t);
+    bool pointSmoothIn = false;
+    bool pointSmoothOut = false;
+    bool pointSmoothCurve = false;
+    if (segIndex < points.size() - 1)
+    {
+        const std::string& n = points[segIndex].node->GetName();
+        pointSmoothIn = getPointSmoothIn(n);
+        pointSmoothOut = getPointSmoothOut(n);
+        pointSmoothCurve = getPointSmoothCurve(n);
+    }
+    else if (mCloseLoop && !points.empty())
+    {
+        const std::string& n = points.back().node->GetName();
+        pointSmoothIn = getPointSmoothIn(n);
+        pointSmoothOut = getPointSmoothOut(n);
+        pointSmoothCurve = getPointSmoothCurve(n);
+    }
+
+    float evalT = t;
+    if (pointSmoothIn && pointSmoothOut)
+    {
+        evalT = evalT * evalT * (3.0f - 2.0f * evalT);
+    }
+    else if (pointSmoothIn)
+    {
+        evalT = evalT * evalT;
+    }
+    else if (pointSmoothOut)
+    {
+        float inv = 1.0f - evalT;
+        evalT = 1.0f - inv * inv;
+    }
+
+    glm::vec3 pos = glm::mix(a, b, evalT);
     glm::vec3 tangent = glm::normalize(b - a);
 
-    if (mSmoothCurve && points.size() >= 4)
+    if ((mSmoothCurve || pointSmoothCurve) && points.size() >= 4)
     {
         auto getPointPos = [&](int idx)
         {
@@ -824,8 +915,8 @@ void Spline3D::Tick(float deltaTime)
         glm::vec3 cp1 = getPointPos(p1);
         glm::vec3 cp2 = getPointPos(p2);
         glm::vec3 cp3 = getPointPos(p3);
-        pos = Spline3D::CatmullRom(cp0, cp1, cp2, cp3, t);
-        tangent = Maths::SafeNormalize(Spline3D::CatmullRomTangent(cp0, cp1, cp2, cp3, t));
+        pos = Spline3D::CatmullRom(cp0, cp1, cp2, cp3, evalT);
+        tangent = Maths::SafeNormalize(Spline3D::CatmullRomTangent(cp0, cp1, cp2, cp3, evalT));
     }
 
     auto applyMove = [&](Node* node, bool face)
@@ -873,6 +964,17 @@ void Spline3D::Tick(float deltaTime)
 
             if (!link.mTriggered && distToFrom <= kLinkEpsilon)
             {
+                if (mPingPong && !mLoop && !mCloseLoop && points.size() >= 2)
+                {
+                    // In ping-pong mode on open splines, endpoints should bounce, not auto-link out.
+                    Node3D* firstPoint = points.front().node;
+                    Node3D* lastPoint = points.back().node;
+                    if (from3d == firstPoint || from3d == lastPoint)
+                    {
+                        return false;
+                    }
+                }
+
                 Node* targetParent = to3d->GetParent();
                 Spline3D* targetSpline = targetParent ? targetParent->As<Spline3D>() : nullptr;
                 if (!targetSpline) return false;
@@ -1066,6 +1168,18 @@ void Spline3D::SaveStream(Stream& stream, Platform platform)
         stream.WriteBool(mLinks[i].mFollow);
         stream.WriteFloat(mLinks[i].mSpeed);
     }
+
+    // Optional extension block for per-point smooth settings.
+    const uint32_t kPointSmoothMarker = 0x50534D54; // "PSMT"
+    stream.WriteUint32(kPointSmoothMarker);
+    stream.WriteUint32((uint32_t)mPointSpeedEntries.size());
+    for (uint32_t i = 0; i < mPointSpeedEntries.size(); ++i)
+    {
+        stream.WriteString(mPointSpeedEntries[i].name);
+        stream.WriteBool(mPointSpeedEntries[i].smoothIn);
+        stream.WriteBool(mPointSpeedEntries[i].smoothOut);
+        stream.WriteBool(mPointSpeedEntries[i].smoothCurve);
+    }
 }
 
 void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
@@ -1126,6 +1240,36 @@ void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
     {
         EnsureLinkSlots((uint32_t)glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64));
     }
+
+    // Optional extension block for per-point smooth settings.
+    if (stream.GetPos() < stream.GetSize())
+    {
+        const uint32_t marker = stream.ReadUint32();
+        const uint32_t kPointSmoothMarker = 0x50534D54; // "PSMT"
+        if (marker == kPointSmoothMarker && stream.GetPos() < stream.GetSize())
+        {
+            uint32_t smoothCount = stream.ReadUint32();
+            for (uint32_t i = 0; i < smoothCount; ++i)
+            {
+                std::string name;
+                stream.ReadString(name);
+                bool smoothIn = stream.ReadBool();
+                bool smoothOut = stream.ReadBool();
+                bool smoothCurve = stream.ReadBool();
+
+                for (uint32_t j = 0; j < mPointSpeedEntries.size(); ++j)
+                {
+                    if (mPointSpeedEntries[j].name == name)
+                    {
+                        mPointSpeedEntries[j].smoothIn = smoothIn;
+                        mPointSpeedEntries[j].smoothOut = smoothOut;
+                        mPointSpeedEntries[j].smoothCurve = smoothCurve;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Spline3D::GatherProperties(std::vector<Property>& props)
@@ -1140,10 +1284,14 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Generate Point", this, &sGeneratePoint));
         props.push_back(Property(DatumType::Node, "Point Speed Target", this, &mPointSpeedTarget, 1, HandlePropChange));
         props.push_back(Property(DatumType::Float, "Point Speed", this, &mPointSpeedValue, 1, HandlePropChange));
+        props.push_back(Property(DatumType::Bool, "Point Smooth In", this, &mPointSmoothInValue, 1, HandlePropChange));
+        props.push_back(Property(DatumType::Bool, "Point Smooth Out", this, &mPointSmoothOutValue, 1, HandlePropChange));
+        props.push_back(Property(DatumType::Bool, "Point Smooth Curve", this, &mPointSmoothCurveValue, 1, HandlePropChange));
         props.push_back(Property(DatumType::Float, "Global Speed", this, &mSpeed));
         props.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
         props.push_back(Property(DatumType::Bool, "Loop", this, &mLoop));
         props.push_back(Property(DatumType::Bool, "Close Spline", this, &mCloseLoop));
+        props.push_back(Property(DatumType::Bool, "Ping Pong", this, &mPingPong));
         props.push_back(Property(DatumType::Bool, "Smooth Curve", this, &mSmoothCurve));
         props.push_back(Property(DatumType::Bool, "Smooth Rotate", this, &mSmoothRotate));
         props.push_back(Property(DatumType::Bool, "Face Tangent", this, &mFaceTangent));
@@ -1295,6 +1443,32 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
     OCT_ASSERT(prop != nullptr);
     Spline3D* spline = static_cast<Spline3D*>(prop->mOwner);
     bool success = false;
+
+    auto findPointEntry = [&](const std::string& name) -> Spline3D::PointSpeedEntry*
+    {
+        for (uint32_t i = 0; i < spline->mPointSpeedEntries.size(); ++i)
+        {
+            if (spline->mPointSpeedEntries[i].name == name)
+                return &spline->mPointSpeedEntries[i];
+        }
+        return nullptr;
+    };
+
+    auto getOrCreatePointEntry = [&](const std::string& name) -> Spline3D::PointSpeedEntry&
+    {
+        Spline3D::PointSpeedEntry* existing = findPointEntry(name);
+        if (existing)
+            return *existing;
+
+        Spline3D::PointSpeedEntry entry;
+        entry.name = name;
+        entry.speed = spline->mPointSpeedValue;
+        entry.smoothIn = spline->mPointSmoothInValue;
+        entry.smoothOut = spline->mPointSmoothOutValue;
+        entry.smoothCurve = spline->mPointSmoothCurveValue;
+        spline->mPointSpeedEntries.push_back(entry);
+        return spline->mPointSpeedEntries.back();
+    };
 
     if (prop->mName == "Camera")
     {
@@ -1526,22 +1700,22 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
         {
             spline->mPointSpeedTarget = newNode;
 
-            // Load existing speed for this point (or default)
+            // Load existing speed/smooth settings for this point (or create defaults)
             const std::string& name = node->GetName();
-            bool found = false;
-            for (uint32_t i = 0; i < spline->mPointSpeedEntries.size(); ++i)
-            {
-                if (spline->mPointSpeedEntries[i].name == name)
-                {
-                    spline->mPointSpeedValue = spline->mPointSpeedEntries[i].speed;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
+            Spline3D::PointSpeedEntry* existing = findPointEntry(name);
+            if (!existing)
             {
                 spline->mPointSpeedValue = 1.0f;
+                spline->mPointSmoothInValue = false;
+                spline->mPointSmoothOutValue = false;
+                spline->mPointSmoothCurveValue = false;
+                existing = &getOrCreatePointEntry(name);
             }
+
+            spline->mPointSpeedValue = existing->speed;
+            spline->mPointSmoothInValue = existing->smoothIn;
+            spline->mPointSmoothOutValue = existing->smoothOut;
+            spline->mPointSmoothCurveValue = existing->smoothCurve;
 
             success = false;
         }
@@ -1559,23 +1733,53 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
         if (node)
         {
             const std::string& name = node->GetName();
-            bool found = false;
-            for (uint32_t i = 0; i < spline->mPointSpeedEntries.size(); ++i)
-            {
-                if (spline->mPointSpeedEntries[i].name == name)
-                {
-                    spline->mPointSpeedEntries[i].speed = value;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                Spline3D::PointSpeedEntry entry;
-                entry.name = name;
-                entry.speed = value;
-                spline->mPointSpeedEntries.push_back(entry);
-            }
+            Spline3D::PointSpeedEntry& entry = getOrCreatePointEntry(name);
+            entry.speed = value;
+        }
+
+        success = false;
+    }
+    else if (prop->mName == "Point Smooth In")
+    {
+        bool value = *(bool*)newValue;
+        spline->mPointSmoothInValue = value;
+
+        Node* node = spline->mPointSpeedTarget.Get();
+        if (node)
+        {
+            const std::string& name = node->GetName();
+            Spline3D::PointSpeedEntry& entry = getOrCreatePointEntry(name);
+            entry.smoothIn = value;
+        }
+
+        success = false;
+    }
+    else if (prop->mName == "Point Smooth Out")
+    {
+        bool value = *(bool*)newValue;
+        spline->mPointSmoothOutValue = value;
+
+        Node* node = spline->mPointSpeedTarget.Get();
+        if (node)
+        {
+            const std::string& name = node->GetName();
+            Spline3D::PointSpeedEntry& entry = getOrCreatePointEntry(name);
+            entry.smoothOut = value;
+        }
+
+        success = false;
+    }
+    else if (prop->mName == "Point Smooth Curve")
+    {
+        bool value = *(bool*)newValue;
+        spline->mPointSmoothCurveValue = value;
+
+        Node* node = spline->mPointSpeedTarget.Get();
+        if (node)
+        {
+            const std::string& name = node->GetName();
+            Spline3D::PointSpeedEntry& entry = getOrCreatePointEntry(name);
+            entry.smoothCurve = value;
         }
 
         success = false;
