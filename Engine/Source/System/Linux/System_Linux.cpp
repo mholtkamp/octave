@@ -793,8 +793,28 @@ std::string SYS_SaveFileDialog()
 
 std::string SYS_SelectFolderDialog()
 {
-    // TODO!
-    return "";
+    char filename[1024] = {};
+    char command[1024] = {};
+
+    const std::string& projDir = GetEngineState()->mProjectDirectory;
+    snprintf(command, 1024, "zenity --file-selection --directory --filename=%s", projDir.c_str());
+
+    FILE *f = popen(command, "r");
+    fgets(filename, 1024, f);
+
+    if (filename[0] != 0)
+    {
+        char* newLineChar = strrchr(filename, '\n');
+
+        if (newLineChar != nullptr)
+        {
+            *newLineChar = 0;
+        }
+    }
+
+    pclose(f);
+
+    return std::string(filename);
 }
 
 // Threads

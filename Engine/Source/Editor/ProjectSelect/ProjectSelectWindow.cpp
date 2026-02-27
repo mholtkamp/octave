@@ -494,7 +494,13 @@ void ProjectSelectWindow::OnOpenProject(const std::string& path)
 
 void ProjectSelectWindow::OnBrowseProject()
 {
-    ActionManager::Get()->OpenProject();
+    std::vector<std::string> paths = SYS_OpenFileDialog();
+
+    if (paths.size() > 0 && !paths[0].empty())
+    {
+        ActionManager::Get()->OpenProject(paths[0].c_str());
+    }
+
     // Close if a project was opened
     if (!GetEngineState()->mProjectPath.empty())
     {
