@@ -43,6 +43,7 @@
 #include "Nodes/3D/Node3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Box3d.h"
+#include "Nodes/3D/NavMesh3d.h"
 #include "Nodes/3D/Sphere3d.h"
 #include "Nodes/3D/Capsule3d.h"
 #include "Nodes/3D/Particle3d.h"
@@ -869,6 +870,10 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
     else if (name == BASIC_BOX)
     {
         spawnedNode = EXE_SpawnNode(Box3D::GetStaticType())->As<Box3D>();
+    }
+    else if (name == BASIC_NAV_MESH)
+    {
+        spawnedNode = EXE_SpawnNode(NavMesh3D::GetStaticType())->As<NavMesh3D>();
     }
     else if (name == BASIC_SPHERE)
     {

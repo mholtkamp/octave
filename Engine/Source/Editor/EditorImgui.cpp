@@ -2241,6 +2241,8 @@ static void DrawSpawnBasic3dMenu(Node* node, bool setFocusPos)
         am->SpawnBasicNode(BASIC_AUDIO, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_BOX))
         am->SpawnBasicNode(BASIC_BOX, node, selAsset, setFocusPos, spawnPos);
+    if (ImGui::MenuItem(BASIC_NAV_MESH))
+        am->SpawnBasicNode(BASIC_NAV_MESH, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_SPHERE))
         am->SpawnBasicNode(BASIC_SPHERE, node, selAsset, setFocusPos, spawnPos);
     if (ImGui::MenuItem(BASIC_CAPSULE))
@@ -5320,3 +5322,5 @@ bool EditorIsInterfaceVisible()
 }
 
 #endif
+
+
