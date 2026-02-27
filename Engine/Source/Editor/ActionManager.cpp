@@ -84,8 +84,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
-
 #define SUB_SCENE_HIER_WARN_TEXT "Cannot modify sub-scene hierarchy. Must unlink scene first."
 
 ActionManager* ActionManager::sInstance = nullptr;
@@ -2116,19 +2114,6 @@ void ActionManager::RestoreExiledNode(NodePtr node)
     OCT_ASSERT(restored);
 }
 
-static bool sHandleNewProjectCallbackCpp = false;
-static void HandleNewProjectCallback(const std::vector<std::string>& folderPaths)
-{
-    if (folderPaths.size() > 0 && folderPaths[0] != "")
-    {
-        ActionManager::Get()->CreateNewProject(folderPaths[0].c_str(), sHandleNewProjectCallbackCpp);
-    }
-    else
-    {
-        LogError("Bad folder for CreateNewProject.");
-    }
-}
-
 void CpyFile(const std::string& srcFile, const std::string& dstFile)
 {
 	SYS_CopyFile(srcFile.c_str(), dstFile.c_str());
@@ -2226,12 +2211,7 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp, const cha
 
     if (folderPathStr == "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        sHandleNewProjectCallbackCpp = cpp;
-        EditorOpenFileBrowser(HandleNewProjectCallback, true);
-#else
         folderPathStr = SYS_SelectFolderDialog();
-#endif
     }
 
     if (folderPathStr != "")
@@ -2385,34 +2365,18 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp, const cha
     }
 }
 
-static void HandleOpenProjectCallback(const std::vector<std::string>& filePaths)
-{
-    if (filePaths.size() > 0 && filePaths[0] != "")
-    {
-        ActionManager::Get()->OpenProject(filePaths[0].c_str());
-    }
-    else
-    {
-        LogError("Bad file for OpenProject.");
-    }
-}
-
 void ActionManager::OpenProject(const char* path)
 {
     std::string pathStr = path ? path : "";
 
     if (pathStr == "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleOpenProjectCallback, false);
-#else
         std::vector<std::string> paths = SYS_OpenFileDialog();
 
         if (paths.size() > 0)
         {
             pathStr = paths[0];
         }
-#endif
     }
 
     if (pathStr != "")
@@ -2594,12 +2558,8 @@ static void HandleRunScriptCallback(const std::vector<std::string>& filePaths)
 
 void ActionManager::RunScript()
 {
-#if USE_IMGUI_FILE_BROWSER
-    EditorOpenFileBrowser(HandleRunScriptCallback, false);
-#else
     std::vector<std::string> filePaths = SYS_OpenFileDialog();
     HandleRunScriptCallback(filePaths);
-#endif
 }
 
 static void HandleImportCallback(const std::vector<std::string>& filePaths)
@@ -2648,12 +2608,8 @@ void ActionManager::ImportAsset()
 {
     if (GetEngineState()->mProjectPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportCallback(filePaths);
-#endif
     }
     else
     {
@@ -4055,12 +4011,8 @@ void ActionManager::BeginImportScene()
 {
     if (GetEngineState()->mProjectPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportSceneCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportSceneCallback(filePaths);
-#endif
     }
     else
     {
@@ -4074,12 +4026,8 @@ void ActionManager::BeginImportCamera()
 	std::string  prevIOPath = GetEngineState()->mProjectPath;
     if (prevIOPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportCameraCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportCameraCallback(filePaths);
-#endif
     }
     else
     {
@@ -4117,12 +4065,8 @@ void ActionManager::BeginReimportScene(AssetStub* sceneStub)
 
     GetEditorState()->mPendingReimportSceneStub = sceneStub;
 
-#if USE_IMGUI_FILE_BROWSER
-    EditorOpenFileBrowser(HandleReimportSceneCallback, false);
-#else
     std::vector<std::string> filePaths = SYS_OpenFileDialog();
     HandleReimportSceneCallback(filePaths);
-#endif
 }
 
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
