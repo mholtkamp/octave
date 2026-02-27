@@ -493,6 +493,8 @@ void EditorState::RemoveSelectedNode(Node* node)
 
 void EditorState::SetSelectedAssetStub(AssetStub* newStub)
 {
+    ClearSelectedAssetStubs();
+
     if (mSelectedAssetStub != newStub)
     {
         mSelectedAssetStub = newStub;
@@ -502,6 +504,50 @@ void EditorState::SetSelectedAssetStub(AssetStub* newStub)
             AssetManager::Get()->LoadAsset(*newStub);
         }
     }
+
+    if (newStub != nullptr)
+    {
+        mSelectedAssetStubs.push_back(newStub);
+    }
+}
+
+void EditorState::AddSelectedAssetStub(AssetStub* stub)
+{
+    if (stub == nullptr)
+        return;
+
+    if (!IsAssetStubSelected(stub))
+    {
+        mSelectedAssetStubs.push_back(stub);
+        if (stub->mAsset == nullptr)
+        {
+            AssetManager::Get()->LoadAsset(*stub);
+        }
+    }
+}
+
+void EditorState::RemoveSelectedAssetStub(AssetStub* stub)
+{
+    auto it = std::find(mSelectedAssetStubs.begin(), mSelectedAssetStubs.end(), stub);
+    if (it != mSelectedAssetStubs.end())
+    {
+        mSelectedAssetStubs.erase(it);
+    }
+}
+
+void EditorState::ClearSelectedAssetStubs()
+{
+    mSelectedAssetStubs.clear();
+}
+
+const std::vector<AssetStub*>& EditorState::GetSelectedAssetStubs()
+{
+    return mSelectedAssetStubs;
+}
+
+bool EditorState::IsAssetStubSelected(AssetStub* stub)
+{
+    return std::find(mSelectedAssetStubs.begin(), mSelectedAssetStubs.end(), stub) != mSelectedAssetStubs.end();
 }
 
 void EditorState::SetControlMode(ControlMode newMode)

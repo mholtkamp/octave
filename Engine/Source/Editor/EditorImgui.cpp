@@ -182,6 +182,8 @@ static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
 static int sNewSceneType = 1;        // 0=2D, 1=3D
 static bool sNewSceneCreateCamera = true;
+static int32_t sZooColumns = 5;
+static float sZooSpacing = 3.0f;
 
 static bool sF2RenameAssetFocus = false;
 static bool sNodesDiscovered = false;
@@ -4415,6 +4417,21 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         }
     }
 
+    // Make Zoo — available when multiple StaticMesh assets are selected
+    {
+        const auto& multiStubs = GetEditorState()->GetSelectedAssetStubs();
+        bool hasStaticMeshes = false;
+        for (AssetStub* s : multiStubs)
+            if (s && s->mType == StaticMesh::GetStaticType()) hasStaticMeshes = true;
+
+        if (hasStaticMeshes && ImGui::Selectable("Make Zoo", false, ImGuiSelectableFlags_DontClosePopups))
+        {
+            ImGui::OpenPopup("Make Zoo");
+            strncpy(sPopupInputBuffer, "SC_Zoo", kPopupInputBufferSize - 1);
+            sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+            setTextInputFocus = true;
+        }
+    }
 
     if (!readOnly && (stub || dir))
     {
@@ -4436,14 +4453,25 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         {
             if (stub)
             {
-                actMan->DeleteAsset(stub);
+                const auto& selectedStubs = GetEditorState()->GetSelectedAssetStubs();
+                if (selectedStubs.size() > 1 && GetEditorState()->IsAssetStubSelected(stub))
+                {
+                    std::vector<AssetStub*> toDelete = selectedStubs;
+                    for (AssetStub* s : toDelete)
+                    {
+                        actMan->DeleteAsset(s);
+                    }
+                }
+                else
+                {
+                    actMan->DeleteAsset(stub);
+                }
             }
             else if (dir)
             {
                 actMan->DeleteAssetDir(dir);
                 GetEditorState()->ClearAssetDirHistory();
             }
-
         }
 
         if (stub && ImGui::Selectable("Duplicate"))
@@ -4850,6 +4878,86 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         ImGui::EndPopup();
     }
 
+    if (ImGui::BeginPopup("Make Zoo"))
+    {
+        if (setTextInputFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+        }
+
+        ImGui::InputText("Scene Name", sPopupInputBuffer, kPopupInputBufferSize);
+        ImGui::DragInt("Columns", &sZooColumns, 1, 1, 100);
+        ImGui::DragFloat("Spacing", &sZooSpacing, 0.1f, 0.5f, 100.0f);
+
+        if (ImGui::Button("Create"))
+        {
+            const auto& multiStubs = GetEditorState()->GetSelectedAssetStubs();
+            std::vector<StaticMesh*> meshes;
+            for (AssetStub* s : multiStubs)
+            {
+                if (s && s->mType == StaticMesh::GetStaticType())
+                {
+                    if (!s->mAsset) AssetManager::Get()->LoadAsset(*s);
+                    StaticMesh* m = s->mAsset ? s->mAsset->As<StaticMesh>() : nullptr;
+                    if (m) meshes.push_back(m);
+                }
+            }
+
+            if (!meshes.empty())
+            {
+                std::string sceneName = sPopupInputBuffer[0] ? sPopupInputBuffer : "SC_Zoo";
+                AssetStub* sceneStub = EditorAddUniqueAsset(sceneName.c_str(), curDir, Scene::GetStaticType(), true);
+                if (sceneStub)
+                {
+                    SharedPtr<Node3D> root = Node::Construct<Node3D>();
+                    root->SetName("Root");
+
+                    int cols = glm::max(sZooColumns, 1);
+                    int rows = ((int)meshes.size() + cols - 1) / cols;
+
+                    for (int i = 0; i < (int)meshes.size(); ++i)
+                    {
+                        int col = i % cols;
+                        int row = i / cols;
+                        StaticMesh3D* node = root->CreateChild<StaticMesh3D>();
+                        node->SetName(meshes[i]->GetName());
+                        node->SetStaticMesh(meshes[i]);
+                        node->SetPosition(glm::vec3(col * sZooSpacing, 0.0f, row * sZooSpacing));
+                    }
+
+                    float gridWidth = (cols - 1) * sZooSpacing;
+                    float gridDepth = (rows - 1) * sZooSpacing;
+                    float padding = sZooSpacing;
+                    Asset* planeAsset = AssetManager::Get()->GetAsset("SC_Plane");
+                    StaticMesh* planeMesh = planeAsset ? planeAsset->As<StaticMesh>() : nullptr;
+                    if (planeMesh)
+                    {
+                        StaticMesh3D* floor = root->CreateChild<StaticMesh3D>("Floor");
+                        floor->SetStaticMesh(planeMesh);
+                        floor->SetPosition(glm::vec3(gridWidth * 0.5f, -0.05f, gridDepth * 0.5f));
+                        float scaleX = (gridWidth + padding * 2) * 0.5f;
+                        float scaleZ = (gridDepth + padding * 2) * 0.5f;
+                        floor->SetScale(glm::vec3(scaleX, 1.0f, scaleZ));
+                    }
+
+                    Scene* scene = (Scene*)sceneStub->mAsset;
+                    scene->Capture(root.Get());
+                    AssetManager::Get()->SaveAsset(*sceneStub);
+                    GetEditorState()->OpenEditScene(scene);
+                }
+            }
+
+            ImGui::CloseCurrentPopup();
+            closeContextPopup = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
     // Plugin/addon context menu items
     ImGui::Separator();
     {
@@ -4963,7 +5071,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
                 continue;
         }
 
-        bool isSelectedStub = (stub == selStub);
+        bool isSelectedStub = GetEditorState()->IsAssetStubSelected(stub);
         if (isSelectedStub)
         {
             ImGui::PushStyleColor(ImGuiCol_Header, kSelectedColor);
@@ -4985,7 +5093,67 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         AlternatingRowBackground();
         if (assetClicked)
         {
-            if (selStub != stub)
+            if (IsControlDown())
+            {
+                // Ctrl+Click: toggle in multi-selection
+                if (GetEditorState()->IsAssetStubSelected(stub))
+                {
+                    GetEditorState()->RemoveSelectedAssetStub(stub);
+
+                    // Update primary to another selected stub, or nullptr
+                    const auto& stubs = GetEditorState()->GetSelectedAssetStubs();
+                    GetEditorState()->mSelectedAssetStub = stubs.empty() ? nullptr : stubs.back();
+                }
+                else
+                {
+                    GetEditorState()->AddSelectedAssetStub(stub);
+                    GetEditorState()->mSelectedAssetStub = stub;
+                }
+                sSelectedLooseFile.clear();
+
+                if (stub != nullptr &&
+                    stub->mAsset == nullptr)
+                    AssetManager::Get()->LoadAsset(*stub);
+                if (stub != nullptr &&
+                    stub->mAsset != nullptr)
+                    GetEditorState()->InspectObject(stub->mAsset);
+            }
+            else if (IsShiftDown() && selStub != nullptr)
+            {
+                // Shift+Click: range selection from primary to clicked item
+                GetEditorState()->ClearSelectedAssetStubs();
+
+                bool inRange = false;
+                for (uint32_t j = 0; j < dir->mAssetStubs.size(); ++j)
+                {
+                    AssetStub* s = dir->mAssetStubs[j];
+
+                    // Apply same filter so indices match what's visible
+                    if (!filterLower.empty())
+                    {
+                        std::string nameLower = s->mName;
+                        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+                        if (nameLower.find(filterLower) == std::string::npos)
+                            continue;
+                    }
+
+                    if (s == selStub || s == stub)
+                    {
+                        inRange = !inRange;
+                        GetEditorState()->AddSelectedAssetStub(s);
+                        if (!inRange)
+                            break; // We just hit the second endpoint
+                    }
+                    else if (inRange)
+                    {
+                        GetEditorState()->AddSelectedAssetStub(s);
+                    }
+                }
+
+                GetEditorState()->mSelectedAssetStub = stub;
+                sSelectedLooseFile.clear();
+            }
+            else if (selStub != stub)
             {
                 GetEditorState()->SetSelectedAssetStub(stub);
                 sSelectedLooseFile.clear();
@@ -4999,16 +5167,9 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
                         GetEditorState()->InspectObject(stub->mAsset);
                 }
             }
-            else if (!IsControlDown())
+            else
             {
                 GetEditorState()->SetSelectedAssetStub(nullptr);
-            }
-
-            if (IsControlDown() &&
-                stub != nullptr &&
-                stub->mAsset != nullptr)
-            {
-                GetEditorState()->InspectObject(stub->mAsset);
             }
 
             if (ImGui::IsMouseDoubleClicked(0))
@@ -5361,11 +5522,15 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
 
             if (IsKeyJustDown(OCTAVE_KEY_DELETE))
             {
-                AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
-
-                if (selStub != nullptr)
+                const auto& selectedStubs = GetEditorState()->GetSelectedAssetStubs();
+                if (!selectedStubs.empty())
                 {
-                    ActionManager::Get()->DeleteAsset(selStub);
+                    // Copy the vector since deletion will modify it
+                    std::vector<AssetStub*> toDelete = selectedStubs;
+                    for (AssetStub* s : toDelete)
+                    {
+                        ActionManager::Get()->DeleteAsset(s);
+                    }
                 }
             }
 

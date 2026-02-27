@@ -98,6 +98,7 @@ struct EditorState
     int32_t mSelectedInstance = -1;
     std::vector<EditScene> mEditScenes;
     AssetStub* mSelectedAssetStub = nullptr;
+    std::vector<AssetStub*> mSelectedAssetStubs;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     SharedPtr<Camera3D> mEditorCamera;
@@ -222,6 +223,11 @@ struct EditorState
     void AddSelectedNode(Node* node, bool addAllChildren);
     void RemoveSelectedNode(Node* node);
     void SetSelectedAssetStub(AssetStub* newStub);
+    void AddSelectedAssetStub(AssetStub* stub);
+    void RemoveSelectedAssetStub(AssetStub* stub);
+    void ClearSelectedAssetStubs();
+    const std::vector<AssetStub*>& GetSelectedAssetStubs();
+    bool IsAssetStubSelected(AssetStub* stub);
     void SetControlMode(ControlMode newMode);
 
     void BeginPlayInEditor();
