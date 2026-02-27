@@ -280,6 +280,7 @@ public:
     }
 
 private:
+
     bool IsValidInternal(std::true_type) const
     {
         return (mPointer != nullptr && mRefCount != nullptr && !mPointer->IsDestroyed());
@@ -497,16 +498,23 @@ public:
         return ret;
     }
 
+private:
+
+    bool IsValidInternal(std::true_type) const
+    {
+        return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0 && !mPointer->IsDestroyed());
+    }
+
+    bool IsValidInternal(std::false_type) const
+    {
+        return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0);
+    }
+
+public:
+
     bool IsValid() const
     {
-        if (std::is_base_of<Node, T>::value)
-        {
-            return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0 && !mPointer->IsDestroyed());
-        }
-        else
-        {
-            return (mPointer != nullptr && mRefCount != nullptr && mRefCount->mSharedCount > 0);
-        }
+        return IsValidInternal(typename std::is_base_of<Node, T>::type());
     }
 
     void Reset()
