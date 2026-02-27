@@ -200,12 +200,18 @@ struct DockContext
     ImVec2 m_workspace_pos;
     ImVec2 m_workspace_size;
     ImGuiDockSlot m_next_dock_slot;
+    Dock* m_reorder_tab;        // Tab currently being reordered (nullptr if not reordering)
+    float m_reorder_tabbar_y;   // Y position of the tab bar during reorder
+    float m_reorder_tabbar_h;   // Height of the tab bar during reorder
 
     DockContext()
         : m_current(nullptr)
         , m_next_parent(nullptr)
         , m_last_frame(0)
         , m_next_dock_slot(ImGuiDockSlot_Tab)
+        , m_reorder_tab(nullptr)
+        , m_reorder_tabbar_y(0)
+        , m_reorder_tabbar_h(0)
     {
     }
 
@@ -538,6 +544,9 @@ struct DockContext
 
     void doUndock(Dock& dock)
     {
+        if (m_reorder_tab == &dock)
+            m_reorder_tab = nullptr;
+
         if (dock.prev_tab)
             dock.prev_tab->setActive();
         else if (dock.next_tab)
@@ -639,6 +648,34 @@ struct DockContext
             hovered ? color_active : text_color);
     }
 
+    // Swap two adjacent tabs in the linked list. A must be immediately before B.
+    void swapAdjacentTabs(Dock* a, Dock* b)
+    {
+        if (!a || !b || a->next_tab != b)
+            return;
+
+        Dock* prevA = a->prev_tab;
+        Dock* nextB = b->next_tab;
+
+        // Relink
+        b->prev_tab = prevA;
+        b->next_tab = a;
+        a->prev_tab = b;
+        a->next_tab = nextB;
+        if (prevA) prevA->next_tab = b;
+        if (nextB) nextB->prev_tab = a;
+
+        // Update parent container child pointer if the first tab changed
+        Dock* container = a->parent;
+        if (container)
+        {
+            if (container->children[0] == a)
+                container->children[0] = b;
+            else if (container->children[1] == a)
+                container->children[1] = b;
+        }
+    }
+
     bool tabbar(Dock& dock, bool close_button)
     {
         float tabbar_height = 2 * GetTextLineHeightWithSpacing();
@@ -662,7 +699,17 @@ struct DockContext
             float line_height = GetTextLineHeightWithSpacing();
             float tab_base;
 
+            // Collect tab rects for reorder hit testing
+            struct TabRect { Dock* tab; float minX; float maxX; };
+            ImVector<TabRect> tab_rects;
+
             drawTabbarListButton(dock);
+
+            // Cancel reorder if mouse released
+            if (m_reorder_tab && !IsMouseDown(0))
+            {
+                m_reorder_tab = nullptr;
+            }
 
             while (dock_tab)
             {
@@ -679,11 +726,84 @@ struct DockContext
                     m_next_parent = dock_tab;
                 }
 
+                // Record tab rect for reorder
+                ImVec2 tabMin = GetItemRectMin();
+                ImVec2 tabMax = GetItemRectMax();
+                tab_rects.push_back({ dock_tab, tabMin.x, tabMax.x });
+
                 if (IsItemActive() && IsMouseDragging(0))
                 {
-                    m_drag_offset = GetMousePos() - dock_tab->pos;
-                    doUndock(*dock_tab);
-                    dock_tab->status = Status_Dragged;
+                    // Check if this tab has neighbors (is part of a tab group)
+                    bool hasNeighbors = (dock_tab->prev_tab != nullptr || dock_tab->next_tab != nullptr);
+
+                    if (hasNeighbors && m_reorder_tab == nullptr)
+                    {
+                        // Start reorder mode instead of immediately undocking
+                        m_reorder_tab = dock_tab;
+                        m_reorder_tabbar_y = dock.pos.y;
+                        m_reorder_tabbar_h = tabbar_height;
+                    }
+
+                    if (m_reorder_tab == dock_tab)
+                    {
+                        // Check if mouse has left the tab bar vertically → undock
+                        float mouseY = GetIO().MousePos.y;
+                        float undockThreshold = m_reorder_tabbar_h * 1.5f;
+                        if (mouseY < m_reorder_tabbar_y - undockThreshold ||
+                            mouseY > m_reorder_tabbar_y + m_reorder_tabbar_h + undockThreshold)
+                        {
+                            m_reorder_tab = nullptr;
+                            m_drag_offset = GetMousePos() - dock_tab->pos;
+                            doUndock(*dock_tab);
+                            dock_tab->status = Status_Dragged;
+                        }
+                        else
+                        {
+                            // Reorder: check if mouse crossed into an adjacent tab's center
+                            float mouseX = GetIO().MousePos.x;
+
+                            // Find our index in tab_rects
+                            int myIdx = -1;
+                            for (int ti = 0; ti < tab_rects.size(); ti++)
+                            {
+                                if (tab_rects[ti].tab == dock_tab) { myIdx = ti; break; }
+                            }
+
+                            if (myIdx >= 0)
+                            {
+                                // Check swap with previous tab (drag left)
+                                if (myIdx > 0 && dock_tab->prev_tab)
+                                {
+                                    float prevCenter = (tab_rects[myIdx - 1].minX + tab_rects[myIdx - 1].maxX) * 0.5f;
+                                    if (mouseX < prevCenter)
+                                    {
+                                        swapAdjacentTabs(dock_tab->prev_tab, dock_tab);
+                                    }
+                                }
+                                // Check swap with next tab (drag right)
+                                // Next tab hasn't been rendered yet, so compute its position from current tab's rect
+                                if (dock_tab->next_tab)
+                                {
+                                    float spacing = ImMax(g_dock_tab_rounding_left, g_dock_tab_rounding_right);
+                                    const char* nextEnd = FindRenderedTextEnd(dock_tab->next_tab->label);
+                                    float nextWidth = kTabPadLeft + CalcTextSize(dock_tab->next_tab->label, nextEnd).x + kTabPadRight;
+                                    float nextMinX = tabMax.x + spacing;
+                                    float nextCenter = nextMinX + nextWidth * 0.5f;
+                                    if (mouseX > nextCenter)
+                                    {
+                                        swapAdjacentTabs(dock_tab, dock_tab->next_tab);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (m_reorder_tab == nullptr)
+                    {
+                        // Single tab or reorder already cancelled → undock immediately
+                        m_drag_offset = GetMousePos() - dock_tab->pos;
+                        doUndock(*dock_tab);
+                        dock_tab->status = Status_Dragged;
+                    }
                 }
 
                 bool hovered = IsItemHovered();
