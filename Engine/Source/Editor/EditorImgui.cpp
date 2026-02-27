@@ -182,6 +182,7 @@ static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 static int sNewSceneType = 1;        // 0=2D, 1=3D
 static bool sNewSceneCreateCamera = true;
 
+static bool sF2RenameAssetFocus = false;
 static bool sNodesDiscovered = false;
 static bool showTheming = false;
 static std::vector<std::string> sNode3dNames;
@@ -1395,7 +1396,75 @@ static void DiscoverNodeClasses()
     }
 }
 
-static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybox = false)
+static bool MoveAssetToDirectory(AssetStub* stub, AssetDir* newDir)
+{
+    if (stub == nullptr || newDir == nullptr || stub->mDirectory == newDir)
+        return false;
+    if (stub->mEngineAsset || newDir->mEngineDir || newDir->mAddonDir)
+        return false;
+
+    AssetDir* oldDir = stub->mDirectory;
+
+    // Build new path
+    std::string newPath = newDir->mPath + stub->mName + ".oct";
+
+    // Move file on disk
+    if (!SYS_Rename(stub->mPath.c_str(), newPath.c_str()))
+        return false;
+
+    // Update in-memory structures
+    oldDir->RemoveAssetStub(stub);
+    newDir->mAssetStubs.push_back(stub);
+    stub->mDirectory = newDir;
+    stub->mPath = newPath;
+
+    return true;
+}
+
+static bool MoveDirectoryToDirectory(AssetDir* dir, AssetDir* newParent)
+{
+    if (dir == nullptr || newParent == nullptr)
+        return false;
+    if (dir->mEngineDir || dir->mAddonDir || newParent->mEngineDir || newParent->mAddonDir)
+        return false;
+    if (dir->mParentDir == newParent)
+        return false;
+    // Prevent moving a dir into itself or a descendant
+    for (AssetDir* p = newParent; p != nullptr; p = p->mParentDir)
+    {
+        if (p == dir)
+            return false;
+    }
+
+    std::string oldPath = dir->mPath;
+    std::string newPath = newParent->mPath + dir->mName + "/";
+
+    // Move on disk
+    SYS_MoveDirectory(oldPath.c_str(), newPath.c_str());
+
+    // Update tree: remove from old parent
+    AssetDir* oldParent = dir->mParentDir;
+    auto& oldChildren = oldParent->mChildDirs;
+    oldChildren.erase(std::find(oldChildren.begin(), oldChildren.end(), dir));
+
+    // Add to new parent
+    newParent->mChildDirs.push_back(dir);
+    dir->mParentDir = newParent;
+
+    // Recursively update paths
+    std::function<void(AssetDir*)> updatePaths = [&](AssetDir* d) {
+        d->mPath = d->mParentDir->mPath + d->mName + "/";
+        for (AssetStub* stub : d->mAssetStubs)
+            stub->mPath = d->mPath + stub->mName + ".oct";
+        for (AssetDir* child : d->mChildDirs)
+            updatePaths(child);
+    };
+    updatePaths(dir);
+
+    return true;
+}
+
+static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybox = false, bool userProvidedName = false)
 {
     AssetStub* stub = nullptr;
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
@@ -1435,18 +1504,22 @@ static void CreateNewAsset(TypeId assetType, const char* assetName, bool isSkybo
             // Auto assign the selected texture to index 0
             matLite->SetTexture(0, texture);
 
-            std::string newMatName = texture->GetName();
-
-            if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
+            // Only auto-rename if user didn't provide a custom name
+            if (!userProvidedName)
             {
-                newMatName[0] = 'M';
-            }
-            else
-            {
-                newMatName = std::string("M_") + newMatName;
-            }
+                std::string newMatName = texture->GetName();
 
-            AssetManager::Get()->RenameAsset(matLite, newMatName);
+                if (newMatName.length() >= 2 && newMatName[0] == 'T' && newMatName[1] == '_')
+                {
+                    newMatName[0] = 'M';
+                }
+                else
+                {
+                    newMatName = std::string("M_") + newMatName;
+                }
+
+                AssetManager::Get()->RenameAsset(matLite, newMatName);
+            }
         }
     }
 
@@ -1686,14 +1759,17 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
 // A reusable autocomplete dropdown function that works with various input types
 // Returns true if a selection was made, and updates the input string
 template<typename FilterFuncType>
-static bool DrawAutocompleteDropdown(const char* dropdownId, 
-                                     std::string& inputText, 
-                                     const std::vector<std::string>& suggestions, 
+static bool DrawAutocompleteDropdown(const char* dropdownId,
+                                     std::string& inputText,
+                                     const std::vector<std::string>& suggestions,
                                      FilterFuncType filterFunc,
-                                     bool forceActive = false)
+                                     bool forceActive = false,
+                                     ImGuiID overrideInputId = 0,
+                                     ImVec2 overrideRectMin = ImVec2(0, 0),
+                                     ImVec2 overrideRectMax = ImVec2(0, 0))
 {
     bool selectionMade = false;
-    
+
     // Use static variables with the ID to handle multiple instances correctly
     static ImGuiID activeDropdownId = 0;
     static size_t selectedIndex = 0;
@@ -1703,6 +1779,14 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     static std::vector<std::string> filteredItems;
     static bool selectionJustMade = false;
 
+    // Use overridden input identity/rect if provided (when other widgets are drawn between InputText and this call)
+    bool hasOverride = (overrideInputId != 0);
+    ImGuiID inputId = hasOverride ? overrideInputId : ImGui::GetItemID();
+    bool isInputActive = hasOverride ? forceActive : ImGui::IsItemActive();
+    bool isInputFocused = hasOverride ? forceActive : ImGui::IsItemFocused();
+    ImVec2 inputRectMin = (overrideRectMax.x > overrideRectMin.x) ? overrideRectMin : ImGui::GetItemRectMin();
+    ImVec2 inputRectMax = (overrideRectMax.x > overrideRectMin.x) ? overrideRectMax : ImGui::GetItemRectMax();
+
     // If forceActive is true, force the dropdown to show
     // But not if a selection was just made (prevents immediate reopen)
     if (forceActive && !selectionJustMade) {
@@ -1710,12 +1794,7 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
     }
     // Reset the flag after one frame
     selectionJustMade = false;
-    
-    // Check if this is the active dropdown
-    ImGuiID inputId = ImGui::GetItemID();
-    bool isInputActive = ImGui::IsItemActive();
-    bool isInputFocused = ImGui::IsItemFocused();
-    
+
     // If we have a new active item, reset state
     if (activeDropdownId != inputId && (isInputActive || isInputFocused))
     {
@@ -1724,17 +1803,20 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         dropdownActive = true; // Set to true to ensure dropdown shows
         selectedIndex = 0;
     }
-    // Only hide dropdown when input completely loses focus AND mouse is not over dropdown
-    // This prevents the dropdown from disappearing when clicking on it
-    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId )
+    // Hide dropdown when input loses focus
+    else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
     {
-        // Use a small delay to allow interaction with the dropdown itself
-        static float hideTimer = 0.0f;
-        if (hideTimer > 0.1f) {
+        dropdownActive = false;
+    }
+
+    // Close dropdown when user clicks outside the input field
+    if (dropdownActive && activeDropdownId == inputId && ImGui::IsMouseClicked(0))
+    {
+        ImVec2 mousePos = ImGui::GetIO().MousePos;
+        if (mousePos.x < inputRectMin.x || mousePos.x > inputRectMax.x ||
+            mousePos.y < inputRectMin.y || mousePos.y > inputRectMax.y)
+        {
             dropdownActive = false;
-            hideTimer = 0.0f;
-        } else {
-            hideTimer += ImGui::GetIO().DeltaTime;
         }
     }
     
@@ -1756,9 +1838,8 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         activeDropdownId = inputId; // Keep track of which dropdown is active
 
         // Calculate popup position below the input field
-        ImVec2 inputPos = ImGui::GetItemRectMin();
-        ImVec2 inputSize = ImGui::GetItemRectSize();
-        ImGui::SetNextWindowPos(ImVec2(inputPos.x, inputPos.y + inputSize.y));
+        ImVec2 inputSize = ImVec2(inputRectMax.x - inputRectMin.x, inputRectMax.y - inputRectMin.y);
+        ImGui::SetNextWindowPos(ImVec2(inputRectMin.x, inputRectMin.y + inputSize.y));
 
         // Set maximum height for 4 items plus a bit of padding
         const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
@@ -1990,6 +2071,21 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     bool textActive = ImGui::InputText("##AssetNameStr", &sTempString, flags);
     bool isInputFocused = ImGui::IsItemFocused();
     bool isInputActivated = ImGui::IsItemActivated();
+
+    // Clear button
+    ImGui::SameLine(0.0f, 2.0f);
+    if (ImGui::Button(ICON_DASHICONS_NO_ALT "##AssetClear"))
+    {
+        Asset* nullAsset = nullptr;
+        if (ownerType == PropertyOwnerType::Node || ownerType == PropertyOwnerType::Asset)
+        {
+            am->EXE_EditProperty(owner, ownerType, prop.mName, index, nullAsset);
+        }
+        else
+        {
+            prop.SetAsset(nullAsset, index);
+        }
+    }
 
     // Drag-and-drop target for asset assignment
     if (ImGui::BeginDragDropTarget())
@@ -2388,6 +2484,34 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
             }
             case DatumType::Bool:
             {
+                if (prop.mName == "Restart Script")
+                {
+                    if (ImGui::Button(ICON_IC_TWOTONE_POWER_SETTINGS_NEW "##RestartScript"))
+                    {
+                        bool val = true;
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, val);
+                    }
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Restart Script");
+
+                    // Draw Reload button on the same line
+                    ImGui::SameLine(0.0f, 2.0f);
+                    if (ImGui::Button(ICON_IC_SHARP_SETTINGS_BACKUP_RESTORE "##ReloadScriptFile"))
+                    {
+                        bool val = true;
+                        std::string reloadName = "Reload Script File";
+                        am->EXE_EditProperty(owner, ownerType, reloadName, 0, val);
+                    }
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Reload Script File");
+                    break;
+                }
+                else if (prop.mName == "Reload Script File")
+                {
+                    // Already drawn inline with "Restart Script" above
+                    break;
+                }
+
                 bool propVal = prop.GetBool(i);
                 if (ImGui::Checkbox("", &propVal))
                 {
@@ -2437,13 +2561,36 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                     // Draw the input field first
                     bool textActive = ImGui::InputText("##ScriptInput", &sTempString);
 
+                    // Drop target for scripts dragged from Scripts panel
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_SCRIPT))
+                        {
+                            std::string scriptName((const char*)payload->Data, payload->DataSize - 1);
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, scriptName);
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+
                     // Capture input state IMMEDIATELY after InputText
                     bool isInputFocused = ImGui::IsItemFocused();
                     bool isInputActivated = ImGui::IsItemActivated();
+                    ImGuiID scriptInputId = ImGui::GetItemID();
+                    ImVec2 scriptInputMin = ImGui::GetItemRectMin();
+                    ImVec2 scriptInputMax = ImGui::GetItemRectMax();
+
+                    // Clear button
+                    ImGui::SameLine(0.0f, 2.0f);
+                    if (ImGui::Button(ICON_DASHICONS_NO_ALT "##ScriptClear"))
+                    {
+                        std::string emptyStr;
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, emptyStr);
+                    }
 
                     // Then draw the autocomplete dropdown with the correct state
+                    // Pass the InputText's saved rect so the dropdown positions below the input, not the clear button
                     bool selectionMade = DrawAutocompleteDropdown("ScriptAutocomplete", sTempString, scriptSuggestions, scriptFilter,
-                        isInputActivated || textActive || isInputFocused);
+                        isInputActivated || textActive || isInputFocused, scriptInputId, scriptInputMin, scriptInputMax);
 
                     // Capture activation for sOrigVal AFTER the dropdown
                     if (isInputActivated)
@@ -4084,6 +4231,38 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         }
     }
 
+    // Reveal in Explorer — available for both assets and directories regardless of read-only
+    if (stub || dir)
+    {
+        if (ImGui::Selectable("Reveal in Explorer"))
+        {
+            if (stub)
+            {
+                // Reveal the asset file, selecting it in the explorer
+                std::string absPath = SYS_GetAbsolutePath(stub->mPath);
+#if PLATFORM_WINDOWS
+                // Replace forward slashes with backslashes for Windows explorer
+                for (char& c : absPath) { if (c == '/') c = '\\'; }
+                SYS_Exec(("explorer /select,\"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                // Open the containing directory
+                std::string dirPath = absPath.substr(0, absPath.find_last_of('/'));
+                SYS_Exec(("xdg-open \"" + dirPath + "\" &").c_str());
+#endif
+            }
+            else if (dir)
+            {
+                std::string absPath = SYS_GetAbsolutePath(dir->mPath);
+#if PLATFORM_WINDOWS
+                for (char& c : absPath) { if (c == '/') c = '\\'; }
+                SYS_Exec(("explorer \"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                SYS_Exec(("xdg-open \"" + absPath + "\" &").c_str());
+#endif
+            }
+        }
+    }
+
     if (curDir && !curDir->mEngineDir && !curDir->mAddonDir)
     {
         if (ImGui::Selectable("Import Asset"))
@@ -4354,13 +4533,31 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
         if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             std::string assetName = sPopupInputBuffer;
+            bool userProvidedName = (assetName != "");
 
             if (assetName == "")
             {
                 if (sNewAssetIsSkybox)
+                {
                     assetName = "M_Skybox";
+                }
                 else if (sNewAssetType == MaterialLite::GetStaticType())
-                    assetName = "M_Material";
+                {
+                    Asset* selAsset = GetEditorState()->GetSelectedAsset();
+                    if (selAsset != nullptr && selAsset->GetType() == Texture::GetStaticType())
+                    {
+                        std::string texName = selAsset->GetName();
+                        if (texName.length() >= 2 && texName[0] == 'T' && texName[1] == '_')
+                            texName[0] = 'M';
+                        else
+                            texName = std::string("M_") + texName;
+                        assetName = texName;
+                    }
+                    else
+                    {
+                        assetName = "M_Material";
+                    }
+                }
                 else if (sNewAssetType == MaterialBase::GetStaticType())
                     assetName = "MB_Material";
                 else if (sNewAssetType == MaterialInstance::GetStaticType())
@@ -4377,7 +4574,7 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 
             if (assetName != "" && sNewAssetType != INVALID_TYPE_ID)
             {
-                CreateNewAsset(sNewAssetType, assetName.c_str(), sNewAssetIsSkybox);
+                CreateNewAsset(sNewAssetType, assetName.c_str(), sNewAssetIsSkybox, userProvidedName);
             }
 
             sNewAssetIsSkybox = false;
@@ -4831,6 +5028,31 @@ static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool
     bool nodeOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
     AlternatingRowBackground();
 
+    // Drag source for directory (skip engine/addon dirs)
+    if (!dir->mEngineDir && !dir->mAddonDir && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+    {
+        AssetDir* dragDir = dir;
+        ImGui::SetDragDropPayload(DRAGDROP_DIR, &dragDir, sizeof(AssetDir*));
+        ImGui::Text("%s", dir->mName.c_str());
+        ImGui::EndDragDropSource();
+    }
+
+    // Drop target for assets and directories
+    if (!dir->mEngineDir && !dir->mAddonDir && ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_ASSET))
+        {
+            AssetStub* droppedStub = *(AssetStub**)payload->Data;
+            MoveAssetToDirectory(droppedStub, dir);
+        }
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DRAGDROP_DIR))
+        {
+            AssetDir* droppedDir = *(AssetDir**)payload->Data;
+            MoveDirectoryToDirectory(droppedDir, dir);
+        }
+        ImGui::EndDragDropTarget();
+    }
+
     if (ImGui::BeginPopupContextItem())
     {
         // Set current directory so context popup operations target this directory
@@ -4925,7 +5147,42 @@ static void DrawAssetBrowser(AssetDir* rootDir, const std::string& filterLower, 
                     ActionManager::Get()->DeleteAsset(selStub);
                 }
             }
+
+            if (!ctrlDown && IsKeyJustDown(OCTAVE_KEY_F2))
+            {
+                AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
+                if (selStub != nullptr && !selStub->mEngineAsset)
+                {
+                    ImGui::OpenPopup("Rename Asset F2");
+                    strncpy(sPopupInputBuffer, selStub->mName.c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    sF2RenameAssetFocus = true;
+                }
+            }
         }
+    }
+
+    if (ImGui::BeginPopup("Rename Asset F2"))
+    {
+        if (sF2RenameAssetFocus)
+        {
+            ImGui::SetKeyboardFocusHere();
+            sF2RenameAssetFocus = false;
+        }
+
+        if (ImGui::InputText("Name", sPopupInputBuffer, kPopupInputBufferSize, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            AssetStub* selStub = GetEditorState()->GetSelectedAssetStub();
+            if (selStub)
+            {
+                Asset* asset = AssetManager::Get()->LoadAsset(*selStub);
+                AssetManager::Get()->RenameAsset(asset, sPopupInputBuffer);
+                AssetManager::Get()->SaveAsset(*selStub);
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 
     if (ImGui::BeginPopup("Null Context"))
@@ -5766,6 +6023,41 @@ static void DrawScriptsPanel()
                     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + pair.first;
                     bool dirOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
                     AlternatingRowBackground();
+
+                    // Context menu for script directory
+                    if (ImGui::BeginPopupContextItem())
+                    {
+                        if (ImGui::Selectable("Reveal in Explorer"))
+                        {
+                            // Find the first file in this subtree to derive the directory path
+                            std::function<const ScriptFileEntry*(const TreeNode&)> findFirst;
+                            findFirst = [&](const TreeNode& n) -> const ScriptFileEntry* {
+                                if (!n.files.empty()) return n.files[0];
+                                for (auto& child : n.children) {
+                                    const ScriptFileEntry* f = findFirst(child.second);
+                                    if (f) return f;
+                                }
+                                return nullptr;
+                            };
+                            const ScriptFileEntry* firstFile = findFirst(pair.second);
+                            if (firstFile)
+                            {
+                                std::string dirPath = firstFile->mFullPath;
+                                size_t lastSlash = dirPath.find_last_of("/\\");
+                                if (lastSlash != std::string::npos)
+                                    dirPath = dirPath.substr(0, lastSlash);
+                                std::string absPath = SYS_GetAbsolutePath(dirPath);
+#if PLATFORM_WINDOWS
+                                for (char& c : absPath) { if (c == '/') c = '\\'; }
+                                SYS_Exec(("explorer \"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                                SYS_Exec(("xdg-open \"" + absPath + "\" &").c_str());
+#endif
+                            }
+                        }
+                        ImGui::EndPopup();
+                    }
+
                     if (dirOpen)
                     {
                         drawTree(pair.second);
@@ -5786,6 +6078,31 @@ static void DrawScriptsPanel()
                     std::string labelWithIcon = std::string(ICON_LUA) + " " + fileName;
                     ImGui::TreeNodeEx(labelWithIcon.c_str(), leafFlags);
                     AlternatingRowBackground();
+
+                    // Drag source for script files
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    {
+                        ImGui::SetDragDropPayload(DRAGDROP_SCRIPT, entry->mDisplayName.c_str(), entry->mDisplayName.size() + 1);
+                        ImGui::Text("%s", fileName.c_str());
+                        ImGui::EndDragDropSource();
+                    }
+
+                    // Context menu for script file
+                    if (ImGui::BeginPopupContextItem())
+                    {
+                        if (ImGui::Selectable("Reveal in Explorer"))
+                        {
+                            std::string absPath = SYS_GetAbsolutePath(entry->mFullPath);
+#if PLATFORM_WINDOWS
+                            for (char& c : absPath) { if (c == '/') c = '\\'; }
+                            SYS_Exec(("explorer /select,\"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                            std::string dirPath = absPath.substr(0, absPath.find_last_of('/'));
+                            SYS_Exec(("xdg-open \"" + dirPath + "\" &").c_str());
+#endif
+                        }
+                        ImGui::EndPopup();
+                    }
 
                     if (ImGui::IsItemHovered())
                     {
@@ -6199,6 +6516,13 @@ static void DrawMainMenuBar()
             if (ImGui::MenuItem("Redo"))
                 am->Redo();
 
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Preferences..."))
+            {
+                GetPreferencesWindow()->Open();
+            }
+
             // Draw plugin menu items for Edit menu
             {
                 EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -6266,14 +6590,7 @@ static void DrawMainMenuBar()
                 ImGui::EndMenu();
             }
 
-            // TODO: Uncomment to show Preferences
-            if (GetFeatureFlagsEditor().mShowPreferences == true) {
-                ImGui::Separator();
-                if (ImGui::MenuItem("Preferences..."))
-                {
-                    GetPreferencesWindow()->Open();
-                }
-            }
+            // Preferences moved to Edit menu
 
             if (GetFeatureFlagsEditor().mShowTheming == true) {
                 if (ImGui::MenuItem("Theme Editor..."))
@@ -6407,6 +6724,96 @@ static void DrawMainMenuBar()
                     }
                     LogDebug("Native addon dependencies regenerated for %d addon(s).", (int)localIds.size());
                 }
+            }
+
+            ImGui::Separator();
+
+            // Directory paths
+            const std::string& projectDir = GetEngineState()->mProjectDirectory;
+            bool hasProject = !projectDir.empty();
+            std::string assetsDir = projectDir + "Assets/";
+            std::string scriptsDir = projectDir + "Scripts/";
+            std::string addonsDir = projectDir + "Packages/";
+            std::string octaveDir = SYS_GetOctavePath();
+
+            if (ImGui::BeginMenu("Reveal in Explorer"))
+            {
+                auto revealDir = [](const std::string& dir) {
+                    std::string absPath = SYS_GetAbsolutePath(dir);
+#if PLATFORM_WINDOWS
+                    for (char& c : absPath) { if (c == '/') c = '\\'; }
+                    SYS_Exec(("explorer \"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                    SYS_Exec(("xdg-open \"" + absPath + "\" &").c_str());
+#endif
+                };
+
+                if (ImGui::MenuItem("Project Directory", nullptr, false, hasProject))
+                    revealDir(projectDir);
+                if (ImGui::MenuItem("Project Assets Directory", nullptr, false, hasProject))
+                    revealDir(assetsDir);
+                if (ImGui::MenuItem("Project Scripts Directory", nullptr, false, hasProject))
+                    revealDir(scriptsDir);
+                if (ImGui::MenuItem("Project Addons Directory", nullptr, false, hasProject))
+                    revealDir(addonsDir);
+                if (ImGui::MenuItem("Octave Engine Directory"))
+                    revealDir(octaveDir);
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Open in Code Editor"))
+            {
+                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                bool hasEditor = editors && editors->IsLuaEditorConfigured();
+
+                auto openInEditor = [&](const std::string& dir) {
+                    if (editors)
+                    {
+                        std::string absPath = SYS_GetAbsolutePath(dir);
+                        std::string cmd = editors->BuildLuaOpenCommand(absPath);
+                        SYS_Exec(cmd.c_str());
+                    }
+                };
+
+                if (ImGui::MenuItem("Project Directory", nullptr, false, hasProject && hasEditor))
+                    openInEditor(projectDir);
+                if (ImGui::MenuItem("Project Assets Directory", nullptr, false, hasProject && hasEditor))
+                    openInEditor(assetsDir);
+                if (ImGui::MenuItem("Project Scripts Directory", nullptr, false, hasProject && hasEditor))
+                    openInEditor(scriptsDir);
+                if (ImGui::MenuItem("Project Addons Directory", nullptr, false, hasProject && hasEditor))
+                    openInEditor(addonsDir);
+                if (ImGui::MenuItem("Octave Engine Directory", nullptr, false, hasEditor))
+                    openInEditor(octaveDir);
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Open in VS Code"))
+            {
+                auto openInVSCode = [](const std::string& dir) {
+                    std::string absPath = SYS_GetAbsolutePath(dir);
+#if PLATFORM_WINDOWS
+                    SYS_Exec(("code \"" + absPath + "\"").c_str());
+#elif PLATFORM_LINUX
+                    SYS_Exec(("code \"" + absPath + "\" &").c_str());
+#endif
+                };
+
+                if (ImGui::MenuItem("Project Directory", nullptr, false, hasProject))
+                    openInVSCode(projectDir);
+                if (ImGui::MenuItem("Project Assets Directory", nullptr, false, hasProject))
+                    openInVSCode(assetsDir);
+                if (ImGui::MenuItem("Project Scripts Directory", nullptr, false, hasProject))
+                    openInVSCode(scriptsDir);
+                if (ImGui::MenuItem("Project Addons Directory", nullptr, false, hasProject))
+                    openInVSCode(addonsDir);
+                if (ImGui::MenuItem("Octave Engine Directory"))
+                    openInVSCode(octaveDir);
+
+                ImGui::EndMenu();
             }
 
             ImGui::Separator();

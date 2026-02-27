@@ -586,6 +586,21 @@ void GatherNonDefaultProperties(Node* node, std::vector<Property>& props, NodePt
         {
             Property* defaultProp = FindProperty(defaultProps, extProps[i].mName);
 
+            // Skip Asset properties where both values are transient. Transient assets
+            // (e.g. inline MaterialLite overrides) can't be serialized by reference — they
+            // get written as null. Their data is already preserved through ExtraData/LoadStream,
+            // so saving them as property overrides would incorrectly null out the asset on load.
+            if (extProps[i].mType == DatumType::Asset && defaultProp != nullptr)
+            {
+                Asset* curAsset = extProps[i].GetAsset();
+                Asset* defAsset = defaultProp->GetAsset();
+                if (curAsset != nullptr && curAsset->IsTransient() &&
+                    defAsset != nullptr && defAsset->IsTransient())
+                {
+                    continue;
+                }
+            }
+
             if (defaultProp == nullptr ||
                 (extProps[i].mType == DatumType::Asset && scene == nullptr && !existingRefNode) ||
                 extProps[i] != *defaultProp)
@@ -682,7 +697,34 @@ void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
 
     std::vector<Property> dstProps;
     dst->GatherProperties(dstProps);
+
+    // Remember transient asset properties before applying overrides. Legacy scene files
+    // may have incorrectly saved transient material overrides as null references
+    // (see GatherNonDefaultProperties fix). We need to restore them if they get nulled out.
+    std::vector<std::pair<std::string, AssetRef>> transientAssets;
+    for (uint32_t i = 0; i < dstProps.size(); ++i)
+    {
+        if (dstProps[i].mType == DatumType::Asset)
+        {
+            Asset* asset = dstProps[i].GetAsset();
+            if (asset != nullptr && asset->IsTransient())
+            {
+                transientAssets.push_back({ dstProps[i].mName, dstProps[i].GetAssetRef() });
+            }
+        }
+    }
+
     CopyPropertyValues(dstProps, over.mProperties);
+
+    // Restore any transient assets that were incorrectly nulled out by legacy overrides.
+    for (auto& saved : transientAssets)
+    {
+        Property* prop = FindProperty(dstProps, saved.first);
+        if (prop != nullptr && prop->GetAsset() == nullptr)
+        {
+            prop->SetAsset(saved.second.Get());
+        }
+    }
 
     if (over.mOverrideColors &&
         dst->As<StaticMesh3D>())
