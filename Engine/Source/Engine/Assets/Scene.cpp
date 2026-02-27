@@ -354,8 +354,14 @@ NodePtr Scene::Instantiate()
         // if the user renames a native child, then we will have a duplicate so we need to destroy the native one.
         std::vector<Node*> nativeChildren;
 
+        LogDebug("Scene::Instantiate() - scene '%s' has %u nodeDefs", GetName().c_str(), (uint32_t)mNodeDefs.size());
+
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
+            LogDebug("  [%u] name='%s' type=%u parentIdx=%u hasScene=%d",
+                i, mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType,
+                (uint32_t)mNodeDefs[i].mParentIndex, mNodeDefs[i].mScene != nullptr ? 1 : 0);
+
             NodePtr nodePtr;
             NodePtr parent = (i > 0 && nodeList.size() > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
@@ -410,21 +416,35 @@ NodePtr Scene::Instantiate()
                 if (mNodeDefs[i].mScene != nullptr)
                 {
                     Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
+                    LogDebug("  -> Instantiating subscene for node '%s'", mNodeDefs[i].mName.c_str());
                     nodePtr = scene->Instantiate();
-
-#if EDITOR
-                    nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
-#endif
-
-                    for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
-                    {
-                        nativeChildren.push_back(nodePtr->GetChild(c));
-                    }
+                    LogDebug("  -> Subscene result: %s", nodePtr != nullptr ? "OK" : "NULL");
                 }
                 else
                 {
+                    LogDebug("  -> Node::Construct(type=%u) for '%s'", (uint32_t)mNodeDefs[i].mType, mNodeDefs[i].mName.c_str());
                     nodePtr = Node::Construct(mNodeDefs[i].mType);
+                    LogDebug("  -> Construct result: %s (ptr=%p)", nodePtr != nullptr ? "OK" : "NULL", (void*)nodePtr.Get());
+                }
 
+                if (nodePtr == nullptr)
+                {
+                    LogWarning("Failed to construct node '%s' (type=%u, unknown type?), using Node3D placeholder.",
+                        mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType);
+                    nodePtr = Node::Construct("Node3D");
+                    LogDebug("  -> Node3D fallback result: %s", nodePtr != nullptr ? "OK" : "NULL");
+                }
+
+                if (nodePtr != nullptr)
+                {
+#if EDITOR
+                    if (mNodeDefs[i].mScene != nullptr)
+                    {
+                        nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
+                    }
+#endif
+
+                    LogDebug("  -> GetNumChildren() on node ptr=%p", (void*)nodePtr.Get());
                     for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
                     {
                         nativeChildren.push_back(nodePtr->GetChild(c));
@@ -433,6 +453,12 @@ NodePtr Scene::Instantiate()
             }
 
             OCT_ASSERT(nodePtr);
+            if (nodePtr == nullptr)
+            {
+                LogError("Failed to instantiate node '%s', skipping.", mNodeDefs[i].mName.c_str());
+                nodeList.push_back(nullptr);
+                continue;
+            }
             Node* node = nodePtr.Get();
 
             std::vector<Property> dstProps;

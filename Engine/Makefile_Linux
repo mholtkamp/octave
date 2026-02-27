@@ -75,7 +75,7 @@ SOURCES		:=	Source \
 				../External/IrrXML \
 				../External/recastnavigation/Recast/Source/ \
 				../External/recastnavigation/Detour/Source/
-INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
+INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp

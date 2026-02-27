@@ -49,7 +49,7 @@ SOURCES		:=	Source \
 				../External/recastnavigation/Detour/Source/
 #DATA		:=	data
 #TEXTURES	:=	textures
-INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Wii
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 
