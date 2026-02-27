@@ -60,9 +60,11 @@ SOURCES		:=	Source \
 				../External/Lua \
 				../External/Vorbis \
 				../External/IrrXML \
+				../External/recastnavigation/Recast/Source/ \
+				../External/recastnavigation/Detour/Source/ \
 				Shaders/PICA200
 DATA		:=	Data
-INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs

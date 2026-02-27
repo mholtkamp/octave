@@ -286,16 +286,22 @@ public:
         return static_cast<S*>(Get());
     }
 
+private:
+    bool IsValidInternal(std::true_type) const
+    {
+        return (mPointer != nullptr && mRefCount != nullptr && !mPointer->IsDestroyed());
+    }
+
+    bool IsValidInternal(std::false_type) const
+    {
+        return (mPointer != nullptr && mRefCount != nullptr);
+    }
+
+public:
+
     bool IsValid() const
     {
-        if constexpr (IsNodeType<T>::value)
-        {
-            return (mPointer != nullptr && mRefCount != nullptr && !mPointer->IsDestroyed());
-        }
-        else
-        {
-            return (mPointer != nullptr && mRefCount != nullptr);
-        }
+        return IsValidInternal(typename std::is_base_of<Node, T>::type());
     }
 
 private:

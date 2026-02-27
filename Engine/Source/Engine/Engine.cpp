@@ -186,6 +186,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(InstancedMesh3D);
     FORCE_LINK_CALL(TimelinePlayer);
     FORCE_LINK_CALL(NodeGraphPlayer);
+    FORCE_LINK_CALL(Spline3D);
+    FORCE_LINK_CALL(NavMesh3D);
 
     // Asset Types
     FORCE_LINK_CALL(Scene);

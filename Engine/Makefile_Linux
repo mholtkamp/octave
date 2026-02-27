@@ -72,8 +72,10 @@ SOURCES		:=	Source \
 				Source/LuaBindings \
 				../External/Lua \
 				../External/Vorbis \
-				../External/IrrXML
-INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include
+				../External/IrrXML \
+				../External/recastnavigation/Recast/Source/ \
+				../External/recastnavigation/Detour/Source/
+INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp
@@ -169,7 +171,7 @@ MakeBullet:
 MakeAssimp:
 	@$(MAKE) --no-print-directory -C $(ASSIMP_DIR) -f $(ASSIMP_DIR)/Makefile_Linux
 
-$(BUILD): MakeBullet MakeAssimp OutputDir 
+$(BUILD): MakeBullet MakeAssimp OutputDir
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_Linux
 
@@ -188,7 +190,7 @@ $(OUTPUT): $(OFILES) $(OFILES_EXTRA)
 
 $(OFILES_EXTRA):
 
-$(OFILES_SOURCES) : 
+$(OFILES_SOURCES) :
 
 -include $(DEPSDIR)/*.d
 
