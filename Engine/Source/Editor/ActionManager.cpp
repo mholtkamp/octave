@@ -1279,6 +1279,7 @@ void ActionManager::DrawBuildModal()
     ImGui::SetNextWindowSize(ImVec2(720, 500), ImGuiCond_FirstUseEver);
 
     ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoCollapse;
+    bool finalized = false;
 
     if (ImGui::Begin("Local Build", &mShowBuildModal, modalFlags))
     {
@@ -1355,12 +1356,14 @@ void ActionManager::DrawBuildModal()
         if (isComplete && isSuccess && !isCancelled)
         {
             FinalizeLocalBuild();
+            finalized = true;
         }
         else if (isComplete)
         {
             if (ImGui::Button("Close", ImVec2(buttonWidth, 0)))
             {
                 FinalizeLocalBuild();
+                finalized = true;
             }
         }
         else if (isRunning)
@@ -1373,8 +1376,8 @@ void ActionManager::DrawBuildModal()
     }
     ImGui::End();
 
-    // Handle window close via X button
-    if (!mShowBuildModal)
+    // Handle window close via X button (skip if already finalized above)
+    if (!mShowBuildModal && !finalized)
     {
         if (mBuildState.mRunning.load())
         {

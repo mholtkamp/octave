@@ -1187,6 +1187,7 @@ void PackagingWindow::DrawBuildOutputModal()
     ImGui::SetNextWindowSize(ImVec2(720, 500), ImGuiCond_FirstUseEver);
 
     ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoCollapse;
+    bool finalized = false;
 
     if (ImGui::Begin("Docker Build", &mShowBuildModal, modalFlags))
     {
@@ -1243,17 +1244,19 @@ void PackagingWindow::DrawBuildOutputModal()
         {
             mShowBuildModal = false;
             FinalizeBuild();
+            finalized = true;
         }
 
-        if (isComplete)
+        if (!finalized && isComplete)
         {
             if (ImGui::Button("Close", ImVec2(buttonWidth, 0)))
             {
                 mShowBuildModal = false;
                 FinalizeBuild();
+                finalized = true;
             }
         }
-        else
+        else if (!isComplete)
         {
             if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0)))
             {
@@ -1263,8 +1266,8 @@ void PackagingWindow::DrawBuildOutputModal()
     }
     ImGui::End();
 
-    // Handle window close via X button
-    if (!mShowBuildModal)
+    // Handle window close via X button (skip if already finalized above)
+    if (!mShowBuildModal && !finalized)
     {
         if (mBuildState.mRunning.load())
         {
