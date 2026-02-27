@@ -8,6 +8,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 
 - `Escape` Exit play-in-editor
 - `Alt + P` Play/pause play-in-editor.
+- `Ctrl + Alt + P` Release cursor capture during play-in-editor (click Game Preview to recapture)
 - `F8` Eject from game camera during play-in-editor
 - `F10` Step one frame forward when the game is paused during play-in-editor
 - `Ctrl + P` Open project

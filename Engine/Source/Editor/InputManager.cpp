@@ -77,6 +77,15 @@ void InputManager::UpdateHotkeys()
                 GetEditorState()->EndPlayInEditor();
             }
         }
+        else if (IsKeyJustDown(OCTAVE_KEY_P) && altDown && ctrlDown)
+        {
+            // Ctrl+Alt+P: release cursor capture without ending PIE
+            if (GetEditorState()->mGamePreviewCaptured)
+            {
+                GetEditorState()->mGamePreviewCaptured = false;
+                INP_TrapCursor(false);
+            }
+        }
         else if (IsKeyJustDown(OCTAVE_KEY_P) && altDown)
         {
             bool pause = !GetEditorState()->IsPlayInEditorPaused();

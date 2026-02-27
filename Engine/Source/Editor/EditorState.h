@@ -173,6 +173,7 @@ struct EditorState
 
     // Game Preview Panel state
     bool mShowGamePreview = false;
+    bool mGamePreviewCaptured = false;
 
     // Play target (shared between viewport toolbar and Game Preview)
     int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=PlayFullScreen, 2=Dolphin, 3=Azahar, 4=Standalone, 5=Send3dsLink

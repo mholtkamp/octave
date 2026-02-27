@@ -665,6 +665,11 @@ void EditorState::BeginPlayInEditor()
     mPlayInEditor = true;
     mHasEjectedOnce = false;
 
+    if (mPlayInGameWindow)
+    {
+        mGamePreviewCaptured = true;
+    }
+
     // Fake-Initialize the Game
     //OctPreInitialize();
     OctPostInitialize();
@@ -689,6 +694,7 @@ void EditorState::EndPlayInEditor()
     if (!mPlayInEditor)
         return;
 
+    mGamePreviewCaptured = false;
     INP_TrapCursor(false);
     INP_ShowCursor(true);
     INP_LockCursor(false);
@@ -805,6 +811,12 @@ void EditorState::InjectPlayInEditor()
 void EditorState::SetPlayInEditorPaused(bool paused)
 {
     mPaused = paused;
+
+    if (paused && mGamePreviewCaptured)
+    {
+        mGamePreviewCaptured = false;
+        INP_TrapCursor(false);
+    }
 }
 
 bool EditorState::IsPlayInEditorPaused()

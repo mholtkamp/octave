@@ -149,6 +149,31 @@ void INP_TrapCursor(bool trap)
     input.mCursorTrapped = trap;
 }
 
+void INP_TrapCursorToRect(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+    SystemState& system = GetEngineState()->mSystem;
+    InputState& input = GetEngineState()->mInput;
+
+    if (system.mWindowHasFocus)
+    {
+        POINT tl = { (LONG)x, (LONG)y };
+        POINT br = { (LONG)(x + w), (LONG)(y + h) };
+
+        MapWindowPoints(system.mWindow, nullptr, &tl, 1);
+        MapWindowPoints(system.mWindow, nullptr, &br, 1);
+
+        RECT rect;
+        rect.left = tl.x;
+        rect.top = tl.y;
+        rect.right = br.x;
+        rect.bottom = br.y;
+
+        ClipCursor(&rect);
+    }
+
+    input.mCursorTrapped = true;
+}
+
 const char* INP_ShowSoftKeyboard(bool show)
 {
     return nullptr;

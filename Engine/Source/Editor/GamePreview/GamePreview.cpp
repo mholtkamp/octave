@@ -523,6 +523,25 @@ void GamePreview::DrawPanel()
         mImageMin = ImGui::GetItemRectMin();
         mImageMax = ImGui::GetItemRectMax();
 
+        // Click-to-recapture: if PIE is active in game window but cursor is not captured, recapture on click
+        EditorState* es = GetEditorState();
+        if (ImGui::IsItemClicked() && es->mPlayInEditor && es->mPlayInGameWindow && !es->mGamePreviewCaptured)
+        {
+            es->mGamePreviewCaptured = true;
+        }
+
+        // Apply cursor confinement to the image rect
+        if (es->mGamePreviewCaptured)
+        {
+            float scale = GetEngineConfig()->mEditorInterfaceScale;
+            if (scale <= 0.0f) scale = 1.0f;
+
+            int32_t rx = (int32_t)(mImageMin.x * scale);
+            int32_t ry = (int32_t)(mImageMin.y * scale);
+            int32_t rw = (int32_t)((mImageMax.x - mImageMin.x) * scale);
+            int32_t rh = (int32_t)((mImageMax.y - mImageMin.y) * scale);
+            INP_TrapCursorToRect(rx, ry, rw, rh);
+        }
     }
 }
 
@@ -615,6 +634,20 @@ void GamePreview::EndInputRemap()
 
     INP_SetMousePosition(mSavedMouseX, mSavedMouseY);
     mInputRemapActive = false;
+
+    // Re-apply cursor confinement after the game update, in case the game called
+    // INP_TrapCursor(true) which would confine to the full window instead.
+    if (GetEditorState()->mGamePreviewCaptured)
+    {
+        float scale = GetEngineConfig()->mEditorInterfaceScale;
+        if (scale <= 0.0f) scale = 1.0f;
+
+        int32_t rx = (int32_t)(mImageMin.x * scale);
+        int32_t ry = (int32_t)(mImageMin.y * scale);
+        int32_t rw = (int32_t)((mImageMax.x - mImageMin.x) * scale);
+        int32_t rh = (int32_t)((mImageMax.y - mImageMin.y) * scale);
+        INP_TrapCursorToRect(rx, ry, rw, rh);
+    }
 }
 
 #endif
