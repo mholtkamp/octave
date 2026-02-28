@@ -252,6 +252,7 @@ static int  sDockActivateViewportFrames = 0;
 static ImVec2 sViewportDockPos = ImVec2(0, 0);
 static ImVec2 sViewportDockSize = ImVec2(800, 600);
 static ImGuiWindow* sViewportDockWindow = nullptr;
+static bool sViewportDockActive = false;
 
 // A known dock label that must exist in a valid layout.
 // If imgui.ini has dock data but this label is missing, the layout is stale.
@@ -423,7 +424,8 @@ static void DrawDockspace()
 
     // --- Viewport dock (transparent so 3D render shows through) ---
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
-    if (ImGui::BeginDock(ICON_VIEWPORT3D "  Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    sViewportDockActive = ImGui::BeginDock(ICON_VIEWPORT3D "  Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    if (sViewportDockActive)
     {
         sViewportDockPos = ImGui::GetWindowPos();
         sViewportDockSize = ImGui::GetWindowSize();
@@ -9190,6 +9192,9 @@ void EditorImguiGetViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t&
 
 bool EditorImguiIsViewportHovered()
 {
+    if (!sViewportDockActive)
+        return false;
+
     ImVec2 mp = ImGui::GetIO().MousePos;
     return (mp.x >= sViewportDockPos.x &&
             mp.x <  sViewportDockPos.x + sViewportDockSize.x &&
