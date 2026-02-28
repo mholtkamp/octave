@@ -724,6 +724,7 @@
     <ClCompile Include="Source\Editor\Addons\NativeAddonManager.cpp" />
     <ClCompile Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.cpp" />
     <ClCompile Include="Source\Editor\ScriptEditor\ScriptEditorWindow.cpp" />
+    <ClCompile Include="Source\Editor\BuildDependencyWindow.cpp" />
     <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp" />
     <ClCompile Include="Source\Editor\Packaging\PackagingSettings.cpp" />
     <ClCompile Include="Source\Editor\Packaging\PackagingWindow.cpp" />
@@ -1063,6 +1064,7 @@
     <ClInclude Include="Source\Editor\Addons\NativeAddonManager.h" />
     <ClInclude Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.h" />
     <ClInclude Include="Source\Editor\ScriptEditor\ScriptEditorWindow.h" />
+    <ClInclude Include="Source\Editor\BuildDependencyWindow.h" />
     <ClInclude Include="Source\Editor\Packaging\BuildProfile.h" />
     <ClInclude Include="Source\Editor\Packaging\PackagingSettings.h" />
     <ClInclude Include="Source\Editor\Packaging\PackagingWindow.h" />

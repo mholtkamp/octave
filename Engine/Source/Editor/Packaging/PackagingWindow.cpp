@@ -6,6 +6,7 @@
 #include "Preferences/PreferencesManager.h"
 #include "Preferences/External/LaunchersModule.h"
 #include "Preferences/Packaging/DockerModule.h"
+#include "Preferences/External/ExternalModule.h"
 #include "ActionManager.h"
 
 #include "Engine.h"
@@ -298,31 +299,7 @@ void PackagingWindow::DrawProfileSettings()
 
     ImGui::Spacing();
 
-    // Use Docker checkbox
-#if PLATFORM_WINDOWS
-    bool requiresDocker = PlatformRequiresDockerOnWindows(profile->mTargetPlatform);
-    if (requiresDocker)
-    {
-        // Force Docker on and disable checkbox for platforms that require it
-        profile->mUseDocker = true;
-        ImGui::BeginDisabled();
-        ImGui::Checkbox("Use Docker", &profile->mUseDocker);
-        ImGui::EndDisabled();
-        ImGui::SameLine();
-        ImGui::TextDisabled("(Required for this platform on Windows)");
-    }
-    else
-    {
-        if (ImGui::Checkbox("Use Docker", &profile->mUseDocker))
-        {
-            changed = true;
-        }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip("Use Docker for building (optional for this platform)");
-        }
-    }
-#else
+    // Use Docker checkbox (optional on all platforms — Windows builds GCN/Wii/3DS natively)
     if (ImGui::Checkbox("Use Docker", &profile->mUseDocker))
     {
         changed = true;
@@ -331,7 +308,6 @@ void PackagingWindow::DrawProfileSettings()
     {
         ImGui::SetTooltip("Use Docker for building instead of local tools");
     }
-#endif
 
     ImGui::Spacing();
 
@@ -562,14 +538,6 @@ void PackagingWindow::ExecuteBuild(bool runAfterBuild, bool runOnDevice)
 
     bool useDocker = profile->mUseDocker;
 
-#if PLATFORM_WINDOWS
-    // Force Docker for console platforms on Windows
-    if (PlatformRequiresDockerOnWindows(profile->mTargetPlatform))
-    {
-        useDocker = true;
-    }
-#endif
-
     if (useDocker)
     {
         if (!CheckDockerAvailable())
@@ -616,13 +584,6 @@ void PackagingWindow::BuildAndRunWithProfile(Platform platform, bool embedded, b
     }
 
     bool useDocker = profile.mUseDocker;
-
-#if PLATFORM_WINDOWS
-    if (PlatformRequiresDockerOnWindows(platform))
-    {
-        useDocker = true;
-    }
-#endif
 
     if (useDocker)
     {
@@ -739,8 +700,13 @@ void PackagingWindow::Launch3dsLink(const std::string& outputPath)
 
 bool PackagingWindow::CheckDockerAvailable()
 {
+    ExternalModule* ext = static_cast<ExternalModule*>(
+        PreferencesManager::Get()->FindModule("External"));
+    std::string cmd = ext ? ext->GetDockerCommand() : "docker";
+    cmd += " --version";
+
     std::string output;
-    SYS_Exec("docker --version", &output);
+    SYS_Exec(cmd.c_str(), &output);
     return !output.empty() && output.find("Docker") != std::string::npos;
 }
 
@@ -768,7 +734,12 @@ std::string PackagingWindow::BuildDockerCommand(const BuildProfile& profile)
         PreferencesManager::Get()->FindModule("Packaging/Docker"));
     std::string dockerImage = dockerModule ? dockerModule->GetDockerImage() : "vltmedia/octavegameengine-linux:dev";
 
-    std::string cmd = "docker run --rm "
+    // Get Docker executable from External preferences
+    ExternalModule* ext = static_cast<ExternalModule*>(
+        PreferencesManager::Get()->FindModule("External"));
+    std::string dockerExe = ext ? ext->GetDockerCommand() : "docker";
+
+    std::string cmd = dockerExe + " run --rm "
                       "-v \"" + outputDir + ":/game\" "
                       "-v \"" + projectDir + ":/project\" "
                       "\"" + dockerImage + "\" " + buildCmd;

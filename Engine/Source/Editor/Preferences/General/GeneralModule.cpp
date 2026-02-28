@@ -64,10 +64,28 @@ void GeneralModule::Render()
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show debug log messages in the in-game console during builds.");
 
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Text("Build");
+    ImGui::Spacing();
+
+    if (ImGui::Checkbox("Check Build Dependencies On Startup", &mCheckBuildDepsOnStartup))
+    {
+        changed = true;
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Check for missing build tools at startup and show a warning window if any are missing.");
+
     if (changed)
     {
         SetDirty(true);
     }
+}
+
+void GeneralModule::SetCheckBuildDepsOnStartup(bool value)
+{
+    mCheckBuildDepsOnStartup = value;
+    SetDirty(true);
 }
 
 void GeneralModule::LoadSettings(const rapidjson::Document& doc)
@@ -78,6 +96,7 @@ void GeneralModule::LoadSettings(const rapidjson::Document& doc)
     mShowDebugInEditor = JsonSettings::GetBool(doc, "showDebugInEditor", true);
     mShowDebugLogsInBuild = JsonSettings::GetBool(doc, "showDebugLogsInBuild", true);
     SetDebugLogsInBuildEnabled(mShowDebugLogsInBuild);
+    mCheckBuildDepsOnStartup = JsonSettings::GetBool(doc, "checkBuildDepsOnStartup", true);
 }
 
 void GeneralModule::SaveSettings(rapidjson::Document& doc)
@@ -87,6 +106,7 @@ void GeneralModule::SaveSettings(rapidjson::Document& doc)
     JsonSettings::SetBool(doc, "showWelcomeScreen", mShowWelcomeScreen);
     JsonSettings::SetBool(doc, "showDebugInEditor", mShowDebugInEditor);
     JsonSettings::SetBool(doc, "showDebugLogsInBuild", mShowDebugLogsInBuild);
+    JsonSettings::SetBool(doc, "checkBuildDepsOnStartup", mCheckBuildDepsOnStartup);
 }
 
 #endif

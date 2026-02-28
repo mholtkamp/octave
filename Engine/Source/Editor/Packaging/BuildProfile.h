@@ -63,7 +63,7 @@ const char* GetPlatformOutputExtension(Platform platform);
 /**
  * @brief Checks if a platform requires Docker on Windows for building.
  * @param platform The target platform
- * @return True if Docker is required on Windows (GameCube, Wii, 3DS)
+ * @return True if Docker is required on Windows (currently always false — Windows builds all platforms natively)
  */
 bool PlatformRequiresDockerOnWindows(Platform platform);
 

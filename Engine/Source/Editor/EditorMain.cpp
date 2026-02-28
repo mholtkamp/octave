@@ -27,6 +27,7 @@
 #include "ActionManager.h"
 #include "InputManager.h"
 #include "Preferences/PreferencesManager.h"
+#include "Preferences/General/GeneralModule.h"
 #include "ProjectSelect/TemplateManager.h"
 #include "ProjectSelect/ProjectSelectWindow.h"
 #include "Addons/AddonManager.h"
@@ -37,6 +38,7 @@
 #include "Assets/Font.h"
 #include "EditorState.h"
 #include "EditorImgui.h"
+#include "BuildDependencyWindow.h"
 #include "Utilities.h"
 
 void OctPreInitialize(EngineConfig& config);
@@ -154,6 +156,17 @@ void EditorMain(int32_t argc, char** argv)
 
     Renderer::Get()->EnableConsole(true);
     Renderer::Get()->EnableStatsOverlay(false);
+
+    GeneralModule* generalModule = static_cast<GeneralModule*>(
+        PreferencesManager::Get()->FindModule("General"));
+    if (generalModule != nullptr && generalModule->GetCheckBuildDepsOnStartup())
+    {
+        GetBuildDependencyWindow()->RunChecks();
+        if (GetBuildDependencyWindow()->HasMissing())
+        {
+            GetBuildDependencyWindow()->Open();
+        }
+    }
 
     bool ret = true;
 

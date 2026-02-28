@@ -59,6 +59,7 @@
 #include "Addons/NativeAddonManager.h"
 #include "Addons/AddonsMenu.h"
 #include "EditorUIHookManager.h"
+#include "BuildDependencyWindow.h"
 #include "DebugLog/DebugLogWindow.h"
 #include "ScriptEditor/ScriptEditorWindow.h"
 #include "ThemeEditor/ThemeEditorWindow.h"
@@ -7334,6 +7335,11 @@ static void DrawMainMenuBar()
                 ImGui::EndMenu();
             }
 
+            if (ImGui::MenuItem("Check Build Dependencies"))
+            {
+                GetBuildDependencyWindow()->Open();
+            }
+
             ImGui::Separator();
 
             // Draw plugin menu items for Developer menu
@@ -9090,6 +9096,7 @@ void EditorImguiDraw()
 
         GetPreferencesWindow()->Draw();
         GetPackagingWindow()->Draw();
+        GetBuildDependencyWindow()->Draw();
         ActionManager::Get()->DrawBuildModal();
         GetProjectSelectWindow()->Draw();
         GetAddonsWindow()->Draw();

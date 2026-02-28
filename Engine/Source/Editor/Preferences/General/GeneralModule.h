@@ -24,6 +24,8 @@ public:
     bool GetShowWelcomeScreen() const { return mShowWelcomeScreen; }
     bool GetShowDebugInEditor() const { return mShowDebugInEditor; }
     bool GetShowDebugLogsInBuild() const { return mShowDebugLogsInBuild; }
+    bool GetCheckBuildDepsOnStartup() const { return mCheckBuildDepsOnStartup; }
+    void SetCheckBuildDepsOnStartup(bool value);
 
 private:
     bool mAutoSave = true;
@@ -31,6 +33,7 @@ private:
     bool mShowWelcomeScreen = true;
     bool mShowDebugInEditor = true;
     bool mShowDebugLogsInBuild = true;
+    bool mCheckBuildDepsOnStartup = true;
 };
 
 #endif

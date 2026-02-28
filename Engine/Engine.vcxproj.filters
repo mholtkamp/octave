@@ -965,6 +965,9 @@
     <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\BuildDependencyWindow.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\Packaging\PackagingSettings.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -1954,6 +1957,9 @@
       <Filter>Source Files\Editor\ScriptEditor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Packaging\BuildProfile.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\BuildDependencyWindow.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\Packaging\PackagingSettings.h">
