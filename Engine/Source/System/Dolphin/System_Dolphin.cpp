@@ -18,7 +18,26 @@
 
 #define ENABLE_LIBOGC_CONSOLE 0
 
+static bool sRunning = true;
 static bool sFatInit = false;
+
+#if PLATFORM_WII
+static void ResetCallback(u32 irq, void* ctx)
+{
+    sRunning = false;
+}
+
+static void PowerCallback()
+{
+    sRunning = false;
+}
+#else
+static void ResetCallback()
+{
+    sRunning = false;
+}
+#endif
+
 static void InitFAT()
 {
     if (!sFatInit)
@@ -70,8 +89,10 @@ void SYS_Initialize()
     VIDEO_WaitVSync();
     VIDEO_WaitVSync();
 #else
-    VIDEO_WaitForFlush();
-    engine.mAspectRatioScale = VIDEO_GetAspectRatio() / ((float)engine.mWindowWidth / engine.mWindowHeight);
+    VIDEO_WaitVSync();
+    VIDEO_WaitVSync();
+    // GameCube is always 4:3, so no aspect ratio adjustment needed
+    engine.mAspectRatioScale = 1.0f;
 #endif
 
 #if ENABLE_LIBOGC_CONSOLE
@@ -81,6 +102,11 @@ void SYS_Initialize()
     CON_Init(system.mConsoleBuffer, 0, 0, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     //printf("\x1b[2;0H");
+#endif
+
+    SYS_SetResetCallback(ResetCallback);
+#if PLATFORM_WII
+    SYS_SetPowerCallback(PowerCallback);
 #endif
 
     InitFAT();
@@ -93,7 +119,11 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
-
+#if PLATFORM_WII
+    GetEngineState()->mQuit = !SYS_MainLoop();
+#else
+    GetEngineState()->mQuit = !sRunning;
+#endif
 }
 
 // Files
@@ -724,7 +754,10 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     SYS_Report(logBuffer);
     SYS_Report("\n");
 #else
-    SYS_Reportv(format, arg);
+    // SYS_Reportv doesn't exist in libogc, use buffer approach like Wii
+    char logBuffer[256];
+    vsnprintf(logBuffer, 255, format, arg);
+    SYS_Report(logBuffer);
     SYS_Report("\n");
 #endif
 

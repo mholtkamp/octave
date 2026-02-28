@@ -21,6 +21,7 @@ class TableDatum;
 class ScriptFunc;
 class Object;
 class Node;
+class PointCloud;
 
 enum class DatumType : uint8_t
 {
@@ -37,9 +38,29 @@ enum class DatumType : uint8_t
     Node,
     Short,
     Function,
+    Node3D,
+    Widget,
+    Text,
+    Quad,
+    Audio3D,
+    Scene,
+    PointCloud,
+    Spline3D,
+    Execution,
 
     Count
 };
+
+inline bool IsNodeDatumType(DatumType type)
+{
+    return type == DatumType::Node ||
+           type == DatumType::Node3D ||
+           type == DatumType::Audio3D ||
+           type == DatumType::Widget ||
+           type == DatumType::Text ||
+           type == DatumType::Quad ||
+           type == DatumType::Spline3D;
+}
 
 union DatumData
 {
@@ -57,6 +78,7 @@ union DatumData
     WeakPtr<Node>* n;
     int16_t* sh;
     ScriptFunc* fn;
+    PointCloud** pc;
     void* vp;
 };
 
@@ -76,6 +98,9 @@ public:
 
     // Conversion constructors
     Datum(int32_t value);
+#if PLATFORM_3DS
+    Datum(int value);
+#endif
     Datum(uint32_t value);
     Datum(float value);
     Datum(bool value);
@@ -208,6 +233,7 @@ public:
     TableDatum& GetTableDatum(uint32_t index = 0);
     const TableDatum& GetTableDatum(uint32_t index = 0) const;
     WeakPtr<Node> GetNode(uint32_t index = 0) const;
+    WeakPtr<Node3D> GetNode3D(uint32_t index = 0) const;
     int16_t GetShort(uint32_t index = 0) const;
     const ScriptFunc& GetFunction(uint32_t index = 0) const;
 

@@ -1,0 +1,85 @@
+/* Gruvbox Dark theme for Octave Editor */
+/* Based on the Gruvbox color scheme by morhetz */
+
+:root {
+    --bg-hard: #1d2021;
+    --bg: #282828;
+    --bg1: #3c3836;
+    --bg2: #504945;
+    --bg3: #665c54;
+    --bg4: #7c6f64;
+    --fg: #ebdbb2;
+    --fg-dim: #a89984;
+    --orange: #fe8019;
+    --orange-dark: #d65d0e;
+    --yellow: #fabd2f;
+    --aqua: #8ec07c;
+    --blue: #83a598;
+    --red: #fb4934;
+    --green: #b8bb26;
+}
+
+style {
+    window-rounding: 4px;
+    frame-rounding: 2px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    scrollbar-rounding: 2px;
+    tab-rounding: 2px;
+    grab-rounding: 2px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--bg1); }
+text { color: var(--fg); disabled: var(--fg-dim); selected-background: var(--blue); }
+border { color: var(--bg1); shadow: transparent; }
+
+frame { background: var(--bg1); }
+frame:hover { background: var(--bg2); }
+frame:active { background: var(--orange); }
+
+title { background: var(--bg-hard); }
+title:active { background: var(--bg1); }
+title:collapsed { background: var(--bg-hard); }
+
+menubar { background: var(--bg); }
+
+button { background: var(--bg2); }
+button:hover { background: var(--bg3); }
+button:active { background: var(--orange); }
+
+header { background: var(--bg1); }
+header:hover { background: var(--bg2); }
+header:active { background: var(--orange); }
+
+tab { color: var(--fg); background: var(--bg1); }
+tab:hover { background: var(--bg2); }
+tab:active { background: var(--bg); }
+tab:unfocused { background: var(--bg-hard); }
+tab:unfocused-active { background: var(--bg1); }
+
+scrollbar { background: var(--bg); grab: var(--bg3); }
+scrollbar:hover { grab: var(--bg4); }
+scrollbar:active { grab: var(--orange); }
+
+separator { color: var(--bg1); }
+separator:hover { color: var(--orange); }
+separator:active { color: var(--orange-dark); }
+
+checkbox { checkmark: var(--orange); }
+slider { grab: var(--aqua); }
+slider:active { grab: var(--green); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--orange); }
+resize-grip:active { background: var(--orange-dark); }
+
+table { header-background: var(--bg1); border-strong: var(--bg1); border-light: var(--bg-hard); row-background: transparent; row-background-alt: rgba(60, 56, 54, 0.5); }
+
+drag-drop { target: rgba(254, 128, 25, 0.5); }
+nav { highlight: var(--orange); windowing-highlight: rgba(235, 219, 178, 0.7); windowing-dim: rgba(40, 40, 40, 0.7); }
+modal { dim-background: rgba(29, 32, 33, 0.6); }
+
+plot { lines: var(--blue); histogram: var(--aqua); }
+plot:hover { lines: var(--yellow); histogram: var(--green); }

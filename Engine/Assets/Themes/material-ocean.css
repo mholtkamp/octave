@@ -1,0 +1,89 @@
+/* Material Ocean theme for Octave Editor */
+/* Converted from GTK3 Material Ocean Dark */
+
+:root {
+    --bg: #0f111a;
+    --activetab: #21222b;
+    --hovertab: #1b203f;
+    --bg-alt: #0c0e15;
+    --surface: #10121b;
+    --surface2: #11131d;
+    --surface3: #181A24;
+    --input: #20222f;
+    --text: #ffffff;
+    --text-dim: #87888D;
+    --accent: #ff4151;
+    --accent-hover: #ff5160;
+    --accent-dark: #E63946;
+    --border: #222633;
+    --scrollbar: #41434A;
+    --scrollbar-hover: #595B61;
+    --blue: #81A1C1;
+}
+
+style {
+    window-rounding: 0px;
+    frame-rounding: 0px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    scrollbar-rounding: 1px;
+    tab-rounding: 0px;
+    grab-rounding: 1px;
+    child-rounding: 0px;
+    popup-rounding: 1px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--surface); }
+text { color: var(--text); disabled: var(--text-dim); selected-background: var(--accent); }
+border { color: var(--border); shadow: transparent; }
+
+frame { background: var(--input); }
+frame:hover { background: var(--surface2); }
+frame:active { background: var(--accent); }
+
+title { background: var(--bg-alt); }
+title:active { background: var(--bg); }
+title:collapsed { background: var(--bg-alt); }
+
+menubar { background: var(--bg); }
+
+button { background: var(--surface2); }
+button:hover { background: var(--surface3); }
+button:active { background: var(--accent); }
+
+header { background: var(--activetab); }
+header:hover { background: var(--selectedtab); }
+header:active { background: var(--hovertab); }
+
+tab { color: var(--text); background: var(--bg-alt); }
+tab:hover { background: var(--hovertab); }
+tab:active { background: var(--activetab); }
+tab:unfocused { background: var(--bg-alt); }
+tab:unfocused-active { background: var(--surface); }
+
+scrollbar { background: var(--bg); grab: var(--scrollbar); }
+scrollbar:hover { grab: var(--scrollbar-hover); }
+scrollbar:active { grab: var(--accent); }
+
+separator { color: var(--border); }
+separator:hover { color: var(--accent); }
+separator:active { color: var(--accent-hover); }
+
+checkbox { checkmark: var(--accent); }
+slider { grab: var(--accent); }
+slider:active { grab: var(--accent-hover); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--accent); }
+resize-grip:active { background: var(--accent-hover); }
+
+table { header-background: var(--surface); border-strong: var(--border); border-light: var(--bg-alt); row-background: transparent; row-background-alt: rgba(16, 18, 27, 0.5); }
+
+drag-drop { target: rgba(255, 65, 81, 0.5); }
+nav { highlight: var(--accent); windowing-highlight: rgba(255, 255, 255, 0.7); windowing-dim: rgba(15, 17, 26, 0.7); }
+modal { dim-background: rgba(15, 17, 26, 0.6); }
+
+plot { lines: var(--blue); histogram: var(--accent); }
+plot:hover { lines: var(--accent-hover); histogram: var(--accent-hover); }

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Octave Engine
+Comment=Multi-platform game engine with visual editor
+Exec=octave-editor %F
+Icon=octave-editor
+Terminal=false
+Categories=Development;IDE;
+MimeType=application/x-octave-project;
+Keywords=game;engine;editor;3d;2d;lua;
+StartupNotify=true

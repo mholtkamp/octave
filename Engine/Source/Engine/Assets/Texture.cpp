@@ -151,6 +151,9 @@ void CookTexture(
         int32_t downsampleFactor = texture->GetLowQualityDownsampleFactor();
         int32_t consoleMaxTextureSize = GetEngineConfig()->mLqMaxTextureSize;
 
+        // Hardware max texture dimension for console GPUs.
+        const int32_t hardwareMax = 1024;
+
         if (!forceHq && (consoleMaxTextureSize != 0 || downsampleFactor > 1))
         {
             if (downsampleFactor > 1)
@@ -159,32 +162,27 @@ void CookTexture(
                 texHeight = glm::max(texHeight >> (downsampleFactor - 1), 1);
             }
 
-            float whRatio = float(texWidth) / float(texHeight);
-            bool nonSquare = (texWidth != texHeight);
-
-            texWidth = glm::max(texWidth, 1);
-            texHeight = glm::max(texHeight, 1);
-
             if (consoleMaxTextureSize > 0)
             {
                 texWidth = glm::min(texWidth, consoleMaxTextureSize);
-                texHeight = glm::min(texHeight,consoleMaxTextureSize);
+                texHeight = glm::min(texHeight, consoleMaxTextureSize);
             }
+        }
 
-            if (nonSquare)
+        // Always enforce hardware max, even for HQ textures.
+        if (texWidth > hardwareMax || texHeight > hardwareMax)
+        {
+            float whRatio = float(texWidth) / float(texHeight);
+
+            if (texWidth >= texHeight)
             {
-                if (texWidth > texHeight)
-                {
-                    float texHeightFloat = texWidth * (1 / whRatio);
-                    texHeight = uint32_t(texHeightFloat + 0.5f);
-                    texHeight = glm::clamp<uint32_t>(texHeight, 1, consoleMaxTextureSize);
-                }
-                else
-                {
-                    float texWidthFloat = texHeight * whRatio;
-                    texWidth = uint32_t(texWidthFloat + 0.5f);
-                    texWidth = glm::clamp<uint32_t>(texWidth, 1, consoleMaxTextureSize);
-                }
+                texWidth = hardwareMax;
+                texHeight = glm::max(int32_t(hardwareMax / whRatio + 0.5f), 1);
+            }
+            else
+            {
+                texHeight = hardwareMax;
+                texWidth = glm::max(int32_t(hardwareMax * whRatio + 0.5f), 1);
             }
         }
 

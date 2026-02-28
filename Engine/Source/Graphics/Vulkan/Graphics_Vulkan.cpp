@@ -443,6 +443,29 @@ void GFX_DrawQuad(Quad* quad)
     DrawQuad(quad);
 }
 
+void GFX_CreateQuadBorderResource(Quad* quad)
+{
+    if (IsHeadless()) return;
+    CreateQuadBorderResource(quad);
+}
+
+void GFX_DestroyQuadBorderResource(Quad* quad)
+{
+    if (IsHeadless()) return;
+    DestroyQuadBorderResource(quad);
+}
+
+void GFX_UpdateQuadBorderResourceVertexData(Quad* quad)
+{
+    if (IsHeadless()) return;
+    UpdateQuadBorderResourceVertexData(quad);
+}
+
+void GFX_DrawQuadBorder(Quad* quad)
+{
+    DrawQuadBorder(quad);
+}
+
 void GFX_CreateTextResource(Text* text)
 {
     if (IsHeadless()) return;

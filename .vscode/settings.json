@@ -90,10 +90,11 @@
         "xtree": "cpp",
         "xutility": "cpp"
     },
-    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: cleanup/pullrequest3/comments]",
+    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: development/jj]",
     "workbench.colorCustomizations": {
         "activityBar.background": "#04099E",
         "titleBar.activeBackground": "#050DDD",
         "titleBar.activeForeground": "#F9F9FF"
-    }
+    },
+    "workbench.colorTheme": "Material Theme Ocean High Contrast"
 }

@@ -507,14 +507,14 @@ void SYS_Update()
 
     sPrevWarped = warped;
 
-    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    if (INP_IsKeyDown(OCTAVE_KEY_ALT_L) || INP_IsKeyDown(OCTAVE_KEY_ALT_R))
     {
-        if (INP_IsKeyJustDown(KEY_ENTER))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
         }
 
-        if (INP_IsKeyJustDown(KEY_F4))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_F4))
         {
             Quit();
         }
@@ -676,7 +676,7 @@ bool SYS_CreateDirectory(const char* dirPath)
 
 void SYS_RemoveDirectory(const char* dirPath)
 {
-    std::string cmdStr = std::string("rm -rf ") + dirPath;
+    std::string cmdStr = std::string("rm -rf ") + "\""+dirPath+ "\"";
     SYS_Exec(cmdStr.c_str());
 }
 
@@ -793,8 +793,28 @@ std::string SYS_SaveFileDialog()
 
 std::string SYS_SelectFolderDialog()
 {
-    // TODO!
-    return "";
+    char filename[1024] = {};
+    char command[1024] = {};
+
+    const std::string& projDir = GetEngineState()->mProjectDirectory;
+    snprintf(command, 1024, "zenity --file-selection --directory --filename=%s", projDir.c_str());
+
+    FILE *f = popen(command, "r");
+    fgets(filename, 1024, f);
+
+    if (filename[0] != 0)
+    {
+        char* newLineChar = strrchr(filename, '\n');
+
+        if (newLineChar != nullptr)
+        {
+            *newLineChar = 0;
+        }
+    }
+
+    pclose(f);
+
+    return std::string(filename);
 }
 
 // Threads

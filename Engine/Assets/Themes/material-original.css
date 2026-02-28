@@ -1,0 +1,84 @@
+/* Material Design Dark theme for Octave Editor */
+/* Based on Google's original Material Design dark color scheme */
+
+:root {
+    --bg: #121212;
+    --surface1: #1E1E1E;
+    --surface2: #2C2C2C;
+    --surface3: #333333;
+    --surface4: #383838;
+    --text: #E1E1E1;
+    --text-dim: #757575;
+    --primary: #BB86FC;
+    --primary-light: #CF9FFF;
+    --primary-dark: #9C64D6;
+    --secondary: #03DAC6;
+    --error: #CF6679;
+    --border: #2C2C2C;
+}
+
+style {
+    window-rounding: 4px;
+    frame-rounding: 4px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    scrollbar-rounding: 4px;
+    tab-rounding: 4px;
+    grab-rounding: 4px;
+    popup-rounding: 4px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--surface2); }
+text { color: var(--text); disabled: var(--text-dim); selected-background: var(--primary-dark); }
+border { color: var(--border); shadow: transparent; }
+
+frame { background: var(--surface1); }
+frame:hover { background: var(--surface2); }
+frame:active { background: var(--primary); }
+
+title { background: var(--surface1); }
+title:active { background: var(--surface2); }
+title:collapsed { background: var(--surface1); }
+
+menubar { background: var(--bg); }
+
+button { background: var(--surface2); }
+button:hover { background: var(--surface3); }
+button:active { background: var(--primary); }
+
+header { background: var(--surface1); }
+header:hover { background: var(--surface2); }
+header:active { background: var(--primary); }
+
+tab { color: var(--text); background: var(--surface1); }
+tab:hover { background: var(--surface2); }
+tab:active { background: var(--surface3); }
+tab:unfocused { background: var(--bg); }
+tab:unfocused-active { background: var(--surface1); }
+
+scrollbar { background: var(--bg); grab: var(--surface3); }
+scrollbar:hover { grab: var(--surface4); }
+scrollbar:active { grab: var(--primary); }
+
+separator { color: var(--surface1); }
+separator:hover { color: var(--primary); }
+separator:active { color: var(--primary-dark); }
+
+checkbox { checkmark: var(--secondary); }
+slider { grab: var(--primary); }
+slider:active { grab: var(--primary-light); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--primary); }
+resize-grip:active { background: var(--primary-dark); }
+
+table { header-background: var(--surface1); border-strong: var(--border); border-light: var(--surface1); row-background: transparent; row-background-alt: rgba(30, 30, 30, 0.5); }
+
+drag-drop { target: rgba(187, 134, 252, 0.5); }
+nav { highlight: var(--primary); windowing-highlight: rgba(225, 225, 225, 0.7); windowing-dim: rgba(18, 18, 18, 0.7); }
+modal { dim-background: rgba(18, 18, 18, 0.6); }
+
+plot { lines: var(--secondary); histogram: var(--primary); }
+plot:hover { lines: var(--primary-light); histogram: var(--primary-light); }

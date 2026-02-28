@@ -13,6 +13,8 @@
 #include "Nodes/3D/Particle3d.h"
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/ShadowMesh3d.h"
+#include "Nodes/3D/Spline3d.h"
+#include "Gizmos.h"
 #include "Log.h"
 #include "Line.h"
 #include "Maths.h"
@@ -25,6 +27,8 @@
 #include "EditorState.h"
 #include "Viewport2d.h"
 #include "PaintManager.h"
+#include "SecondScreenPreview/SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 #endif
 
 // TEMPORARY!
@@ -519,6 +523,17 @@ void Renderer::GatherDrawData(World* world)
                 return false;
             }
 
+            // Filter by target screen for dual-screen rendering (3DS preview).
+            // Nodes with targetScreen == 0xFF render on all screens (e.g. Skybox).
+            if (mTargetScreenFilter >= 0 && node->GetParent() == world->GetRootNode())
+            {
+                if (node->GetTargetScreen() != (uint8_t)mTargetScreenFilter &&
+                    node->GetTargetScreen() != 0xFF)
+                {
+                    return false; // Skip entire subtree -- belongs to another screen
+                }
+            }
+
 #if EDITOR
             if (onlySelected &&
                 !GetEditorState()->IsNodeSelected(node))
@@ -563,7 +578,7 @@ void Renderer::GatherDrawData(World* world)
                         {
                         case BlendMode::Opaque:
                         case BlendMode::Masked:
-                            if (prim->ShouldReceiveSimpleShadows())
+                            if (data.mDepthless || prim->ShouldReceiveSimpleShadows())
                             {
                                 mOpaqueDraws.push_back(data);
                             }
@@ -610,7 +625,10 @@ void Renderer::GatherDrawData(World* world)
 #if DEBUG_DRAW_ENABLED
             bool proxyActorEnabled = true;
 
-            if (mEnableProxyRendering &&
+            bool isSpline = node->Is("Spline3D");
+            bool drawSplineLines = isSpline && Spline3D::IsSplineLinesVisible();
+
+            if ((mEnableProxyRendering || drawSplineLines) &&
                 mDebugMode != DEBUG_COLLISION &&
                 node->IsNode3D() &&
                 proxyActorEnabled)
@@ -624,6 +642,20 @@ void Renderer::GatherDrawData(World* world)
             {
                 Primitive3D* prim = (Primitive3D*)node;
                 prim->GatherProxyDraws(mCollisionDraws);
+            }
+#endif
+
+#if EDITOR
+            if (Gizmos::IsEnabled() && node->IsNode3D())
+            {
+                Node3D* node3d = (Node3D*)node;
+                Gizmos::ResetState();
+                node3d->OnDrawGizmos();
+                if (GetEditorState()->IsNodeSelected(node))
+                {
+                    Gizmos::ResetState();
+                    node3d->OnDrawGizmosSelected();
+                }
             }
 #endif
 
@@ -654,6 +686,12 @@ void Renderer::GatherDrawData(World* world)
 
         auto materialSort = [](const DrawData& l, const DrawData& r)
         {
+            // Sort by priority first (e.g. skybox uses negative priority to render first).
+            if (l.mSortPriority != r.mSortPriority)
+            {
+                return l.mSortPriority < r.mSortPriority;
+            }
+
             // Depthless materials should render last.
             if (l.mDepthless != r.mDepthless)
             {
@@ -1182,6 +1220,8 @@ void Renderer::Render(World* world, int32_t screenIndex)
     mCurrentWorld = world;
     mScreenIndex = screenIndex;
 
+    mTargetScreenFilter = -1;
+
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
     float realDeltatime = GetEngineState()->mRealDeltaTime;
@@ -1191,6 +1231,11 @@ void Renderer::Render(World* world, int32_t screenIndex)
     if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
     {
         enable3D = false;
+    }
+
+    if (!IsPlayingInEditor() && GetEditorState()->mSceneScreenFilter >= 0)
+    {
+        mTargetScreenFilter = GetEditorState()->mSceneScreenFilter;
     }
 #endif
 
@@ -1230,6 +1275,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
     {
         SCOPED_FRAME_STAT("Culling");
 
+        Gizmos::BeginFrame();
         GatherDrawData(world);
 
         if (enable3D)
@@ -1346,12 +1392,14 @@ void Renderer::Render(World* world, int32_t screenIndex)
                         RenderDraws(mTranslucentDraws);
 
                         RenderDebugDraws(mDebugDraws);
+                        RenderDebugDraws(Gizmos::GetSolidDraws());
 
                         GFX_EnableMaterials(false);
                     }
 
                     RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
                     RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
+                    RenderDebugDraws(Gizmos::GetWireDraws(), PipelineConfig::Wireframe);
 
                     if (GetDebugMode() == DEBUG_COLLISION)
                     {
@@ -1359,6 +1407,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
                     }
 
                     GFX_DrawLines(world->GetLines());
+                    GFX_DrawLines(Gizmos::GetLines());
 
                     GFX_EndRenderPass();
                 }
@@ -1404,6 +1453,37 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
         END_FRAME_STAT("Render");
 
+#if EDITOR
+        if (GetSecondScreenPreview()->IsEnabled())
+        {
+            GetSecondScreenPreview()->Render();
+        }
+
+        if (GetGamePreview()->IsEnabled())
+        {
+            GetGamePreview()->Render();
+        }
+
+        // After secondary screen rendering, widget rects contain screen 1 coordinates.
+        // Recompute them for screen 0 so that Draw2dSelections (which runs before the
+        // next Render call) reads correct editor-viewport rects.
+        if (GetSecondScreenPreview()->IsEnabled() || GetGamePreview()->IsEnabled())
+        {
+            World* w = GetWorld(0);
+            if (w != nullptr && w->GetRootNode() != nullptr)
+            {
+                w->GetRootNode()->Traverse([](Node* node) -> bool {
+                    if (node->IsWidget())
+                    {
+                        static_cast<Widget*>(node)->MarkDirty();
+                        static_cast<Widget*>(node)->UpdateRect();
+                    }
+                    return true;
+                });
+            }
+        }
+#endif
+
         {
 #if SYNC_ON_END_FRAME
             SCOPED_FRAME_STAT("Vsync");
@@ -1414,6 +1494,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
     UpdateDebugDraws();
 
+    mTargetScreenFilter = -1;
     mCurrentWorld = nullptr;
 }
 
@@ -1441,7 +1522,8 @@ void Renderer::RenderSelectedGeometry(World* world)
     // Rendering selected geometry while playing looks bad,
     // so just skip rendering selected unless we find a good use-case.
     if (!GetEditorState()->mPlayInEditor ||
-        GetEditorState()->mEjected)
+        GetEditorState()->mEjected ||
+        GetEditorState()->mPlayInGameWindow)
     {
         std::vector<Node*> selectedNodes = GetEditorState()->GetSelectedNodes();
 
@@ -1456,6 +1538,203 @@ void Renderer::RenderSelectedGeometry(World* world)
     }
 #endif
 }
+
+#if EDITOR
+void Renderer::RenderSecondScreen(World* world, Image* colorTarget, Image* depthTarget,
+                                   uint32_t width, uint32_t height, Camera3D* cameraOverride,
+                                   int32_t targetScreen)
+{
+    if (world == nullptr || colorTarget == nullptr || depthTarget == nullptr)
+        return;
+    if (world->GetRootNode() == nullptr)
+        return;
+
+    // Save current state
+    World* prevWorld = mCurrentWorld;
+    uint32_t prevScreenIndex = mScreenIndex;
+    uint32_t prevSecondW = GetEngineState()->mSecondWindowWidth;
+    uint32_t prevSecondH = GetEngineState()->mSecondWindowHeight;
+
+    mCurrentWorld = world;
+    mScreenIndex = 1;
+    mTargetScreenFilter = targetScreen;
+
+    // Override second screen dimensions so GetScreenResolution(1) and
+    // GetViewportWidth/Height(1) return the render target size, not the monitor size.
+    GetEngineState()->mSecondWindowWidth = width;
+    GetEngineState()->mSecondWindowHeight = height;
+
+    // Use the provided camera override, or find the scene's own camera.
+    // Prefer the one marked "Main Camera", fall back to the first Camera3D found.
+    Camera3D* camera = cameraOverride;
+    if (camera == nullptr)
+    {
+        std::vector<Camera3D*> cameras;
+        world->FindNodes(cameras);
+        Camera3D* firstCam = nullptr;
+        for (Camera3D* cam : cameras)
+        {
+            if (firstCam == nullptr)
+                firstCam = cam;
+            if (cam->GetIsMainCamera())
+            {
+                camera = cam;
+                break;
+            }
+        }
+        if (camera == nullptr)
+            camera = firstCam;
+    }
+
+    // Set camera override so GetActiveCamera() returns this camera
+    // instead of the editor camera. This ensures global uniforms use the right VP matrices.
+    world->SetCameraOverride(camera);
+
+    // Force widgets dirty so they recompute rects/vertices for this screen's resolution.
+    // They were already marked clean during the main Render() pass for screen 0.
+    // Redirect widget MultiBuffer writes to secondary slots so the main render's
+    // vertex data (in slots 0..MAX_FRAMES-1) is not overwritten.
+    GetVulkanContext()->SetMultiBufferFrameOffset(MAX_FRAMES);
+    world->GetRootNode()->Traverse([](Node* node) -> bool {
+        if (node->IsWidget())
+        {
+            static_cast<Widget*>(node)->MarkDirty();
+        }
+        return true;
+    });
+
+    // Gather draw data and lighting.
+    // The offset is active so widget PreRender() writes vertex data to secondary
+    // slots. 3D mesh nodes don't write to MultiBuffer during GatherDrawData, so
+    // they are unaffected.
+    GatherDrawData(world);
+
+    // Clear offset before the forward pass — 3D mesh Render() calls need to read
+    // their vertex data from the primary slots.
+    GetVulkanContext()->SetMultiBufferFrameOffset(0);
+
+    if (camera != nullptr)
+    {
+        camera->ComputeMatrices();
+    }
+
+    GatherLightData(world);
+
+    if (mFrustumCulling && camera != nullptr)
+    {
+        FrustumCull(camera);
+    }
+
+    GFX_SetFog(world->GetFogSettings());
+
+    // Update global uniforms with the preview camera's VP matrices and lighting
+    GetVulkanContext()->UpdateGlobalUniformData();
+    GetVulkanContext()->UpdateGlobalDescriptorSet();
+
+    GFX_SetViewport(0, 0, width, height, false);
+    GFX_SetScissor(0, 0, width, height, false);
+
+    // Forward pass targeting offscreen images
+    {
+        RenderPassSetup rpSetup;
+        rpSetup.mColorImages[0] = colorTarget;
+        rpSetup.mDepthImage = depthTarget;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mDepthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        rpSetup.mDepthStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mDebugName = "3DS Preview Forward";
+
+        // Force alpha = 1.0 so the offscreen target is fully opaque when
+        // displayed via ImGui::Image (which alpha-blends against its background).
+        glm::vec4 clearColor = GetClearColor();
+        clearColor.a = 1.0f;
+        GetVulkanContext()->BeginVkRenderPass(rpSetup, true, clearColor);
+
+        if (GetDebugMode() != DEBUG_WIREFRAME)
+        {
+            GFX_EnableMaterials(true);
+
+            GFX_SetPipelineState(PipelineConfig::Forward);
+            RenderDraws(mOpaqueDraws);
+            RenderDraws(mSimpleShadowDraws);
+            GFX_SetPipelineState(PipelineConfig::Forward);
+            RenderDraws(mPostShadowOpaqueDraws);
+            RenderDraws(mTranslucentDraws);
+            RenderDebugDraws(mDebugDraws);
+            RenderDebugDraws(Gizmos::GetSolidDraws());
+
+            GFX_EnableMaterials(false);
+        }
+
+        RenderDraws(mWireframeDraws, PipelineConfig::Wireframe);
+        RenderDebugDraws(mDebugDraws, PipelineConfig::Wireframe);
+        RenderDebugDraws(Gizmos::GetWireDraws(), PipelineConfig::Wireframe);
+
+        GFX_DrawLines(world->GetLines());
+        GFX_DrawLines(Gizmos::GetLines());
+
+        // End render pass directly — GFX_EndRenderPass() requires mCurrentRenderPassId
+        // to be set via BeginRenderPass(RenderPassId), but we used BeginVkRenderPass().
+        GetVulkanContext()->EndVkRenderPass();
+    }
+
+    // UI pass for widgets — re-enable secondary buffer offset so widget draw calls
+    // bind the secondary vertex buffers (written during GatherDrawData above).
+    {
+        GetVulkanContext()->SetMultiBufferFrameOffset(MAX_FRAMES);
+
+        RenderPassSetup rpSetup;
+        rpSetup.mColorImages[0] = colorTarget;
+        rpSetup.mLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        rpSetup.mStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+        rpSetup.mPreLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mPostLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        rpSetup.mDebugName = "3DS Preview UI";
+
+        GetVulkanContext()->BeginVkRenderPass(rpSetup, true);
+
+        GFX_SetViewport(0, 0, width, height, false);
+        GFX_SetScissor(0, 0, width, height, false);
+        RenderDraws(mWidgetDraws);
+
+        GetVulkanContext()->EndVkRenderPass();
+
+        GetVulkanContext()->SetMultiBufferFrameOffset(0);
+    }
+
+    // Clear the camera override
+    world->SetCameraOverride(nullptr);
+
+    // Restore state BEFORE recomputing widget rects, so GetViewport() returns
+    // screen 0's editor viewport rather than the secondary screen's viewport.
+    mTargetScreenFilter = -1;
+    mCurrentWorld = prevWorld;
+    mScreenIndex = prevScreenIndex;
+    GetEngineState()->mSecondWindowWidth = prevSecondW;
+    GetEngineState()->mSecondWindowHeight = prevSecondH;
+
+    // Restore global uniforms and fog for main world
+    if (mCurrentWorld != nullptr)
+    {
+        GFX_SetFog(mCurrentWorld->GetFogSettings());
+        GetVulkanContext()->UpdateGlobalUniformData();
+        GetVulkanContext()->UpdateGlobalDescriptorSet();
+    }
+
+    // Mark widgets dirty so the next main Render() frame
+    // recomputes rects for screen 0's resolution.
+    world->GetRootNode()->Traverse([](Node* node) -> bool {
+        if (node->IsWidget())
+        {
+            static_cast<Widget*>(node)->MarkDirty();
+        }
+        return true;
+    });
+}
+#endif
 
 void Renderer::UpdateDebugDraws()
 {
@@ -1486,6 +1765,26 @@ void Renderer::SetClearColor(const glm::vec4& color)
 glm::vec4 Renderer::GetClearColor() const
 {
     return mClearColor;
+}
+
+void Renderer::SetSelectedColor(const glm::vec4& color)
+{
+    mSelectedColor = color;
+}
+
+glm::vec4 Renderer::GetSelectedColor() const
+{
+    return mSelectedColor;
+}
+
+void Renderer::SetSelectedCheckerSize(float size)
+{
+    mSelectedCheckerSize = size;
+}
+
+float Renderer::GetSelectedCheckerSize() const
+{
+    return mSelectedCheckerSize;
 }
 
 void Renderer::BeginLightBake()
@@ -1676,10 +1975,19 @@ glm::vec4 Renderer::GetGroundColor() const
 // TODO: Might have to adjust these to handle 3DS (two screens) and split-screen
 uint32_t Renderer::GetViewportX(int32_t screenIdx)
 {
-    OCT_UNUSED(screenIdx);
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    // Non-primary screens render to standalone offscreen targets at origin (0,0).
+    if (screenIdx != 0)
+    {
+        return 0;
+    }
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportX;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportX;
 #else
     return uint32_t(0);
 #endif
@@ -1687,10 +1995,19 @@ uint32_t Renderer::GetViewportX(int32_t screenIdx)
 
 uint32_t Renderer::GetViewportY(int32_t screenIdx)
 {
-    OCT_UNUSED(screenIdx);
+    if (screenIdx == -1)
+    {
+        screenIdx = mScreenIndex;
+    }
+
+    // Non-primary screens render to standalone offscreen targets at origin (0,0).
+    if (screenIdx != 0)
+    {
+        return 0;
+    }
 
 #if EDITOR
-    return (IsPlayingInEditor() && !GetEditorState()->mEjected) ? 0 : GetEditorState()->mViewportY;
+    return (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? 0 : GetEditorState()->mViewportY;
 #else
     return uint32_t(0);
 #endif
@@ -1703,10 +2020,16 @@ uint32_t Renderer::GetViewportWidth(int32_t screenIdx)
         screenIdx = mScreenIndex;
     }
 
-    uint32_t windowWidth = (screenIdx == 0) ? GetEngineState()->mWindowWidth : GetEngineState()->mSecondWindowWidth;
+    // Non-primary screens render to standalone offscreen targets at their own resolution.
+    if (screenIdx != 0)
+    {
+        return glm::max<uint32_t>(GetEngineState()->mSecondWindowWidth, 1);
+    }
+
+    uint32_t windowWidth = GetEngineState()->mWindowWidth;
 
 #if EDITOR
-    windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowWidth : GetEditorState()->mViewportWidth;
+    windowWidth = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowWidth : GetEditorState()->mViewportWidth;
 #endif
 
     windowWidth = glm::max<uint32_t>(windowWidth, 1);
@@ -1720,10 +2043,16 @@ uint32_t Renderer::GetViewportHeight(int32_t screenIdx)
         screenIdx = mScreenIndex;
     }
 
-    uint32_t windowHeight = (screenIdx == 0) ? GetEngineState()->mWindowHeight : GetEngineState()->mSecondWindowHeight;
+    // Non-primary screens render to standalone offscreen targets at their own resolution.
+    if (screenIdx != 0)
+    {
+        return glm::max<uint32_t>(GetEngineState()->mSecondWindowHeight, 1);
+    }
+
+    uint32_t windowHeight = GetEngineState()->mWindowHeight;
 
 #if EDITOR
-    windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected) ? windowHeight : GetEditorState()->mViewportHeight;
+    windowHeight = (IsPlayingInEditor() && !GetEditorState()->mEjected && !GetEditorState()->mPlayInGameWindow) ? windowHeight : GetEditorState()->mViewportHeight;
 #endif
 
     windowHeight = glm::max<uint32_t>(windowHeight, 1);

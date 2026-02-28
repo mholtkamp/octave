@@ -39,6 +39,11 @@ public:
 
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws);
 
+#if EDITOR
+    virtual void OnDrawGizmos();
+    virtual void OnDrawGizmosSelected();
+#endif
+
     glm::vec3 GetPosition() const;
     glm::vec3 GetRotationEuler() const;
     glm::quat GetRotationQuat() const;

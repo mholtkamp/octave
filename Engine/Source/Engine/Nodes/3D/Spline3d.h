@@ -34,13 +34,29 @@ public:
 
     void Play();
     void StopPlayback();
+    void SetPaused(bool paused);
+    bool IsPaused() const;
+    void SetFollowLinkEnabled(uint32_t index, bool enabled);
+    bool IsFollowLinkEnabled(uint32_t index) const;
+    bool IsNearLinkFrom(uint32_t index, float epsilon = 0.05f) const;
+    bool IsNearLinkTo(uint32_t index, float epsilon = 0.05f) const;
+    bool IsLinkDirectionForward(uint32_t index, float threshold = 0.0f) const;
+    bool TriggerLink(uint32_t index);
+    void CancelActiveLink();
+
+    static void SetSplineLinesVisible(bool visible);
+    static bool IsSplineLinesVisible();
 
 #if EDITOR
     virtual bool DrawCustomProperty(Property& prop) override;
 #endif
 
 protected:
+    struct SplineLink;
     void GeneratePoint();
+    SplineLink* GetLinkByIndex(uint32_t index);
+    const SplineLink* GetLinkByIndex(uint32_t index) const;
+    void EnsureLinkSlots(uint32_t count);
 
 protected:
     std::vector<glm::vec3> mPoints;
@@ -50,6 +66,34 @@ protected:
     NodePtrWeak mAttachmentParticle3D;
     NodePtrWeak mAttachmentPointLight;
     NodePtrWeak mAttachmentAudio3D;
+    NodePtrWeak mAttachmentNode3D;
+
+    struct SplineLink
+    {
+        NodePtrWeak mLinkFrom;
+        NodePtrWeak mLinkTo;
+        bool mFollow = true;
+        bool mTriggered = false;
+        float mSpeed = 1.0f;
+    };
+
+    std::vector<SplineLink> mLinks;
+    bool mLinkActive = false;
+    bool mDisableBounce = false;
+    float mLinkSpeedModifier = 1.0f;
+    int32_t mGeneratedLinkCount = 10;
+
+    float mActiveLinkSpeedModifier = 1.0f;
+    bool mLinkSmoothStep = false;
+    bool mLinkSmoothRotate = false;
+    float mLinkTravel = 0.0f;
+    float mLinkLen = 0.0f;
+    glm::vec3 mLinkStart = glm::vec3(0.0f);
+    glm::vec3 mLinkEnd = glm::vec3(0.0f);
+    NodePtrWeak mLinkTargetSpline;
+    float mLinkTargetStartDist = 0.0f;
+    float mLinkTargetPrevDist = 0.0f;
+    float mLinkTargetTotalLen = 0.0f;
 
     glm::mat4 mOrigCamTransform = glm::mat4(1.0f);
     glm::mat4 mOrigStaticTransform = glm::mat4(1.0f);
@@ -57,22 +101,38 @@ protected:
     glm::mat4 mOrigParticleTransform = glm::mat4(1.0f);
     glm::mat4 mOrigPointLightTransform = glm::mat4(1.0f);
     glm::mat4 mOrigAudioTransform = glm::mat4(1.0f);
+    glm::mat4 mOrigNodeTransform = glm::mat4(1.0f);
 
     float mSpeed = 2.0f;
     bool mPlaying = false;
     bool mLoop = true;
     bool mCloseLoop = false;
+    bool mPingPong = false;
+    bool mPingPongForward = true;
     bool mSmoothCurve = true;
+    bool mSmoothRotate = false;
+    bool mPause = false;
     bool mFaceTangent = false;
+    bool mReverseFaceTangent = false;
     float mTravel = 0.0f;
+
+    bool mHasTrackedPos = false;
+    glm::vec3 mPrevTrackedPos = glm::vec3(0.0f);
+    glm::vec3 mTrackedMoveDir = glm::vec3(0.0f);
 
     struct PointSpeedEntry
     {
         std::string name;
         float speed = 1.0f;
+        bool smoothIn = false;
+        bool smoothOut = false;
+        bool smoothCurve = false;
     };
 
     std::vector<PointSpeedEntry> mPointSpeedEntries;
     NodePtrWeak mPointSpeedTarget;
     float mPointSpeedValue = 1.0f;
+    bool mPointSmoothInValue = false;
+    bool mPointSmoothOutValue = false;
+    bool mPointSmoothCurveValue = false;
 };

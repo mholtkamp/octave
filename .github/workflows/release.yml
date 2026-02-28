@@ -1,0 +1,150 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # =========================================================================
+  #  Windows: Build engine + create Inno Setup installer
+  # =========================================================================
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize submodules
+        run: |
+          git submodule init -- External/bullet3 External/doxygen-awesome-css External/zep Plugins/Blender/octave-gameengine-connect
+          git submodule update --recursive
+
+      - name: Install Vulkan SDK
+        shell: pwsh
+        run: |
+          $VER = "1.3.275.0"
+          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/$VER/windows/VulkanSDK-$VER-Installer.exe" -OutFile "$env:TEMP\VulkanSDK.exe"
+          Start-Process -FilePath "$env:TEMP\VulkanSDK.exe" -ArgumentList "--accept-licenses --default-answer --confirm-command install" -Wait
+          echo "VULKAN_SDK=C:\VulkanSDK\$VER" >> $env:GITHUB_ENV
+
+      - name: Compile shaders
+        shell: cmd
+        working-directory: Engine/Shaders/GLSL
+        run: compile.bat
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Engine (ReleaseEditor x64)
+        run: msbuild Octave.sln /p:Configuration=ReleaseEditor /p:Platform=x64 /m
+
+      - name: Stage distribution files
+        run: python Installers/stage_distribution.py --platform windows --verbose
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        run: iscc Installers\Windows\OctaveSetup.iss
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/OctaveSetup-*.exe
+
+  # =========================================================================
+  #  Linux: Build engine + create .deb and tarball
+  # =========================================================================
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize submodules
+        run: |
+          git submodule init -- External/bullet3 External/doxygen-awesome-css External/zep Plugins/Blender/octave-gameengine-connect
+          git submodule update --recursive
+
+      - name: Install Vulkan SDK
+        run: |
+          VER=1.3.275.0
+          wget -q https://sdk.lunarg.com/sdk/download/$VER/linux/vulkansdk-linux-x86_64-$VER.tar.xz
+          sudo mkdir -p /opt/vulkan
+          sudo tar -xf vulkansdk-linux-x86_64-$VER.tar.xz -C /opt/vulkan
+          rm vulkansdk-linux-x86_64-$VER.tar.xz
+          echo "VULKAN_SDK=/opt/vulkan/$VER/x86_64" >> $GITHUB_ENV
+          echo "/opt/vulkan/$VER/x86_64/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/opt/vulkan/$VER/x86_64/lib" >> $GITHUB_ENV
+
+      - name: Compile shaders
+        working-directory: Engine/Shaders/GLSL
+        run: chmod +x compile.sh && ./compile.sh
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxcb1-dev libasound2-dev libx11-dev \
+            dpkg-dev
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Build Engine (Linux Editor)
+        run: make -C Standalone -f Makefile_Linux_Editor -j$(nproc)
+
+      - name: Build .deb package
+        run: bash Installers/build_deb_linux.sh
+
+      - name: Build tarball
+        run: bash Installers/build_tarball_linux.sh
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: dist/octave-engine_*_amd64.deb
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tarball
+          path: dist/OctaveEditor-linux-x64.tar.gz
+
+  # =========================================================================
+  #  Create GitHub Release with all artifacts
+  # =========================================================================
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: find release-assets -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.deb
+            release-assets/**/*.tar.gz

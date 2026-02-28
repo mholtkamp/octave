@@ -1,10 +1,20 @@
 #if EDITOR
 
 #include "EditorTheme.h"
+#include "CssThemeManager.h"
+#include "CssThemeParser.h"
 #include "imgui.h"
+#include "imgui_dock.h"
 
 namespace EditorTheme
 {
+
+static const std::vector<std::string> sBuiltInThemeNames = {
+    "Dark",
+    "Light",
+    "Future Dark",
+    "Classic"
+};
 
 static std::vector<std::string> sThemeNames = {
     "Dark",
@@ -13,6 +23,17 @@ static std::vector<std::string> sThemeNames = {
     "Classic"
 };
 
+void RefreshThemeNames()
+{
+    sThemeNames = sBuiltInThemeNames;
+
+    const auto& customThemes = CssThemeManager::Get().GetThemes();
+    for (const auto& theme : customThemes)
+    {
+        sThemeNames.push_back(theme.Name);
+    }
+}
+
 const std::vector<std::string>& GetThemeNames()
 {
     return sThemeNames;
@@ -20,28 +41,60 @@ const std::vector<std::string>& GetThemeNames()
 
 const char* GetThemeName(EditorThemeType type)
 {
-    int index = static_cast<int>(type);
-    if (index >= 0 && index < static_cast<int>(sThemeNames.size()))
+    if (IsCustomTheme(type))
     {
-        return sThemeNames[index].c_str();
+        int customIdx = GetCustomThemeIndex(type);
+        const std::string& name = CssThemeManager::Get().GetThemeName(customIdx);
+        if (!name.empty())
+            return name.c_str();
+        return "Unknown";
+    }
+
+    int index = static_cast<int>(type);
+    if (index >= 0 && index < static_cast<int>(sBuiltInThemeNames.size()))
+    {
+        return sBuiltInThemeNames[index].c_str();
     }
     return "Unknown";
 }
 
 EditorThemeType GetThemeTypeFromName(const std::string& name)
 {
-    for (size_t i = 0; i < sThemeNames.size(); ++i)
+    // Check built-in themes first
+    for (size_t i = 0; i < sBuiltInThemeNames.size(); ++i)
     {
-        if (sThemeNames[i] == name)
+        if (sBuiltInThemeNames[i] == name)
         {
             return static_cast<EditorThemeType>(i);
         }
     }
+
+    // Check custom themes
+    const auto& customThemes = CssThemeManager::Get().GetThemes();
+    for (size_t i = 0; i < customThemes.size(); ++i)
+    {
+        if (customThemes[i].Name == name)
+        {
+            return MakeCustomThemeType(static_cast<int>(i));
+        }
+    }
+
     return EditorThemeType::Dark;
 }
 
 void ApplyTheme(EditorThemeType type)
 {
+    // Clear custom dock tab text color and panel colors before applying any theme.
+    // Custom CSS themes will re-set them if specified.
+    ImGui::ClearDockTabTextColor();
+    CssThemeParser::ClearPanelColors();
+
+    if (IsCustomTheme(type))
+    {
+        CssThemeManager::Get().ApplyTheme(GetCustomThemeIndex(type));
+        return;
+    }
+
     switch (type)
     {
     case EditorThemeType::Dark:
@@ -95,7 +148,7 @@ void ApplyFutureDarkTheme()
     style.DisabledAlpha = 1.0f;
     style.WindowPadding = ImVec2(12.0f, 12.0f);
     style.WindowRounding = 0.0f;
-    style.WindowBorderSize = 0.0f;
+    style.WindowBorderSize = 1.0f;
     style.WindowMinSize = ImVec2(20.0f, 20.0f);
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
     style.WindowMenuButtonPosition = ImGuiDir_None;

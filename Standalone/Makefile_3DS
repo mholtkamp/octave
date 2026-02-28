@@ -36,7 +36,7 @@ BUILD		:=	Intermediate/3DS
 SOURCES		:=	Source \
 				Generated
 DATA		:=	Data
-INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet
+INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet ../External/Lua
 GRAPHICS	:=	Graphics
 GFXBUILD	:=	$(BUILD)
 #GFXBUILD	:=	$(ROMFS)/gfx
@@ -86,9 +86,13 @@ export BULLET_LIB := $(BULLET_LIB_DIR)/libBullet.a
 export OUTPUT	:=	$(OUTPUT_DIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+# Helper to handle both relative and absolute paths in VPATH
+# Absolute paths (starting with / or containing :) are used as-is
+MAKE_VPATH = $(if $(or $(filter /%,$(1)),$(findstring :,$(1))),$(1),$(CURDIR)/$(1))
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(call MAKE_VPATH,$(dir))) \
+			$(foreach dir,$(GRAPHICS),$(call MAKE_VPATH,$(dir))) \
+			$(foreach dir,$(DATA),$(call MAKE_VPATH,$(dir)))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -139,7 +143,7 @@ export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
 			$(addsuffix .h,$(subst .,_,$(BINFILES))) \
 			$(GFXFILES:.t3s=.h)
 
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(call MAKE_VPATH,$(dir))) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 

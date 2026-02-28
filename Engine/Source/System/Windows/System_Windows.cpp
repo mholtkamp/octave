@@ -350,14 +350,14 @@ void SYS_Update()
         }
     }
 
-    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    if (INP_IsKeyDown(OCTAVE_KEY_ALT_L) || INP_IsKeyDown(OCTAVE_KEY_ALT_R))
     {
-        if (INP_IsKeyJustDown(KEY_ENTER))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
         }
 
-        if (INP_IsKeyJustDown(KEY_F4))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_F4))
         {
             Quit();
         }
@@ -500,8 +500,9 @@ void SYS_RemoveDirectory(const char* dirPath)
             path[i] = '\\';
         }
     }
-
-    std::string cmd = std::string("rmdir ") + path + " /s /q";
+    // check if path includes a space, if so wrap in quotes
+    std::string quotedPath = "\"" + path + "\"";
+    std::string cmd = "rmdir /s /q " + quotedPath;
     SYS_Exec(cmd.c_str());
 }
 
@@ -523,7 +524,7 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
     outDirEntry.mFindHandle = FindFirstFile(dirString.c_str(), &outDirEntry.mFindData);
     if (outDirEntry.mFindHandle == INVALID_HANDLE_VALUE)
     {
-        LogError("Invalid first file");
+        // Directory doesn't exist or is empty — not an error, caller checks mValid.
         return;
     }
 

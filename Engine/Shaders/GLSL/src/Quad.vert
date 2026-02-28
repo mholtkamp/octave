@@ -3,15 +3,16 @@
 
 #include "Common.glsl"
 
-layout (set = 0, binding = 0) uniform GlobalUniformBuffer 
+layout (set = 0, binding = 0) uniform GlobalUniformBuffer
 {
     GlobalUniforms global;
 };
 
 layout (set = 1, binding = 0) uniform QuadUniformBuffer
-{    
+{
     mat4 mTransform;
     vec4 mColor;
+    vec4 mQuadParams; // x = cornerRadius, y = width, z = height
 
 } quadData;
 layout (set = 1, binding = 1) uniform sampler2D quadSampler;
@@ -22,16 +23,18 @@ layout (location = 2) in vec4 inColor;
 
 layout (location = 0) out vec2 outTexcoord;
 layout (location = 1) out vec4 outColor;
+layout (location = 2) out vec2 outLocalPos;
 
 out gl_PerVertex
 {
     vec4 gl_Position;
 };
 
-void main() 
-{    
+void main()
+{
     outTexcoord = inTexcoord;
     outColor = inColor;
+    outLocalPos = vec2(float(gl_VertexIndex / 2), float(gl_VertexIndex % 2));
     mat3 transform = mat3(quadData.mTransform);
     vec2 outPos = (transform * vec3(inPosition, 1.0)).xy;
     outPos = (outPos / global.mInterfaceResolution) * 2.0 - 1.0 ;

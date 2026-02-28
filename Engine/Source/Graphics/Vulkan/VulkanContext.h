@@ -107,6 +107,9 @@ public:
 
     uint32_t GetFrameIndex() const;
     uint32_t GetFrameNumber() const;
+
+    void SetMultiBufferFrameOffset(uint32_t offset) { mMultiBufferFrameOffset = offset; }
+    uint32_t GetMultiBufferFrameOffset() const { return mMultiBufferFrameOffset; }
     RenderPassId GetCurrentRenderPassId() const;
 
     Image* GetShadowMapImage();
@@ -329,6 +332,7 @@ private:
     bool mFeatureFillModeNonSolid = false;
     EngineState* mEngineState = nullptr;
     VkSurfaceTransformFlagBitsKHR mPreTransformFlag = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    uint32_t mMultiBufferFrameOffset = 0;
     float mResolutionScale = 1.0f;
     uint32_t mSceneWidth = 0;
     uint32_t mSceneHeight = 0;

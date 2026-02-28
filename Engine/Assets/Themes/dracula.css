@@ -1,0 +1,83 @@
+/* Dracula theme for Octave Editor */
+/* Converted from GitHub Dark Themes */
+
+:root {
+    --bg: #282A36;
+    --surface1: #343642;
+    --surface2: #41434E;
+    --surface3: #4E505A;
+    --text: #F8F8F2;
+    --text-dim: #6272A4;
+    --accent: #FF79C6;
+    --accent-hover: #FF8DCE;
+    --accent-dark: #CC609E;
+    --secondary: #50FA7B;
+    --border: #30323E;
+    --scrollbar: #575862;
+    --scrollbar-hover: #6C6E76;
+}
+
+style {
+    window-rounding: 4px;
+    frame-rounding: 2px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    scrollbar-rounding: 2px;
+    tab-rounding: 2px;
+    grab-rounding: 2px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--surface2); }
+text { color: var(--text); disabled: var(--text-dim); selected-background: var(--accent-dark); }
+border { color: var(--border); shadow: transparent; }
+
+frame { background: var(--surface1); }
+frame:hover { background: var(--surface2); }
+frame:active { background: var(--accent); }
+
+title { background: var(--surface1); }
+title:active { background: var(--surface2); }
+title:collapsed { background: var(--surface1); }
+
+menubar { background: var(--bg); }
+
+button { background: var(--surface2); }
+button:hover { background: var(--surface3); }
+button:active { background: var(--accent); }
+
+header { background: var(--surface1); }
+header:hover { background: var(--surface2); }
+header:active { background: var(--accent); }
+
+tab { color: var(--text); background: var(--surface1); }
+tab:hover { background: var(--surface2); }
+tab:active { background: var(--bg); }
+tab:unfocused { background: var(--bg); }
+tab:unfocused-active { background: var(--surface1); }
+
+scrollbar { background: var(--bg); grab: var(--scrollbar); }
+scrollbar:hover { grab: var(--scrollbar-hover); }
+scrollbar:active { grab: var(--accent); }
+
+separator { color: var(--border); }
+separator:hover { color: var(--accent); }
+separator:active { color: var(--accent-dark); }
+
+checkbox { checkmark: var(--secondary); }
+slider { grab: var(--accent); }
+slider:active { grab: var(--accent-hover); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--accent); }
+resize-grip:active { background: var(--accent-dark); }
+
+table { header-background: var(--surface1); border-strong: var(--border); border-light: var(--surface1); row-background: transparent; row-background-alt: rgba(52, 54, 66, 0.5); }
+
+drag-drop { target: rgba(255, 121, 198, 0.5); }
+nav { highlight: var(--accent); windowing-highlight: rgba(248, 248, 242, 0.7); windowing-dim: rgba(40, 42, 54, 0.7); }
+modal { dim-background: rgba(40, 42, 54, 0.6); }
+
+plot { lines: var(--secondary); histogram: var(--accent); }
+plot:hover { lines: var(--accent-hover); histogram: var(--accent-hover); }

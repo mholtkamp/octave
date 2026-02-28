@@ -38,7 +38,7 @@ void INP_ClearAllKeys()
 
     // Do not clear hardware keys
     // I think this is for Android?? not sure...
-    int32_t back = input.mKeys[KEY_BACK];
+    int32_t back = input.mKeys[OCTAVE_KEY_BACK];
 
     for (i = 0; i < INPUT_MAX_KEYS; i++)
     {
@@ -46,7 +46,7 @@ void INP_ClearAllKeys()
     }
 
     // Restore hardware keys
-    input.mKeys[KEY_BACK] = back;
+    input.mKeys[OCTAVE_KEY_BACK] = back;
 #endif
 }
 
@@ -106,70 +106,70 @@ char INP_ConvertKeyCodeToChar(int32_t key)
 
     switch (key)
     {
-    case KEY_0: retChar = '0'; break;
-    case KEY_1: retChar = '1'; break;
-    case KEY_2: retChar = '2'; break;
-    case KEY_3: retChar = '3'; break;
-    case KEY_4: retChar = '4'; break;
-    case KEY_5: retChar = '5'; break;
-    case KEY_6: retChar = '6'; break;
-    case KEY_7: retChar = '7'; break;
-    case KEY_8: retChar = '8'; break;
-    case KEY_9: retChar = '9'; break;
+    case OCTAVE_KEY_0: retChar = '0'; break;
+    case OCTAVE_KEY_1: retChar = '1'; break;
+    case OCTAVE_KEY_2: retChar = '2'; break;
+    case OCTAVE_KEY_3: retChar = '3'; break;
+    case OCTAVE_KEY_4: retChar = '4'; break;
+    case OCTAVE_KEY_5: retChar = '5'; break;
+    case OCTAVE_KEY_6: retChar = '6'; break;
+    case OCTAVE_KEY_7: retChar = '7'; break;
+    case OCTAVE_KEY_8: retChar = '8'; break;
+    case OCTAVE_KEY_9: retChar = '9'; break;
 
-    case KEY_A: retChar = 'A'; break;
-    case KEY_B: retChar = 'B'; break;
-    case KEY_C: retChar = 'C'; break;
-    case KEY_D: retChar = 'D'; break;
-    case KEY_E: retChar = 'E'; break;
-    case KEY_F: retChar = 'F'; break;
-    case KEY_G: retChar = 'G'; break;
-    case KEY_H: retChar = 'H'; break;
-    case KEY_I: retChar = 'I'; break;
-    case KEY_J: retChar = 'J'; break;
-    case KEY_K: retChar = 'K'; break;
-    case KEY_L: retChar = 'L'; break;
-    case KEY_M: retChar = 'M'; break;
-    case KEY_N: retChar = 'N'; break;
-    case KEY_O: retChar = 'O'; break;
-    case KEY_P: retChar = 'P'; break;
-    case KEY_Q: retChar = 'Q'; break;
-    case KEY_R: retChar = 'R'; break;
-    case KEY_S: retChar = 'S'; break;
-    case KEY_T: retChar = 'T'; break;
-    case KEY_U: retChar = 'U'; break;
-    case KEY_V: retChar = 'V'; break;
-    case KEY_W: retChar = 'W'; break;
-    case KEY_X: retChar = 'X'; break;
-    case KEY_Y: retChar = 'Y'; break;
-    case KEY_Z: retChar = 'Z'; break;
+    case OCTAVE_KEY_A: retChar = 'A'; break;
+    case OCTAVE_KEY_B: retChar = 'B'; break;
+    case OCTAVE_KEY_C: retChar = 'C'; break;
+    case OCTAVE_KEY_D: retChar = 'D'; break;
+    case OCTAVE_KEY_E: retChar = 'E'; break;
+    case OCTAVE_KEY_F: retChar = 'F'; break;
+    case OCTAVE_KEY_G: retChar = 'G'; break;
+    case OCTAVE_KEY_H: retChar = 'H'; break;
+    case OCTAVE_KEY_I: retChar = 'I'; break;
+    case OCTAVE_KEY_J: retChar = 'J'; break;
+    case OCTAVE_KEY_K: retChar = 'K'; break;
+    case OCTAVE_KEY_L: retChar = 'L'; break;
+    case OCTAVE_KEY_M: retChar = 'M'; break;
+    case OCTAVE_KEY_N: retChar = 'N'; break;
+    case OCTAVE_KEY_O: retChar = 'O'; break;
+    case OCTAVE_KEY_P: retChar = 'P'; break;
+    case OCTAVE_KEY_Q: retChar = 'Q'; break;
+    case OCTAVE_KEY_R: retChar = 'R'; break;
+    case OCTAVE_KEY_S: retChar = 'S'; break;
+    case OCTAVE_KEY_T: retChar = 'T'; break;
+    case OCTAVE_KEY_U: retChar = 'U'; break;
+    case OCTAVE_KEY_V: retChar = 'V'; break;
+    case OCTAVE_KEY_W: retChar = 'W'; break;
+    case OCTAVE_KEY_X: retChar = 'X'; break;
+    case OCTAVE_KEY_Y: retChar = 'Y'; break;
+    case OCTAVE_KEY_Z: retChar = 'Z'; break;
 
-    case KEY_SPACE: retChar = ' '; break;
-    case KEY_ENTER: retChar = '\n'; break;
+    case OCTAVE_KEY_SPACE: retChar = ' '; break;
+    case OCTAVE_KEY_ENTER: retChar = '\n'; break;
 
-    case KEY_NUMPAD0: retChar = '0'; break;
-    case KEY_NUMPAD1: retChar = '1'; break;
-    case KEY_NUMPAD2: retChar = '2'; break;
-    case KEY_NUMPAD3: retChar = '3'; break;
-    case KEY_NUMPAD4: retChar = '4'; break;
-    case KEY_NUMPAD5: retChar = '5'; break;
-    case KEY_NUMPAD6: retChar = '6'; break;
-    case KEY_NUMPAD7: retChar = '7'; break;
-    case KEY_NUMPAD8: retChar = '8'; break;
-    case KEY_NUMPAD9: retChar = '9'; break;
+    case OCTAVE_KEY_NUMPAD0: retChar = '0'; break;
+    case OCTAVE_KEY_NUMPAD1: retChar = '1'; break;
+    case OCTAVE_KEY_NUMPAD2: retChar = '2'; break;
+    case OCTAVE_KEY_NUMPAD3: retChar = '3'; break;
+    case OCTAVE_KEY_NUMPAD4: retChar = '4'; break;
+    case OCTAVE_KEY_NUMPAD5: retChar = '5'; break;
+    case OCTAVE_KEY_NUMPAD6: retChar = '6'; break;
+    case OCTAVE_KEY_NUMPAD7: retChar = '7'; break;
+    case OCTAVE_KEY_NUMPAD8: retChar = '8'; break;
+    case OCTAVE_KEY_NUMPAD9: retChar = '9'; break;
 
-    case KEY_PERIOD: retChar = '.'; break;
-    case KEY_COMMA: retChar = ','; break;
-    case KEY_PLUS: retChar = '='; break;
-    case KEY_MINUS: retChar = '-'; break;
-    case KEY_COLON: retChar = ';'; break;
-    case KEY_QUESTION: retChar = '/'; break;
-    case KEY_SQUIGGLE: retChar = '`'; break;
-    case KEY_LEFT_BRACKET: retChar = '['; break;
-    case KEY_BACK_SLASH: retChar = '\\'; break;
-    case KEY_RIGHT_BRACKET: retChar = ']'; break;
-    case KEY_QUOTE: retChar = '\''; break;
-    case KEY_DECIMAL: retChar = '.'; break;
+    case OCTAVE_KEY_PERIOD: retChar = '.'; break;
+    case OCTAVE_KEY_COMMA: retChar = ','; break;
+    case OCTAVE_KEY_PLUS: retChar = '='; break;
+    case OCTAVE_KEY_MINUS: retChar = '-'; break;
+    case OCTAVE_KEY_COLON: retChar = ';'; break;
+    case OCTAVE_KEY_QUESTION: retChar = '/'; break;
+    case OCTAVE_KEY_SQUIGGLE: retChar = '`'; break;
+    case OCTAVE_KEY_LEFT_BRACKET: retChar = '['; break;
+    case OCTAVE_KEY_BACK_SLASH: retChar = '\\'; break;
+    case OCTAVE_KEY_RIGHT_BRACKET: retChar = ']'; break;
+    case OCTAVE_KEY_QUOTE: retChar = '\''; break;
+    case OCTAVE_KEY_DECIMAL: retChar = '.'; break;
 
     default: break;
     }

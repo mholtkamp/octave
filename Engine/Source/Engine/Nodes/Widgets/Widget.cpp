@@ -12,6 +12,7 @@
 #if EDITOR
 #include "EditorState.h"
 #include "Viewport2d.h"
+#include "GamePreview/GamePreview.h"
 #endif
 
 FORCE_LINK_DEF(Widget);
@@ -489,8 +490,8 @@ void Widget::SetAnchorMode(AnchorMode anchorMode)
 
         if (oldStretchY && !newStretchY)
         {
-            mOffset.y = PixelsToRatioY(mOffset.y);
-            mSize.y = PixelsToRatioY(mSize.y);
+            mOffset.y = RatioToPixelsY(mOffset.y);
+            mSize.y = RatioToPixelsY(mSize.y);
         }
         else if (!oldStretchY && newStretchY)
         {
@@ -628,7 +629,13 @@ void Widget::UpdateRect()
     glm::uvec4 vp = Renderer::Get()->GetViewport();
 
 #if EDITOR
-    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D)
+    // Only apply the Viewport2D wrapper parent in the main editor viewport (screen 0).
+    // When rendering to a secondary screen (e.g. Game Preview), root widgets should
+    // use the second screen's viewport as their parent rect, not the Scene2D wrapper
+    // which is sized for the editor viewport.
+    if (GetEditorState()->GetEditorMode() == EditorMode::Scene2D &&
+        Renderer::Get()->GetScreenIndex() == 0 &&
+        !(IsPlayingInEditor() && GetEditorState()->mPlayInGameWindow))
     {
         Widget* wrapper = GetEditorState()->GetViewport2D()->GetWrapperWidget();
         if (parent == nullptr &&
@@ -698,6 +705,28 @@ void Widget::UpdateRect()
     {
         mRect.mY = anchorPos.y + mOffset.y * mAbsoluteScale.y;
         mRect.mHeight = mSize.y * mAbsoluteScale.y;
+    }
+
+    if (mUseGameResolution)
+    {
+        float gameW = 0.0f;
+        float gameH = 0.0f;
+#if EDITOR
+        GamePreview* gp = GetGamePreview();
+        if (gp != nullptr && gp->GetCurrentWidth() > 0)
+        {
+            gameW = (float)gp->GetCurrentWidth();
+            gameH = (float)gp->GetCurrentHeight();
+        }
+        else
+#endif
+        {
+            gameW = (float)GetEngineState()->mWindowWidth;
+            gameH = (float)GetEngineState()->mWindowHeight;
+        }
+
+        mRect.mWidth = gameW;
+        mRect.mHeight = gameH;
     }
 
     glm::vec2 pivotPoint =
@@ -960,6 +989,17 @@ void Widget::EnableScissor(bool enable)
 Rect Widget::GetScissorRect() const
 {
     return mScissorRect;
+}
+
+void Widget::SetUseGameResolution(bool use)
+{
+    mUseGameResolution = use;
+    MarkDirty();
+}
+
+bool Widget::GetUseGameResolution() const
+{
+    return mUseGameResolution;
 }
 
 void Widget::SetParent(Node* parent)

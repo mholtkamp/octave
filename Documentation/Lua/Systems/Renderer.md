@@ -4,10 +4,11 @@ System that controls graphical rendering.
 
 ---
 ### EnableStatsOverlay
-Enable the stats overlay which can be used for displaying performance information.
+Enable the stats overlay which can be used for displaying performance information. When enabling, a mode string can be passed in to specify which stats mode to use. Possible values are "Performance", "Memory", "Network".
 
-Sig: `Renderer.EnableStatsOverlay(enable)`
+Sig: `Renderer.EnableStatsOverlay(enable, mode="Performance")`
  - Arg: `boolean enable` Enable stats overlay
+ - Arg: `string mode` Which mode to enable. Possible values: "Performance", "Memory", "Network"
 ---
 ### EnableConsole
 Enable the console. The console will display log messages on screen. It currently doesn't accept any sort of console commands.
@@ -49,13 +50,13 @@ Sig: `res = Renderer.GetScreenResolution(index=1)`
 ### GetGlobalUiScale
 Get the global UI scale.
 
-Sig: `scale = Renderer.GetGlobalUiScale()` 
+Sig: `scale = Renderer.GetGlobalUiScale()`
  - Ret: `number scale` Global UI scale
 ---
 ### SetGlobalUiScale
 Set the global UI scale.
 
-Sig: `Renderer.SetGlobalUiScale(scale)` 
+Sig: `Renderer.SetGlobalUiScale(scale)`
  - Arg: `number scale` Global UI scale
 ---
 ### SetDebugMode

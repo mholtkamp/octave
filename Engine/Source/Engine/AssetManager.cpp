@@ -156,11 +156,14 @@ AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type,
     {
         // Get path relative to project/engine Assets folder
         // e.g., "ProjectName/Assets/Models/SM_Plane.oct" -> "Models/SM_Plane"
+        // Normalize backslashes so find works on Windows paths
         std::string dirPath = directory->mPath;
-        size_t assetsPos = dirPath.find("/Assets/");
+        std::string normalizedDirPath = dirPath;
+        std::replace(normalizedDirPath.begin(), normalizedDirPath.end(), '\\', '/');
+        size_t assetsPos = normalizedDirPath.find("/Assets/");
         if (assetsPos != std::string::npos)
         {
-            relativePath = dirPath.substr(assetsPos + 8) + name;  // +8 to skip "/Assets/"
+            relativePath = normalizedDirPath.substr(assetsPos + 8) + name;  // +8 to skip "/Assets/"
         }
         else
         {
@@ -379,6 +382,13 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
                 // Pass UUID from header (may be 0 for legacy assets, RegisterAsset will generate one)
                 RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
+#if EDITOR
+            else if (extension != nullptr &&
+                strcmp(extension, ".css") == 0)
+            {
+                directory->mLooseFiles.push_back(dirEntry.mFilename);
+            }
+#endif
         }
 
         SYS_IterateDirectory(dirEntry);
@@ -394,6 +404,69 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
         DiscoverDirectory(subDir, engineDir);
     }
 };
+
+void AssetManager::RefreshDirectory(AssetDir* directory)
+{
+    if (directory == nullptr)
+        return;
+
+#if EDITOR
+    directory->mLooseFiles.clear();
+#endif
+
+    bool engineDir = directory->mEngineDir;
+    std::vector<std::string> subDirectories;
+    DirEntry dirEntry = {};
+
+    SYS_OpenDirectory(directory->mPath, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory)
+        {
+            if (dirEntry.mFilename[0] != '.')
+                subDirectories.push_back(dirEntry.mFilename);
+        }
+        else
+        {
+            const char* extension = strrchr(dirEntry.mFilename, '.');
+            if (extension != nullptr && strcmp(extension, ".oct") == 0)
+            {
+                Stream stream;
+                std::string path = directory->mPath + dirEntry.mFilename;
+                stream.ReadFile(path.c_str(), true, sizeof(uint32_t) * 3 + sizeof(uint8_t) + sizeof(uint64_t));
+                AssetHeader header = Asset::ReadHeader(stream);
+                RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
+            }
+#if EDITOR
+            else if (extension != nullptr && strcmp(extension, ".css") == 0)
+            {
+                directory->mLooseFiles.push_back(dirEntry.mFilename);
+            }
+#endif
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+
+    SYS_CloseDirectory(dirEntry);
+
+    for (const std::string& subDirName : subDirectories)
+    {
+        AssetDir* subDir = directory->GetSubdirectory(subDirName);
+        if (subDir == nullptr)
+        {
+            subDir = directory->CreateSubdirectory(subDirName);
+            DiscoverDirectory(subDir, engineDir);
+        }
+        else
+        {
+            RefreshDirectory(subDir);
+        }
+    }
+
+    directory->SortChildrenAlphabetically();
+}
 
 void AssetManager::Discover(const char* directoryName, const char* directoryPath)
 {
@@ -1005,6 +1078,22 @@ AssetStub* AssetManager::GetAssetStubByPath(const std::string& path)
     }
 
     auto it = mAssetPathMap.find(lookupPath);
+    if (it == mAssetPathMap.end())
+    {
+        LogDebug("GetAssetStubByPath: MISS for '%s' (lookup='%s'). PathMap has %zu entries.",
+            path.c_str(), lookupPath.c_str(), mAssetPathMap.size());
+
+        // Dump nearby keys to help debug
+        int count = 0;
+        for (auto& kv : mAssetPathMap)
+        {
+            if (kv.first.find(lookupPath.substr(lookupPath.find_last_of('/') + 1)) != std::string::npos)
+            {
+                LogDebug("  PathMap near-match: '%s'", kv.first.c_str());
+                if (++count >= 5) break;
+            }
+        }
+    }
     return (it != mAssetPathMap.end()) ? it->second : nullptr;
 }
 
@@ -1420,14 +1509,14 @@ void AssetManager::GatherFontFiles(const std::string& dir, std::vector<std::stri
 AssetStub* AssetManager::FindDefaultScene() {
     AssetStub* defaultScene = nullptr;
 
-    std::string defaultScenePath = FindDefaultScenePath();
+	std::string defaultScenePath = FindDefaultScenePath();
 
     if (defaultScenePath != "") {
-        // Get the file name from the path
-        std::string sceneName = SYS_GetFileName(defaultScenePath);
+		// Get the file name from the path
+		std::string sceneName = SYS_GetFileName(defaultScenePath);
         defaultScene = GetAssetStub(sceneName);
 
-    }
+	}
     return defaultScene;
 }
 std::string AssetManager::FindDefaultScenePath() {
@@ -1520,20 +1609,76 @@ std::vector<std::string> AssetManager::GetAvailableFontFiles()
 }
 
 
-
 std::vector<std::string> AssetManager::GetAvailableScriptFiles()
 {
     std::vector<std::string> scriptFiles;
+    const std::string& projectDir = GetEngineState()->mProjectDirectory;
 
+    // 1. Gather engine scripts
     GatherScriptFiles("Engine/Scripts/", scriptFiles);
 
-    // Remove "Engine/Scripts/" from the front of each path
-    const std::string prefix = "Engine/Scripts/";
+    // Remove "Engine/Scripts/" prefix
+    const std::string enginePrefix = "Engine/Scripts/";
     for (uint32_t i = 0; i < scriptFiles.size(); ++i)
     {
-        if (scriptFiles[i].substr(0, prefix.length()) == prefix)
+        if (scriptFiles[i].substr(0, enginePrefix.length()) == enginePrefix)
         {
-            scriptFiles[i] = scriptFiles[i].substr(prefix.length());
+            scriptFiles[i] = scriptFiles[i].substr(enginePrefix.length());
+        }
+    }
+
+    // 2. Gather project scripts
+    if (!projectDir.empty())
+    {
+        std::string projectScriptsDir = projectDir + "Scripts/";
+        size_t startIdx = scriptFiles.size();
+        GatherScriptFiles(projectScriptsDir, scriptFiles);
+
+        // Remove project scripts prefix
+        for (size_t i = startIdx; i < scriptFiles.size(); ++i)
+        {
+            if (scriptFiles[i].substr(0, projectScriptsDir.length()) == projectScriptsDir)
+            {
+                scriptFiles[i] = scriptFiles[i].substr(projectScriptsDir.length());
+            }
+        }
+
+        // 3. Gather scripts from Packages
+        std::string packagesDir = projectDir + "Packages/";
+        if (DoesDirExist(packagesDir.c_str()))
+        {
+            DirEntry dirEntry;
+            SYS_OpenDirectory(packagesDir, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory &&
+                    strcmp(dirEntry.mFilename, ".") != 0 &&
+                    strcmp(dirEntry.mFilename, "..") != 0)
+                {
+                    std::string packageName = dirEntry.mFilename;
+                    std::string packageScriptsDir = packagesDir + packageName + "/Scripts/";
+
+                    if (DoesDirExist(packageScriptsDir.c_str()))
+                    {
+                        size_t pkgStartIdx = scriptFiles.size();
+                        GatherScriptFiles(packageScriptsDir, scriptFiles);
+
+                        // Prefix package scripts with "Packages/{packageName}/"
+                        for (size_t i = pkgStartIdx; i < scriptFiles.size(); ++i)
+                        {
+                            if (scriptFiles[i].substr(0, packageScriptsDir.length()) == packageScriptsDir)
+                            {
+                                scriptFiles[i] = "Packages/" + packageName + "/" +
+                                    scriptFiles[i].substr(packageScriptsDir.length());
+                            }
+                        }
+                    }
+                }
+
+                SYS_IterateDirectory(dirEntry);
+            }
+            SYS_CloseDirectory(dirEntry);
         }
     }
 
@@ -1572,6 +1717,59 @@ AssetDir* AssetManager::FindEngineDirectory()
     }
 
     return retDir;
+}
+
+AssetDir* AssetManager::FindPackagesDirectory()
+{
+    AssetDir* retDir = nullptr;
+    uint32_t numChildDirs = uint32_t(mRootDirectory ? mRootDirectory->mChildDirs.size() : 0);
+    for (uint32_t i = 0; i < numChildDirs; ++i)
+    {
+        if (mRootDirectory->mChildDirs[i]->mName == "Packages")
+        {
+            retDir = mRootDirectory->mChildDirs[i];
+            break;
+        }
+    }
+
+    return retDir;
+}
+
+void AssetManager::DiscoverAddonPackages(const std::string& packagesDir)
+{
+    if (!DoesDirExist(packagesDir.c_str()))
+    {
+        return;
+    }
+
+    // Create "Packages" directory under root
+    AssetDir* packagesAssetDir = new AssetDir("Packages", packagesDir, mRootDirectory);
+    packagesAssetDir->mAddonDir = true;
+
+    DirEntry dirEntry = {};
+    SYS_OpenDirectory(packagesDir, dirEntry);
+
+    while (dirEntry.mValid)
+    {
+        if (dirEntry.mDirectory &&
+            strcmp(dirEntry.mFilename, ".") != 0 &&
+            strcmp(dirEntry.mFilename, "..") != 0)
+        {
+            std::string addonPath = packagesDir + dirEntry.mFilename + "/";
+            std::string assetsPath = addonPath + "Assets/";
+
+            if (DoesDirExist(assetsPath.c_str()))
+            {
+                // Create addon dir under Packages
+                AssetDir* addonDir = new AssetDir(dirEntry.mFilename, assetsPath, packagesAssetDir);
+                addonDir->mAddonDir = true;
+                DiscoverDirectory(addonDir, false);
+            }
+        }
+
+        SYS_IterateDirectory(dirEntry);
+    }
+    SYS_CloseDirectory(dirEntry);
 }
 
 AssetDir* AssetManager::GetRootDirectory()

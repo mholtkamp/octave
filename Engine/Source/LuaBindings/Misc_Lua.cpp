@@ -231,6 +231,24 @@ void BindDatumType()
     lua_pushinteger(L, (int)DatumType::Node);
     lua_setfield(L, tableIdx, "Node");
 
+    lua_pushinteger(L, (int)DatumType::Node3D);
+    lua_setfield(L, tableIdx, "Node3D");
+
+    lua_pushinteger(L, (int)DatumType::Audio3D);
+    lua_setfield(L, tableIdx, "Audio3D");
+
+    lua_pushinteger(L, (int)DatumType::Widget);
+    lua_setfield(L, tableIdx, "Widget");
+
+    lua_pushinteger(L, (int)DatumType::Text);
+    lua_setfield(L, tableIdx, "Text");
+
+    lua_pushinteger(L, (int)DatumType::Quad);
+    lua_setfield(L, tableIdx, "Quad");
+
+    lua_pushinteger(L, (int)DatumType::Spline3D);
+    lua_setfield(L, tableIdx, "Spline3D");
+
     lua_pushinteger(L, (int)DatumType::Short);
     lua_setfield(L, tableIdx, "Short");
 

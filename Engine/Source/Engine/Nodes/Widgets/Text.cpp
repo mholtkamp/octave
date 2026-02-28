@@ -595,10 +595,16 @@ void Text::UpdateVertexData()
 void Text::UploadVertexData()
 {
     uint32_t frameIndex = Renderer::Get()->GetFrameIndex();
-    if (mUploadVertices[frameIndex])
+    bool secondaryScreen = (Renderer::Get()->GetScreenIndex() != 0);
+
+    if (mUploadVertices[frameIndex] || secondaryScreen)
     {
         GFX_UpdateTextResourceVertexData(this);
-        mUploadVertices[frameIndex] = false;
+
+        if (!secondaryScreen)
+        {
+            mUploadVertices[frameIndex] = false;
+        }
     }
 }
 

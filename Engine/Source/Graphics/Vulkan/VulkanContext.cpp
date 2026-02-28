@@ -1744,6 +1744,8 @@ void VulkanContext::UpdateGlobalUniformData()
     mGlobalUniformData.mLinearColorSpace = (int32_t)GetEngineConfig()->mLinearColorSpace;
     mGlobalUniformData.mInterfaceResolution = Renderer::Get()->GetScreenResolution();
     mGlobalUniformData.mColorScale = Renderer::Get()->GetColorScale();
+    mGlobalUniformData.mSelectedColor = Renderer::Get()->GetSelectedColor();
+    mGlobalUniformData.mSelectedCheckerSize = Renderer::Get()->GetSelectedCheckerSize();
 
 #if EDITOR
     mGlobalUniformData.mSelectedInstance = GetEditorState()->GetSelectedInstance();

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:simpleType name="anchorType">
+    <xs:annotation>
+      <xs:documentation>Anchor/layout mode for widget positioning</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="top-left"/>
+      <xs:enumeration value="top-center"/>
+      <xs:enumeration value="top-right"/>
+      <xs:enumeration value="center-left"/>
+      <xs:enumeration value="center"/>
+      <xs:enumeration value="center-right"/>
+      <xs:enumeration value="bottom-left"/>
+      <xs:enumeration value="bottom-center"/>
+      <xs:enumeration value="bottom-right"/>
+      <xs:enumeration value="top-stretch"/>
+      <xs:enumeration value="bottom-stretch"/>
+      <xs:enumeration value="left-stretch"/>
+      <xs:enumeration value="right-stretch"/>
+      <xs:enumeration value="center-h-stretch"/>
+      <xs:enumeration value="center-v-stretch"/>
+      <xs:enumeration value="full-stretch"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="booleanType">
+    <xs:annotation>
+      <xs:documentation>Boolean value (true/false/1/0)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true"/>
+      <xs:enumeration value="false"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="wordWrapType">
+    <xs:annotation>
+      <xs:documentation>Word wrap mode for text widgets</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true"/>
+      <xs:enumeration value="false"/>
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="0"/>
+      <xs:enumeration value="break-word"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="flexDirectionType">
+    <xs:annotation>
+      <xs:documentation>Flex layout direction</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="row"/>
+      <xs:enumeration value="column"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="commonAttributes">
+    <xs:attribute name="id" type="xs:string"/>
+    <xs:attribute name="class" type="xs:string"/>
+    <xs:attribute name="style" type="xs:string"/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="visible" type="booleanType"/>
+    <xs:attribute name="active" type="booleanType"/>
+    <xs:attribute name="width" type="xs:string"/>
+    <xs:attribute name="height" type="xs:string"/>
+    <xs:attribute name="anchor" type="anchorType"/>
+    <xs:attribute name="opacity" type="xs:string"/>
+    <xs:attribute name="color" type="xs:string"/>
+    <xs:attribute name="background-color" type="xs:string"/>
+    <xs:attribute name="bg-color" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="eventAttributes">
+    <xs:attribute name="on-click" type="xs:string"/>
+    <xs:attribute name="on-hover" type="xs:string"/>
+    <xs:attribute name="on-press" type="xs:string"/>
+    <xs:attribute name="on-release" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:group name="widgetElements">
+    <xs:choice>
+      <xs:element ref="div"/>
+      <xs:element ref="canvas"/>
+      <xs:element ref="Canvas"/>
+      <xs:element ref="flex"/>
+      <xs:element ref="ArrayWidget"/>
+      <xs:element ref="button"/>
+      <xs:element ref="Button"/>
+      <xs:element ref="img"/>
+      <xs:element ref="Quad"/>
+      <xs:element ref="text"/>
+      <xs:element ref="p"/>
+      <xs:element ref="span"/>
+      <xs:element ref="Text"/>
+      <xs:element ref="poly"/>
+      <xs:element ref="polyrect"/>
+      <xs:element ref="Poly"/>
+      <xs:element ref="PolyRect"/>
+      <xs:element ref="link"/>
+      <xs:element ref="style"/>
+      <xs:element ref="include"/>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="ui">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="div">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="canvas">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Canvas">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="flex">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="direction" type="flexDirectionType"/>
+      <xs:attribute name="spacing" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ArrayWidget">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="direction" type="flexDirectionType"/>
+      <xs:attribute name="spacing" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="button">
+    <xs:complexType mixed="true">
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="src" type="xs:string"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Button">
+    <xs:complexType mixed="true">
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="widgetElements"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="src" type="xs:string"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="img">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="src" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Quad">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="src" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="text">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+      <xs:attribute name="word-wrap" type="wordWrapType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="p">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+      <xs:attribute name="word-wrap" type="wordWrapType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="span">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+      <xs:attribute name="word-wrap" type="wordWrapType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Text">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+      <xs:attribute name="text" type="xs:string"/>
+      <xs:attribute name="font" type="xs:string"/>
+      <xs:attribute name="font-size" type="xs:string"/>
+      <xs:attribute name="word-wrap" type="wordWrapType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="poly">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="polyrect">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Poly">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PolyRect">
+    <xs:complexType>
+      <xs:attributeGroup ref="commonAttributes"/>
+      <xs:attributeGroup ref="eventAttributes"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="link">
+    <xs:complexType>
+      <xs:attribute name="href" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="style">
+    <xs:complexType mixed="true"/>
+  </xs:element>
+  <xs:element name="include">
+    <xs:complexType>
+      <xs:attribute name="src" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

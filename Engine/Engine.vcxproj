@@ -349,13 +349,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)../External/recastnavigation/Recast/Include;$(ProjectDir)../External/recastnavigation/Detour/Include;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/;$(ProjectDir)../External/zep/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>vulkan-1.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -501,9 +502,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)../External;$(VULKAN_SDK)/Include;$(ProjectDir)Source;$(ProjectDir)Source/Engine;$(ProjectDir)../External/Assimp;$(ProjectDir)../External/Assimp/contrib/rapidjson;$(ProjectDir)../External/Bullet;$(ProjectDir)../External/recastnavigation/Recast/Include;$(ProjectDir)../External/recastnavigation/Detour/Include;$(ProjectDir)Source/Editor;$(ProjectDir)../External/Lua;$(ProjectDir)../External/Vorbis;$(ProjectDir)../External/Imgui;$(ProjectDir)../External/EOS/Include/;$(ProjectDir)../External/Steam/public/steam/;$(ProjectDir)../External/zep/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NET_PLATFORM_STEAM=0;PLATFORM_WINDOWS=1;API_VULKAN=1;EDITOR=1;WIN32;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;VK_USE_PLATFORM_WIN32_KHR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -601,6 +603,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_dock.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
@@ -611,6 +622,60 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FeatureFlags.cpp" />
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor_api.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\crude_json.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_canvas.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseSteam|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\Recast.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastAlloc.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastArea.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastAssert.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastContour.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastFilter.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastLayers.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastMesh.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastMeshDetail.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastRasterization.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Recast\Source\RecastRegion.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourAlloc.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourAssert.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourCommon.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMesh.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="..\External\recastnavigation\Detour\Source\DetourNode.cpp" />
     <ClCompile Include="Source\Editor\ImGuizmo\ImGuizmo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android-arm64-v8a'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android-arm64-v8a'">true</ExcludedFromBuild>
@@ -628,6 +693,9 @@
     <ClCompile Include="Source\Audio\Windows\Audio_Windows.cpp" />
     <ClCompile Include="Source\Editor\ActionManager.cpp" />
     <ClCompile Include="Source\Editor\CustomImgui.cpp" />
+    <ClCompile Include="Source\Editor\DebugLog\DebugLogWindow.cpp" />
+    <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp" />
+    <ClCompile Include="Source\Editor\GamePreview\GamePreview.cpp" />
     <ClCompile Include="Source\Editor\EditorImgui.cpp" />
     <ClCompile Include="Source\Editor\EditorMain.cpp" />
     <ClCompile Include="Source\Editor\EditorState.cpp" />
@@ -646,6 +714,33 @@
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.cpp" />
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.cpp" />
+    <ClCompile Include="Source\Editor\EditorUIHookManager.cpp" />
+    <ClCompile Include="Source\Editor\Addons\AddonCreator.cpp" />
+    <ClCompile Include="Source\Editor\Addons\AddonManager.cpp" />
+    <ClCompile Include="Source\Editor\Addons\AddonsMenu.cpp" />
+    <ClCompile Include="Source\Editor\Addons\AddonsWindow.cpp" />
+    <ClCompile Include="Source\Editor\Addons\NativeAddonManager.cpp" />
+    <ClCompile Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.cpp" />
+    <ClCompile Include="Source\Editor\ScriptEditor\ScriptEditorWindow.cpp" />
+    <ClCompile Include="Source\Editor\BuildDependencyWindow.cpp" />
+    <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp" />
+    <ClCompile Include="Source\Editor\Packaging\PackagingSettings.cpp" />
+    <ClCompile Include="Source\Editor\Packaging\PackagingWindow.cpp" />
+    <ClCompile Include="Source\Editor\ProjectSelect\ProjectSelectWindow.cpp" />
+    <ClCompile Include="Source\Editor\ProjectSelect\TemplateManager.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\External\ExternalModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\External\LaunchersModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\External\EditorsModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Packaging\DockerModule.cpp" />
+    <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp" />
+    <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp" />
+    <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp" />
+    <ClCompile Include="Source\Editor\NodeGraph\NodeGraphPanel.cpp" />
+    <ClCompile Include="Source\Editor\ThemeEditor\ThemeEditorWindow.cpp" />
+    <ClCompile Include="Source\Editor\ThemeEditor\CssGenerator.cpp" />
+    <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp" />
     <ClCompile Include="Source\Engine\Asset.cpp" />
     <ClCompile Include="Source\Engine\AssetDir.cpp" />
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
@@ -662,10 +757,13 @@
     <ClCompile Include="Source\Engine\Assets\SoundWave.cpp" />
     <ClCompile Include="Source\Engine\Assets\StaticMesh.cpp" />
     <ClCompile Include="Source\Engine\Assets\Texture.cpp" />
+    <ClCompile Include="Source\Engine\Assets\Timeline.cpp" />
+    <ClCompile Include="Source\Engine\Assets\NodeGraphAsset.cpp" />
     <ClCompile Include="Source\Engine\AudioManager.cpp" />
     <ClCompile Include="Source\Engine\Clock.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
+    <ClCompile Include="Source\Engine\Gizmos.cpp" />
     <ClCompile Include="Source\Engine\EngineTypes.cpp" />
     <ClCompile Include="Source\Engine\FileWatcher.cpp" />
     <ClCompile Include="Source\Engine\CameraFrustum.cpp" />
@@ -683,6 +781,7 @@
     <ClCompile Include="Source\Engine\Nodes\3D\Capsule3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\DirectionalLight3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\InstancedMesh3d.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\3D\NavMesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Light3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Mesh3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Particle3d.cpp" />
@@ -707,6 +806,56 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Engine\UI\UITypes.cpp" />
+    <ClCompile Include="Source\Engine\UI\UIStyleSheet.cpp" />
+    <ClCompile Include="Source\Engine\UI\UILoader.cpp" />
+    <ClCompile Include="Source\Engine\UI\UIDocument.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\NodeGraphPlayer.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\TimelineTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\TimelineClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\TimelineInstance.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateClip.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.cpp" />
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallClip.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphTypes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphNode.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\NodeGraph.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphProcessor.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomainManager.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MathNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ValueNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\PointNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\InputNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\VariableNodes.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\GraphClipboard.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ShaderDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\AnimationDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\FSMDomain.cpp" />
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.cpp" />
     <ClCompile Include="Source\Engine\Profiler.cpp" />
     <ClCompile Include="Source\Engine\Property.cpp" />
     <ClCompile Include="Source\Engine\Rect.cpp" />
@@ -763,6 +912,7 @@
     <ClCompile Include="Source\LuaBindings\Asset_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Gizmos_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Box3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
@@ -819,6 +969,10 @@
     <ClCompile Include="Source\LuaBindings\Vector_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Widget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\TimelinePlayer_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\NodeGraphPlayer_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\UIDocument_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Timeline_Lua.cpp" />
     <ClCompile Include="Source\Network\3DS\Network_3DS.cpp" />
     <ClCompile Include="Source\Network\Android\Network_Android.cpp" />
     <ClCompile Include="Source\Network\Dolphin\Network_Dolphin.cpp" />
@@ -833,6 +987,7 @@
     <ClCompile Include="Source\System\Linux\System_Linux.cpp" />
     <ClCompile Include="Source\System\SystemUtils.cpp" />
     <ClCompile Include="Source\System\Windows\System_Windows.cpp" />
+    <ClCompile Include="Source\System\ModuleLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\src\ColorGeometry.frag" />
@@ -875,7 +1030,11 @@
     <ClInclude Include="Source\Audio\AudioTypes.h" />
     <ClInclude Include="Source\Editor\ActionManager.h" />
     <ClInclude Include="Source\Editor\CustomImgui.h" />
+    <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h" />
+    <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h" />
+    <ClInclude Include="Source\Editor\GamePreview\GamePreview.h" />
     <ClInclude Include="Source\Editor\EditorConstants.h" />
+    <ClInclude Include="Source\Editor\EditorIcons.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />
     <ClInclude Include="Source\Editor\EditorState.h" />
     <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
@@ -895,6 +1054,37 @@
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h" />
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\EditorTheme.h" />
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.h" />
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.h" />
+    <ClInclude Include="Source\Editor\EditorUIHookManager.h" />
+    <ClInclude Include="Source\Editor\Addons\AddonCreator.h" />
+    <ClInclude Include="Source\Editor\Addons\AddonManager.h" />
+    <ClInclude Include="Source\Editor\Addons\AddonsMenu.h" />
+    <ClInclude Include="Source\Editor\Addons\AddonsWindow.h" />
+    <ClInclude Include="Source\Editor\Addons\NativeAddonManager.h" />
+    <ClInclude Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.h" />
+    <ClInclude Include="Source\Editor\ScriptEditor\ScriptEditorWindow.h" />
+    <ClInclude Include="Source\Editor\BuildDependencyWindow.h" />
+    <ClInclude Include="Source\Editor\Packaging\BuildProfile.h" />
+    <ClInclude Include="Source\Editor\Packaging\PackagingSettings.h" />
+    <ClInclude Include="Source\Editor\Packaging\PackagingWindow.h" />
+    <ClInclude Include="Source\Editor\ProjectSelect\ProjectSelectWindow.h" />
+    <ClInclude Include="Source\Editor\ProjectSelect\TemplateData.h" />
+    <ClInclude Include="Source\Editor\ProjectSelect\TemplateManager.h" />
+    <ClInclude Include="Source\Editor\Preferences\External\ExternalModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\External\LaunchersModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\External\EditorsModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Packaging\DockerModule.h" />
+    <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h" />
+    <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h" />
+    <ClInclude Include="Source\Editor\Timeline\TimelineActions.h" />
+    <ClInclude Include="Source\Editor\NodeGraph\NodeGraphPanel.h" />
+    <ClInclude Include="Source\Editor\ThemeEditor\ThemeEditorWindow.h" />
+    <ClInclude Include="Source\Editor\ThemeEditor\CssGenerator.h" />
+    <ClInclude Include="Source\Plugins\EditorUIHooks.h" />
+    <ClInclude Include="Source\Plugins\OctaveEngineAPI.h" />
+    <ClInclude Include="Source\Plugins\OctavePluginAPI.h" />
+    <ClInclude Include="Source\Plugins\RuntimePluginManager.h" />
     <ClInclude Include="Source\Engine\Assertion.h" />
     <ClInclude Include="Source\Engine\Asset.h" />
     <ClInclude Include="Source\Engine\AssetDir.h" />
@@ -912,6 +1102,8 @@
     <ClInclude Include="Source\Engine\Assets\SoundWave.h" />
     <ClInclude Include="Source\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Source\Engine\Assets\Texture.h" />
+    <ClInclude Include="Source\Engine\Assets\Timeline.h" />
+    <ClInclude Include="Source\Engine\Assets\NodeGraphAsset.h" />
     <ClInclude Include="Source\Engine\AudioManager.h" />
     <ClInclude Include="Source\Engine\CameraFrustum.h" />
     <ClInclude Include="Source\Engine\Clock.h" />
@@ -924,6 +1116,7 @@
     <ClInclude Include="Source\Engine\Factory.h" />
     <ClInclude Include="Source\Engine\FileWatcher.h" />
     <ClInclude Include="Source\Engine\InputDevices.h" />
+    <ClInclude Include="Source\Engine\Gizmos.h" />
     <ClInclude Include="Source\Engine\Line.h" />
     <ClInclude Include="Source\Engine\Log.h" />
     <ClInclude Include="Source\Engine\Maths.h" />
@@ -938,6 +1131,7 @@
     <ClInclude Include="Source\Engine\Nodes\3D\Capsule3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\DirectionalLight3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\InstancedMesh3d.h" />
+    <ClInclude Include="Source\Engine\Nodes\3D\NavMesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Light3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Mesh3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Particle3d.h" />
@@ -962,6 +1156,60 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
+    <ClInclude Include="Source\Engine\UI\UITypes.h" />
+    <ClInclude Include="Source\Engine\UI\UIStyleSheet.h" />
+    <ClInclude Include="Source\Engine\UI\UILoader.h" />
+    <ClInclude Include="Source\Engine\UI\UIDocument.h" />
+    <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h" />
+    <ClInclude Include="Source\Engine\Nodes\NodeGraphPlayer.h" />
+    <ClInclude Include="Source\Engine\Timeline\TimelineTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\TimelineClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\TimelineInstance.h" />
+    <ClInclude Include="Source\Engine\Timeline\TimelineTypes.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateClip.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.h" />
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallClip.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphTypes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphPin.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphLink.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphNode.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\NodeGraph.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphProcessor.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomainManager.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MathNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ValueNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\PointNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\InputNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\VariableNodes.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphVariable.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\GraphClipboard.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ShaderDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\AnimationDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\FSMDomain.h" />
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.h" />
     <ClInclude Include="Source\Engine\SmartPointer.h" />
     <ClInclude Include="Source\Engine\Profiler.h" />
     <ClInclude Include="Source\Engine\Property.h" />
@@ -1020,6 +1268,7 @@
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Gizmos_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Box3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Button_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
@@ -1075,6 +1324,10 @@
     <ClInclude Include="Source\LuaBindings\Vector_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Widget_Lua.h" />
     <ClInclude Include="Source\LuaBindings\World_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\TimelinePlayer_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\NodeGraphPlayer_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\UIDocument_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Timeline_Lua.h" />
     <ClInclude Include="Source\Network\NetPlatformEpic.h" />
     <ClInclude Include="Source\Network\NetPlatformSteam.h" />
     <ClInclude Include="Source\Network\NetSession.h" />
@@ -1087,6 +1340,7 @@
     <ClInclude Include="Source\System\SystemConstants.h" />
     <ClInclude Include="Source\System\SystemTypes.h" />
     <ClInclude Include="Source\System\SystemUtils.h" />
+    <ClInclude Include="Source\System\ModuleLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

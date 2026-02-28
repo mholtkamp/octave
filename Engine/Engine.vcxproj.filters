@@ -84,6 +84,9 @@
     <Filter Include="Source Files\Engine\Nodes\Widgets">
       <UniqueIdentifier>{dc41d54e-d3cc-4f72-a638-388191adde27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\UI">
+      <UniqueIdentifier>{a7c3e1f0-8b2d-4c5e-9f1a-d3e6b4a8c702}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Engine\Nodes\3D">
       <UniqueIdentifier>{9bd20d9a-4e2e-42dd-819e-61f60afc29c5}</UniqueIdentifier>
     </Filter>
@@ -128,6 +131,45 @@
     </Filter>
     <Filter Include="Source Files\Editor\Preferences">
       <UniqueIdentifier>{af0b10d1-e6e6-428e-9f9d-f8a6d537ff48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\DebugLog">
+      <UniqueIdentifier>{d3a5c7b2-1f4e-4a8b-9c6d-e2f0b8a1d5c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\SecondScreenPreview">
+      <UniqueIdentifier>{b4c6d8e0-2a3f-4b5c-8d7e-f9a1b3c5d7e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\GamePreview">
+      <UniqueIdentifier>{c5d7e9f1-3b5a-4c8d-9e0f-a2b4c6d8e0f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\Timeline">
+      <UniqueIdentifier>{a7c3e1b5-9d2f-4e6a-8b0c-f1d4a6e8c2b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\ThemeEditor">
+      <UniqueIdentifier>{e4b2a8c6-3f1d-5e7a-9b0c-d2f5a7c9e1b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Timeline">
+      <UniqueIdentifier>{b8d4f2c6-0e3a-5f7b-9c1d-a2e5b7f9d3c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Timeline\Tracks">
+      <UniqueIdentifier>{c9e5a3d7-1f4b-6a8c-0d2e-b3f6c8a0e4d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\ScriptEditor">
+      <UniqueIdentifier>{f5a3b7d9-2c4e-6a8f-0b1d-c3e6f8a2d4b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\NodeGraph">
+      <UniqueIdentifier>{a1b2c3d4-5e6f-7a8b-9c0d-e1f2a3b4c5d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\NodeEditor">
+      <UniqueIdentifier>{b2c3d4e5-6f7a-8b9c-0d1e-f2a3b4c5d6e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\NodeGraph">
+      <UniqueIdentifier>{c3d4e5f6-7a8b-9c0d-1e2f-a3b4c5d6e7f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\NodeGraph\Nodes">
+      <UniqueIdentifier>{d4e5f6a7-8b9c-0d1e-2f3a-b4c5d6e7f8a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\NodeGraph\Domains">
+      <UniqueIdentifier>{e5f6a7b8-9c0d-1e2f-3a4b-c5d6e7f8a9b0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +216,9 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Engine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Gizmos.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Maths.cpp">
@@ -293,6 +338,15 @@
     <ClCompile Include="Source\LuaBindings\World_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\TimelinePlayer_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\NodeGraphPlayer_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Timeline_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Input_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -303,6 +357,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Audio_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Gizmos_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Log_Lua.cpp">
@@ -335,6 +392,9 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\UIDocument_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -354,6 +414,9 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Texture.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\Timeline.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\MaterialInstance_Lua.cpp">
@@ -470,6 +533,69 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UITypes.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UIStyleSheet.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UILoader.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\UI\UIDocument.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\TimelinePlayer.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\NodeGraphPlayer.cpp">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineTrack.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineClip.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\TimelineInstance.cpp">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\TransformClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AudioClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\AnimationClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ScriptValueClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\ActivateClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Timeline\Tracks\FunctionCallClip.cpp">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
@@ -584,6 +710,15 @@
     <ClCompile Include="Source\Engine\Nodes\3D\TestSpinner.cpp">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\DebugLog\DebugLogWindow.cpp">
+      <Filter>Source Files\Editor\DebugLog</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp">
+      <Filter>Source Files\Editor\SecondScreenPreview</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\GamePreview\GamePreview.cpp">
+      <Filter>Source Files\Editor\GamePreview</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\EditorImgui.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -606,6 +741,9 @@
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\External\Imgui\imgui_widgets.cpp">
+      <Filter>Source Files\Editor\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Imgui\imgui_dock.cpp">
       <Filter>Source Files\Editor\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\External\Imgui\misc\cpp\imgui_stdlib.cpp">
@@ -752,6 +890,9 @@
     <ClCompile Include="Source\System\SystemUtils.cpp">
       <Filter>Source Files\System</Filter>
     </ClCompile>
+    <ClCompile Include="Source\System\ModuleLoader.cpp">
+      <Filter>Source Files\System</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\NodePath.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -788,11 +929,194 @@
     <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\EditorUIHookManager.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Addons\AddonCreator.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Addons\AddonManager.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Addons\AddonsMenu.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Addons\AddonsWindow.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Addons\NativeAddonManager.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ScriptEditor\ScriptEditorWindow.cpp">
+      <Filter>Source Files\Editor\ScriptEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Packaging\BuildProfile.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\BuildDependencyWindow.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Packaging\PackagingSettings.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Packaging\PackagingWindow.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ProjectSelect\ProjectSelectWindow.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ProjectSelect\TemplateManager.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\External\ExternalModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\External\LaunchersModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\External\EditorsModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Packaging\DockerModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Packaging\PackagingModule.cpp">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Timeline\TimelinePanel.cpp">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Timeline\TimelineActions.cpp">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ThemeEditor\ThemeEditorWindow.cpp">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ThemeEditor\CssGenerator.cpp">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Plugins\RuntimePluginManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
     <ClCompile Include="FeatureFlags.cpp">
       <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor.cpp">
+      <Filter>Source Files\Editor\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_node_editor_api.cpp">
+      <Filter>Source Files\Editor\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\crude_json.cpp">
+      <Filter>Source Files\Editor\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\imgui-node-editor\imgui_canvas.cpp">
+      <Filter>Source Files\Editor\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\NodeGraph\NodeGraphPanel.cpp">
+      <Filter>Source Files\Editor\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\NodeGraphAsset.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphTypes.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphNode.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\NodeGraph.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphProcessor.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphDomainManager.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MathNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ValueNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\PointNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SplineNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\PointCloud.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FSMNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\InputNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Nodes\VariableNodes.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\GraphClipboard.cpp">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\MaterialDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ShaderDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\AnimationDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\FSMDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.cpp">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -900,6 +1224,9 @@
     <ClInclude Include="Source\Engine\Assets\Texture.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\Timeline.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Font.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
@@ -926,6 +1253,72 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UITypes.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UIStyleSheet.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UILoader.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\UI\UIDocument.h">
+      <Filter>Source Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\TimelinePlayer.h">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\NodeGraphPlayer.h">
+      <Filter>Source Files\Engine\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineTrack.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineClip.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineInstance.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\TimelineTypes.h">
+      <Filter>Source Files\Engine\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\TransformClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AudioClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\AnimationClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ScriptValueClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\ActivateClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallTrack.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Timeline\Tracks\FunctionCallClip.h">
+      <Filter>Source Files\Engine\Timeline\Tracks</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
@@ -991,6 +1384,9 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\InputDevices.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Gizmos.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Line.h">
@@ -1113,6 +1509,15 @@
     <ClInclude Include="Source\LuaBindings\World_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TimelinePlayer_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\NodeGraphPlayer_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Timeline_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Asset_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1120,6 +1525,12 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Audio_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Gizmos_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\UIDocument_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h">
@@ -1338,6 +1749,15 @@
     <ClInclude Include="Source\Engine\Nodes\3D\TestSpinner.h">
       <Filter>Source Files\Engine\Nodes\3D</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h">
+      <Filter>Source Files\Editor\DebugLog</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h">
+      <Filter>Source Files\Editor\SecondScreenPreview</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\GamePreview\GamePreview.h">
+      <Filter>Source Files\Editor\GamePreview</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Editor\EditorImgui.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
@@ -1461,6 +1881,9 @@
     <ClInclude Include="Source\System\SystemUtils.h">
       <Filter>Source Files\System</Filter>
     </ClInclude>
+    <ClInclude Include="Source\System\ModuleLoader.h">
+      <Filter>Source Files\System</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Swap.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -1500,11 +1923,203 @@
     <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\ThemeModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeParser.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Appearance\Theme\CssThemeManager.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\EditorUIHookManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Addons\AddonCreator.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Addons\AddonManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Addons\AddonsMenu.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Addons\AddonsWindow.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Addons\NativeAddonManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ScriptCreator\ScriptCreatorDialog.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ScriptEditor\ScriptEditorWindow.h">
+      <Filter>Source Files\Editor\ScriptEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Packaging\BuildProfile.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\BuildDependencyWindow.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Packaging\PackagingSettings.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Packaging\PackagingWindow.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ProjectSelect\ProjectSelectWindow.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ProjectSelect\TemplateData.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ProjectSelect\TemplateManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\External\ExternalModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\External\LaunchersModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\External\EditorsModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Packaging\DockerModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Packaging\PackagingModule.h">
+      <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Timeline\TimelinePanel.h">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Timeline\TimelineActions.h">
+      <Filter>Source Files\Editor\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ThemeEditor\ThemeEditorWindow.h">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ThemeEditor\CssGenerator.h">
+      <Filter>Source Files\Editor\ThemeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Plugins\EditorUIHooks.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Plugins\OctaveEngineAPI.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Plugins\OctavePluginAPI.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Plugins\RuntimePluginManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
     <ClInclude Include="FeatureFlags.h">
       <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\NodeGraph\NodeGraphPanel.h">
+      <Filter>Source Files\Editor\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\NodeGraphAsset.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphTypes.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphPin.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphLink.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphNode.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\NodeGraph.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphProcessor.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomain.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphDomainManager.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MathNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ValueNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\MaterialNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ShaderNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\ProceduralNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\PointNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SplineNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\GizmoNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\NavMeshNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\PointCloud.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\AnimationNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FSMNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\SceneGraphNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\InputNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\FunctionNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Nodes\VariableNodes.h">
+      <Filter>Source Files\Engine\NodeGraph\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphVariable.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\GraphClipboard.h">
+      <Filter>Source Files\Engine\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\MaterialDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ShaderDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\ProceduralDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\AnimationDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\FSMDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\NodeGraph\Domains\SceneGraphDomain.h">
+      <Filter>Source Files\Engine\NodeGraph\Domains</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -13,6 +13,8 @@
 
 class Node;
 class Scene;
+class Timeline;
+class TimelineInstance;
 class Widget;
 class Text;
 class Asset;
@@ -66,6 +68,13 @@ enum class PaintMode
     Count
 };
 
+enum class AssetBrowserTab
+{
+    Project = 0,
+    Addons = 1,
+    Count
+};
+
 struct LinkedSceneProps
 {
     Node* mNode = nullptr;
@@ -89,6 +98,7 @@ struct EditorState
     int32_t mSelectedInstance = -1;
     std::vector<EditScene> mEditScenes;
     AssetStub* mSelectedAssetStub = nullptr;
+    std::vector<AssetStub*> mSelectedAssetStubs;
     ControlMode mControlMode = ControlMode::Default;
     TransformLock mTransformLock = TransformLock::None;
     SharedPtr<Camera3D> mEditorCamera;
@@ -101,15 +111,21 @@ struct EditorState
     bool mMouseNeedsRecenter = false;
     bool mUiEnabled = true;
     bool mPlayInEditor = false;
+    bool mPlayInGameWindow = false;
     bool mEjected = false;
     bool mPaused = false;
     bool mHasEjectedOnce = false;
+    bool mSavedGridEnabled = false;
     glm::vec4 mSavedEditorClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    int32_t mSavedWindowRect[4] = {}; // x, y, w, h — saved before Play Full Screen resize
     int32_t mEditSceneIndex = -1;
     int32_t mPieEditSceneIdx = -1;
-    AssetDir* mCurrentDir = nullptr;
-    std::vector<AssetDir*> mDirPast;
-    std::vector<AssetDir*> mDirFuture;
+    AssetBrowserTab mActiveAssetTab = AssetBrowserTab::Project;
+    AssetDir* mTabCurrentDir[(int)AssetBrowserTab::Count] = {};
+    std::vector<AssetDir*> mTabDirPast[(int)AssetBrowserTab::Count];
+    std::vector<AssetDir*> mTabDirFuture[(int)AssetBrowserTab::Count];
+    std::string mTabFilterStr[(int)AssetBrowserTab::Count];
+    std::vector<AssetStub*> mTabFilteredStubs[(int)AssetBrowserTab::Count];
     std::vector<Object*> mInspectPast;
     std::vector<Object*> mInspectFuture;
     Object* mInspectedObject;
@@ -119,8 +135,6 @@ struct EditorState
     Viewport3D* mViewport3D = nullptr;
     Viewport2D* mViewport2D = nullptr;
     std::string mIOAssetPath;
-    std::string mAssetFilterStr;
-    std::vector<AssetStub*> mFilteredAssetStubs;
     bool mRequestSaveSceneAs = false;
     bool mTrackSelectedAsset = false;
     bool mTrackSelectedNode = false;
@@ -142,12 +156,43 @@ struct EditorState
     int32_t mNodePropertySelectIndex = 0;
     std::string mNodePropertySelectName = "";
     std::string mPendingSceneImportPath = "";
+    AssetStub* mPendingReimportSceneStub = nullptr;
+    std::string mPendingReimportScenePath = "";
     bool mShutdownUnsavedCheck = false;
     bool mDevMode = false;
+    bool mShowBottomPane = true;
+    float mBottomPaneHeight = 180.0f;
     bool mEndPieAtEndOfFrame = false;
     bool mShowProjectUpgradeModal = false;
     bool mProjectUpgradeInProgress = false;
     std::vector<AssetStub*> mAssetsNeedingUpgrade;
+
+    // 3DS Preview Panel state
+    bool mShow3DSPreview = false;
+    int32_t mSceneScreenFilter = -1;  // -1 = All Screens, 0 = Top Screen, 1 = Bottom Screen
+
+    // Game Preview Panel state
+    bool mShowGamePreview = false;
+    bool mGamePreviewCaptured = false;
+
+    // Play target (shared between viewport toolbar and Game Preview)
+    int32_t mPlayTarget = 0;  // 0=PlayInEditor, 1=PlayFullScreen, 2=Dolphin, 3=Azahar, 4=Standalone, 5=Send3dsLink
+
+    // Node Graph Panel state
+    bool mShowNodeGraphPanel = false;
+
+    // Timeline Panel state
+    bool mShowTimelinePanel = false;
+    TimelineRef mEditedTimelineRef;
+    TimelineInstance* mTimelinePreviewInstance = nullptr;
+    float mTimelinePlayheadTime = 0.0f;
+    bool mTimelinePreviewing = false;
+    float mTimelineZoom = 100.0f;
+    float mTimelineScrollX = 0.0f;
+    float mTimelineSnapInterval = 0.1f;
+    int32_t mTimelineSelectedTrack = -1;
+    int32_t mTimelineSelectedClip = -1;
+    int32_t mTimelineSelectedKeyframe = -1;
 
     // ImGuizmo state
     ImGuizmo::OPERATION mGizmoOperation = ImGuizmo::TRANSLATE;
@@ -179,6 +224,11 @@ struct EditorState
     void AddSelectedNode(Node* node, bool addAllChildren);
     void RemoveSelectedNode(Node* node);
     void SetSelectedAssetStub(AssetStub* newStub);
+    void AddSelectedAssetStub(AssetStub* stub);
+    void RemoveSelectedAssetStub(AssetStub* stub);
+    void ClearSelectedAssetStubs();
+    const std::vector<AssetStub*>& GetSelectedAssetStubs();
+    bool IsAssetStubSelected(AssetStub* stub);
     void SetControlMode(ControlMode newMode);
 
     void BeginPlayInEditor();
@@ -231,6 +281,7 @@ struct EditorState
     bool IsInspectLocked();
     void RecordInspectHistory();
     void ClearInspectHistory();
+    void RemoveFromInspectHistory(Object* obj);
     void ProgressInspectFuture();
     void RegressInspectPast();
     void ClearAssetDirHistory();
@@ -239,12 +290,13 @@ struct EditorState
     void BrowseToAsset(const std::string& name);
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
-    void DuplicateAsset(AssetStub* srcStub);
+    void DuplicateAsset(AssetStub* srcStub, const char* overrideName = nullptr);
 
     void ProgressDirFuture();
     void RegressDirPast();
 
     void RemoveFilteredAssetStub(AssetStub* stub);
+    int ActiveTab() const { return (int)mActiveAssetTab; }
 
     Viewport3D* GetViewport3D();
     Viewport2D* GetViewport2D();
