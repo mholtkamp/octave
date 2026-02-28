@@ -6,7 +6,7 @@
 #define BASIC_DIRECTIONAL_LIGHT "Directional Light"
 #define BASIC_SKELETAL_MESH "Skeletal Mesh"
 #define BASIC_BOX "Box"
-#define BASIC_NAV_MESH "NavMesh3D"
+#define BASIC_NAV_MESH "Nav Mesh"
 #define BASIC_SPHERE "Sphere"
 #define BASIC_CAPSULE "Capsule"
 #define BASIC_PARTICLE "Particle"
@@ -23,3 +23,4 @@
 #define DRAGDROP_ASSET "DND_ASSET"
 #define DRAGDROP_DIR "DND_DIR"
 #define DRAGDROP_SCRIPT "DND_SCRIPT"
+#define BASIC_SPLINE "Spline"
