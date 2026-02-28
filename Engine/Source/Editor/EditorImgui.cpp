@@ -2795,7 +2795,7 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 else
                 {
 
-                    ImGui::InputTextMultiline("", &sTempString, ImVec2(ImGui::CalcItemWidth(), 19.0f), ImGuiInputTextFlags_CtrlEnterForNewLine);
+                    ImGui::InputText("", &sTempString);
 
                     if (ImGui::IsItemActivated())
                     {
