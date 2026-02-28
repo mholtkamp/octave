@@ -238,6 +238,26 @@ typedef void (*PlayTargetCallback)(void* userData);
  */
 typedef void (*SceneCreationCallback)(const char* sceneName, void* rootNode, void* userData);
 
+// ===== Controller Server Hooks =====
+
+/**
+ * @brief Callback for custom controller REST route handlers.
+ * @param method HTTP method (GET, POST, PUT, DELETE)
+ * @param path Request path (e.g., "/api/addons/mycustom")
+ * @param body Request body (JSON string, empty for GET)
+ * @param responseBuffer Buffer to write JSON response into
+ * @param bufferSize Size of the response buffer
+ * @param userData User data passed during registration
+ */
+typedef void (*ControllerRouteCallback)(const char* method, const char* path, const char* body, char* responseBuffer, int32_t bufferSize, void* userData);
+
+/**
+ * @brief Callback for controller server state changes.
+ * @param state 0=Started, 1=Stopped
+ * @param userData User data passed during registration
+ */
+typedef void (*ControllerServerEventCallback)(int32_t state, void* userData);
+
 /**
  * @brief Unique identifier for tracking hooks.
  *
@@ -825,6 +845,33 @@ struct EditorUIHooks
      * @param name Name of the preset to remove
      */
     void (*RemoveGamePreviewResolution)(HookId hookId, const char* name);
+
+    // ===== Controller Server Extension =====
+
+    /**
+     * @brief Register a custom REST route on the controller server.
+     * @param hookId Unique identifier for this hook
+     * @param method HTTP method: "GET", "POST", "PUT", "DELETE"
+     * @param path URL path, e.g., "/api/addons/mycustom"
+     * @param callback Function called to handle requests
+     * @param userData User data passed to callback
+     */
+    void (*RegisterControllerRoute)(HookId hookId, const char* method, const char* path, ControllerRouteCallback callback, void* userData);
+
+    /**
+     * @brief Unregister a custom REST route.
+     * @param hookId Hook identifier used during registration
+     * @param path URL path to unregister
+     */
+    void (*UnregisterControllerRoute)(HookId hookId, const char* path);
+
+    /**
+     * @brief Register callback for controller server state changes (started/stopped).
+     * @param hookId Unique identifier for this hook
+     * @param callback Function called on state change
+     * @param userData User data passed to callback
+     */
+    void (*RegisterOnControllerServerStateChanged)(HookId hookId, ControllerServerEventCallback callback, void* userData);
 
     // ===== Cleanup =====
 

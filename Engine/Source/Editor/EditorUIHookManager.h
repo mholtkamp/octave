@@ -393,6 +393,28 @@ struct RegisteredGizmoTool
 };
 
 /**
+ * @brief Registered controller server route.
+ */
+struct RegisteredControllerRoute
+{
+    HookId mHookId;
+    std::string mMethod;
+    std::string mPath;
+    ControllerRouteCallback mCallback;
+    void* mUserData;
+};
+
+/**
+ * @brief Registered controller server state event.
+ */
+struct RegisteredControllerServerEvent
+{
+    HookId mHookId;
+    ControllerServerEventCallback mCallback;
+    void* mUserData;
+};
+
+/**
  * @brief Singleton manager for editor UI hooks.
  *
  * Stores all registered hooks and provides rendering helpers.
@@ -582,6 +604,11 @@ public:
     void FireOnAssetDropHierarchy(const char* assetName);
     void FireOnAssetDropViewport(const char* assetName);
 
+    // ===== Controller Server Extension =====
+
+    const std::vector<RegisteredControllerRoute>& GetControllerRoutes() const { return mControllerRoutes; }
+    void FireOnControllerServerStateChanged(int32_t state);
+
     // ===== Cleanup =====
 
     /**
@@ -675,6 +702,10 @@ private:
     std::vector<RegisteredPackageFinishedCallback> mOnPostBuild;
     std::vector<RegisteredEditorModeCallback> mOnEditorModeChanged;
     std::vector<RegisteredGizmoTool> mGizmoTools;
+
+    // Controller Server hooks
+    std::vector<RegisteredControllerRoute> mControllerRoutes;
+    std::vector<RegisteredControllerServerEvent> mOnControllerServerStateChanged;
 
     // Empty vector for returning when menu not found
     std::vector<RegisteredMenuItem> mEmptyMenuItems;

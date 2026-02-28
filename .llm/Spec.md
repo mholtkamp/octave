@@ -56,6 +56,7 @@ octave/
 | Platforms | [Platforms.md](Platforms.md) | `Engine/Source/System/` | System API, input, audio, networking, platform abstractions |
 | Timeline | [Timeline.md](Timeline.md) | `Engine/Source/Engine/Timeline/` | Keyframe animation: tracks, clips, interpolation, TimelinePlayer |
 | Addons | [Addons.md](Addons.md) | `Engine/Source/Plugins/` | Runtime plugin API, editor hooks, native addon system |
+| Controller Server | [ControlServer.md](ControlServer.md) | `Engine/Source/Editor/ControllerServer/` | REST API for remote editor control, Crow HTTP server, addon route hooks |
 
 ## Key Entry Points
 

@@ -18,6 +18,7 @@
 #include "External/EditorsModule.h"
 #include "Packaging/PackagingModule.h"
 #include "Packaging/DockerModule.h"
+#include "Network/NetworkModule.h"
 
 PreferencesManager* PreferencesManager::sInstance = nullptr;
 
@@ -46,6 +47,9 @@ void PreferencesManager::Create()
     PackagingModule* packaging = new PackagingModule();
     packaging->AddSubModule(new DockerModule());
     sInstance->RegisterModule(packaging);
+
+    // Network module
+    sInstance->RegisterModule(new NetworkModule());
 
     // Load all settings on startup
     sInstance->LoadAllSettings();

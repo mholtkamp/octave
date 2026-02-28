@@ -72,6 +72,8 @@
 #include "Preferences/External/EditorsModule.h"
 #include "Packaging/PackagingSettings.h"
 #include "ScriptCreator/ScriptCreatorDialog.h"
+#include "ControllerServer/ControllerServer.h"
+#include "Preferences/Network/NetworkModule.h"
 
 #include <functional>
 #include <algorithm>
@@ -9024,6 +9026,8 @@ void EditorImguiInit()
 
     RegisterLogCallback(DebugLogWindow::LogCallback);
 
+    ControllerServer::Create();
+
     GetScriptEditorWindow()->Init();
 
     ImGui::InitDock();
@@ -9110,6 +9114,11 @@ void EditorImguiDraw()
         }
     }
 
+    if (ControllerServer::Get())
+    {
+        ControllerServer::Get()->Tick();
+    }
+
     ImGui::Render();
 }
 
@@ -9141,6 +9150,7 @@ void EditorImguiPreShutdown()
     GetScriptEditorWindow()->Shutdown();
     ImGui::ShutdownDock();
     UnregisterLogCallback(DebugLogWindow::LogCallback);
+    ControllerServer::Destroy();
 
     if (sInspectTexId != 0)
     {

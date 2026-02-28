@@ -171,6 +171,12 @@
     <Filter Include="Source Files\Engine\NodeGraph\Domains">
       <UniqueIdentifier>{e5f6a7b8-9c0d-1e2f-3a4b-c5d6e7f8a9b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\ControllerServer">
+      <UniqueIdentifier>{f6a7b8c9-0d1e-2f3a-4b5c-d6e7f8a9b0c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor\Preferences\Network">
+      <UniqueIdentifier>{a8b9c0d1-2e3f-4a5b-6c7d-e8f9a0b1c2d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Graphics\Vulkan\VulkanUtils.cpp">
@@ -937,6 +943,15 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.cpp">
       <Filter>Source Files\Editor\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ControllerServer\ControllerServer.cpp">
+      <Filter>Source Files\Editor\ControllerServer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ControllerServer\ControllerServerRoutes.cpp">
+      <Filter>Source Files\Editor\ControllerServer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Preferences\Network\NetworkModule.cpp">
+      <Filter>Source Files\Editor\Preferences\Network</Filter>
     </ClCompile>
     <ClCompile Include="Source\Editor\EditorUIHookManager.cpp">
       <Filter>Source Files\Editor</Filter>
@@ -1931,6 +1946,18 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\Preferences\Appearance\Viewport\ViewportModule.h">
       <Filter>Source Files\Editor\Preferences</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ControllerServer\ControllerServer.h">
+      <Filter>Source Files\Editor\ControllerServer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ControllerServer\ControllerServerRoutes.h">
+      <Filter>Source Files\Editor\ControllerServer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ControllerServer\ControllerServerTypes.h">
+      <Filter>Source Files\Editor\ControllerServer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Preferences\Network\NetworkModule.h">
+      <Filter>Source Files\Editor\Preferences\Network</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorUIHookManager.h">
       <Filter>Source Files\Editor</Filter>

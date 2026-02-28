@@ -902,6 +902,40 @@ void EditorUIHookManager::InitializeHooks()
                 return tool.mHookId == hookId && tool.mToolName == name;
             }), mgr->mGizmoTools.end());
     };
+
+    // ===== Controller Server Extension Hooks =====
+
+    mHooks.RegisterControllerRoute = [](HookId hookId, const char* method, const char* path, ControllerRouteCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        RegisteredControllerRoute route;
+        route.mHookId = hookId;
+        route.mMethod = method ? method : "";
+        route.mPath = path ? path : "";
+        route.mCallback = callback;
+        route.mUserData = userData;
+
+        mgr->mControllerRoutes.push_back(route);
+    };
+
+    mHooks.UnregisterControllerRoute = [](HookId hookId, const char* path) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        std::string p = path ? path : "";
+        mgr->mControllerRoutes.erase(std::remove_if(mgr->mControllerRoutes.begin(), mgr->mControllerRoutes.end(),
+            [hookId, &p](const RegisteredControllerRoute& route) {
+                return route.mHookId == hookId && route.mPath == p;
+            }), mgr->mControllerRoutes.end());
+    };
+
+    mHooks.RegisterOnControllerServerStateChanged = [](HookId hookId, ControllerServerEventCallback callback, void* userData) {
+        EditorUIHookManager* mgr = EditorUIHookManager::Get();
+        if (mgr == nullptr) return;
+
+        mgr->mOnControllerServerStateChanged.push_back({hookId, callback, userData});
+    };
 }
 
 const std::vector<RegisteredMenuItem>& EditorUIHookManager::GetMenuItems(const std::string& menuPath) const
@@ -1177,6 +1211,8 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mOnEditorModeChanged);
     removeByHookId(mGizmoTools);
     removeByHookId(mGamePreviewResolutions);
+    removeByHookId(mControllerRoutes);
+    removeByHookId(mOnControllerServerStateChanged);
 }
 
 // ===== Top-Level Menus and Toolbar Drawing =====
@@ -1836,6 +1872,14 @@ HookId GenerateHookId(const char* identifier)
         ++identifier;
     }
     return hash;
+}
+
+void EditorUIHookManager::FireOnControllerServerStateChanged(int32_t state)
+{
+    for (const auto& entry : mOnControllerServerStateChanged)
+    {
+        if (entry.mCallback) entry.mCallback(state, entry.mUserData);
+    }
 }
 
 #endif // EDITOR

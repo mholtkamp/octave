@@ -33,6 +33,8 @@
 #include "Addons/AddonManager.h"
 #include "Addons/NativeAddonManager.h"
 #include "EditorUIHookManager.h"
+#include "ControllerServer/ControllerServer.h"
+#include "Preferences/Network/NetworkModule.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
@@ -110,6 +112,15 @@ void EditorMain(int32_t argc, char** argv)
     ActionManager::Create();
     InputManager::Create();
     PreferencesManager::Create();
+
+    // Auto-start controller server if enabled in preferences (must be after PreferencesManager::Create)
+    NetworkModule* netModule = NetworkModule::Get();
+    if (netModule && netModule->GetControllerServerEnabled())
+    {
+        ControllerServer::Get()->Start(netModule->GetPort());
+        ControllerServer::Get()->SetLogRequests(netModule->GetLogRequests());
+    }
+
     TemplateManager::Create();
     AddonManager::Create();
     EditorUIHookManager::Create();
