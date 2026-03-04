@@ -3,6 +3,7 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Assets/MaterialInstance.h"
 #include "Assets/MaterialLite.h"
+#include "AssetManager.h"
 #include "Engine.h"
 #include "World.h"
 
@@ -48,6 +49,79 @@ void Mesh3D::GatherProperties(std::vector<Property>& outProps)
 
     outProps.push_back(Property(DatumType::Asset, "Material Override", this, &mMaterialOverride, 1, HandlePropChange, int32_t(Material::GetStaticType())));
     outProps.push_back(Property(DatumType::Bool, "Billboard", this, &mBillboard));
+}
+
+static const uint32_t sMesh3dExtraMagic = 0x4D455348; // "MESH"
+
+void Mesh3D::SaveStream(Stream& stream, Platform platform)
+{
+    stream.WriteUint32(sMesh3dExtraMagic);
+
+    Material* mat = mMaterialOverride.Get<Material>();
+    bool hasInlineMat = (mat != nullptr && mat->IsTransient() && mat->IsLite());
+    stream.WriteBool(hasInlineMat);
+
+    if (hasInlineMat)
+    {
+        static_cast<MaterialLite*>(mat)->SaveLiteParams(stream);
+    }
+}
+
+static MaterialLite* LoadInlineMaterial(Mesh3D* mesh, Stream& stream, uint32_t version)
+{
+    MaterialLite* mat = MaterialLite::New(mesh->GetMaterial());
+    mat->LoadLiteParams(stream, version);
+    return mat;
+}
+
+void Mesh3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
+{
+    uint32_t startPos = stream.GetPos();
+
+    if (stream.GetSize() - startPos >= 4)
+    {
+        uint32_t magic = stream.ReadUint32();
+
+        if (magic == sMesh3dExtraMagic)
+        {
+            bool hasInlineMat = stream.ReadBool();
+
+            if (hasInlineMat)
+            {
+                mMaterialOverride = LoadInlineMaterial(this, stream, version);
+            }
+        }
+        else
+        {
+            stream.SetPos(startPos);
+
+            // Handle legacy v18 format (bool-first, no magic) from early dev builds.
+            // Those scenes were saved with a version bump to 18 that wrote a bare bool
+            // before the material data, without the magic prefix.
+            if (version >= 18)
+            {
+                bool hasInlineMat = stream.ReadBool();
+
+                if (hasInlineMat)
+                {
+                    mMaterialOverride = LoadInlineMaterial(this, stream, version);
+                }
+            }
+        }
+    }
+
+    // Fallback for old scenes saved before inline material support:
+    // Recreate the skybox material if this looks like a skybox node that lost its transient material.
+    if (mMaterialOverride.Get() == nullptr && GetName() == "Skybox")
+    {
+        MaterialLite* skyMat = MaterialLite::New(GetMaterial());
+        skyMat->SetShadingModel(ShadingModel::Unlit);
+        skyMat->SetCullMode(CullMode::Front);
+        skyMat->SetDepthTestDisabled(true);
+        skyMat->SetSortPriority(-1000);
+        skyMat->SetApplyFog(false);
+        mMaterialOverride = skyMat;
+    }
 }
 
 bool Mesh3D::IsStaticMesh3D() const

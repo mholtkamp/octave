@@ -5,8 +5,6 @@
 Scripts are written in Lua.
 Any node can have a single script assigned to it.
 
-For a simple script example, look at [Rotator.lua](../../Engine/Scripts/Rotator.lua)
-
 For a more complex script example, check out [FirstPersonController.lua](../../Engine/Scripts/FirstPersonController.lua)
 
 In your script, you must define a table with the same name as the file. For example, the first line in Rotator.lua is `Rotator = {}`.
@@ -132,3 +130,32 @@ See [NetFuncType](../Lua/Misc/Enums.md#netfunctype) for a description of the dif
 `OwnerChanged()`
 
 Called in network multiplayer games whenever the owning host of this node changes.
+
+# Example
+
+```lua
+
+Coin = {}
+
+function Coin:Create()
+
+    self.angularVelocity = Vec()
+
+end
+
+function Coin:GatherProperties()
+
+    return 
+    {
+        { name = "angularVelocity", type = DatumType.Vector }
+    }
+
+end
+
+function Coin:Tick(deltaTime)
+
+    self:AddRotation(self.angularVelocity * deltaTime)
+    
+end
+
+```

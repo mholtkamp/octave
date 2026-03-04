@@ -62,6 +62,12 @@ void INP_Update()
     input.mGamepads[0].mButtons[GAMEPAD_RIGHT] = down & KEY_DRIGHT;
     input.mGamepads[0].mButtons[GAMEPAD_DOWN] = down & KEY_DDOWN;
     input.mGamepads[0].mButtons[GAMEPAD_UP] = down & KEY_DUP;
+
+    // Map D-pad to arrow keyboard keys so IsKeyDown(OCTAVE_KEY_UP) etc. works
+    input.mKeys[OCTAVE_KEY_UP] = (down & KEY_DUP) != 0;
+    input.mKeys[OCTAVE_KEY_DOWN] = (down & KEY_DDOWN) != 0;
+    input.mKeys[OCTAVE_KEY_LEFT] = (down & KEY_DLEFT) != 0;
+    input.mKeys[OCTAVE_KEY_RIGHT] = (down & KEY_DRIGHT) != 0;
     input.mGamepads[0].mButtons[GAMEPAD_START] = down & KEY_START;
     input.mGamepads[0].mButtons[GAMEPAD_SELECT] = down & KEY_SELECT;
 
@@ -136,6 +142,11 @@ void INP_LockCursor(bool lock)
 }
 
 void INP_TrapCursor(bool trap)
+{
+
+}
+
+void INP_TrapCursorToRect(int32_t x, int32_t y, int32_t w, int32_t h)
 {
 
 }

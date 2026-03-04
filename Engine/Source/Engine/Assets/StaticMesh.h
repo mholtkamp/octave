@@ -29,6 +29,12 @@ public:
         uint32_t numIndices,
         IndexType* indices);
 
+    void CreateRawColor(
+        uint32_t numVertices,
+        VertexColor* vertices,
+        uint32_t numIndices,
+        IndexType* indices);
+
     StaticMeshResource* GetResource();
 
     // Asset Interface

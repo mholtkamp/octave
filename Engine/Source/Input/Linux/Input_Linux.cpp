@@ -244,6 +244,13 @@ void INP_TrapCursor(bool trap)
     input.mCursorTrapped = trap;
 }
 
+void INP_TrapCursorToRect(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+    // XCB doesn't easily support sub-window cursor confinement.
+    // Fall back to full-window grab.
+    INP_TrapCursor(true);
+}
+
 const char* INP_ShowSoftKeyboard(bool show)
 {
     return nullptr;

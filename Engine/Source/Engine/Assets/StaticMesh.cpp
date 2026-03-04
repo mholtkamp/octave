@@ -81,6 +81,24 @@ void StaticMesh::CreateRaw(
     Create();
 }
 
+void StaticMesh::CreateRawColor(
+    uint32_t numVertices,
+    VertexColor* vertices,
+    uint32_t numIndices,
+    IndexType* indices)
+{
+    mNumVertices = numVertices;
+    mNumIndices = numIndices;
+    mHasVertexColor = true;
+    ResizeVertexArray(numVertices);
+    ResizeIndexArray(numIndices);
+
+    memcpy(mVertices, vertices, numVertices * GetVertexSize());
+    memcpy(mIndices, indices, numIndices * sizeof(IndexType));
+
+    Create();
+}
+
 StaticMeshResource* StaticMesh::GetResource()
 {
     return &mResource;

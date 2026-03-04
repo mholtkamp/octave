@@ -1,7 +1,9 @@
 #if EDITOR
 #include <vector>
+#include <algorithm>
 #include "EditorState.h"
 #include "EditorConstants.h"
+#include "Timeline/TimelineInstance.h"
 #include "ActionManager.h"
 #include "Nodes/Node.h"
 #include "Asset.h"
@@ -21,6 +23,7 @@
 #include "AssetDir.h"
 #include "TimerManager.h"
 #include "AudioManager.h"
+#include "GamePreview/GamePreview.h"
 #include "Assets/Scene.h"
 #include "EditorUtils.h"
 #include "EditorImgui.h"
@@ -28,7 +31,9 @@
 #include "Viewport2d.h"
 #include "PaintManager.h"
 #include "Script.h"
+#include "Addons/AddonCreator.h"
 #include "Input/Input.h"
+#include "EditorUIHookManager.h"
 
 static EditorState sEditorState;
 
@@ -92,6 +97,12 @@ void EditorState::Shutdown()
     delete mPaintManager;
     mPaintManager = nullptr;
 
+    if (mTimelinePreviewInstance != nullptr)
+    {
+        delete mTimelinePreviewInstance;
+        mTimelinePreviewInstance = nullptr;
+    }
+
     mEditorCamera->SetWorld(nullptr, false);
     mEditorCamera->Destroy();
     mEditorCamera = nullptr;
@@ -100,7 +111,7 @@ void EditorState::Shutdown()
 void EditorState::Update(float deltaTime)
 {
     // TODO-NODE: Handle Widgets/2D? Maybe split modes to 3D and 2D
-    if (!mPlayInEditor || mEjected)
+    if (!mPlayInEditor || mEjected || mPlayInGameWindow)
     {
         switch (mMode)
         {
@@ -121,7 +132,7 @@ void EditorState::Update(float deltaTime)
         }
     }
 
-    if (mPlayInEditor && !mEjected)
+    if (mPlayInEditor && !mEjected && !mPlayInGameWindow)
     {
         mViewportX = 0;
         mViewportY = 0;
@@ -369,6 +380,8 @@ void EditorState::HandleNodeDestroy(Node* node)
         InspectObject(nullptr, true, false);
     }
 
+    RemoveFromInspectHistory(node);
+
     if (mPaintManager)
     {
         mPaintManager->HandleNodeDestroy(node);
@@ -480,6 +493,8 @@ void EditorState::RemoveSelectedNode(Node* node)
 
 void EditorState::SetSelectedAssetStub(AssetStub* newStub)
 {
+    ClearSelectedAssetStubs();
+
     if (mSelectedAssetStub != newStub)
     {
         mSelectedAssetStub = newStub;
@@ -489,6 +504,50 @@ void EditorState::SetSelectedAssetStub(AssetStub* newStub)
             AssetManager::Get()->LoadAsset(*newStub);
         }
     }
+
+    if (newStub != nullptr)
+    {
+        mSelectedAssetStubs.push_back(newStub);
+    }
+}
+
+void EditorState::AddSelectedAssetStub(AssetStub* stub)
+{
+    if (stub == nullptr)
+        return;
+
+    if (!IsAssetStubSelected(stub))
+    {
+        mSelectedAssetStubs.push_back(stub);
+        if (stub->mAsset == nullptr)
+        {
+            AssetManager::Get()->LoadAsset(*stub);
+        }
+    }
+}
+
+void EditorState::RemoveSelectedAssetStub(AssetStub* stub)
+{
+    auto it = std::find(mSelectedAssetStubs.begin(), mSelectedAssetStubs.end(), stub);
+    if (it != mSelectedAssetStubs.end())
+    {
+        mSelectedAssetStubs.erase(it);
+    }
+}
+
+void EditorState::ClearSelectedAssetStubs()
+{
+    mSelectedAssetStubs.clear();
+}
+
+const std::vector<AssetStub*>& EditorState::GetSelectedAssetStubs()
+{
+    return mSelectedAssetStubs;
+}
+
+bool EditorState::IsAssetStubSelected(AssetStub* stub)
+{
+    return std::find(mSelectedAssetStubs.begin(), mSelectedAssetStubs.end(), stub) != mSelectedAssetStubs.end();
 }
 
 void EditorState::SetControlMode(ControlMode newMode)
@@ -534,6 +593,20 @@ void EditorState::SetControlMode(ControlMode newMode)
     SetTransformLock(TransformLock::None);
 }
 
+static void CopyPersistentUuids(Node* src, Node* dst)
+{
+    if (src == nullptr || dst == nullptr)
+        return;
+
+    dst->SetPersistentUuid(src->GetPersistentUuid());
+
+    uint32_t count = glm::min(src->GetNumChildren(), dst->GetNumChildren());
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        CopyPersistentUuids(src->GetChild(i), dst->GetChild(i));
+    }
+}
+
 void EditorState::BeginPlayInEditor()
 {
     if (mPlayInEditor)
@@ -557,13 +630,45 @@ void EditorState::BeginPlayInEditor()
     GetWorld(0)->Clear();
     OCT_ASSERT(GetWorld(0)->GetRootNode() == nullptr);
 
-    ShowEditorUi(false);
     Renderer::Get()->EnableProxyRendering(false);
+    mSavedGridEnabled = IsGridEnabled();
+    if (mSavedGridEnabled)
+    {
+        EnableGrid(false);
+    }
+
+    if (!mPlayInGameWindow)
+    {
+        ShowEditorUi(false);
+
+        // Resize the window to match the Game Preview resolution so UI widgets
+        // render at the correct size regardless of the editor window dimensions.
+        GamePreview* gp = GetGamePreview();
+        if (gp != nullptr && gp->GetCurrentWidth() > 0 && gp->GetCurrentHeight() > 0)
+        {
+            SYS_GetWindowRect(mSavedWindowRect[0], mSavedWindowRect[1], mSavedWindowRect[2], mSavedWindowRect[3]);
+
+            int32_t chromeW = mSavedWindowRect[2] - (int32_t)GetEngineState()->mWindowWidth;
+            int32_t chromeH = mSavedWindowRect[3] - (int32_t)GetEngineState()->mWindowHeight;
+            int32_t outerW = (int32_t)gp->GetCurrentWidth() + chromeW;
+            int32_t outerH = (int32_t)gp->GetCurrentHeight() + chromeH;
+
+            // Center on the previous window position
+            int32_t cx = mSavedWindowRect[0] + mSavedWindowRect[2] / 2;
+            int32_t cy = mSavedWindowRect[1] + mSavedWindowRect[3] / 2;
+            SYS_SetWindowRect(cx - outerW / 2, cy - outerH / 2, outerW, outerH);
+        }
+    }
 
     SetEditorMode(EditorMode::Scene);
 
     mPlayInEditor = true;
     mHasEjectedOnce = false;
+
+    if (mPlayInGameWindow)
+    {
+        mGamePreviewCaptured = true;
+    }
 
     // Fake-Initialize the Game
     //OctPreInitialize();
@@ -574,9 +679,14 @@ void EditorState::BeginPlayInEditor()
         editScene->mRootNode != nullptr)
     {
         NodePtr clonedRoot = editScene->mRootNode->Clone(true, false, true);
+        CopyPersistentUuids(editScene->mRootNode.Get(), clonedRoot.Get());
         ResolveAllNodePathsRecursive(clonedRoot.Get());
         GetWorld(0)->SetRootNode(clonedRoot.Get());
     }
+
+    // Fire OnPlayModeChanged(0 = Enter)
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr) hookMgr->FireOnPlayModeChanged(0);
 }
 
 void EditorState::EndPlayInEditor()
@@ -584,6 +694,7 @@ void EditorState::EndPlayInEditor()
     if (!mPlayInEditor)
         return;
 
+    mGamePreviewCaptured = false;
     INP_TrapCursor(false);
     INP_ShowCursor(true);
     INP_LockCursor(false);
@@ -614,11 +725,26 @@ void EditorState::EndPlayInEditor()
 
     ActionManager::Get()->ResetUndoRedo();
 
-    ShowEditorUi(true);
     Renderer::Get()->EnableProxyRendering(true);
+    if (mSavedGridEnabled)
+    {
+        EnableGrid(true);
+    }
+
+    if (!mPlayInGameWindow)
+    {
+        ShowEditorUi(true);
+
+        // Restore the window to its original size
+        if (mSavedWindowRect[2] > 0 && mSavedWindowRect[3] > 0)
+        {
+            SYS_SetWindowRect(mSavedWindowRect[0], mSavedWindowRect[1], mSavedWindowRect[2], mSavedWindowRect[3]);
+        }
+    }
     Renderer::Get()->SetClearColor(mSavedEditorClearColor);
 
     mPlayInEditor = false;
+    mPlayInGameWindow = false;
     mEjected = false;
     mPaused = false;
     mEndPieAtEndOfFrame = false;
@@ -632,12 +758,17 @@ void EditorState::EndPlayInEditor()
     {
         GetWorld(0)->GetActiveCamera()->SetTransform(cameraTransform);
     }
+
+    // Fire OnPlayModeChanged(1 = Exit)
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr) hookMgr->FireOnPlayModeChanged(1);
 }
 
 void EditorState::EjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        !mEjected)
+        !mEjected &&
+        !mPlayInGameWindow)
     {
         SetSelectedNode(nullptr);
 
@@ -657,13 +788,18 @@ void EditorState::EjectPlayInEditor()
         ShowEditorUi(true);
         mEjected = true;
         mHasEjectedOnce = true;
+
+        // Fire OnPlayModeChanged(2 = Eject)
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnPlayModeChanged(2);
     }
 }
 
 void EditorState::InjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        mEjected)
+        mEjected &&
+        !mPlayInGameWindow)
     {
         SetSelectedNode(nullptr);
 
@@ -675,6 +811,12 @@ void EditorState::InjectPlayInEditor()
 void EditorState::SetPlayInEditorPaused(bool paused)
 {
     mPaused = paused;
+
+    if (paused && mGamePreviewCaptured)
+    {
+        mGamePreviewCaptured = false;
+        INP_TrapCursor(false);
+    }
 }
 
 bool EditorState::IsPlayInEditorPaused()
@@ -788,19 +930,39 @@ void EditorState::LoadStartupScene()
 {
     Scene* scene = nullptr;
     std::string startupSceneName = GetEngineConfig()->mDefaultEditorScene;
-    if(startupSceneName == "")
+
+    // Priority 1: Config.ini DefaultEditorScene
+    if (startupSceneName != "")
+    {
+        scene = LoadAsset<Scene>(startupSceneName);
+    }
+
+    // Priority 2: Addon projects load SC_Addon
+    if (scene == nullptr)
+    {
+        const std::string& projDir = GetEngineState()->mProjectDirectory;
+        std::string packageJsonPath = projDir + "package.json";
+        PackageJsonData pkgData;
+        std::string pkgError;
+        if (AddonCreator::ReadPackageJson(packageJsonPath, pkgData, pkgError))
+        {
+            if (pkgData.mType == "addon")
+            {
+                scene = LoadAsset<Scene>("SC_Addon");
+            }
+        }
+    }
+
+    // Priority 3: Fallback to FindDefaultScene (SC_Default / SC_Main)
+    if (scene == nullptr)
     {
         AssetStub* defaultScene = AssetManager::Get()->FindDefaultScene();
-        if(defaultScene != nullptr)
+        if (defaultScene != nullptr)
         {
             scene = LoadAsset<Scene>(defaultScene->mName);
         }
     }
-    if (startupSceneName != "" && scene == nullptr)
-    {
-        scene = LoadAsset<Scene>(startupSceneName);
 
-    }
     if (scene != nullptr)
     {
         ActionManager::Get()->OpenScene(scene);
@@ -948,6 +1110,14 @@ void EditorState::OpenEditScene(Scene* scene)
     OCT_ASSERT(editSceneIdx != -1);
 
     OpenEditScene(editSceneIdx);
+
+    // Fire OnSceneOpen hook
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr)
+    {
+        const char* sceneName = scene ? scene->GetName().c_str() : "";
+        hookMgr->FireOnSceneOpen(sceneName);
+    }
 }
 
 void EditorState::OpenEditScene(int32_t idx)
@@ -989,7 +1159,7 @@ void EditorState::OpenEditScene(int32_t idx)
 
             for (auto& prop : props)
             {
-                if (prop.GetType() == DatumType::Node &&
+                if (IsNodeDatumType(prop.GetType()) &&
                     prop.GetCount() > 0 &&
                     prop.GetNode() != nullptr)
                 {
@@ -1051,7 +1221,7 @@ void EditorState::OpenEditScene(int32_t idx)
                         // Manually copy node path extras to ScriptProps
                         for (uint32_t p = 0; p < srcProps.size(); ++p)
                         {
-                            if (srcProps[p].mType == DatumType::Node &&
+                            if (IsNodeDatumType(srcProps[p].mType) &&
                                 srcProps[p].mExtra != nullptr)
                             {
                                 Property* dstProp = FindProperty(scriptProps, srcProps[p].mName);
@@ -1095,7 +1265,7 @@ void EditorState::OpenEditScene(int32_t idx)
 
                 for (auto& prop : props)
                 {
-                    if (prop.GetType() == DatumType::Node)
+                    if (IsNodeDatumType(prop.GetType()))
                     {
                         for (uint32_t nodeIdx = 0; nodeIdx < prop.GetCount(); ++nodeIdx)
                         {
@@ -1139,6 +1309,15 @@ void EditorState::CloseEditScene(int32_t idx)
 
     if (idx >= 0 && idx < int32_t(mEditScenes.size()))
     {
+        // Fire OnSceneClose hook before destroying
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr)
+        {
+            Scene* scene = mEditScenes[idx].mSceneAsset.Get<Scene>();
+            const char* sceneName = scene ? scene->GetName().c_str() : "";
+            hookMgr->FireOnSceneClose(sceneName);
+        }
+
         if (idx == mEditSceneIndex)
         {
             // Is this the active EditScene? If so, shelve it first.
@@ -1431,6 +1610,25 @@ void EditorState::ClearInspectHistory()
     mInspectedObject = nullptr;
 }
 
+void EditorState::RemoveFromInspectHistory(Object* obj)
+{
+    if (obj == nullptr)
+        return;
+
+    mInspectPast.erase(
+        std::remove(mInspectPast.begin(), mInspectPast.end(), obj),
+        mInspectPast.end());
+
+    mInspectFuture.erase(
+        std::remove(mInspectFuture.begin(), mInspectFuture.end(), obj),
+        mInspectFuture.end());
+
+    if (mPrevInspectedObject == obj)
+    {
+        mPrevInspectedObject = nullptr;
+    }
+}
+
 void EditorState::ProgressInspectFuture()
 {
     if (mInspectFuture.size() > 0)
@@ -1473,25 +1671,29 @@ void EditorState::RegressInspectPast()
 
 void EditorState::ClearAssetDirHistory()
 {
-    mDirPast.clear();
-    mDirFuture.clear();
+    for (int i = 0; i < (int)AssetBrowserTab::Count; ++i)
+    {
+        mTabDirPast[i].clear();
+        mTabDirFuture[i].clear();
+    }
 }
 
 void EditorState::SetAssetDirectory(AssetDir* assetDir, bool recordHistory)
 {
-    if (mCurrentDir != assetDir)
+    int tab = ActiveTab();
+    if (mTabCurrentDir[tab] != assetDir)
     {
-        if (recordHistory && mCurrentDir != nullptr)
+        if (recordHistory && mTabCurrentDir[tab] != nullptr)
         {
-            mDirPast.push_back(mCurrentDir);
-            mDirFuture.clear();
+            mTabDirPast[tab].push_back(mTabCurrentDir[tab]);
+            mTabDirFuture[tab].clear();
         }
 
-        mCurrentDir = assetDir;
+        mTabCurrentDir[tab] = assetDir;
 
-        if (mCurrentDir != nullptr)
+        if (mTabCurrentDir[tab] != nullptr)
         {
-            mCurrentDir->SortChildrenAlphabetically();
+            mTabCurrentDir[tab]->SortChildrenAlphabetically();
         }
 
         GetEditorState()->SetSelectedAssetStub(nullptr);
@@ -1500,7 +1702,7 @@ void EditorState::SetAssetDirectory(AssetDir* assetDir, bool recordHistory)
 
 AssetDir* EditorState::GetAssetDirectory()
 {
-    return mCurrentDir;
+    return mTabCurrentDir[ActiveTab()];
 }
 
 void EditorState::BrowseToAsset(const std::string& name)
@@ -1509,14 +1711,18 @@ void EditorState::BrowseToAsset(const std::string& name)
 
     if (stub != nullptr)
     {
+        // Auto-switch to the correct tab based on asset location
+        if (stub->mDirectory && stub->mDirectory->mAddonDir)
+        {
+            mActiveAssetTab = AssetBrowserTab::Addons;
+        }
+        else
+        {
+            mActiveAssetTab = AssetBrowserTab::Project;
+        }
+
         SetAssetDirectory(stub->mDirectory, true);
         SetSelectedAssetStub(stub);
-
-        const std::vector<AssetDir*>& dirs = mCurrentDir->mChildDirs;
-        const std::vector<AssetStub*>& assets = mCurrentDir->mAssetStubs;
-        const int32_t parentDirCount = (mCurrentDir->mParentDir != nullptr) ? 1 : 0;
-        const int32_t numDirs = int32_t(dirs.size());
-        const int32_t numAssets = int32_t(assets.size());
 
         mTrackSelectedAsset = true;
     }
@@ -1526,7 +1732,7 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
 {
     if (stub == nullptr)
     {
-        stub = EditorAddUniqueAsset("SC_Scene", mCurrentDir, Scene::GetStaticType(), true);
+        stub = EditorAddUniqueAsset("SC_Scene", mTabCurrentDir[ActiveTab()], Scene::GetStaticType(), true);
     }
 
     if (stub->mAsset == nullptr)
@@ -1582,6 +1788,14 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
 
     AssetManager::Get()->SaveAsset(*stub);
 
+    // Fire OnAssetSaved and OnProjectSave hooks
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr)
+    {
+        hookMgr->FireOnAssetSaved(stub->mName.c_str());
+        hookMgr->FireOnProjectSave(stub->mName.c_str());
+    }
+
     if (hasSavedPos)
     {
         if (rootNode->As<Node3D>())
@@ -1596,7 +1810,7 @@ void EditorState::CaptureAndSaveScene(AssetStub* stub, Node* rootNode)
     }
 }
 
-void EditorState::DuplicateAsset(AssetStub* srcStub)
+void EditorState::DuplicateAsset(AssetStub* srcStub, const char* overrideName)
 {
     if (srcStub != nullptr)
     {
@@ -1610,7 +1824,9 @@ void EditorState::DuplicateAsset(AssetStub* srcStub)
 
         if (srcAsset != nullptr)
         {
-            AssetStub* stub = EditorAddUniqueAsset(srcAsset->GetName().c_str(), mCurrentDir, srcAsset->GetType(), false);
+            const char* baseName = overrideName ? overrideName : srcAsset->GetName().c_str();
+            AssetDir* destDir = srcStub->mDirectory ? srcStub->mDirectory : mTabCurrentDir[ActiveTab()];
+            AssetStub* stub = EditorAddUniqueAsset(baseName, destDir, srcAsset->GetType(), false);
 
             if (stub != nullptr)
             {
@@ -1625,16 +1841,17 @@ void EditorState::DuplicateAsset(AssetStub* srcStub)
 
 void EditorState::ProgressDirFuture()
 {
-    if (mDirFuture.size() > 0)
+    int tab = ActiveTab();
+    if (mTabDirFuture[tab].size() > 0)
     {
-        if (mCurrentDir != nullptr)
+        if (mTabCurrentDir[tab] != nullptr)
         {
-            mDirPast.push_back(mCurrentDir);
+            mTabDirPast[tab].push_back(mTabCurrentDir[tab]);
         }
 
-        AssetDir* dir = mDirFuture.back();
+        AssetDir* dir = mTabDirFuture[tab].back();
         OCT_ASSERT(dir);
-        mDirFuture.pop_back();
+        mTabDirFuture[tab].pop_back();
 
         SetAssetDirectory(dir, false);
     }
@@ -1642,17 +1859,18 @@ void EditorState::ProgressDirFuture()
 
 void EditorState::RegressDirPast()
 {
-    if (mDirPast.size() > 0)
+    int tab = ActiveTab();
+    if (mTabDirPast[tab].size() > 0)
     {
-        if (mCurrentDir != nullptr)
+        if (mTabCurrentDir[tab] != nullptr)
         {
             // Record the current dir.
-            mDirFuture.push_back(mCurrentDir);
+            mTabDirFuture[tab].push_back(mTabCurrentDir[tab]);
         }
 
-        AssetDir* dir = mDirPast.back();
+        AssetDir* dir = mTabDirPast[tab].back();
         OCT_ASSERT(dir);
-        mDirPast.pop_back();
+        mTabDirPast[tab].pop_back();
 
         SetAssetDirectory(dir, false);
     }
@@ -1660,11 +1878,12 @@ void EditorState::RegressDirPast()
 
 void EditorState::RemoveFilteredAssetStub(AssetStub* stub)
 {
-    for (int32_t i = int32_t(mFilteredAssetStubs.size()) - 1; i >= 0; --i)
+    int tab = ActiveTab();
+    for (int32_t i = int32_t(mTabFilteredStubs[tab].size()) - 1; i >= 0; --i)
     {
-        if (mFilteredAssetStubs[i] == stub)
+        if (mTabFilteredStubs[tab][i] == stub)
         {
-            mFilteredAssetStubs.erase(mFilteredAssetStubs.begin() + i);
+            mTabFilteredStubs[tab].erase(mTabFilteredStubs[tab].begin() + i);
             break;
         }
     }

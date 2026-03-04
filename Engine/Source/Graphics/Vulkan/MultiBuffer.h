@@ -28,7 +28,9 @@ protected:
     friend class DestroyQueue;
     virtual ~MultiBuffer();
 
-    Buffer* mBuffers[MAX_FRAMES] = {};
+    // Extra slots (MAX_FRAMES..MAX_FRAMES*2-1) are used by secondary screen
+    // rendering so that the main render's vertex data is not overwritten.
+    Buffer* mBuffers[MAX_FRAMES * 2] = {};
 };
 
 
@@ -49,6 +51,16 @@ public:
     void Reset(uint32_t frameIndex);
 
     UniformBlock AllocBlock(uint32_t blockSize);
+
+    // Bring parameterized overloads into scope so they remain accessible.
+    using MultiBuffer::Get;
+    using MultiBuffer::GetBuffer;
+
+    // UniformBuffer data is always allocated via AllocBlock which uses the real
+    // frame index (no secondary screen offset). Hide the base class no-arg
+    // Get/GetBuffer so descriptor set building references the correct buffer.
+    VkBuffer Get();
+    Buffer* GetBuffer();
 
 protected:
 

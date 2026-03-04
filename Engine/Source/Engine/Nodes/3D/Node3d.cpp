@@ -7,6 +7,7 @@
 #include "Maths.h"
 #include "NetworkManager.h"
 #include "Assets/SkeletalMesh.h"
+#include "Script.h"
 
 #include "Nodes/3D/SkeletalMesh3d.h"
 
@@ -307,6 +308,26 @@ void Node3D::GatherProxyDraws(std::vector<DebugDraw>& inoutDraws)
 
 #endif
 }
+
+#if EDITOR
+void Node3D::OnDrawGizmos()
+{
+    Script* script = GetScript();
+    if (script != nullptr && script->HasFunction("OnDrawGizmos"))
+    {
+        script->CallFunction("OnDrawGizmos");
+    }
+}
+
+void Node3D::OnDrawGizmosSelected()
+{
+    Script* script = GetScript();
+    if (script != nullptr && script->HasFunction("OnDrawGizmosSelected"))
+    {
+        script->CallFunction("OnDrawGizmosSelected");
+    }
+}
+#endif
 
 bool Node3D::GetInheritTransform() const
 {

@@ -37,6 +37,7 @@ public:
     Node3D* GetAudioReceiver();
 
     void SetActiveCamera(Camera3D* activeCamera);
+    void SetCameraOverride(Camera3D* camera) { mCameraOverride = camera; }
     void SetAudioReceiver(Node3D* newReceiver);
 
     Node* SpawnNode(TypeId actorType, glm::vec3 position = {});
@@ -61,6 +62,12 @@ public:
     std::vector<Node*> FindNodesWithName(const char* name);
     std::vector<Node*> GatherNodes();
     void GatherNodes(std::vector<Node*>& outNodes);
+
+
+
+    Node* FindNodeByUuid(uint64_t uuid);
+    void RegisterNodeUuid(Node* node);
+    void UnregisterNodeUuid(Node* node);
 
     bool FindNavPath(glm::vec3 start, glm::vec3 end, std::vector<glm::vec3>& outPath);
     bool FindRandomNavPoint(glm::vec3& outPoint);
@@ -216,6 +223,7 @@ private:
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;
     Camera3D* mActiveCamera;
+    Camera3D* mCameraOverride = nullptr;
     Node3D* mAudioReceiver;
     bool mPendingClear = false;
     bool mAutoNavRebuild = false;
@@ -230,5 +238,7 @@ private:
     std::vector<PrimitivePair> mCurrentOverlaps;
     std::vector<PrimitivePair> mPreviousOverlaps;
 
+    // Node UUID lookup
+    std::unordered_map<uint64_t, Node*> mUuidMap;
 };
 

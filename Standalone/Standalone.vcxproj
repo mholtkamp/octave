@@ -320,6 +320,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)../External/Assimp/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/IrrXML/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/Zlib/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/Lua/Build/Windows/$(Platform)/$(Configuration)/;$(ProjectDir)../External/LuaSocket/Build/Windows/$(Platform)/$(Configuration)/;$(VULKAN_SDK)/Bin;$(VULKAN_SDK)/Lib;$(SolutionDir)Engine/External/lib/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Assimp.lib;IrrXML.lib;Zlib.lib;LuaSocket.lib;Lua.lib;spirv-cross-cored.lib;shaderc_combinedd.lib;vulkan-1.lib;Xinput.lib;Xaudio2.lib;Ws2_32.lib;Iphlpapi.lib;Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

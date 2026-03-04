@@ -5,7 +5,9 @@
 #include <algorithm>
 
 AssetDir::AssetDir() :
-    mParentDir(nullptr)
+    mParentDir(nullptr),
+    mEngineDir(false),
+    mAddonDir(false)
 {
 
 }
@@ -16,11 +18,13 @@ AssetDir::AssetDir(const std::string& name,
     mName(name),
     mPath(localPath),
     mParentDir(parent),
-    mEngineDir(false)
+    mEngineDir(false),
+    mAddonDir(false)
 {
     if (parent != nullptr)
     {
         mEngineDir = parent->mEngineDir;
+        mAddonDir = parent->mAddonDir;
         parent->mChildDirs.push_back(this);
     }
 }
@@ -97,6 +101,7 @@ void AssetDir::Purge()
     }
 
     mAssetStubs.clear();
+    mLooseFiles.clear();
 
     // Purge all subdirectories and delete the AssetDir objects
     for (int32_t d = int32_t(mChildDirs.size()) - 1; d >= 0; --d)
@@ -138,5 +143,8 @@ void AssetDir::SortChildrenAlphabetically()
     };
 
     std::sort(mAssetStubs.begin(), mAssetStubs.end(), alphaCompStubs);
+
+    // Sort loose files
+    std::sort(mLooseFiles.begin(), mLooseFiles.end());
 #endif
 }

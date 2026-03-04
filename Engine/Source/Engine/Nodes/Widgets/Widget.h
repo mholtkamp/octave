@@ -167,10 +167,14 @@ public:
 
     void SetScale(glm::vec2 scale);
     glm::vec2 GetScale() const;
+    glm::vec2 GetAbsoluteScale() const { return mAbsoluteScale; }
 
     bool IsScissorEnabled() const;
     void EnableScissor(bool enable);
     Rect GetScissorRect() const;
+
+    void SetUseGameResolution(bool use);
+    bool GetUseGameResolution() const;
 
 protected:
 
@@ -203,6 +207,7 @@ protected:
     AnchorMode mAnchorMode;
     uint8_t mActiveMargins;
     bool mUseScissor;
+    bool mUseGameResolution = false;
     uint8_t mOpacity;
 
 private:

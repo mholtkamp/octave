@@ -16,6 +16,11 @@
 
 #include "Graphics/Graphics.h"
 
+#include "NodeGraph/NodeGraph.h"
+#include "NodeGraph/GraphNode.h"
+#include "NodeGraph/GraphDomainManager.h"
+#include "NodeGraph/Nodes/MaterialNodes.h"
+
 #if EDITOR
 #include "EditorImgui.h"
 #endif
@@ -63,7 +68,13 @@ bool MaterialLite::HandlePropChange(Datum* datum, uint32_t index, const void* ne
     MaterialLite* material = static_cast<MaterialLite*>(prop->mOwner);
     bool success = false;
 
-    if (prop->mName == "Texture 0")
+    if (prop->mName == "Use Node Graph")
+    {
+        bool useNodeGraph = *(bool*)newValue;
+        material->SetUseNodeGraph(useNodeGraph);
+        success = true;
+    }
+    else if (prop->mName == "Texture 0")
     {
         material->SetTexture(0, *(Texture**)newValue);
         success = true;
@@ -181,6 +192,16 @@ void MaterialLite::LoadStream(Stream& stream, Platform platform)
     mLiteParams.mFresnelEnabled = stream.ReadBool();
     mLiteParams.mApplyFog = stream.ReadBool();
     mLiteParams.mCullMode = (CullMode)stream.ReadUint8();
+
+    // Node graph
+    if (mVersion >= ASSET_VERSION_MATERIAL_LITE_NODE_GRAPH)
+    {
+        mUseNodeGraph = stream.ReadBool();
+        if (mUseNodeGraph)
+        {
+            mGraph.LoadStream(stream, mVersion);
+        }
+    }
 }
 
 void MaterialLite::SaveStream(Stream& stream, Platform platform)
@@ -221,6 +242,13 @@ void MaterialLite::SaveStream(Stream& stream, Platform platform)
     stream.WriteBool(mLiteParams.mFresnelEnabled);
     stream.WriteBool(mLiteParams.mApplyFog);
     stream.WriteUint8((uint8_t)mLiteParams.mCullMode);
+
+    // Node graph
+    stream.WriteBool(mUseNodeGraph);
+    if (mUseNodeGraph)
+    {
+        mGraph.SaveStream(stream);
+    }
 }
 
 void MaterialLite::Create()
@@ -265,6 +293,7 @@ void MaterialLite::GatherProperties(std::vector<Property>& outProps)
 {
     Material::GatherProperties(outProps);
 
+    outProps.push_back(Property(DatumType::Bool, "Use Node Graph", this, &mUseNodeGraph, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Integer, "Shading Model", this, &mLiteParams.mShadingModel, 1, HandlePropChange, NULL_DATUM, int32_t(ShadingModel::Count), gShadingModelStrings));
     outProps.push_back(Property(DatumType::Integer, "Blend Mode", this, &mLiteParams.mBlendMode, 1, HandlePropChange, NULL_DATUM, int32_t(BlendMode::Count), gBlendModeStrings));
     outProps.push_back(Property(DatumType::Integer, "Vertex Color Mode", this, &mLiteParams.mVertexColorMode, 1, HandlePropChange, NULL_DATUM, int32_t(VertexColorMode::Count), gVertexColorModeStrings));
@@ -404,6 +433,82 @@ bool MaterialLite::DrawCustomProperty(Property& prop)
 bool MaterialLite::IsLite() const
 {
     return true;
+}
+
+void MaterialLite::SaveLiteParams(Stream& stream)
+{
+    stream.WriteUint32(uint32_t(mLiteParams.mShadingModel));
+    stream.WriteUint32(uint32_t(mLiteParams.mBlendMode));
+    stream.WriteUint32(uint32_t(mLiteParams.mVertexColorMode));
+
+    stream.WriteUint32(mLiteParams.mNumTextures);
+
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+    {
+        stream.WriteAsset(mLiteParams.mTextures[i]);
+        stream.WriteUint8(mLiteParams.mUvMaps[i]);
+        stream.WriteUint8((uint8_t)mLiteParams.mTevModes[i]);
+    }
+
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
+    {
+        stream.WriteVec2(mLiteParams.mUvOffsets[i]);
+        stream.WriteVec2(mLiteParams.mUvScales[i]);
+    }
+
+    stream.WriteVec4(mLiteParams.mColor);
+    stream.WriteVec4(mLiteParams.mFresnelColor);
+    stream.WriteFloat(mLiteParams.mFresnelPower);
+    stream.WriteFloat(mLiteParams.mEmission);
+    stream.WriteFloat(mLiteParams.mWrapLighting);
+    stream.WriteFloat(mLiteParams.mSpecular);
+    stream.WriteUint32(mLiteParams.mToonSteps);
+    stream.WriteFloat(mLiteParams.mOpacity);
+    stream.WriteFloat(mLiteParams.mMaskCutoff);
+    stream.WriteFloat(mLiteParams.mShininess);
+    stream.WriteInt32(mLiteParams.mSortPriority);
+    stream.WriteBool(mLiteParams.mDisableDepthTest);
+    stream.WriteBool(mLiteParams.mFresnelEnabled);
+    stream.WriteBool(mLiteParams.mApplyFog);
+    stream.WriteUint8((uint8_t)mLiteParams.mCullMode);
+}
+
+void MaterialLite::LoadLiteParams(Stream& stream, uint32_t version)
+{
+    mLiteParams.mShadingModel = ShadingModel(stream.ReadUint32());
+    mLiteParams.mBlendMode = BlendMode(stream.ReadUint32());
+    mLiteParams.mVertexColorMode = VertexColorMode(stream.ReadUint32());
+
+    mLiteParams.mNumTextures = stream.ReadUint32();
+
+    for (uint32_t i = 0; i < MATERIAL_LITE_MAX_TEXTURES; ++i)
+    {
+        stream.ReadAsset(mLiteParams.mTextures[i]);
+        mLiteParams.mUvMaps[i] = stream.ReadUint8();
+        mLiteParams.mTevModes[i] = (TevMode)stream.ReadUint8();
+    }
+
+    for (uint32_t i = 0; i < MAX_UV_MAPS; ++i)
+    {
+        mLiteParams.mUvOffsets[i] = stream.ReadVec2();
+        mLiteParams.mUvScales[i] = stream.ReadVec2();
+    }
+
+    mLiteParams.mColor = stream.ReadVec4();
+    mLiteParams.mFresnelColor = stream.ReadVec4();
+    mLiteParams.mFresnelPower = stream.ReadFloat();
+    mLiteParams.mEmission = stream.ReadFloat();
+    mLiteParams.mWrapLighting = stream.ReadFloat();
+    mLiteParams.mSpecular = stream.ReadFloat();
+    mLiteParams.mToonSteps = stream.ReadUint32();
+    mLiteParams.mOpacity = stream.ReadFloat();
+    mLiteParams.mMaskCutoff = stream.ReadFloat();
+    mLiteParams.mShininess = stream.ReadFloat();
+    mLiteParams.mSortPriority = stream.ReadInt32();
+    mLiteParams.mDisableDepthTest = stream.ReadBool();
+    mLiteParams.mFresnelEnabled = stream.ReadBool();
+    mLiteParams.mApplyFog = stream.ReadBool();
+    mLiteParams.mCullMode = (CullMode)stream.ReadUint8();
 }
 
 const MaterialLiteParams& MaterialLite::GetLiteParams() const
@@ -705,4 +810,41 @@ void MaterialLite::SetTevMode(uint32_t textureSlot, TevMode mode)
     {
         mLiteParams.mTevModes[textureSlot] = mode;
     }
+}
+
+void MaterialLite::SetUseNodeGraph(bool use)
+{
+    mUseNodeGraph = use;
+
+    if (mUseNodeGraph && mGraph.GetNumNodes() == 0)
+    {
+        mGraph.SetDomainName("Material");
+        mGraph.AddNode(MaterialOutputNode::GetStaticType());
+    }
+}
+
+void MaterialLite::ApplyGraphToParams()
+{
+    GraphNode* output = mGraph.FindOutputNode();
+    if (output == nullptr)
+        return;
+
+    mLiteParams.mColor        = output->GetInputValue(0).GetColor();
+    mLiteParams.mOpacity      = output->GetInputValue(1).GetFloat();
+    mLiteParams.mMaskCutoff   = output->GetInputValue(2).GetFloat();
+    mLiteParams.mEmission     = output->GetInputValue(3).GetFloat();
+    mLiteParams.mSpecular     = output->GetInputValue(4).GetFloat();
+    mLiteParams.mShininess    = output->GetInputValue(5).GetFloat();
+    mLiteParams.mWrapLighting = output->GetInputValue(6).GetFloat();
+    mLiteParams.mFresnelColor = output->GetInputValue(7).GetColor();
+    mLiteParams.mFresnelPower = output->GetInputValue(8).GetFloat();
+    mLiteParams.mUvOffsets[0] = output->GetInputValue(9).GetVector2D();
+    mLiteParams.mUvScales[0]  = output->GetInputValue(10).GetVector2D();
+    mLiteParams.mUvOffsets[1] = output->GetInputValue(11).GetVector2D();
+    mLiteParams.mUvScales[1]  = output->GetInputValue(12).GetVector2D();
+}
+
+void MaterialLite::ApplyGraphValues(NodeGraph* graph)
+{
+    ApplyGraphToParams();
 }

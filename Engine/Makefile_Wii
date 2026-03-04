@@ -24,6 +24,13 @@ SOURCES		:=	Source \
 				Source/Engine/Nodes/3D \
 				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
+				Source/Engine/NodeGraph \
+				Source/Engine/NodeGraph/Nodes \
+				Source/Engine/NodeGraph/Domains \
+				Source/Engine/UI \
+				Source/Engine/Timeline \
+				Source/Engine/Timeline/Tracks \
+				Source/Plugins \
 				Source/System \
 				Source/System/Dolphin \
 				Source/Graphics \
@@ -37,11 +44,12 @@ SOURCES		:=	Source \
 				Source/LuaBindings \
 				../External/Lua \
 				../External/Vorbis \
+				../External/IrrXML \
 				../External/recastnavigation/Recast/Source/ \
 				../External/recastnavigation/Detour/Source/
 #DATA		:=	data
 #TEXTURES	:=	textures
-INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
+INCLUDES	:=	Source Source/Engine ../External ../External/Bullet ../External/Vorbis ../External/Lua ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Wii
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 

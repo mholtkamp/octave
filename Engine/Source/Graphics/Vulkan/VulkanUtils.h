@@ -161,6 +161,12 @@ void UpdateQuadResourceVertexData(Quad* quad);
 void BindGeometryDescriptorSet(Quad* quad);
 void DrawQuad(Quad* quad);
 
+// Quad Border
+void CreateQuadBorderResource(Quad* quad);
+void DestroyQuadBorderResource(Quad* quad);
+void UpdateQuadBorderResourceVertexData(Quad* quad);
+void DrawQuadBorder(Quad* quad);
+
 // Text
 void CreateTextResource(Text* text);
 void DestroyTextResource(Text* text);

@@ -17,6 +17,12 @@ public:
     virtual void Render() override;
     virtual void LoadSettings(const rapidjson::Document& doc) override;
     virtual void SaveSettings(rapidjson::Document& doc) override;
+
+private:
+    float mTabRoundingLeft = 0.0f;
+    float mTabRoundingRight = 0.0f;
+
+    void ApplyTabRounding();
 };
 
 #endif

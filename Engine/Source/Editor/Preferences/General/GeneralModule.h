@@ -22,11 +22,18 @@ public:
     bool GetAutoSave() const { return mAutoSave; }
     int GetRecentProjectsLimit() const { return mRecentProjectsLimit; }
     bool GetShowWelcomeScreen() const { return mShowWelcomeScreen; }
+    bool GetShowDebugInEditor() const { return mShowDebugInEditor; }
+    bool GetShowDebugLogsInBuild() const { return mShowDebugLogsInBuild; }
+    bool GetCheckBuildDepsOnStartup() const { return mCheckBuildDepsOnStartup; }
+    void SetCheckBuildDepsOnStartup(bool value);
 
 private:
     bool mAutoSave = true;
     int mRecentProjectsLimit = 10;
     bool mShowWelcomeScreen = true;
+    bool mShowDebugInEditor = true;
+    bool mShowDebugLogsInBuild = true;
+    bool mCheckBuildDepsOnStartup = true;
 };
 
 #endif

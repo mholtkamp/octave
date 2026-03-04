@@ -2,6 +2,7 @@
 #include "Script.h"
 #include "System/System.h"
 #include "LuaBindings/Node_Lua.h"
+#include "Plugins/RuntimePluginManager.h"
 
 std::unordered_set<std::string> ScriptUtils::sLoadedLuaFiles;
 std::unordered_set<std::string> ScriptUtils::sLoadingLuaFiles;
@@ -50,7 +51,24 @@ bool ScriptUtils::CallLuaFunc(int numArgs, int numResults)
     lua_State* L = GetLua();
     if (lua_pcall(L, numArgs, numResults, 0))
     {
-        LogError("Lua Error: %s\n", lua_tostring(L, -1));
+        const char* errMsg = lua_tostring(L, -1);
+        if (errMsg)
+        {
+            size_t len = strlen(errMsg);
+            const size_t chunkSize = 40;
+            LogError("LuaErr:");
+            for (size_t i = 0; i < len; i += chunkSize)
+            {
+                char chunk[48];
+                size_t copyLen = (len - i < chunkSize) ? (len - i) : chunkSize;
+                strncpy(chunk, errMsg + i, copyLen);
+                chunk[copyLen] = '\0';
+                LogError("%s", chunk);
+            }
+        }
+        // Debug: check RPM status
+        RuntimePluginManager* rpm = RuntimePluginManager::Get();
+        LogError("RPM:%s P:%zu", rpm ? "Y" : "N", rpm ? rpm->GetPluginCount() : 0);
         if (sBreakOnScriptError) { OCT_ASSERT(0); }
         success = false;
     }
@@ -132,15 +150,6 @@ void ScriptUtils::ReloadAllScriptFiles()
     }
 
     // This doesn't re-gather the NetFuncs for this script file.
-}
-
-void ScriptUtils::UnloadAllScriptFiles()
-{
-    // TODO: Actually unload the files and tables. Or possibly recreate Lua engine.
-    // This just clears the list of loaded files so that when we switch projects for instance,
-    // and another project has a file of the same name, it will be able to load that file.
-    // Still not ideal to have another project's lua coded loaded.
-    sLoadedLuaFiles.clear();
 }
 
 void ScriptUtils::LoadAllScripts()
@@ -270,11 +279,39 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
         fileExists = (embeddedScript != nullptr);
     }
 
-    std::string fullFileName = GetEngineState()->mProjectDirectory + "Scripts/" + relativeFileName;
+    const std::string& projectDir = GetEngineState()->mProjectDirectory;
+    std::string fullFileName = projectDir + "Scripts/" + relativeFileName;
 
     if (!fileExists)
     {
         fileExists = SYS_DoesFileExist(fullFileName.c_str(), true);
+    }
+
+    // Check for Packages/{packageName}/{scriptName} path format
+    // fileName could be "Packages/MyAddon/MyScript" or just "MyScript"
+    // The actual file is at {projectDir}/Packages/{packageName}/Scripts/{scriptName}.lua
+    if (!fileExists && strncmp(fileName, "Packages/", 9) == 0)
+    {
+        // Parse out the package name and script name
+        // Format: "Packages/{packageName}/{scriptName}"
+        const char* afterPackages = fileName + 9; // Skip "Packages/"
+        const char* secondSlash = strchr(afterPackages, '/');
+
+        if (secondSlash != nullptr)
+        {
+            // Extract package name (between "Packages/" and the second slash)
+            std::string packageName(afterPackages, secondSlash - afterPackages);
+            // Extract script name (after the second slash)
+            std::string scriptName = secondSlash + 1;
+
+            // Build the full path: {projectDir}/Packages/{packageName}/Scripts/{scriptName}.lua
+            fullFileName = projectDir + "Packages/" + packageName + "/Scripts/" + scriptName;
+            if (fullFileName.length() < 4 || fullFileName.compare(fullFileName.length() - 4, 4, ".lua") != 0)
+            {
+                fullFileName.append(".lua");
+            }
+            fileExists = SYS_DoesFileExist(fullFileName.c_str(), true);
+        }
     }
 
     if (!fileExists)
@@ -304,10 +341,24 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
         std::string chunkName = "@" + className + ".lua";
         if (luaL_loadbuffer(L, luaString.c_str(), luaString.size(), chunkName.c_str()) || lua_pcall(L, 0, LUA_MULTRET, 0))
         {
-            LogError("Lua Error: %s\n", lua_tostring(L, -1));
+            const char* errMsg = lua_tostring(L, -1);
+            if (errMsg)
+            {
+                size_t len = strlen(errMsg);
+                const size_t chunkSize = 40;
+                LogError("LuaErr2:");
+                for (size_t i = 0; i < len; i += chunkSize)
+                {
+                    char chunk[48];
+                    size_t copyLen = (len - i < chunkSize) ? (len - i) : chunkSize;
+                    strncpy(chunk, errMsg + i, copyLen);
+                    chunk[copyLen] = '\0';
+                    LogError("%s", chunk);
+                }
+            }
             if (sBreakOnScriptError) { OCT_ASSERT(0); }
 
-            LogError("Couldn't load script file %s", className.c_str());
+            LogError("Load fail: %s", className.c_str());
         }
         else
         {

@@ -15,4 +15,12 @@
 #define BASIC_CAMERA "Camera"
 #define BASIC_TEXT_MESH "Text Mesh"
 #define BASIC_INSTANCED_MESH "Instanced Mesh"
+#define BASIC_TIMELINE_PLAYER "Timeline Player"
+#define BASIC_SKYBOX_TEXTURED "Skybox Textured"
+#define BASIC_SKYBOX_VERTEX_COLOR "Skybox Vertex Color"
+
+#define DRAGDROP_NODE "DND_NODE"
+#define DRAGDROP_ASSET "DND_ASSET"
+#define DRAGDROP_DIR "DND_DIR"
+#define DRAGDROP_SCRIPT "DND_SCRIPT"
 #define BASIC_SPLINE "Spline"

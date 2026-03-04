@@ -84,6 +84,7 @@ public:
     void Initialize();
     void Update(float deltaTime);
     void DiscoverDirectory(AssetDir* directory, bool engineDir);
+    void RefreshDirectory(AssetDir* directory);
     void Discover(const char* directoryName, const char* directoryPath);
     void DiscoverAssetRegistry(const char* registryPath);
     void DiscoverEmbeddedAssets(struct EmbeddedFile* assets, uint32_t numAssets);
@@ -129,7 +130,9 @@ public:
     AssetDir* FindProjectDirectory();
     AssetDir* FindProjectRootDirectory();
     AssetDir* FindEngineDirectory();
+    AssetDir* FindPackagesDirectory();
     AssetDir* GetRootDirectory();
+    void DiscoverAddonPackages(const std::string& packagesDir);
     std::string GetOctaveDirectory();
     void GatherScriptFiles(const std::string &dir, std::vector<std::string> &outFiles);
     void GatherFontFiles(const std::string& dir, std::vector<std::string>& outFiles);

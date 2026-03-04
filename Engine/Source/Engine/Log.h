@@ -18,3 +18,10 @@ void LogDebug(const char* format, ...);
 void LogWarning(const char* format, ...);
 void LogError(const char* format, ...);
 void LogConsole(glm::vec4 color, const char* format, ...);
+
+#include "System/SystemTypes.h"
+typedef void(*LogCallbackFP)(LogSeverity severity, const char* message);
+void RegisterLogCallback(LogCallbackFP callback);
+void UnregisterLogCallback(LogCallbackFP callback);
+void SetDebugLogsInBuildEnabled(bool enabled);
+bool IsDebugLogsInBuildEnabled();

@@ -98,6 +98,8 @@ public:
     Datum GetField(const char* key);
     void SetField(const char* key, const Datum& value);
 
+    void GatherFunctionNames(std::vector<std::string>& outNames) const;
+
     void SetArrayScriptPropCount(const std::string& name, uint32_t count);
     void UploadScriptProperties();
     const std::vector<Property>& GetScriptProperties() const;

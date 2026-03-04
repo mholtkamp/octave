@@ -9,7 +9,7 @@
 
 MultiBuffer::MultiBuffer(BufferType bufferType, size_t size, const char* debugName, const void* srcData)
 {
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    for (uint32_t i = 0; i < MAX_FRAMES * 2; ++i)
     {
         mBuffers[i] = new Buffer(bufferType, size, debugName, srcData, true);
     }
@@ -17,10 +17,13 @@ MultiBuffer::MultiBuffer(BufferType bufferType, size_t size, const char* debugNa
 
 MultiBuffer::~MultiBuffer()
 {
-    for (uint32_t i = 0; i < MAX_FRAMES; ++i)
+    for (uint32_t i = 0; i < MAX_FRAMES * 2; ++i)
     {
-        GetDestroyQueue()->Destroy(mBuffers[i]);
-        mBuffers[i] = nullptr;
+        if (mBuffers[i] != nullptr)
+        {
+            GetDestroyQueue()->Destroy(mBuffers[i]);
+            mBuffers[i] = nullptr;
+        }
     }
 }
 
@@ -29,13 +32,14 @@ void MultiBuffer::Update(const void* srcData, size_t srcSize, size_t dstOffset)
     // Uniform buffers can only update the current frames buffer because
     // the previous frame that was submitted to the GPU might still be
     // using its uniform buffer.
-    uint32_t frameIndex = GetFrameIndex();
+    // The offset shifts writes to secondary slots when rendering for a second screen.
+    uint32_t frameIndex = GetFrameIndex() + GetVulkanContext()->GetMultiBufferFrameOffset();
     mBuffers[frameIndex]->Update(srcData, srcSize, dstOffset);
 }
 
 VkBuffer MultiBuffer::Get()
 {
-    uint32_t frameIndex = GetFrameIndex();
+    uint32_t frameIndex = GetFrameIndex() + GetVulkanContext()->GetMultiBufferFrameOffset();
     return Get(frameIndex);
 }
 
@@ -46,7 +50,7 @@ VkBuffer MultiBuffer::Get(uint32_t frameIndex)
 
 Buffer* MultiBuffer::GetBuffer()
 {
-    uint32_t frameIndex = GetFrameIndex();
+    uint32_t frameIndex = GetFrameIndex() + GetVulkanContext()->GetMultiBufferFrameOffset();
     return GetBuffer(frameIndex);
 }
 
@@ -71,6 +75,16 @@ UniformBuffer::UniformBuffer(size_t size, const char* debugName, const void* src
         mBuffers[i]->Map();
     }
 #endif
+}
+
+VkBuffer UniformBuffer::Get()
+{
+    return MultiBuffer::Get(GetFrameIndex());
+}
+
+Buffer* UniformBuffer::GetBuffer()
+{
+    return MultiBuffer::GetBuffer(GetFrameIndex());
 }
 
 void UniformBuffer::Reset(uint32_t frameIndex)

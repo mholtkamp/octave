@@ -53,7 +53,7 @@ TARGET		:=	Octave
 BUILD		:=	Intermediate/Linux/Game
 SOURCES		:=	Source \
 				Generated
-INCLUDES	:=	Source ../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet $(VULKAN_SDK)/include
+INCLUDES	:=	Source ../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet ../External/Lua $(VULKAN_SDK)/include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 
 #---------------------------------------------------------------------------------
@@ -84,7 +84,10 @@ LIBDIRS	:= $(VULKAN_SDK)
 ifneq ($(notdir $(BUILD)),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+# Helper to handle both relative and absolute paths in VPATH
+MAKE_VPATH = $(if $(or $(filter /%,$(1)),$(findstring :,$(1))),$(1),$(CURDIR)/$(1))
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(call MAKE_VPATH,$(dir)))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -109,7 +112,7 @@ export OFILES := $(OFILES_SOURCES)
 #---------------------------------------------------------------------------------
 # build a list of include paths
 #---------------------------------------------------------------------------------
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(call MAKE_VPATH,$(dir))) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					-I$(CURDIR)/$(BUILD)
 

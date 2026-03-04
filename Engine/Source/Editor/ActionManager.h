@@ -2,6 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#if PLATFORM_LINUX
+#include <sys/types.h>
+#endif
 
 #include "EngineTypes.h"
 #include "EditorTypes.h"
@@ -11,9 +18,94 @@
 #include "Nodes/3D/StaticMesh3d.h"
 
 class Node3D;
+class Mesh3D;
 class InstancedMesh3D;
+class Timeline;
 struct ActionSetInstanceColorsData;
 struct MeshInstanceData;
+
+/**
+ * @brief State for async local build operations.
+ */
+struct LocalBuildState
+{
+    std::thread mBuildThread;
+    std::atomic<bool> mRunning{false};
+    std::atomic<bool> mCancelRequested{false};
+    std::atomic<bool> mComplete{false};
+    std::atomic<bool> mSuccess{false};
+    std::atomic<int> mExitCode{0};
+
+    std::mutex mOutputMutex;
+    std::string mOutput;
+    bool mOutputDirty{false};
+
+    // Build config (set in BuildData, used by Phase1 and compile thread)
+    Platform mPlatform{Platform::Linux};
+    bool mEmbedded{false};
+    std::string mPackagedDir;
+    std::string mBuildProjDir;
+    std::string mProjectDir;
+    std::string mProjectName;
+    std::string mExeSrc;
+    std::string mExtension;
+    bool mStandalone{false};
+    bool mNeedCompile{true};
+    bool mUseSteam{false};
+    std::string mCompileCommand;
+    std::string mPrebuiltExePath;
+    std::string mTmpMakefile;
+    std::string mShaderCompileCommand;
+    std::string mStripCommand;
+
+    // Post-build flags
+    bool mRunAfterBuild{false};
+    bool mRunOnDevice{false};
+
+    void Reset()
+    {
+        // Thread must be joined before calling Reset
+        mRunning.store(false);
+        mCancelRequested.store(false);
+        mComplete.store(false);
+        mSuccess.store(false);
+        mExitCode.store(0);
+        {
+            std::lock_guard<std::mutex> lock(mOutputMutex);
+            mOutput.clear();
+            mOutputDirty = false;
+        }
+        mPlatform = Platform::Linux;
+        mEmbedded = false;
+        mPackagedDir.clear();
+        mBuildProjDir.clear();
+        mProjectDir.clear();
+        mProjectName.clear();
+        mExeSrc.clear();
+        mExtension.clear();
+        mStandalone = false;
+        mNeedCompile = true;
+        mUseSteam = false;
+        mCompileCommand.clear();
+        mPrebuiltExePath.clear();
+        mTmpMakefile.clear();
+        mShaderCompileCommand.clear();
+        mStripCommand.clear();
+        mRunAfterBuild = false;
+        mRunOnDevice = false;
+#if PLATFORM_LINUX
+        mProcessId = 0;
+#elif PLATFORM_WINDOWS
+        mProcessHandle = nullptr;
+#endif
+    }
+
+#if PLATFORM_LINUX
+    pid_t mProcessId{0};
+#elif PLATFORM_WINDOWS
+    void* mProcessHandle{nullptr};
+#endif
+};
 
 class Action
 {
@@ -67,6 +159,34 @@ public:
     void EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data);
     void EXE_SetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data);
 
+    /**
+     * @brief Replace selected nodes' mesh/material with an asset, or replace with scene instances.
+     * @param asset The asset to apply (StaticMesh, Material, or Scene).
+     * @param nodes The nodes to operate on.
+     */
+    void EXE_ReplaceSelectedWithAsset(Asset* asset, const std::vector<Node*>& nodes);
+
+    /**
+     * @brief Replace selected StaticMesh3D nodes with InstancedMesh3D nodes.
+     * @param nodes The selected nodes to convert.
+     * @param merge If true, group by mesh into one InstancedMesh3D each. If false, convert each node 1:1.
+     */
+    void EXE_ReplaceWithInstancedMesh(const std::vector<Node*>& nodes, bool merge);
+
+    /**
+     * @brief Split selected InstancedMesh3D nodes into individual StaticMesh3D nodes.
+     * @param nodes The selected nodes to split.
+     */
+    void EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes);
+
+    // Timeline actions
+    void EXE_TimelineAddTrack(Timeline* timeline, TypeId trackType);
+    void EXE_TimelineRemoveTrack(Timeline* timeline, int32_t trackIndex);
+    void EXE_TimelineAddClip(Timeline* timeline, int32_t trackIndex, TypeId clipType, float startTime, float duration);
+    void EXE_TimelineRemoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex);
+    void EXE_TimelineMoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex, float oldStartTime, float newStartTime);
+    void EXE_TimelineBindTrack(Timeline* timeline, int32_t trackIndex, uint64_t oldUuid, uint64_t newUuid, const std::string& oldName, const std::string& newName);
+
     void ClearActionHistory();
     void ClearActionFuture();
     void ResetUndoRedo();
@@ -94,10 +214,23 @@ protected:
     std::vector<Action*> mActionFuture;
     std::vector<NodePtr> mExiledNodes;
 
+    // Non-blocking build state
+    LocalBuildState mBuildState;
+    bool mShowBuildModal = false;
+    std::string mBuildDisplayOutput;
+    bool mBuildAutoScroll = true;
+    bool mBuildPending = false;
+
+    void BuildPhase1();
+    void BuildCompileThreadFunc();
+    void FinalizeLocalBuild();
+    void AppendBuildOutput(const std::string& text);
+    void CancelBuild();
+
 public:
 
     // Actions
-    void CreateNewProject(const char* folderPath = nullptr, bool cpp = false);
+    void CreateNewProject(const char* folderPath = nullptr, bool cpp = false, const char* defaultSceneName = "SC_Default");
     void OpenProject(const char* path = nullptr);
     void OpenScene();
     void OpenScene(Scene* scene);
@@ -111,8 +244,12 @@ public:
     void ImportCamera(const CameraImportOptions& options);
     void ImportScene(const SceneImportOptions& options);
     void BeginImportScene();
+    void BeginReimportScene(AssetStub* sceneStub);
     void BeginImportCamera();
     void BuildData(Platform platform, bool embedded);
+    void DrawBuildModal();
+    bool IsBuildRunning() const;
+    LocalBuildState& GetBuildState() { return mBuildState; }
     void PrepareRelease();
     void ClearWorld();
     void DeleteAllNodes();
@@ -319,4 +456,93 @@ protected:
 
     std::vector<MeshInstanceData> mData;
     std::vector<MeshInstanceData> mPrevData;
+};
+
+/**
+ * @brief Action to replace selected nodes' mesh or material with an asset, or replace with scene instances.
+ */
+class ActionReplaceWithAsset : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(ReplaceWithAsset);
+    ActionReplaceWithAsset(Asset* asset, const std::vector<Node*>& nodes);
+
+protected:
+
+    enum class ReplaceMode
+    {
+        StaticMesh,
+        Material,
+        Scene,
+        Invalid
+    };
+
+    AssetRef mAsset;
+    ReplaceMode mMode = ReplaceMode::Invalid;
+
+    // For StaticMesh mode
+    std::vector<StaticMesh3D*> mMeshNodes;
+    std::vector<StaticMeshRef> mPrevMeshes;
+
+    // For Material mode
+    std::vector<Mesh3D*> mMatNodes;
+    std::vector<MaterialRef> mPrevMaterials;
+
+    // For Scene mode
+    struct SceneReplaceEntry
+    {
+        NodePtr mOriginal;
+        NodePtr mParent;
+        int32_t mChildIndex = -1;
+        NodePtr mSpawnedNode;
+    };
+    std::vector<SceneReplaceEntry> mSceneEntries;
+};
+
+/**
+ * @brief Action to merge selected StaticMesh3D nodes into InstancedMesh3D nodes grouped by mesh.
+ */
+class ActionReplaceWithInstancedMesh : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(ReplaceWithInstancedMesh);
+    ActionReplaceWithInstancedMesh(const std::vector<Node*>& nodes, bool merge);
+
+protected:
+
+    struct GroupEntry
+    {
+        std::vector<NodePtr> mOriginalNodes;
+        std::vector<NodePtr> mOriginalParents;
+        std::vector<int32_t> mOriginalChildIndices;
+        NodePtr mInstancedNode;
+        NodePtr mInstancedParent;
+        int32_t mInstancedChildIndex = -1;
+    };
+
+    std::vector<GroupEntry> mGroups;
+    bool mFirstExecute = true;
+};
+
+/**
+ * @brief Action to split selected InstancedMesh3D nodes into individual StaticMesh3D nodes.
+ */
+class ActionReplaceWithStaticMesh : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(ReplaceWithStaticMesh);
+    ActionReplaceWithStaticMesh(const std::vector<Node*>& nodes);
+
+protected:
+
+    struct SplitEntry
+    {
+        NodePtr mOriginalNode;
+        NodePtr mOriginalParent;
+        int32_t mOriginalChildIndex = -1;
+        std::vector<NodePtr> mCreatedNodes;
+    };
+
+    std::vector<SplitEntry> mEntries;
+    bool mFirstExecute = true;
 };

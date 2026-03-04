@@ -1,6 +1,15 @@
 [submodule "External/bullet3"]
 	path = External/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
-[submodule "External/assimp"]
-	path = External/assimp
-	url = https://github.com/assimp/assimp.git
+# [submodule "External/assimp"]
+# 	path = External/assimp
+# 	url = https://github.com/assimp/assimp.git
+[submodule "Plugins/Blender/octave-gameengine-connect"]
+	path = Plugins/Blender/octave-gameengine-connect
+	url = https://github.com/vltmedia/Octave-Game-Engine-Connect-Blender-Addon
+[submodule "External/zep"]
+	path = External/zep
+	url = https://github.com/Rezonality/zep.git
+[submodule "External/doxygen-awesome-css"]
+	path = External/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git

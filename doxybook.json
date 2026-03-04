@@ -1,0 +1,6 @@
+{
+  "doxygen": { "xml": "doxygen_xml" },
+  "output": "Documentation/api",
+  "format": "mkdocs",
+  "files": { "index": "index.md" }
+}

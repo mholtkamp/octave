@@ -19,8 +19,8 @@
 
 void EditorCenterCursor()
 {
-    int32_t centerX = Renderer::Get()->GetViewportWidth() / 2;
-    int32_t centerY = Renderer::Get()->GetViewportHeight() / 2;
+    int32_t centerX = Renderer::Get()->GetViewportX() + Renderer::Get()->GetViewportWidth() / 2;
+    int32_t centerY = Renderer::Get()->GetViewportY() + Renderer::Get()->GetViewportHeight() / 2;
     INP_SetCursorPos(centerX, centerY);
 }
 

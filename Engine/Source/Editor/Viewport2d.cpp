@@ -11,6 +11,7 @@
 
 #include "imgui.h"
 #include "./ImGuizmo/ImGuizmo.h"
+#include "EditorImgui.h"
 
 Viewport2D::Viewport2D()
 {
@@ -37,7 +38,7 @@ void Viewport2D::Update(float deltaTime)
 
     Widget* selWidget = GetEditorState()->GetSelectedWidget();
     Widget* hoverWidget = nullptr;
-    if (mControlMode == WidgetControlMode::Default)
+    if (mControlMode == WidgetControlMode::Default && ShouldHandleInput())
     {
         int32_t mouseX = 0;
         int32_t mouseY = 0;
@@ -71,12 +72,9 @@ void Viewport2D::Update(float deltaTime)
 bool Viewport2D::ShouldHandleInput() const
 {
     bool imguiWantsText = ImGui::GetIO().WantTextInput;
-    bool imguiAnyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     bool imguiAnyPopupUp = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup);
-
-    // Note: Don't check ImGuizmo::IsUsing() here - we want right/middle click to work
-    // even while the gizmo is active. Left-click is blocked separately via IsOver().
-    bool handleInput = (!imguiAnyWindowHovered && !imguiWantsText && !imguiAnyPopupUp);
+    bool viewportHovered = EditorImguiIsViewportHovered();
+    bool handleInput = viewportHovered && !imguiWantsText && !imguiAnyPopupUp;
     return handleInput;
 }
 
@@ -103,7 +101,11 @@ void Viewport2D::ResetViewport()
 
 void Viewport2D::HandleInput()
 {
-    if (ShouldHandleInput())
+    bool handleInput = ShouldHandleInput();
+
+    // Always process non-Default control modes so they can run and exit properly.
+    // Only gate entering new modes (Default) on ShouldHandleInput().
+    if (handleInput || mControlMode != WidgetControlMode::Default)
     {
         if (GetEditorState()->mMouseNeedsRecenter)
         {
@@ -233,22 +235,22 @@ void Viewport2D::HandleDefaultControls()
             }
         }
 
-        const bool spaceDown = IsKeyDown(KEY_SPACE);
+        const bool spaceDown = IsKeyDown(OCTAVE_KEY_SPACE);
 
         if (GetEditorState()->GetSelectedWidget() != nullptr)
         {
             // Space+G/R/S for gizmo operation (matching 3D behavior)
             if (spaceDown && !controlDown && !altDown)
             {
-                if (IsKeyJustDown(KEY_G))
+                if (IsKeyJustDown(OCTAVE_KEY_G))
                 {
                     GetEditorState()->mGizmoOperation = ImGuizmo::TRANSLATE;
                 }
-                if (IsKeyJustDown(KEY_R))
+                if (IsKeyJustDown(OCTAVE_KEY_R))
                 {
                     GetEditorState()->mGizmoOperation = ImGuizmo::ROTATE;
                 }
-                if (IsKeyJustDown(KEY_S))
+                if (IsKeyJustDown(OCTAVE_KEY_S))
                 {
                     GetEditorState()->mGizmoOperation = ImGuizmo::SCALE;
                 }
@@ -256,19 +258,19 @@ void Viewport2D::HandleDefaultControls()
             // G/R/S without Space for legacy cursor-locked transform mode
             else if (!controlDown && !altDown)
             {
-                if (IsKeyJustDown(KEY_G))
+                if (IsKeyJustDown(OCTAVE_KEY_G))
                 {
                     SetWidgetControlMode(WidgetControlMode::Translate);
                     SavePreTransforms();
                 }
 
-                if (IsKeyJustDown(KEY_R))
+                if (IsKeyJustDown(OCTAVE_KEY_R))
                 {
                     SetWidgetControlMode(WidgetControlMode::Rotate);
                     SavePreTransforms();
                 }
 
-                if (IsKeyJustDown(KEY_S))
+                if (IsKeyJustDown(OCTAVE_KEY_S))
                 {
                     SetWidgetControlMode(WidgetControlMode::Scale);
                     SavePreTransforms();
@@ -276,13 +278,13 @@ void Viewport2D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_F) ||
-            IsKeyJustDown(KEY_DECIMAL))
+        if (IsKeyJustDown(OCTAVE_KEY_F) ||
+            IsKeyJustDown(OCTAVE_KEY_DECIMAL))
         {
             ResetViewport();
         }
 
-        if (controlDown && IsKeyJustDown(KEY_D))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_D))
         {
             // Duplicate node
             const std::vector<Node*>& selectedNodes = GetEditorState()->GetSelectedNodes();
@@ -299,16 +301,16 @@ void Viewport2D::HandleDefaultControls()
             }
         }
 
-        if (IsKeyJustDown(KEY_DELETE))
+        if (IsKeyJustDown(OCTAVE_KEY_DELETE))
         {
             ActionManager::Get()->DeleteSelectedNodes();
         }
 
-        if (altDown && IsKeyJustDown(KEY_A))
+        if (altDown && IsKeyJustDown(OCTAVE_KEY_A))
         {
             GetEditorState()->SetSelectedNode(nullptr);
         }
-        if (controlDown && IsKeyJustDown(KEY_A))
+        if (controlDown && IsKeyJustDown(OCTAVE_KEY_A))
         {
             std::vector<Node*> nodes = GetWorld(0)->GatherNodes();
 
@@ -498,12 +500,12 @@ void Viewport2D::HandleAxisLocking()
 {
     WidgetAxisLock newLock = WidgetAxisLock::None;
 
-    if (IsKeyJustDown(KEY_X))
+    if (IsKeyJustDown(OCTAVE_KEY_X))
     {
         newLock = WidgetAxisLock::AxisX;
     }
 
-    if (IsKeyJustDown(KEY_Y))
+    if (IsKeyJustDown(OCTAVE_KEY_Y))
     {
         newLock = WidgetAxisLock::AxisY;
     }

@@ -1,0 +1,48 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main, development/jj]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build docs image
+        run: docker build -t octave-docs -f Tools/CI/docs/Dockerfile Tools/CI/docs
+
+      - name: Generate site
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            octave-docs build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

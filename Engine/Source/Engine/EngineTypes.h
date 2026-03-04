@@ -159,6 +159,16 @@ enum class PostProcessPassId : uint8_t
     Count
 };
 
+enum class SkyType : uint8_t
+{
+    None,
+    ColoredSky,
+    TexturedSky,
+    RayTracedSky,
+
+    Count
+};
+
 struct Bounds
 {
     glm::vec3 mCenter = { };

@@ -6,9 +6,15 @@
 
 #include "EngineTypes.h"
 
+#include <vector>
+#include <algorithm>
+
 static bool sInitialized = false;
 static MutexObject* sMutex = nullptr;
 static bool sLoggingEnabled = false;
+
+static std::vector<LogCallbackFP> sLogCallbacks;
+static bool sDebugLogsInBuildEnabled = true;
 
 static void OpenLogFile()
 {
@@ -118,9 +124,52 @@ void UnlockLog()
     SYS_UnlockMutex(sMutex);
 }
 
+void RegisterLogCallback(LogCallbackFP callback)
+{
+    if (callback != nullptr)
+    {
+        sLogCallbacks.push_back(callback);
+    }
+}
+
+void UnregisterLogCallback(LogCallbackFP callback)
+{
+    auto it = std::find(sLogCallbacks.begin(), sLogCallbacks.end(), callback);
+    if (it != sLogCallbacks.end())
+    {
+        sLogCallbacks.erase(it);
+    }
+}
+
+void SetDebugLogsInBuildEnabled(bool enabled)
+{
+    sDebugLogsInBuildEnabled = enabled;
+}
+
+bool IsDebugLogsInBuildEnabled()
+{
+    return sDebugLogsInBuildEnabled;
+}
+
+static void NotifyLogCallbacks(LogSeverity severity, const char* format, va_list args)
+{
+    if (sLogCallbacks.empty())
+        return;
+
+    char buffer[1024] = {};
+    vsnprintf(buffer, sizeof(buffer), format, args);
+
+    for (LogCallbackFP cb : sLogCallbacks)
+    {
+        cb(severity, buffer);
+    }
+}
+
 void WriteConsoleMessage(glm::vec4 color, const char* format, va_list args)
 {
 #if CONSOLE_ENABLED
+    if (!IsDebugLogsInBuildEnabled())
+        return;
     char msg[128] = {};
     vsnprintf(msg, 128, format, args);
 
@@ -163,6 +212,13 @@ void LogDebug(const char* format, ...)
         va_end(argptr);
     }
 
+    {
+        va_list argptr;
+        va_start(argptr, format);
+        NotifyLogCallbacks(LogSeverity::Debug, format, argptr);
+        va_end(argptr);
+    }
+
     LOG_TO_FILE();
 
     UnlockLog();
@@ -198,6 +254,13 @@ void LogWarning(const char* format, ...)
         va_end(argptr);
     }
 
+    {
+        va_list argptr;
+        va_start(argptr, format);
+        NotifyLogCallbacks(LogSeverity::Warning, format, argptr);
+        va_end(argptr);
+    }
+
     LOG_TO_FILE();
 
     UnlockLog();
@@ -229,6 +292,13 @@ void LogError(const char* format, ...)
         // Write to in-game console
         WriteConsoleMessage({1.0f, 0.5f, 0.5f, 1.0f}, format, argptr);
 
+        va_end(argptr);
+    }
+
+    {
+        va_list argptr;
+        va_start(argptr, format);
+        NotifyLogCallbacks(LogSeverity::Error, format, argptr);
         va_end(argptr);
     }
 

@@ -114,12 +114,16 @@ void InitPipelineConfigs()
         state.mVertexShader = gVulkanContext->GetGlobalShader("Quad.vert");
         state.mFragmentShader = gVulkanContext->GetGlobalShader("Quad.frag");
         state.mVertexType = VertexType::VertexUI;
-        state.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        state.mPrimitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
         state.mCullMode = VK_CULL_MODE_NONE;
         state.mDepthTestEnabled = false;
         state.mBlendStates[0].blendEnable = true;
         state.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         state.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        state.mBlendStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+        state.mBlendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        state.mBlendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        state.mBlendStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
         state.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
 
@@ -135,6 +139,8 @@ void InitPipelineConfigs()
         state.mBlendStates[0].blendEnable = true;
         state.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         state.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        state.mBlendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        state.mBlendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         state.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
 
@@ -151,6 +157,8 @@ void InitPipelineConfigs()
         state.mBlendStates[0].blendEnable = true;
         state.mBlendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         state.mBlendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        state.mBlendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        state.mBlendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         state.mBlendStates[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     }
 

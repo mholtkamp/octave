@@ -56,6 +56,20 @@ uint64_t SYS_GetTimeMicroseconds();
 // Process
 void SYS_Exec(const char* cmd, std::string* output = nullptr);
 
+/**
+ * @brief Execute a command with full output capture.
+ *
+ * Unlike SYS_Exec which only captures the first 1024 bytes,
+ * this function captures complete stdout/stderr output.
+ *
+ * @param cmd Command to execute
+ * @param outStdout Pointer to receive stdout (can be nullptr)
+ * @param outStderr Pointer to receive stderr (can be nullptr)
+ * @param outExitCode Pointer to receive exit code (can be nullptr)
+ * @return true if command executed successfully
+ */
+bool SYS_ExecFull(const char* cmd, std::string* outStdout, std::string* outStderr, int* outExitCode);
+
 // Memory
 void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment);
 void SYS_AlignedFree(void* pointer);

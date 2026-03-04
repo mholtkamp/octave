@@ -81,6 +81,11 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         def.mExposeVariable = stream.ReadBool();
         def.mParentBone = stream.ReadInt8();
 
+        if (mVersion >= ASSET_VERSION_NODE_PERSISTENT_UUID)
+        {
+            def.mPersistentUuid = stream.ReadUint64();
+        }
+
         uint32_t numProps = stream.ReadUint32();
         def.mProperties.resize(numProps);
         for (uint32_t p = 0; p < numProps; ++p)
@@ -226,6 +231,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
         stream.WriteString(def.mName);
         stream.WriteBool(def.mExposeVariable);
         stream.WriteInt8(def.mParentBone);
+        stream.WriteUint64(def.mPersistentUuid);
 
         stream.WriteUint32((uint32_t)def.mProperties.size());
         for (uint32_t p = 0; p < def.mProperties.size(); ++p)
@@ -348,8 +354,14 @@ NodePtr Scene::Instantiate()
         // if the user renames a native child, then we will have a duplicate so we need to destroy the native one.
         std::vector<Node*> nativeChildren;
 
+        LogDebug("Scene::Instantiate() - scene '%s' has %u nodeDefs", GetName().c_str(), (uint32_t)mNodeDefs.size());
+
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
+            LogDebug("  [%u] name='%s' type=%u parentIdx=%u hasScene=%d",
+                i, mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType,
+                (uint32_t)mNodeDefs[i].mParentIndex, mNodeDefs[i].mScene != nullptr ? 1 : 0);
+
             NodePtr nodePtr;
             NodePtr parent = (i > 0 && nodeList.size() > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
@@ -404,16 +416,35 @@ NodePtr Scene::Instantiate()
                 if (mNodeDefs[i].mScene != nullptr)
                 {
                     Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
+                    LogDebug("  -> Instantiating subscene for node '%s'", mNodeDefs[i].mName.c_str());
                     nodePtr = scene->Instantiate();
-
-#if EDITOR
-                    nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
-#endif
+                    LogDebug("  -> Subscene result: %s", nodePtr != nullptr ? "OK" : "NULL");
                 }
                 else
                 {
+                    LogDebug("  -> Node::Construct(type=%u) for '%s'", (uint32_t)mNodeDefs[i].mType, mNodeDefs[i].mName.c_str());
                     nodePtr = Node::Construct(mNodeDefs[i].mType);
+                    LogDebug("  -> Construct result: %s (ptr=%p)", nodePtr != nullptr ? "OK" : "NULL", (void*)nodePtr.Get());
+                }
 
+                if (nodePtr == nullptr)
+                {
+                    LogWarning("Failed to construct node '%s' (type=%u, unknown type?), using Node3D placeholder.",
+                        mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType);
+                    nodePtr = Node::Construct("Node3D");
+                    LogDebug("  -> Node3D fallback result: %s", nodePtr != nullptr ? "OK" : "NULL");
+                }
+
+                if (nodePtr != nullptr)
+                {
+#if EDITOR
+                    if (mNodeDefs[i].mScene != nullptr)
+                    {
+                        nodePtr->SetExposeVariable(mNodeDefs[i].mExposeVariable);
+                    }
+#endif
+
+                    LogDebug("  -> GetNumChildren() on node ptr=%p", (void*)nodePtr.Get());
                     for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
                     {
                         nativeChildren.push_back(nodePtr->GetChild(c));
@@ -422,6 +453,12 @@ NodePtr Scene::Instantiate()
             }
 
             OCT_ASSERT(nodePtr);
+            if (nodePtr == nullptr)
+            {
+                LogError("Failed to instantiate node '%s', skipping.", mNodeDefs[i].mName.c_str());
+                nodeList.push_back(nullptr);
+                continue;
+            }
             Node* node = nodePtr.Get();
 
             std::vector<Property> dstProps;
@@ -452,6 +489,16 @@ NodePtr Scene::Instantiate()
                 node->SetName(mNodeDefs[i].mName);
             }
 
+            // Apply persistent UUID from scene data, or auto-generate if missing (pre-v14 scenes)
+            if (mNodeDefs[i].mPersistentUuid != 0)
+            {
+                node->SetPersistentUuid(mNodeDefs[i].mPersistentUuid);
+            }
+            else
+            {
+                node->EnsurePersistentUuid();
+            }
+
             // Apply subscene overrides if they exist
             if (mNodeDefs[i].mScene != nullptr)
             {
@@ -461,7 +508,7 @@ NodePtr Scene::Instantiate()
 
                     for (const auto& prop : over.mProperties)
                     {
-                        if (prop.mType == DatumType::Node)
+                        if (IsNodeDatumType(prop.mType))
                         {
                             Node* targ = ResolveNodePath(node, over.mPath);
 
@@ -478,7 +525,7 @@ NodePtr Scene::Instantiate()
             // See if there are any nodepaths that need to be resolved.
             for (auto& prop : mNodeDefs[i].mProperties)
             {
-                if (prop.mType == DatumType::Node &&
+                if (IsNodeDatumType(prop.mType) &&
                     prop.mExtra != nullptr &&
                     prop.mCount > 0)
                 {
@@ -688,6 +735,9 @@ void Scene::AddNodeDef(Node* node, Platform platform, std::vector<Node*>& nodeLi
         nodeDef.mScene = scene;
         nodeDef.mName = node->GetName();
 
+        node->EnsurePersistentUuid();
+        nodeDef.mPersistentUuid = node->GetPersistentUuid();
+
         Stream extraDataStream;
         node->SaveStream(extraDataStream, platform);
         if (extraDataStream.GetSize() > 0)
@@ -738,7 +788,7 @@ bool Scene::CheckForNodeProps(std::vector<Property>& props)
     bool hasNodeProp = false;
     for (uint32_t i = 0; i < props.size(); ++i)
     {
-        if (props[i].GetType() == DatumType::Node)
+        if (IsNodeDatumType(props[i].GetType()))
         {
             hasNodeProp = true;
             break;
