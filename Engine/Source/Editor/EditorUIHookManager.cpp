@@ -3,12 +3,26 @@
 #include "EditorUIHookManager.h"
 #include "Log.h"
 #include "InputDevices.h"
+#include "Plugins/ImGuiPluginContext.h"
 
 #include "imgui.h"
 #include "imgui_dock.h"
 
 #include <algorithm>
 #include <cctype>
+
+void GetImGuiPluginContext(ImGuiPluginContext* outCtx)
+{
+    if (outCtx)
+    {
+        outCtx->context = ImGui::GetCurrentContext();
+        ImGui::GetAllocatorFunctions(
+            &outCtx->allocFunc,
+            &outCtx->freeFunc,
+            &outCtx->allocUserData
+        );
+    }
+}
 
 EditorUIHookManager* EditorUIHookManager::sInstance = nullptr;
 

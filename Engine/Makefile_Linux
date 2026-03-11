@@ -91,7 +91,7 @@ CFLAGS	+=	-DEDITOR=0
 BUILD		:=	Intermediate/Linux/EngineGame
 TARGET		:= EngineGame
 else
-CFLAGS	+=	-DEDITOR=1
+CFLAGS	+=	-DEDITOR=1 -DOCTAVE_IMGUI_EXPORT
 INCLUDES += ../External/Assimp ../External/Assimp/contrib/rapidjson ../External/IrrXML ../External/Zlib Source/Editor Source/Editor/ImGuizmo ../External/Imgui ../External/imgui-node-editor ../External/zep/include
 SOURCES +=	Source/Editor Source/Editor/ImGuizmo Source/Editor/Widgets Source/Editor/Preferences Source/Editor/Preferences/General Source/Editor/Preferences/Appearance Source/Editor/Preferences/Appearance/Theme Source/Editor/Preferences/Appearance/Viewport Source/Editor/Preferences/External Source/Editor/Preferences/Packaging Source/Editor/Addons Source/Editor/Packaging Source/Editor/ProjectSelect Source/Editor/Timeline Source/Editor/DebugLog Source/Editor/NodeGraph Source/Editor/GamePreview Source/Editor/ScriptCreator Source/Editor/ScriptEditor Source/Editor/SecondScreenPreview Source/Editor/ThemeEditor ../External/Imgui ../External/Imgui/misc/cpp ../External/imgui-node-editor
 TARGET		:= EngineEditor

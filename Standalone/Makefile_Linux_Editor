@@ -65,7 +65,7 @@ CFLAGS	= -g -O2 -Wall $(MACHDEP) -DEDITOR=1 -DPLATFORM_LINUX=1 -DAPI_VULKAN=1 $(
 
 CXXFLAGS	=	$(CFLAGS)
 
-LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -rdynamic
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project

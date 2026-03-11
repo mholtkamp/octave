@@ -26,6 +26,17 @@
 //#define IMGUI_API __declspec( dllexport )
 //#define IMGUI_API __declspec( dllimport )
 
+// DLL export for Octave Editor - allows native addons to use ImGui
+#if defined(EDITOR) && EDITOR && defined(_WIN32)
+    #ifdef OCTAVE_IMGUI_EXPORT
+        #define IMGUI_API __declspec(dllexport)
+    #else
+        #define IMGUI_API __declspec(dllimport)
+    #endif
+#elif defined(EDITOR) && EDITOR && defined(__linux__)
+    #define IMGUI_API __attribute__((visibility("default")))
+#endif
+
 //---- Don't define obsolete functions/enums/behaviors. Consider enabling from time to time after updating to clean your code of obsolete function/names.
 //#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 //#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87: disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This will be folded into IMGUI_DISABLE_OBSOLETE_FUNCTIONS in a few versions.

@@ -18,6 +18,7 @@
 #include "Stream.h"
 #include "Utilities.h"
 #include "Script.h"
+#include "Plugins/ImGuiPluginContext.h"
 
 #include "document.h"
 
@@ -560,6 +561,11 @@ void NativeAddonManager::InitializeEngineAPI()
 
     // Editor UI (will be set when EditorUIHookManager is initialized)
     mEngineAPI.editorUI = nullptr;
+
+    // ImGui context for plugins
+    mEngineAPI.GetImGuiContext = [](ImGuiPluginContext* outCtx) {
+        GetImGuiPluginContext(outCtx);
+    };
 }
 
 void NativeAddonManager::DiscoverNativeAddons()
@@ -993,7 +999,11 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
     }
 
     ss << "/Fe\"" << outputPath << "\" ";
-    ss << "/link /DLL\n";
+    ss << "/link /DLL ";
+    // Link against Octave import library (for ImGui symbols)
+    ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/DebugEditor/\" ";
+    ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/ReleaseEditor/\" ";
+    ss << "Octave.lib\n";
     ss << "\n";
     ss << "if %ERRORLEVEL% neq 0 (\n";
     ss << "  echo Build failed\n";
@@ -1061,6 +1071,8 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
         ss << "  -llua \\\n";
     }
 
+    // Allow unresolved symbols - ImGui symbols will be resolved at runtime from the editor executable
+    ss << "  -Wl,--unresolved-symbols=ignore-in-shared-libs \\\n";
     ss << "  -o \"" << outputPath << "\"\n";
     ss << "\n";
     ss << "echo \"Build succeeded\"\n";
@@ -1974,6 +1986,17 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
         ss << "    " << define << "\n";
     }
     ss << ")\n";
+    ss << "\n";
+    ss << "# Link against Octave import library (for ImGui symbols)\n";
+    ss << "if(WIN32)\n";
+    ss << "    if(CMAKE_BUILD_TYPE STREQUAL \"Debug\")\n";
+    ss << "        set(OCTAVE_LIB_PATH \"${OCTAVE_PATH}/Standalone/Build/Windows/x64/DebugEditor\")\n";
+    ss << "    else()\n";
+    ss << "        set(OCTAVE_LIB_PATH \"${OCTAVE_PATH}/Standalone/Build/Windows/x64/ReleaseEditor\")\n";
+    ss << "    endif()\n";
+    ss << "    target_link_directories(" << binaryName << " PRIVATE ${OCTAVE_LIB_PATH})\n";
+    ss << "    target_link_libraries(" << binaryName << " PRIVATE Octave)\n";
+    ss << "endif()\n";
 
     std::string cmakePath = addonPath + "CMakeLists.txt";
     std::string content = ss.str();
@@ -2108,6 +2131,10 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
         definesStr += define + ";";
     }
 
+    // Path to Octave import library (for ImGui symbols)
+    std::string octaveLibPathDebug = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\DebugEditor\\";
+    std::string octaveLibPathRelease = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\ReleaseEditor\\";
+
     ss << "  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n";
     ss << "    <ClCompile>\n";
     ss << "      <WarningLevel>Level3</WarningLevel>\n";
@@ -2120,6 +2147,8 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
     ss << "    <Link>\n";
     ss << "      <SubSystem>Windows</SubSystem>\n";
     ss << "      <GenerateDebugInformation>true</GenerateDebugInformation>\n";
+    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathDebug << ";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
+    ss << "      <AdditionalDependencies>Octave.lib;%(AdditionalDependencies)</AdditionalDependencies>\n";
     ss << "    </Link>\n";
     ss << "  </ItemDefinitionGroup>\n";
     ss << "  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n";
@@ -2138,6 +2167,8 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
     ss << "      <EnableCOMDATFolding>true</EnableCOMDATFolding>\n";
     ss << "      <OptimizeReferences>true</OptimizeReferences>\n";
     ss << "      <GenerateDebugInformation>true</GenerateDebugInformation>\n";
+    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathRelease << ";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
+    ss << "      <AdditionalDependencies>Octave.lib;%(AdditionalDependencies)</AdditionalDependencies>\n";
     ss << "    </Link>\n";
     ss << "  </ItemDefinitionGroup>\n";
 

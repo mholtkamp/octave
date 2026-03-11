@@ -13,6 +13,7 @@
 
 struct lua_State;
 struct EditorUIHooks;
+struct ImGuiPluginContext;
 
 // Forward declarations for engine types
 class Node;
@@ -423,4 +424,14 @@ struct OctaveEngineAPI
      * Check before using to ensure plugin works in both contexts.
      */
     EditorUIHooks* editorUI;
+
+    /**
+     * @brief Get ImGui context for plugin use (Editor builds only).
+     *
+     * Plugins MUST call this in OnLoad and set up ImGui context before
+     * calling any ImGui functions. Returns nullptr in non-editor builds.
+     *
+     * @param outCtx Pointer to ImGuiPluginContext to fill
+     */
+    void (*GetImGuiContext)(ImGuiPluginContext* outCtx);
 };
