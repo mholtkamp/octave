@@ -410,6 +410,9 @@
     <ClCompile Include="Source\Engine\Assets\ParticleSystemInstance.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\DataAsset.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Assets\SkeletalMesh.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
@@ -708,6 +711,9 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\DataAsset_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Script.cpp">
@@ -1225,6 +1231,9 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\ParticleSystemInstance.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\DataAsset.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\SkeletalMesh.h">
@@ -1756,6 +1765,9 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Scene_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\DataAsset_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Script.h">

@@ -43,6 +43,7 @@
 #include "Assets/Timeline.h"
 #include "Assets/Font.h"
 #include "Assets/NodeGraphAsset.h"
+#include "Assets/DataAsset.h"
 #include "UI/UIDocument.h"
 #include "UI/UITypes.h"
 
@@ -4664,6 +4665,11 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             if (ImGui::Selectable("UI Document", false, ImGuiSelectableFlags_DontClosePopups))
             {
                 sNewAssetType = UIDocument::GetStaticType();
+                showPopup = true;
+            }
+            if (ImGui::Selectable("Data Asset", false, ImGuiSelectableFlags_DontClosePopups))
+            {
+                sNewAssetType = DataAsset::GetStaticType();
                 showPopup = true;
             }
 

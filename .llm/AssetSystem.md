@@ -51,7 +51,7 @@ class Asset : public Object {
 
 Macros: `DECLARE_ASSET(Class, Parent)` / `DEFINE_ASSET(Class)`.
 
-## Asset Types (14)
+## Asset Types (15)
 
 All in `Engine/Source/Engine/Assets/`:
 
@@ -70,6 +70,7 @@ All in `Engine/Source/Engine/Assets/`:
 | `Scene` | `Scene.h/.cpp` | Serialized node hierarchy |
 | `Timeline` | `Timeline.h/.cpp` | Keyframe animation sequences |
 | `NodeGraphAsset` | `NodeGraphAsset.h/.cpp` | Visual scripting graphs |
+| `DataAsset` | `DataAsset.h/.cpp` | Lua-defined data containers (ScriptableObject equivalent) |
 
 ## AssetManager
 
@@ -120,7 +121,7 @@ ref = LoadAsset("MyTexture");
 Texture* tex = ref.Get<Texture>();
 ```
 
-Typedefs: `TextureRef`, `StaticMeshRef`, `MaterialRef`, `SkeletalMeshRef`, `ParticleSystemRef`, `SoundWaveRef`, `FontRef`, `SceneRef`, `TimelineRef`.
+Typedefs: `TextureRef`, `StaticMeshRef`, `MaterialRef`, `SkeletalMeshRef`, `ParticleSystemRef`, `SoundWaveRef`, `FontRef`, `SceneRef`, `TimelineRef`, `DataAssetRef`.
 
 ## AssetStub
 

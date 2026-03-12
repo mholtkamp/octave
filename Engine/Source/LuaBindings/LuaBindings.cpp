@@ -48,6 +48,7 @@
 #include "LuaBindings/Font_Lua.h"
 #include "LuaBindings/Timeline_Lua.h"
 #include "LuaBindings/TimelinePlayer_Lua.h"
+#include "LuaBindings/DataAsset_Lua.h"
 #include "LuaBindings/NodeGraphPlayer_Lua.h"
 #include "LuaBindings/AssetManager_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
@@ -126,6 +127,7 @@ void BindLuaInterface()
     Texture_Lua::Bind();
     Font_Lua::Bind();
     Timeline_Lua::Bind();
+    DataAsset_Lua::Bind();
     UIDocument_Lua::Bind();
 
     // Widgets need to be bound in hierarchy order

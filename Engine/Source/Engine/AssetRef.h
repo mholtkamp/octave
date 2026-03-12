@@ -68,3 +68,4 @@ typedef AssetRef SoundWaveRef;
 typedef AssetRef FontRef;
 typedef AssetRef SceneRef;
 typedef AssetRef TimelineRef;
+typedef AssetRef DataAssetRef;

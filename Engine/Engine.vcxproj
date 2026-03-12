@@ -752,6 +752,7 @@
     <ClCompile Include="Source\Engine\Assets\MaterialBase.cpp" />
     <ClCompile Include="Source\Engine\Assets\MaterialInstance.cpp" />
     <ClCompile Include="Source\Engine\Assets\Material.cpp" />
+    <ClCompile Include="Source\Engine\Assets\DataAsset.cpp" />
     <ClCompile Include="Source\Engine\Assets\MaterialLite.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystem.cpp" />
     <ClCompile Include="Source\Engine\Assets\ParticleSystemInstance.cpp" />
@@ -952,6 +953,7 @@
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Renderer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\DataAsset_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Script_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ShadowMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Signal_Lua.cpp" />
@@ -1102,6 +1104,7 @@
     <ClInclude Include="Source\Engine\Assets\MaterialBase.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialInstance.h" />
     <ClInclude Include="Source\Engine\Assets\Material.h" />
+    <ClInclude Include="Source\Engine\Assets\DataAsset.h" />
     <ClInclude Include="Source\Engine\Assets\MaterialLite.h" />
     <ClInclude Include="Source\Engine\Assets\ParticleSystem.h" />
     <ClInclude Include="Source\Engine\Assets\ParticleSystemInstance.h" />
@@ -1312,6 +1315,7 @@
     <ClInclude Include="Source\LuaBindings\Rect_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Renderer_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Scene_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\DataAsset_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Script_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ShadowMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Signal_Lua.h" />
