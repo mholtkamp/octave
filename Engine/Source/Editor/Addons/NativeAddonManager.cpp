@@ -743,6 +743,19 @@ bool NativeAddonManager::ParsePackageJson(const std::string& path, NativeModuleM
         outMetadata.mPluginApiVersion = native["apiVersion"].GetUint();
     }
 
+    // Parse dependencies (other native addon IDs this addon depends on)
+    if (native.HasMember("dependencies") && native["dependencies"].IsArray())
+    {
+        const rapidjson::Value& deps = native["dependencies"];
+        for (rapidjson::SizeType i = 0; i < deps.Size(); ++i)
+        {
+            if (deps[i].IsString())
+            {
+                outMetadata.mDependencies.push_back(deps[i].GetString());
+            }
+        }
+    }
+
     return true;
 }
 
@@ -928,19 +941,35 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
         // Fallback to hardcoded paths
         includePaths = {
             "Engine/Source",
+            "Engine/Source/Engine",
             "Engine/Source/Plugins",
             "External/Lua",
             "External/glm",
             "External/Imgui",
             "External/ImGuizmo",
             "External/bullet3/src",
+            "External/Assimp",
             "External"
         };
         defines = {
             "OCTAVE_PLUGIN_EXPORT",
             "EDITOR=1",
             "LUA_ENABLED=1",
-            "GLM_FORCE_RADIANS"
+            "GLM_FORCE_RADIANS",
+#if PLATFORM_WINDOWS
+            "PLATFORM_WINDOWS=1",
+            "API_VULKAN=1",
+            "NOMINMAX"
+#elif PLATFORM_LINUX
+            "PLATFORM_LINUX=1",
+            "API_VULKAN=1"
+#elif PLATFORM_ANDROID
+            "PLATFORM_ANDROID=1",
+            "API_VULKAN=1"
+#elif PLATFORM_3DS
+            "PLATFORM_3DS=1",
+            "API_C3D=1"
+#endif
         };
     }
 
@@ -951,6 +980,21 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
     }
 
     std::vector<std::string> sourceFiles = GatherSourceFiles(sourceDir);
+
+    // Get parent Packages directory for resolving sibling addon dependencies
+    std::string packagesDir;
+    {
+        std::string path = state.mSourcePath;
+        while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+        {
+            path.pop_back();
+        }
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            packagesDir = path.substr(0, lastSlash + 1);
+        }
+    }
 
 #if PLATFORM_WINDOWS
     // Generate a batch file for Windows
@@ -988,6 +1032,15 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
         ss << "/I\"" << octavePath << path << "/\" ";
     }
     ss << "/I\"" << sourceDir << "\" ";
+
+    // Add dependency addon Source directories
+    for (const std::string& depId : state.mNativeMetadata.mDependencies)
+    {
+        ss << "/I\"" << packagesDir << depId << "/Source/\" ";
+    }
+
+    // Add Vulkan SDK include path
+    ss << "/I\"%VULKAN_SDK%/Include\" ";
 
     // Add source files
     for (const std::string& src : sourceFiles)
@@ -1038,6 +1091,15 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
         ss << "  -I\"" << octavePath << path << "/\" \\\n";
     }
     ss << "  -I\"" << sourceDir << "\" \\\n";
+
+    // Add dependency addon Source directories (packagesDir already computed above for Windows)
+    for (const std::string& depId : state.mNativeMetadata.mDependencies)
+    {
+        ss << "  -I\"" << packagesDir << depId << "/Source/\" \\\n";
+    }
+
+    // Add Vulkan SDK include path
+    ss << "  -I\"$VULKAN_SDK/include\" \\\n";
 
     // Add source files
     for (const std::string& src : sourceFiles)
@@ -1559,19 +1621,35 @@ bool NativeAddonManager::GenerateAddonIncludesManifest()
     ss << "    \"version\": 1,\n";
     ss << "    \"includePaths\": [\n";
     ss << "        \"Engine/Source\",\n";
+    ss << "        \"Engine/Source/Engine\",\n";
     ss << "        \"Engine/Source/Plugins\",\n";
     ss << "        \"External/Lua\",\n";
     ss << "        \"External/glm\",\n";
     ss << "        \"External/Imgui\",\n";
     ss << "        \"External/ImGuizmo\",\n";
     ss << "        \"External/bullet3/src\",\n";
+    ss << "        \"External/Assimp\",\n";
     ss << "        \"External\"\n";
     ss << "    ],\n";
     ss << "    \"defines\": [\n";
     ss << "        \"OCTAVE_PLUGIN_EXPORT\",\n";
     ss << "        \"EDITOR=1\",\n";
     ss << "        \"LUA_ENABLED=1\",\n";
-    ss << "        \"GLM_FORCE_RADIANS\"\n";
+    ss << "        \"GLM_FORCE_RADIANS\",\n";
+#if PLATFORM_WINDOWS
+    ss << "        \"PLATFORM_WINDOWS=1\",\n";
+    ss << "        \"API_VULKAN=1\",\n";
+    ss << "        \"NOMINMAX\"\n";
+#elif PLATFORM_LINUX
+    ss << "        \"PLATFORM_LINUX=1\",\n";
+    ss << "        \"API_VULKAN=1\"\n";
+#elif PLATFORM_ANDROID
+    ss << "        \"PLATFORM_ANDROID=1\",\n";
+    ss << "        \"API_VULKAN=1\"\n";
+#elif PLATFORM_3DS
+    ss << "        \"PLATFORM_3DS=1\",\n";
+    ss << "        \"API_C3D=1\"\n";
+#endif
     ss << "    ]\n";
     ss << "}\n";
 
@@ -1848,21 +1926,58 @@ bool NativeAddonManager::WriteVSCodeConfig(const std::string& addonPath)
         // Fallback to hardcoded paths
         includePaths = {
             "Engine/Source",
+            "Engine/Source/Engine",
             "Engine/Source/Plugins",
             "External/Lua",
             "External/glm",
             "External/Imgui",
             "External/ImGuizmo",
             "External/bullet3/src",
+            "External/Assimp",
             "External"
         };
         defines = {
             "OCTAVE_PLUGIN_EXPORT",
             "EDITOR=1",
             "LUA_ENABLED=1",
-            "GLM_FORCE_RADIANS"
+            "GLM_FORCE_RADIANS",
+#if PLATFORM_WINDOWS
+            "PLATFORM_WINDOWS=1",
+            "API_VULKAN=1",
+            "NOMINMAX"
+#elif PLATFORM_LINUX
+            "PLATFORM_LINUX=1",
+            "API_VULKAN=1"
+#elif PLATFORM_ANDROID
+            "PLATFORM_ANDROID=1",
+            "API_VULKAN=1"
+#elif PLATFORM_3DS
+            "PLATFORM_3DS=1",
+            "API_C3D=1"
+#endif
         };
     }
+
+    // Parse package.json for dependencies
+    std::string packageJsonPath = addonPath + "package.json";
+    NativeModuleMetadata metadata;
+    ParsePackageJson(packageJsonPath, metadata);
+
+    // Get parent Packages directory for resolving sibling addon dependencies
+    std::string packagesDir;
+    {
+        std::string path = addonPath;
+        while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+        {
+            path.pop_back();
+        }
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            packagesDir = path.substr(0, lastSlash + 1);
+        }
+    }
+    std::string packagesDirJson = normalizePath(packagesDir);
 
     std::stringstream ss;
     ss << "{\n";
@@ -1877,6 +1992,17 @@ bool NativeAddonManager::WriteVSCodeConfig(const std::string& addonPath)
     {
         ss << ",\n                \"" << octavePathJson << path << "\"";
     }
+    // Add dependency addon Source directories
+    for (const std::string& depId : metadata.mDependencies)
+    {
+        ss << ",\n                \"" << packagesDirJson << depId << "/Source\"";
+    }
+    // Add Vulkan SDK include path
+#if PLATFORM_WINDOWS
+    ss << ",\n                \"${env:VULKAN_SDK}/Include\"";
+#else
+    ss << ",\n                \"${env:VULKAN_SDK}/include\"";
+#endif
     ss << "\n            ],\n";
 
     ss << "            \"defines\": [";
@@ -1935,19 +2061,35 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
         // Fallback to hardcoded paths
         includePaths = {
             "Engine/Source",
+            "Engine/Source/Engine",
             "Engine/Source/Plugins",
             "External/Lua",
             "External/glm",
             "External/Imgui",
             "External/ImGuizmo",
             "External/bullet3/src",
+            "External/Assimp",
             "External"
         };
         defines = {
             "OCTAVE_PLUGIN_EXPORT",
             "EDITOR=1",
             "LUA_ENABLED=1",
-            "GLM_FORCE_RADIANS"
+            "GLM_FORCE_RADIANS",
+#if PLATFORM_WINDOWS
+            "PLATFORM_WINDOWS=1",
+            "API_VULKAN=1",
+            "NOMINMAX"
+#elif PLATFORM_LINUX
+            "PLATFORM_LINUX=1",
+            "API_VULKAN=1"
+#elif PLATFORM_ANDROID
+            "PLATFORM_ANDROID=1",
+            "API_VULKAN=1"
+#elif PLATFORM_3DS
+            "PLATFORM_3DS=1",
+            "API_C3D=1"
+#endif
         };
     }
 
@@ -1968,6 +2110,36 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
     ss << "# Create shared library\n";
     ss << "add_library(" << binaryName << " SHARED ${SOURCES} ${HEADERS})\n";
     ss << "\n";
+    ss << "# Find Vulkan SDK\n";
+    ss << "if(DEFINED ENV{VULKAN_SDK})\n";
+    ss << "    set(VULKAN_SDK_PATH $ENV{VULKAN_SDK})\n";
+    ss << "else()\n";
+    ss << "    find_package(Vulkan QUIET)\n";
+    ss << "    if(Vulkan_FOUND)\n";
+    ss << "        get_filename_component(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS} DIRECTORY)\n";
+    ss << "    endif()\n";
+    ss << "endif()\n";
+    ss << "\n";
+    // Parse package.json for dependencies
+    std::string packageJsonPath = addonPath + "package.json";
+    NativeModuleMetadata metadata;
+    ParsePackageJson(packageJsonPath, metadata);
+
+    // Get parent Packages directory for resolving sibling addon dependencies
+    std::string packagesDir;
+    {
+        std::string path = addonPath;
+        while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+        {
+            path.pop_back();
+        }
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            packagesDir = path.substr(0, lastSlash + 1);
+        }
+    }
+
     ss << "# Include directories\n";
     ss << "target_include_directories(" << binaryName << " PRIVATE\n";
     ss << "    ${CMAKE_CURRENT_SOURCE_DIR}/Source\n";
@@ -1977,7 +2149,21 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
     {
         ss << "    ${OCTAVE_PATH}/" << path << "\n";
     }
+
+    // Add dependency addon Source directories
+    for (const std::string& depId : metadata.mDependencies)
+    {
+        std::string depSourceDir = normalizePath(packagesDir + depId + "/Source");
+        ss << "    " << depSourceDir << "\n";
+    }
+
+    // Add Vulkan SDK include path
     ss << ")\n";
+    ss << "\n";
+    ss << "# Add Vulkan SDK include path if found\n";
+    ss << "if(VULKAN_SDK_PATH)\n";
+    ss << "    target_include_directories(" << binaryName << " PRIVATE ${VULKAN_SDK_PATH}/Include)\n";
+    ss << "endif()\n";
     ss << "\n";
     ss << "# Compile definitions\n";
     ss << "target_compile_definitions(" << binaryName << " PRIVATE\n";
@@ -2033,19 +2219,35 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
         // Fallback to hardcoded paths
         includePaths = {
             "Engine/Source",
+            "Engine/Source/Engine",
             "Engine/Source/Plugins",
             "External/Lua",
             "External/glm",
             "External/Imgui",
             "External/ImGuizmo",
             "External/bullet3/src",
+            "External/Assimp",
             "External"
         };
         defines = {
             "OCTAVE_PLUGIN_EXPORT",
             "EDITOR=1",
             "LUA_ENABLED=1",
-            "GLM_FORCE_RADIANS"
+            "GLM_FORCE_RADIANS",
+#if PLATFORM_WINDOWS
+            "PLATFORM_WINDOWS=1",
+            "API_VULKAN=1",
+            "NOMINMAX"
+#elif PLATFORM_LINUX
+            "PLATFORM_LINUX=1",
+            "API_VULKAN=1"
+#elif PLATFORM_ANDROID
+            "PLATFORM_ANDROID=1",
+            "API_VULKAN=1"
+#elif PLATFORM_3DS
+            "PLATFORM_3DS=1",
+            "API_C3D=1"
+#endif
         };
     }
 
@@ -2115,6 +2317,26 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
     ss << "    <TargetName>" << binaryName << "</TargetName>\n";
     ss << "  </PropertyGroup>\n";
 
+    // Parse package.json for dependencies
+    std::string packageJsonPath = addonPath + "package.json";
+    NativeModuleMetadata metadata;
+    ParsePackageJson(packageJsonPath, metadata);
+
+    // Get parent Packages directory for resolving sibling addon dependencies
+    std::string packagesDir;
+    {
+        std::string path = addonPath;
+        while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+        {
+            path.pop_back();
+        }
+        size_t lastSlash = path.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            packagesDir = path.substr(0, lastSlash + 1);
+        }
+    }
+
     // Build include directories string from manifest paths
     std::string includesStr;
     for (const std::string& path : includePaths)
@@ -2122,6 +2344,13 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
         std::string fullPath = octavePathVS + normalizePathVS(path);
         includesStr += fullPath + ";";
     }
+    // Add dependency addon Source directories
+    for (const std::string& depId : metadata.mDependencies)
+    {
+        includesStr += normalizePathVS(packagesDir + depId + "/Source") + ";";
+    }
+    // Add Vulkan SDK include path
+    includesStr += "$(VULKAN_SDK)\\Include;";
     includesStr += "$(ProjectDir)Source;%(AdditionalIncludeDirectories)";
 
     // Build preprocessor definitions string from manifest

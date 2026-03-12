@@ -26,6 +26,7 @@ struct NativeModuleMetadata
     std::string mBinaryName;           // Output binary name (without extension)
     std::string mEntrySymbol = "OctavePlugin_GetDesc";
     uint32_t mPluginApiVersion = 1;
+    std::vector<std::string> mDependencies;  // IDs of other native addons this depends on
 };
 
 /**
