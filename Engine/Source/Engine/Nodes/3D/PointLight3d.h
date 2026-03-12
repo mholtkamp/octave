@@ -22,7 +22,7 @@ struct PointLightData
     }
 };
 
-class PointLight3D : public Light3D
+class OCTAVE_API PointLight3D : public Light3D
 {
 public:
 

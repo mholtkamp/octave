@@ -88,6 +88,45 @@ static bool CreateDirectoryRecursive(const std::string& path)
     return SYS_CreateDirectory(normalizedPath.c_str());
 }
 
+// Helper function to convert addon name to export macro name
+// e.g., "inventory-system-runtime" -> "INVENTORY_SYSTEM_RUNTIME_EXPORTS"
+static std::string GenerateExportMacroName(const std::string& addonName)
+{
+    std::string result;
+    for (char c : addonName)
+    {
+        if (c == '-' || c == ' ')
+        {
+            result += '_';
+        }
+        else if (std::isalnum(static_cast<unsigned char>(c)))
+        {
+            result += std::toupper(static_cast<unsigned char>(c));
+        }
+    }
+    result += "_EXPORTS";
+    return result;
+}
+
+// Helper function to convert addon name to library name (for .lib files)
+// e.g., "inventory-system-runtime" -> "inventory_system_runtime"
+static std::string GenerateLibraryName(const std::string& addonName)
+{
+    std::string result;
+    for (char c : addonName)
+    {
+        if (c == '-')
+        {
+            result += '_';
+        }
+        else
+        {
+            result += c;
+        }
+    }
+    return result;
+}
+
 // ===== Engine API Implementation =====
 
 static void PluginLogDebug(const char* fmt, ...)
@@ -743,6 +782,11 @@ bool NativeAddonManager::ParsePackageJson(const std::string& path, NativeModuleM
         outMetadata.mPluginApiVersion = native["apiVersion"].GetUint();
     }
 
+    if (native.HasMember("exportDefine") && native["exportDefine"].IsString())
+    {
+        outMetadata.mExportDefine = native["exportDefine"].GetString();
+    }
+
     // Parse dependencies (other native addon IDs this addon depends on)
     if (native.HasMember("dependencies") && native["dependencies"].IsArray())
     {
@@ -1026,6 +1070,12 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
         ss << "/D" << define << " ";
     }
 
+    // Add export macro for this plugin
+    std::string exportMacro = state.mNativeMetadata.mExportDefine.empty()
+        ? GenerateExportMacroName(state.mAddonId)
+        : state.mNativeMetadata.mExportDefine;
+    ss << "/D" << exportMacro << " ";
+
     // Add include paths from manifest
     for (const std::string& path : includePaths)
     {
@@ -1053,10 +1103,24 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
 
     ss << "/Fe\"" << outputPath << "\" ";
     ss << "/link /DLL ";
-    // Link against Octave import library (for ImGui symbols)
+    // Link against Octave import library and Lua library
     ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/DebugEditor/\" ";
     ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/ReleaseEditor/\" ";
-    ss << "Octave.lib\n";
+    ss << "/LIBPATH:\"" << octavePath << "/External/Lua/Build/Windows/x64/DebugEditor/\" ";
+    ss << "/LIBPATH:\"" << octavePath << "/External/Lua/Build/Windows/x64/ReleaseEditor/\" ";
+
+    // Add dependency addon library paths and libraries
+    for (const std::string& depId : state.mNativeMetadata.mDependencies)
+    {
+        ss << "/LIBPATH:\"" << packagesDir << depId << "/Build/Debug/\" ";
+        ss << "/LIBPATH:\"" << packagesDir << depId << "/Build/Release/\" ";
+    }
+    ss << "Octave.lib Lua.lib ";
+    for (const std::string& depId : state.mNativeMetadata.mDependencies)
+    {
+        ss << GenerateLibraryName(depId) << ".lib ";
+    }
+    ss << "\n";
     ss << "\n";
     ss << "if %ERRORLEVEL% neq 0 (\n";
     ss << "  echo Build failed\n";
@@ -1084,6 +1148,12 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
     {
         ss << "  -D" << define << " \\\n";
     }
+
+    // Add export macro for this plugin
+    std::string exportMacroLinux = state.mNativeMetadata.mExportDefine.empty()
+        ? GenerateExportMacroName(state.mId)
+        : state.mNativeMetadata.mExportDefine;
+    ss << "  -D" << exportMacroLinux << " \\\n";
 
     // Add include paths from manifest
     for (const std::string& path : includePaths)
@@ -1131,6 +1201,14 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
     {
         // Try system Lua as fallback
         ss << "  -llua \\\n";
+    }
+
+    // Link against dependency shared libraries
+    for (const std::string& depId : state.mNativeMetadata.mDependencies)
+    {
+        std::string depLibName = GenerateLibraryName(depId);
+        ss << "  -L\"" << packagesDir << depId << "/Build/\" \\\n";
+        ss << "  -l" << depLibName << " \\\n";
     }
 
     // Allow unresolved symbols - ImGui symbols will be resolved at runtime from the editor executable
@@ -1963,8 +2041,9 @@ bool NativeAddonManager::WriteVSCodeConfig(const std::string& addonPath)
     NativeModuleMetadata metadata;
     ParsePackageJson(packageJsonPath, metadata);
 
-    // Get parent Packages directory for resolving sibling addon dependencies
+    // Get parent Packages directory and addon ID for resolving sibling addon dependencies
     std::string packagesDir;
+    std::string addonId;
     {
         std::string path = addonPath;
         while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
@@ -1975,6 +2054,7 @@ bool NativeAddonManager::WriteVSCodeConfig(const std::string& addonPath)
         if (lastSlash != std::string::npos)
         {
             packagesDir = path.substr(0, lastSlash + 1);
+            addonId = path.substr(lastSlash + 1);
         }
     }
     std::string packagesDirJson = normalizePath(packagesDir);
@@ -2013,6 +2093,11 @@ bool NativeAddonManager::WriteVSCodeConfig(const std::string& addonPath)
         ss << "\n                \"" << define << "\"";
         firstDefine = false;
     }
+    // Add export macro for this plugin
+    std::string exportMacroJson = metadata.mExportDefine.empty()
+        ? GenerateExportMacroName(addonId)
+        : metadata.mExportDefine;
+    ss << ",\n                \"" << exportMacroJson << "\"";
     ss << "\n            ],\n";
 
     ss << "            \"cStandard\": \"c17\",\n";
@@ -2125,8 +2210,9 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
     NativeModuleMetadata metadata;
     ParsePackageJson(packageJsonPath, metadata);
 
-    // Get parent Packages directory for resolving sibling addon dependencies
+    // Get parent Packages directory and addon name for resolving sibling addon dependencies
     std::string packagesDir;
+    std::string addonName;
     {
         std::string path = addonPath;
         while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
@@ -2137,6 +2223,7 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
         if (lastSlash != std::string::npos)
         {
             packagesDir = path.substr(0, lastSlash + 1);
+            addonName = path.substr(lastSlash + 1);
         }
     }
 
@@ -2171,9 +2258,14 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
     {
         ss << "    " << define << "\n";
     }
+    // Add export macro for this plugin
+    std::string exportMacroCMake = metadata.mExportDefine.empty()
+        ? GenerateExportMacroName(addonName)
+        : metadata.mExportDefine;
+    ss << "    " << exportMacroCMake << "\n";
     ss << ")\n";
     ss << "\n";
-    ss << "# Link against Octave import library (for ImGui symbols)\n";
+    ss << "# Link against Octave import library and dependencies\n";
     ss << "if(WIN32)\n";
     ss << "    if(CMAKE_BUILD_TYPE STREQUAL \"Debug\")\n";
     ss << "        set(OCTAVE_LIB_PATH \"${OCTAVE_PATH}/Standalone/Build/Windows/x64/DebugEditor\")\n";
@@ -2182,6 +2274,15 @@ bool NativeAddonManager::WriteCMakeLists(const std::string& addonPath, const std
     ss << "    endif()\n";
     ss << "    target_link_directories(" << binaryName << " PRIVATE ${OCTAVE_LIB_PATH})\n";
     ss << "    target_link_libraries(" << binaryName << " PRIVATE Octave)\n";
+
+    // Add dependency link directories and libraries
+    std::string packagesDirCMake = normalizePath(packagesDir);
+    for (const std::string& depId : metadata.mDependencies)
+    {
+        std::string depLibName = GenerateLibraryName(depId);
+        ss << "    target_link_directories(" << binaryName << " PRIVATE \"" << packagesDirCMake << depId << "/Build\")\n";
+        ss << "    target_link_libraries(" << binaryName << " PRIVATE " << depLibName << ")\n";
+    }
     ss << "endif()\n";
 
     std::string cmakePath = addonPath + "CMakeLists.txt";
@@ -2360,9 +2461,32 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
         definesStr += define + ";";
     }
 
-    // Path to Octave import library (for ImGui symbols)
+    // Add export macro for this plugin (so it exports its symbols when building)
+    std::string exportMacro = metadata.mExportDefine.empty()
+        ? GenerateExportMacroName(addonName)
+        : metadata.mExportDefine;
+    definesStr += exportMacro + ";";
+
+    // Path to Octave import library and Lua library
     std::string octaveLibPathDebug = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\DebugEditor\\";
     std::string octaveLibPathRelease = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\ReleaseEditor\\";
+    std::string luaLibPathDebug = octavePathVS + "\\External\\Lua\\Build\\Windows\\x64\\DebugEditor\\";
+    std::string luaLibPathRelease = octavePathVS + "\\External\\Lua\\Build\\Windows\\x64\\ReleaseEditor\\";
+
+    // Build library paths and dependencies for dependencies
+    std::string depLibPaths;
+    std::string depLibs;
+    for (const std::string& depId : metadata.mDependencies)
+    {
+        // Add dependency's build output directory to library search path
+        std::string depBuildPath = normalizePathVS(packagesDir + depId + "/Build");
+        depLibPaths += depBuildPath + "\\Debug;";
+        depLibPaths += depBuildPath + "\\Release;";
+
+        // Add dependency's .lib file to linker dependencies
+        std::string depLibName = GenerateLibraryName(depId) + ".lib;";
+        depLibs += depLibName;
+    }
 
     ss << "  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n";
     ss << "    <ClCompile>\n";
@@ -2376,8 +2500,8 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
     ss << "    <Link>\n";
     ss << "      <SubSystem>Windows</SubSystem>\n";
     ss << "      <GenerateDebugInformation>true</GenerateDebugInformation>\n";
-    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathDebug << ";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
-    ss << "      <AdditionalDependencies>Octave.lib;%(AdditionalDependencies)</AdditionalDependencies>\n";
+    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathDebug << ";" << luaLibPathDebug << ";" << depLibPaths << "%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
+    ss << "      <AdditionalDependencies>Octave.lib;Lua.lib;" << depLibs << "%(AdditionalDependencies)</AdditionalDependencies>\n";
     ss << "    </Link>\n";
     ss << "  </ItemDefinitionGroup>\n";
     ss << "  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n";
@@ -2396,8 +2520,8 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
     ss << "      <EnableCOMDATFolding>true</EnableCOMDATFolding>\n";
     ss << "      <OptimizeReferences>true</OptimizeReferences>\n";
     ss << "      <GenerateDebugInformation>true</GenerateDebugInformation>\n";
-    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathRelease << ";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
-    ss << "      <AdditionalDependencies>Octave.lib;%(AdditionalDependencies)</AdditionalDependencies>\n";
+    ss << "      <AdditionalLibraryDirectories>" << octaveLibPathRelease << ";" << luaLibPathRelease << ";" << depLibPaths << "%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>\n";
+    ss << "      <AdditionalDependencies>Octave.lib;Lua.lib;" << depLibs << "%(AdditionalDependencies)</AdditionalDependencies>\n";
     ss << "    </Link>\n";
     ss << "  </ItemDefinitionGroup>\n";
 

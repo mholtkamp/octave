@@ -8,7 +8,7 @@
 
 class Primitive3D;
 
-class Camera3D : public Node3D
+class OCTAVE_API Camera3D : public Node3D
 {
 public:
 

@@ -25,6 +25,7 @@ struct NativeModuleMetadata
     std::string mSourceDir = "Source"; // Relative path to source directory
     std::string mBinaryName;           // Output binary name (without extension)
     std::string mEntrySymbol = "OctavePlugin_GetDesc";
+    std::string mExportDefine;         // Optional custom export macro (e.g., "INVENTORY_RUNTIME_EXPORTS")
     uint32_t mPluginApiVersion = 1;
     std::vector<std::string> mDependencies;  // IDs of other native addons this depends on
 };

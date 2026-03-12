@@ -969,7 +969,7 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     __android_log_vprint(logPrio, "Octave", format, arg);
 }
 
-void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+OCTAVE_API void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
     LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);

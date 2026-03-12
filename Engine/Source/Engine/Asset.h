@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "EngineTypes.h"
 #include "EmbeddedFile.h"
 #include "Factory.h"
@@ -42,7 +43,7 @@ class AssetDir;
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);
 #define DEFINE_ASSET(Base) DEFINE_FACTORY(Base, Asset); DEFINE_OBJECT(Base);
 
-extern bool HandleAssetPropChange(Datum* datum, uint32_t index, const void* newValue);
+OCTAVE_API extern bool HandleAssetPropChange(Datum* datum, uint32_t index, const void* newValue);
 
 enum class AssetLoadState
 {
@@ -89,7 +90,7 @@ protected:
     std::unordered_map<std::string, Datum> mOptions;
 };
 
-class Asset : public Object
+class OCTAVE_API Asset : public Object
 {
 public:
 

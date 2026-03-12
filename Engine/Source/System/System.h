@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "System/SystemTypes.h"
 
 #include <string>
@@ -88,7 +89,7 @@ std::string SYS_GetClipboardText();
 
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg);
-void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
+OCTAVE_API void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
 void SYS_Alert(const char* message);
 void SYS_UpdateConsole();
 int32_t SYS_GetPlatformTier();

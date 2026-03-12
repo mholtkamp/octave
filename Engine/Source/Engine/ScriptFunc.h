@@ -1,11 +1,12 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "EngineTypes.h"
 #include "Datum.h"
 
 class ScriptComponent;
 
-class ScriptFunc
+class OCTAVE_API ScriptFunc
 {
 public:
     ScriptFunc();

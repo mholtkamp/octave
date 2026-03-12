@@ -32,7 +32,7 @@ struct SceneNodeDef
     uint64_t mPersistentUuid = 0;
 };
 
-class Scene : public Asset
+class OCTAVE_API Scene : public Asset
 {
 public:
 

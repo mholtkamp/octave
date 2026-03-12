@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-class DataAsset : public Asset
+class OCTAVE_API DataAsset : public Asset
 {
 public:
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "OctaveAPI.h"
 #include "Object.h"
 #include "Assertion.h"
 #include "EngineTypes.h"
@@ -62,7 +63,7 @@ struct NodeNetData
 };
 #endif
 
-class Node : public Object
+class OCTAVE_API Node : public Object
 {
 public:
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Rect.h"
 #include "EngineTypes.h"
 #include "Factory.h"
@@ -48,7 +49,7 @@ enum MarginFlag : uint8_t
     MF_Bottom       = 1 << 3
 };
 
-class Widget : public Node
+class OCTAVE_API Widget : public Node
 {
 public:
 

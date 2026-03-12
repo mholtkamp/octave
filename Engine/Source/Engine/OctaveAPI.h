@@ -13,6 +13,12 @@
  */
 
 #ifdef _WIN32
+    // Suppress C4251: 'type' needs to have dll-interface to be used by clients
+    // This warning is about STL types in exported classes. It's safe to suppress
+    // because both the engine and addons use the same C++ runtime (MultiThreadedDLL).
+    #pragma warning(disable: 4251)
+    #pragma warning(disable: 4275)  // Non-dll-interface base class
+
     #ifdef OCTAVE_ENGINE_EXPORT
         // Building the engine - export symbols
         #define OCTAVE_API __declspec(dllexport)

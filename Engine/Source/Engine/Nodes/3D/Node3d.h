@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Nodes/Node.h"
 #include "EngineTypes.h"
 
@@ -9,7 +10,7 @@
 
 class SkeletalMesh3D;
 
-class Node3D : public Node
+class OCTAVE_API Node3D : public Node
 {
 public:
 

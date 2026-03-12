@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Stream.h"
 #include "EngineTypes.h"
 #include "Maths.h"
@@ -82,7 +83,7 @@ union DatumData
     void* vp;
 };
 
-class Datum
+class OCTAVE_API Datum
 {
 public:
 

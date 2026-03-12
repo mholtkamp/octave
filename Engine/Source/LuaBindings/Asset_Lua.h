@@ -11,7 +11,7 @@
 #define CHECK_ASSET(L, Arg) CheckAssetLuaType<Asset>(L, Arg, ASSET_LUA_NAME, ASSET_LUA_FLAG);
 #define CHECK_ASSET_USERDATA(L, Arg) CheckHierarchyLuaType<Asset_Lua>(L, Arg, ASSET_LUA_NAME, ASSET_LUA_FLAG)->mAsset.Get();
 
-struct Asset_Lua
+struct OCTAVE_API Asset_Lua
 {
     AssetRef mAsset;
 
