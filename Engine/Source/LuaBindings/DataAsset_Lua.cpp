@@ -76,17 +76,29 @@ int DataAsset_Lua::Set(lua_State* L)
     switch (datum->GetType())
     {
     case DatumType::Integer:
-        datum->SetInteger(CHECK_INTEGER(L, 3));
+    {
+        int32_t val = CHECK_INTEGER(L, 3);
+        datum->SetInteger(val);
         break;
+    }
     case DatumType::Float:
-        datum->SetFloat(CHECK_NUMBER(L, 3));
+    {
+        float val = CHECK_NUMBER(L, 3);
+        datum->SetFloat(val);
         break;
+    }
     case DatumType::Bool:
-        datum->SetBool(CHECK_BOOLEAN(L, 3));
+    {
+        bool val = CHECK_BOOLEAN(L, 3);
+        datum->SetBool(val);
         break;
+    }
     case DatumType::String:
-        datum->SetString(CHECK_STRING(L, 3));
+    {
+        const char* val = CHECK_STRING(L, 3);
+        datum->SetString(val);
         break;
+    }
     case DatumType::Vector2D:
     {
         glm::vec2 vec = CHECK_VECTOR(L, 3);
@@ -116,11 +128,17 @@ int DataAsset_Lua::Set(lua_State* L)
         break;
     }
     case DatumType::Byte:
-        datum->SetByte((uint8_t)CHECK_INTEGER(L, 3));
+    {
+        int32_t val = CHECK_INTEGER(L, 3);
+        datum->SetByte((uint8_t)val);
         break;
+    }
     case DatumType::Short:
-        datum->SetShort((int16_t)CHECK_INTEGER(L, 3));
+    {
+        int32_t val = CHECK_INTEGER(L, 3);
+        datum->SetShort((int16_t)val);
         break;
+    }
     default:
         LogWarning("DataAsset:Set() - Unsupported property type for '%s'", propName);
         break;

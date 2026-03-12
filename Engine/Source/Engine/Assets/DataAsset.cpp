@@ -56,7 +56,7 @@ void DataAsset::LoadStream(Stream& stream, Platform platform)
     Asset::LoadStream(stream, platform);
 
     // Read script file path
-    mScriptFile = stream.ReadString();
+    stream.ReadString(mScriptFile);
 
     // Load properties from the script file first to get property definitions
     LoadPropertiesFromLua();
@@ -67,7 +67,8 @@ void DataAsset::LoadStream(Stream& stream, Platform platform)
     // Read property values and match them to loaded properties
     for (uint32_t i = 0; i < numSavedProps; ++i)
     {
-        std::string propName = stream.ReadString();
+        std::string propName;
+        stream.ReadString(propName);
         DatumType propType = (DatumType)stream.ReadUint8();
         bool isVector = stream.ReadBool();
         uint32_t count = stream.ReadUint32();
