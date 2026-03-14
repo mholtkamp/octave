@@ -75,9 +75,9 @@ RUN apt-get update && \
 # Install console development libraries
 # Create /etc/mtab symlink needed by pacman in Docker
 RUN ln -sf /proc/self/mounts /etc/mtab && \
-    wget -O - https://packages.extremscorner.org/devkitpro.gpg | dkp-pacman-key --add - && \
+    wget -O - https://packages.libogc2.org/devkitpro.gpg | dkp-pacman-key --add - && \
     dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE && \
-    echo '[extremscorner-devkitpro]\nServer = https://packages.extremscorner.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf && \
+    echo '[libogc2-devkitpro]\nServer = https://packages.libogc2.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf && \
     dkp-pacman -Syyu --noconfirm 3ds-dev gamecube-dev wii-dev && \
     yes | dkp-pacman -Scc
 
