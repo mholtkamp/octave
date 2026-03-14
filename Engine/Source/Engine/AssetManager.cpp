@@ -383,8 +383,7 @@ void AssetManager::DiscoverDirectory(AssetDir* directory, bool engineDir)
                 RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
 #if EDITOR
-            else if (extension != nullptr &&
-                strcmp(extension, ".css") == 0)
+            else if (extension == nullptr || strcmp(extension, ".oct") != 0)
             {
                 directory->mLooseFiles.push_back(dirEntry.mFilename);
             }
@@ -439,7 +438,7 @@ void AssetManager::RefreshDirectory(AssetDir* directory)
                 RegisterAsset(dirEntry.mFilename, header.mType, directory, nullptr, engineDir, header.mUuid);
             }
 #if EDITOR
-            else if (extension != nullptr && strcmp(extension, ".css") == 0)
+            else if (extension == nullptr || strcmp(extension, ".oct") != 0)
             {
                 directory->mLooseFiles.push_back(dirEntry.mFilename);
             }

@@ -5411,8 +5411,34 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         ImGui::PopID();
     }
 
-    // Draw loose files (.css, etc.)
+    // Draw loose files (non-.oct files)
     static const ImVec4 kLooseFileColor = ImVec4(0.65f, 0.65f, 0.70f, 1.0f);
+
+    auto IsTextFileExtension = [](const char* ext) -> bool
+    {
+        if (ext == nullptr) return false;
+        static const char* textExts[] = {
+            ".lua", ".txt", ".json", ".xml", ".md", ".css", ".yaml", ".yml",
+            ".ini", ".cfg", ".sh", ".bat", ".html", ".js", ".py", ".c", ".cpp",
+            ".h", ".hpp", ".cs", ".glsl", ".hlsl", ".vert", ".frag", ".toml", ".log"
+        };
+        for (const char* textExt : textExts)
+        {
+            if (_stricmp(ext, textExt) == 0) return true;
+        }
+        return false;
+    };
+
+    auto GetLooseFileIcon = [](const char* ext) -> const char*
+    {
+        if (ext == nullptr) return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
+        if (_stricmp(ext, ".lua") == 0) return ICON_LUA;
+        if (_stricmp(ext, ".json") == 0) return ICON_JSON;
+        if (_stricmp(ext, ".png") == 0 || _stricmp(ext, ".jpg") == 0 || _stricmp(ext, ".jpeg") == 0) return ICON_TDESIGN_IMAGE_FILLED;
+        if (_stricmp(ext, ".wav") == 0 || _stricmp(ext, ".mp3") == 0 || _stricmp(ext, ".ogg") == 0) return ICON_RIVET_ICONS_AUDIO_SOLID;
+        if (_stricmp(ext, ".css") == 0) return ICON_IX_CODE;
+        return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
+    };
 
     for (uint32_t i = 0; i < dir->mLooseFiles.size(); ++i)
     {
@@ -5439,7 +5465,8 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
 
         ImGui::PushStyleColor(ImGuiCol_Text, kLooseFileColor);
 
-        std::string displayText = std::string(ICON_STREAMLINE_SHARP_NEW_FILE_REMIX) + "  " + filename;
+        const char* ext = strrchr(filename.c_str(), '.');
+        std::string displayText = std::string(GetLooseFileIcon(ext)) + "  " + filename;
 
         ImGui::PushID(fullPath.c_str());
         bool looseClicked = ImGui::Selectable(displayText.c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick);
@@ -5458,11 +5485,18 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
 
             if (ImGui::IsMouseDoubleClicked(0))
             {
-                PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
-                EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
-                if (editors)
+                if (IsTextFileExtension(ext))
                 {
-                    editors->OpenLuaScript(fullPath);
+                    PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
+                    EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
+                    if (editors)
+                    {
+                        editors->OpenLuaScript(fullPath);
+                    }
+                }
+                else
+                {
+                    SYS_OpenFileWithDefaultApp(fullPath);
                 }
             }
         }
@@ -5476,7 +5510,9 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
 
         if (ImGui::BeginPopupContextItem())
         {
-            if (ImGui::MenuItem("Edit"))
+            bool isTextFile = IsTextFileExtension(ext);
+
+            if (isTextFile && ImGui::MenuItem("Edit"))
             {
                 PreferencesModule* mod = PreferencesManager::Get()->FindModule("External/Editors");
                 EditorsModule* editors = mod ? static_cast<EditorsModule*>(mod) : nullptr;
@@ -5485,6 +5521,19 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
                     editors->OpenLuaScript(fullPath);
                 }
             }
+
+            if (ImGui::MenuItem("Open with Default App"))
+            {
+                SYS_OpenFileWithDefaultApp(fullPath);
+            }
+
+            if (ImGui::MenuItem("Show in Explorer"))
+            {
+                std::string dirPath = dir->mPath;
+                SYS_ExplorerOpenDirectory(dirPath);
+            }
+
+            ImGui::Separator();
 
             if (ImGui::MenuItem("Delete"))
             {

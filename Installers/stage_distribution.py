@@ -268,6 +268,37 @@ def stage(platform, output_dir, engine_root, verbose=False):
     # --- Create Engine/Saves directory (writable at runtime) ---
     (dist / "Engine" / "Saves").mkdir(parents=True, exist_ok=True)
 
+    # --- Import libraries for native addon builds ---
+    print("Staging import libraries for native addon builds...")
+    if platform == "windows":
+        # Octave.lib - import library for native addons to link against
+        octave_lib = engine_root / "Standalone" / "Build" / "Windows" / "x64" / "ReleaseEditor" / "Octave.lib"
+        if copy_file(octave_lib, dist / "Octave.lib", verbose):
+            log(f"Octave.lib: {octave_lib}", verbose)
+        else:
+            print("  WARNING: Octave.lib not found - native addon builds may fail")
+
+        # Lua.lib - required for native addons using Lua
+        lua_lib = engine_root / "External" / "Lua" / "Build" / "Windows" / "x64" / "ReleaseEditor" / "Lua.lib"
+        if copy_file(lua_lib, dist / "Lua.lib", verbose):
+            log(f"Lua.lib: {lua_lib}", verbose)
+        else:
+            # Try Debug path as fallback
+            lua_lib = engine_root / "External" / "Lua" / "Build" / "Windows" / "x64" / "DebugEditor" / "Lua.lib"
+            if copy_file(lua_lib, dist / "Lua.lib", verbose):
+                log(f"Lua.lib: {lua_lib}", verbose)
+            else:
+                print("  WARNING: Lua.lib not found - native addon builds may fail")
+    else:
+        # Linux: Stage libLua.a for native addon builds
+        lua_lib = engine_root / "External" / "Lua" / "Build" / "Linux" / "x64" / "ReleaseEditor" / "libLua.a"
+        if not lua_lib.exists():
+            lua_lib = engine_root / "External" / "Lua" / "Build" / "Linux" / "x64" / "DebugEditor" / "libLua.a"
+        if copy_file(lua_lib, dist / "lib" / "libLua.a", verbose):
+            log(f"libLua.a: {lua_lib}", verbose)
+        else:
+            print("  WARNING: libLua.a not found - native addon builds may need system Lua")
+
     # --- Write version file ---
     # INI format so Inno Setup's ReadIni() can parse it
     (dist / "version.txt").write_text(

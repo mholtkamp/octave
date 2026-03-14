@@ -1271,6 +1271,12 @@ void SYS_ExplorerOpenDirectory(const std::string& dirPath)
     SYS_Exec(cmd.c_str());
 }
 
+void SYS_OpenFileWithDefaultApp(const std::string& filePath)
+{
+    std::string cmd = "xdg-open \"" + filePath + "\" &";
+    SYS_Exec(cmd.c_str());
+}
+
 void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t& outHeight)
 {
     SystemState& system = GetEngineState()->mSystem;

@@ -700,4 +700,8 @@ void SYS_ExplorerOpenDirectory(const std::string& dirPath)
 {
 }
 
+void SYS_OpenFileWithDefaultApp(const std::string& filePath)
+{
+}
+
 #endif

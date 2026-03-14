@@ -1103,7 +1103,23 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
 
     ss << "/Fe\"" << outputPath << "\" ";
     ss << "/link /DLL ";
+
+    // Get executable directory for installed editor lib paths
+    std::string exePath = SYS_GetExecutablePath();
+    std::string exeDir;
+    {
+        size_t lastSlash = exePath.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            exeDir = exePath.substr(0, lastSlash + 1);
+        }
+    }
+
     // Link against Octave import library and Lua library
+    // First check installed editor paths (alongside executable)
+    ss << "/LIBPATH:\"" << exeDir << "\" ";
+    ss << "/LIBPATH:\"" << exeDir << "lib/\" ";
+    // Then check development build paths
     ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/DebugEditor/\" ";
     ss << "/LIBPATH:\"" << octavePath << "/Standalone/Build/Windows/x64/ReleaseEditor/\" ";
     ss << "/LIBPATH:\"" << octavePath << "/External/Lua/Build/Windows/x64/DebugEditor/\" ";
@@ -1151,7 +1167,7 @@ bool NativeAddonManager::GenerateBuildScript(const std::string& addonId,
 
     // Add export macro for this plugin
     std::string exportMacroLinux = state.mNativeMetadata.mExportDefine.empty()
-        ? GenerateExportMacroName(state.mId)
+        ? GenerateExportMacroName(state.mAddonId)
         : state.mNativeMetadata.mExportDefine;
     ss << "  -D" << exportMacroLinux << " \\\n";
 
@@ -2467,9 +2483,21 @@ bool NativeAddonManager::WriteVSProject(const std::string& addonPath, const std:
         : metadata.mExportDefine;
     definesStr += exportMacro + ";";
 
+    // Get executable directory for installed editor lib paths
+    std::string exePath = SYS_GetExecutablePath();
+    std::string exeDirVS;
+    {
+        size_t lastSlash = exePath.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            exeDirVS = normalizePathVS(exePath.substr(0, lastSlash + 1));
+        }
+    }
+
     // Path to Octave import library and Lua library
-    std::string octaveLibPathDebug = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\DebugEditor\\";
-    std::string octaveLibPathRelease = octavePathVS + "\\Standalone\\Build\\Windows\\x64\\ReleaseEditor\\";
+    // Include both installed editor paths and development build paths
+    std::string octaveLibPathDebug = exeDirVS + ";" + exeDirVS + "lib\\;" + octavePathVS + "\\Standalone\\Build\\Windows\\x64\\DebugEditor\\";
+    std::string octaveLibPathRelease = exeDirVS + ";" + exeDirVS + "lib\\;" + octavePathVS + "\\Standalone\\Build\\Windows\\x64\\ReleaseEditor\\";
     std::string luaLibPathDebug = octavePathVS + "\\External\\Lua\\Build\\Windows\\x64\\DebugEditor\\";
     std::string luaLibPathRelease = octavePathVS + "\\External\\Lua\\Build\\Windows\\x64\\ReleaseEditor\\";
 

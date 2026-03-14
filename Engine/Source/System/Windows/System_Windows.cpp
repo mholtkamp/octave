@@ -1261,4 +1261,9 @@ void SYS_ExplorerOpenDirectory(const std::string& dirPath)
     ShellExecute(NULL, "open", dirPath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
 }
 
+void SYS_OpenFileWithDefaultApp(const std::string& filePath)
+{
+    ShellExecute(NULL, "open", filePath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+}
+
 #endif
