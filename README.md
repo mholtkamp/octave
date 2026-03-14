@@ -34,7 +34,8 @@ Instructions for building from source below.
    - `pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
    - Put this entry in `C:\devkitPro\msys2\etc\pacman.conf` above the `[dkp-libs]` entry:
    ```
-      [extremscorner-devkitpro]
+      [libogc2-devkitpro]
+      Server = https://packages.libogc2.org/devkitpro/windows/$arch
       Server = https://packages.extremscorner.org/devkitpro/windows/$arch
    ```
    - `pacman -Syuu`
@@ -86,7 +87,8 @@ Instructions for building from source below.
    - `sudo dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
    - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry:
    ```
-      [extremscorner-devkitpro]
+      [libogc2-devkitpro]
+      Server = https://packages.libogc2.org/devkitpro/linux/$arch
       Server = https://packages.extremscorner.org/devkitpro/linux/$arch
    ```
    - `sudo dkp-pacman -Syuu`
