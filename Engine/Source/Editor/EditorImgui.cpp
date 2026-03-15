@@ -95,6 +95,11 @@
 #elif PLATFORM_LINUX
 #include "imgui_impl_xcb.h"
 #endif
+
+// Cross-platform case-insensitive string comparison
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#endif
 #include <Nodes/TimelinePlayer.h>
 #include <Nodes/Widgets/Button.h>
 #include <Nodes/Widgets/Quad.h>
@@ -5424,7 +5429,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         };
         for (const char* textExt : textExts)
         {
-            if (_stricmp(ext, textExt) == 0) return true;
+            if (strcasecmp(ext, textExt) == 0) return true;
         }
         return false;
     };
@@ -5432,11 +5437,11 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
     auto GetLooseFileIcon = [](const char* ext) -> const char*
     {
         if (ext == nullptr) return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
-        if (_stricmp(ext, ".lua") == 0) return ICON_LUA;
-        if (_stricmp(ext, ".json") == 0) return ICON_JSON;
-        if (_stricmp(ext, ".png") == 0 || _stricmp(ext, ".jpg") == 0 || _stricmp(ext, ".jpeg") == 0) return ICON_TDESIGN_IMAGE_FILLED;
-        if (_stricmp(ext, ".wav") == 0 || _stricmp(ext, ".mp3") == 0 || _stricmp(ext, ".ogg") == 0) return ICON_RIVET_ICONS_AUDIO_SOLID;
-        if (_stricmp(ext, ".css") == 0) return ICON_IX_CODE;
+        if (strcasecmp(ext, ".lua") == 0) return ICON_LUA;
+        if (strcasecmp(ext, ".json") == 0) return ICON_JSON;
+        if (strcasecmp(ext, ".png") == 0 || strcasecmp(ext, ".jpg") == 0 || strcasecmp(ext, ".jpeg") == 0) return ICON_TDESIGN_IMAGE_FILLED;
+        if (strcasecmp(ext, ".wav") == 0 || strcasecmp(ext, ".mp3") == 0 || strcasecmp(ext, ".ogg") == 0) return ICON_RIVET_ICONS_AUDIO_SOLID;
+        if (strcasecmp(ext, ".css") == 0) return ICON_IX_CODE;
         return ICON_STREAMLINE_SHARP_NEW_FILE_REMIX;
     };
 
