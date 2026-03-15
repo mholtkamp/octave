@@ -8,6 +8,7 @@
 #include "LuaBindings/Script_Lua.h"
 #include "LuaBindings/Input_Lua.h"
 #include "LuaBindings/Audio_Lua.h"
+#include "LuaBindings/Gizmos_Lua.h"
 #include "LuaBindings/Maths_Lua.h"
 #include "LuaBindings/Network_Lua.h"
 #include "LuaBindings/Renderer_Lua.h"
@@ -45,6 +46,10 @@
 #include "LuaBindings/SkeletalMesh_Lua.h"
 #include "LuaBindings/Texture_Lua.h"
 #include "LuaBindings/Font_Lua.h"
+#include "LuaBindings/Timeline_Lua.h"
+#include "LuaBindings/TimelinePlayer_Lua.h"
+#include "LuaBindings/DataAsset_Lua.h"
+#include "LuaBindings/NodeGraphPlayer_Lua.h"
 #include "LuaBindings/AssetManager_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
@@ -53,6 +58,7 @@
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
+#include "LuaBindings/UIDocument_Lua.h"
 #include "LuaBindings/Signal_Lua.h"
 #include "LuaBindings/Stream_Lua.h"
 #include "LuaBindings/TimerManager_Lua.h"
@@ -70,6 +76,7 @@ void BindLuaInterface()
     Script_Lua::Bind();
     Input_Lua::Bind();
     Audio_Lua::Bind();
+    Gizmos_Lua::Bind();
     Log_Lua::Bind();
     Maths_Lua::Bind();
     Network_Lua::Bind();
@@ -103,6 +110,8 @@ void BindLuaInterface()
     InstancedMesh3D_Lua::Bind();
     TextMesh3D_Lua::Bind();
     Sphere3D_Lua::Bind();
+    TimelinePlayer_Lua::Bind();
+    NodeGraphPlayer_Lua::Bind();
 
     // Assets need to be bound in hierarchy order.
     Asset_Lua::Bind();
@@ -117,6 +126,9 @@ void BindLuaInterface()
     SkeletalMesh_Lua::Bind();
     Texture_Lua::Bind();
     Font_Lua::Bind();
+    Timeline_Lua::Bind();
+    DataAsset_Lua::Bind();
+    UIDocument_Lua::Bind();
 
     // Widgets need to be bound in hierarchy order
     Widget_Lua::Bind();

@@ -52,6 +52,13 @@ SOURCES		:=	Source \
 				Source/Engine/Nodes/3D \
 				Source/Engine/Nodes/Widgets \
 				Source/Engine/Assets \
+				Source/Engine/NodeGraph \
+				Source/Engine/NodeGraph/Nodes \
+				Source/Engine/NodeGraph/Domains \
+				Source/Engine/UI \
+				Source/Engine/Timeline \
+				Source/Engine/Timeline/Tracks \
+				Source/Plugins \
 				Source/System Source/System/Linux \
 				Source/Graphics \
 				Source/Graphics/Vulkan \
@@ -65,9 +72,10 @@ SOURCES		:=	Source \
 				Source/LuaBindings \
 				../External/Lua \
 				../External/Vorbis \
+				../External/IrrXML \
 				../External/recastnavigation/Recast/Source/ \
 				../External/recastnavigation/Detour/Source/
-INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet $(VULKAN_SDK)/include ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
+INCLUDES	:=	Source Source/Engine ../External ../External/Vorbis ../External/Bullet ../External/Lua $(VULKAN_SDK)/include ../External/recastnavigation/Recast/Include ../External/recastnavigation/Detour/Include
 OUTPUT_DIR	:=	$(CURDIR)/Build/Linux
 BULLET_DIR	:=	$(CURDIR)/../External/Bullet
 ASSIMP_DIR	:=	$(CURDIR)/../External/Assimp
@@ -83,9 +91,9 @@ CFLAGS	+=	-DEDITOR=0
 BUILD		:=	Intermediate/Linux/EngineGame
 TARGET		:= EngineGame
 else
-CFLAGS	+=	-DEDITOR=1
-INCLUDES += ../External/Assimp ../External/Assimp/contrib/rapidjson ../External/IrrXML ../External/Zlib Source/Editor Source/Editor/ImGuizmo ../External/Imgui
-SOURCES +=	Source/Editor Source/Editor/ImGuizmo Source/Editor/Widgets Source/Editor/Preferences Source/Editor/Preferences/General Source/Editor/Preferences/Appearance Source/Editor/Preferences/Appearance/Theme Source/Editor/Preferences/Appearance/Viewport ../External/Imgui ../External/Imgui/misc/cpp
+CFLAGS	+=	-DEDITOR=1 -DOCTAVE_IMGUI_EXPORT
+INCLUDES += ../External/Assimp ../External/Assimp/contrib/rapidjson ../External/IrrXML ../External/Zlib Source/Editor Source/Editor/ImGuizmo ../External/Imgui ../External/imgui-node-editor ../External/zep/include ../External/Crow ../External/asio
+SOURCES +=	Source/Editor Source/Editor/ImGuizmo Source/Editor/Widgets Source/Editor/Preferences Source/Editor/Preferences/General Source/Editor/Preferences/Appearance Source/Editor/Preferences/Appearance/Theme Source/Editor/Preferences/Appearance/Viewport Source/Editor/Preferences/External Source/Editor/Preferences/Packaging Source/Editor/Preferences/Network Source/Editor/ControllerServer Source/Editor/Addons Source/Editor/Packaging Source/Editor/ProjectSelect Source/Editor/Timeline Source/Editor/DebugLog Source/Editor/NodeGraph Source/Editor/GamePreview Source/Editor/ScriptCreator Source/Editor/ScriptEditor Source/Editor/SecondScreenPreview Source/Editor/ThemeEditor ../External/Imgui ../External/Imgui/misc/cpp ../External/imgui-node-editor
 TARGET		:= EngineEditor
 BUILD		:=	Intermediate/Linux/EngineEditor
 endif

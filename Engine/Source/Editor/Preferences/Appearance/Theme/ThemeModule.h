@@ -34,6 +34,11 @@ private:
     int mSelectedFontIndex = 0;
     std::vector<std::string> mAvailableFonts;
 
+    // Custom theme import
+    char mNewThemeName[64] = {};
+    bool mShowImportDialog = false;
+    std::string mPendingImportPath;
+
     void RefreshAvailableFonts();
     void LoadFont();
     static std::string GetSettingsFilePathStatic();

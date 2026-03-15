@@ -579,6 +579,8 @@ std::string SYS_GetClipboardText()
 }
 
 // Misc
+static FILE* sLogFile = nullptr;
+
 void SYS_Log(LogSeverity severity, const char* format, va_list arg)
 {
     char buffer[256];
@@ -588,9 +590,20 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     outStr += "\n";
 
     svcOutputDebugString(outStr.data(), (int32_t)outStr.size());
+
+    if (sLogFile == nullptr)
+    {
+        sLogFile = fopen("sdmc:/octave_log.txt", "w");
+    }
+
+    if (sLogFile != nullptr)
+    {
+        fputs(outStr.c_str(), sLogFile);
+        fflush(sLogFile);
+    }
 }
 
-void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+OCTAVE_API void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
     const char* fileName = strrchr(fileString, '/') ? strrchr(fileString, '/') + 1 : fileString;
     char str[256];
@@ -684,6 +697,10 @@ bool SYS_IsFullscreen()
 }
 
 void SYS_ExplorerOpenDirectory(const std::string& dirPath)
+{
+}
+
+void SYS_OpenFileWithDefaultApp(const std::string& filePath)
 {
 }
 

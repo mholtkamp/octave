@@ -8,6 +8,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 
 - `Escape` Exit play-in-editor
 - `Alt + P` Play/pause play-in-editor.
+- `Ctrl + Alt + P` Release cursor capture during play-in-editor (click Game Preview to recapture)
 - `F8` Eject from game camera during play-in-editor
 - `F10` Step one frame forward when the game is paused during play-in-editor
 - `Ctrl + P` Open project
@@ -17,6 +18,7 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 - `Shift + S` Save selected asset
 - `Ctrl + O` Open scene
 - `Ctrl + I` Import asset
+- `Ctrl + R` Refresh & Compile All Scripts
 - `Ctrl + Shift + Z` Redo action
 - `Ctrl + Z` Undo action
 - `Alt + R` or `Ctrl + R` Reload all scripts (Note: If not working, this hotkey may conflict with AMD/Nvidia overlays.)
@@ -91,7 +93,17 @@ These global hotkeys can be activated no matter where the mouse cursor is locate
 - `Minus` Move node up in child list
 - `Plus` Move node down in child list
 - `Delete` Delete the selected nodes
-- `Ctrl + D` Duplicate nodes
+- `Ctrl + D` Duplicate node (opens name input popup for single selection, auto-names for multi-selection)
+- `F2` Rename selected node
+
+### Assets Panel
+
+- `Ctrl + N` Create new Scene asset
+- `Ctrl + M` Create new Material asset
+- `Ctrl + P` Create new Particle asset
+- `Ctrl + D` Duplicate selected asset (opens name input popup)
+- `F2` Rename selected asset
+- `Delete` Delete selected asset(s)
 
 ### Properties Panel
 

@@ -13,6 +13,12 @@
 #include "Appearance/AppearanceModule.h"
 #include "Appearance/Viewport/ViewportModule.h"
 #include "Appearance/Theme/ThemeModule.h"
+#include "External/ExternalModule.h"
+#include "External/LaunchersModule.h"
+#include "External/EditorsModule.h"
+#include "Packaging/PackagingModule.h"
+#include "Packaging/DockerModule.h"
+#include "Network/NetworkModule.h"
 
 PreferencesManager* PreferencesManager::sInstance = nullptr;
 
@@ -30,6 +36,20 @@ void PreferencesManager::Create()
     appearance->AddSubModule(new ThemeModule());
     appearance->AddSubModule(new ViewportModule());
     sInstance->RegisterModule(appearance);
+
+    // External module with sub-modules
+    ExternalModule* external = new ExternalModule();
+    external->AddSubModule(new LaunchersModule());
+    external->AddSubModule(new EditorsModule());
+    sInstance->RegisterModule(external);
+
+    // Packaging module with sub-modules
+    PackagingModule* packaging = new PackagingModule();
+    packaging->AddSubModule(new DockerModule());
+    sInstance->RegisterModule(packaging);
+
+    // Network module
+    sInstance->RegisterModule(new NetworkModule());
 
     // Load all settings on startup
     sInstance->LoadAllSettings();

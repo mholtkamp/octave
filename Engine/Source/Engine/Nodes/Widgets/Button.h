@@ -17,7 +17,7 @@ enum class ButtonState : uint8_t
     Count
 };
 
-class Button : public Widget
+class OCTAVE_API Button : public Widget
 {
 public:
 

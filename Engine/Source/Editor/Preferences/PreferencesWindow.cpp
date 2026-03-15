@@ -3,6 +3,7 @@
 #include "PreferencesWindow.h"
 #include "PreferencesManager.h"
 #include "PreferencesModule.h"
+#include "Editor/EditorUIHookManager.h"
 
 #include "imgui.h"
 
@@ -117,6 +118,36 @@ void PreferencesWindow::DrawSidebar()
     {
         DrawModuleTree(module);
     }
+
+    // Draw addon preferences panels (Batch 4)
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr)
+    {
+        const auto& panels = hookMgr->GetPreferencesPanels();
+        if (!panels.empty())
+        {
+            ImGui::Separator();
+            ImGui::TextDisabled("Addons");
+
+            for (const RegisteredPreferencesPanel& panel : panels)
+            {
+                bool isSelected = (mSelectedAddonPanel == panel.mPanelName);
+
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
+                if (isSelected)
+                {
+                    flags |= ImGuiTreeNodeFlags_Selected;
+                }
+
+                ImGui::TreeNodeEx(panel.mPanelName.c_str(), flags);
+                if (ImGui::IsItemClicked())
+                {
+                    mSelectedAddonPanel = panel.mPanelName;
+                    mSelectedModule = nullptr; // Deselect built-in module
+                }
+            }
+        }
+    }
 }
 
 void PreferencesWindow::DrawModuleTree(PreferencesModule* module)
@@ -143,6 +174,7 @@ void PreferencesWindow::DrawModuleTree(PreferencesModule* module)
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
     {
         mSelectedModule = module;
+        mSelectedAddonPanel.clear(); // Deselect addon panel
     }
 
     if (hasChildren && nodeOpen)
@@ -165,6 +197,30 @@ void PreferencesWindow::DrawContent()
 
         mSelectedModule->Render();
     }
+    else if (!mSelectedAddonPanel.empty())
+    {
+        // Draw addon preferences panel (Batch 4)
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr)
+        {
+            const auto& panels = hookMgr->GetPreferencesPanels();
+            for (const RegisteredPreferencesPanel& panel : panels)
+            {
+                if (panel.mPanelName == mSelectedAddonPanel)
+                {
+                    ImGui::Text("%s", panel.mPanelName.c_str());
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (panel.mDrawFunc)
+                    {
+                        panel.mDrawFunc(panel.mUserData);
+                    }
+                    break;
+                }
+            }
+        }
+    }
     else
     {
         ImGui::TextDisabled("Select a category from the left panel.");
@@ -186,6 +242,8 @@ void PreferencesWindow::DrawFooter()
     if (ImGui::Button("Apply", ImVec2(buttonWidth, 0)))
     {
         PreferencesManager::Get()->SaveAllSettings();
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->SaveAddonPreferences();
     }
 
     ImGui::SameLine();
@@ -194,6 +252,8 @@ void PreferencesWindow::DrawFooter()
     {
         // Reload settings to discard changes
         PreferencesManager::Get()->LoadAllSettings();
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->LoadAddonPreferences();
         mPendingClose = true;
     }
 
@@ -202,7 +262,22 @@ void PreferencesWindow::DrawFooter()
     if (ImGui::Button("OK", ImVec2(buttonWidth, 0)))
     {
         PreferencesManager::Get()->SaveAllSettings();
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->SaveAddonPreferences();
         mPendingClose = true;
+    }
+}
+
+void PreferencesWindow::SelectModule(const std::string& path)
+{
+    PreferencesManager* manager = PreferencesManager::Get();
+    if (manager != nullptr)
+    {
+        PreferencesModule* module = manager->FindModule(path);
+        if (module != nullptr)
+        {
+            mSelectedModule = module;
+        }
     }
 }
 

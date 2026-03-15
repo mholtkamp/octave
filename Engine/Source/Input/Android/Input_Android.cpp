@@ -42,6 +42,11 @@ void INP_TrapCursor(bool trap)
 
 }
 
+void INP_TrapCursorToRect(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+
+}
+
 const char* INP_ShowSoftKeyboard(bool show)
 {
     SystemState& system = GetEngineState()->mSystem;

@@ -837,7 +837,12 @@ void EndDebugLabel()
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform)
 {
+    if (world == nullptr)
+        return;
+
     Camera3D* camera = world->GetActiveCamera();
+    if (camera == nullptr)
+        return;
 
     outData.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
     outData.mWorldMatrix = transform;
@@ -1031,8 +1036,8 @@ VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlen
         blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         blendState.colorBlendOp = VK_BLEND_OP_ADD;
-        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         blendState.alphaBlendOp = VK_BLEND_OP_ADD;
         break;
     case BasicBlendState::Additive:
@@ -1041,8 +1046,8 @@ VkPipelineColorBlendAttachmentState GetBasicBlendState(BasicBlendState basicBlen
         blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
         blendState.colorBlendOp = VK_BLEND_OP_ADD;
-        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
         blendState.alphaBlendOp = VK_BLEND_OP_ADD;
         break;
     }
@@ -1655,6 +1660,7 @@ void DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverride)
 
         BindForwardVertexType(vertexType, material);
         BindMaterialResource(material);
+
         GetVulkanContext()->CommitPipeline();
 
         BindGeometryDescriptorSet(staticMeshComp);
@@ -1971,8 +1977,7 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
         }
         else if (context->GetCurrentRenderPassId() == RenderPassId::Selected)
         {
-            Shader* instancedSelectedFragShader = context->GetGlobalShader("SelectedInstanced.frag");
-            context->SetFragmentShader(instancedSelectedFragShader);
+            context->SetFragmentShader(context->GetGlobalShader("SelectedInstanced.frag"));
         }
 #endif
 
@@ -1989,7 +1994,7 @@ void DrawInstancedMeshComp(InstancedMesh3D* instancedMeshComp)
             0);
 
 #if EDITOR
-        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck || 
+        if (context->GetCurrentRenderPassId() == RenderPassId::HitCheck ||
             context->GetCurrentRenderPassId() == RenderPassId::Selected)
         {
             context->SetFragmentShader(prevFragShader);
@@ -2235,7 +2240,7 @@ void CreateQuadResource(Quad* quad)
     QuadResource* resource = quad->GetResource();
 
     OCT_ASSERT(resource->mVertexBuffer == nullptr);
-    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, 4 * sizeof(VertexUI), "Quad Vertices");
+    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, Quad::kMaxQuadVertices * sizeof(VertexUI), "Quad Vertices");
 }
 
 void DestroyQuadResource(Quad* quad)
@@ -2252,7 +2257,7 @@ void DestroyQuadResource(Quad* quad)
 void UpdateQuadResourceVertexData(Quad* quad)
 {
     QuadResource* resource = quad->GetResource();
-    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * 4, 0);
+    resource->mVertexBuffer->Update(quad->GetVertices(), sizeof(VertexUI) * quad->GetNumVertices(), 0);
 }
 
 void BindGeometryDescriptorSet(Quad* quad)
@@ -2263,6 +2268,10 @@ void BindGeometryDescriptorSet(Quad* quad)
     QuadUniformData ubo = {};
     ubo.mTransform = glm::mat4(quad->GetTransform());
     ubo.mColor = quad->GetColor();
+
+    // Corner rounding is now handled by geometry (triangle fan), so pass 0 for shader SDF.
+    ubo.mQuadParams = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
     UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
 
     // Descriptor Set
@@ -2293,7 +2302,66 @@ void DrawQuad(Quad* quad)
 
     BindGeometryDescriptorSet(quad);
 
-    vkCmdDraw(cb, 4, 1, 0, 0);
+    vkCmdDraw(cb, quad->GetNumVertices(), 1, 0, 0);
+}
+
+void CreateQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+
+    OCT_ASSERT(resource->mVertexBuffer == nullptr);
+    resource->mVertexBuffer = new MultiBuffer(BufferType::Vertex, Quad::kMaxQuadVertices * sizeof(VertexUI), "Quad Border Vertices");
+}
+
+void DestroyQuadBorderResource(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+
+    if (resource->mVertexBuffer != nullptr)
+    {
+        GetDestroyQueue()->Destroy(resource->mVertexBuffer);
+        resource->mVertexBuffer = nullptr;
+    }
+}
+
+void UpdateQuadBorderResourceVertexData(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    resource->mVertexBuffer->Update(quad->GetBorderVertices(), sizeof(VertexUI) * quad->GetBorderNumVertices(), 0);
+}
+
+void DrawQuadBorder(Quad* quad)
+{
+    QuadResource* resource = quad->GetBorderResource();
+    VkCommandBuffer cb = GetCommandBuffer();
+    VulkanContext* context = GetVulkanContext();
+
+    BindPipelineConfig(PipelineConfig::Quad);
+
+    VkDeviceSize offset = 0;
+    VkBuffer vertexBuffer = resource->mVertexBuffer->Get();
+    vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &offset);
+
+    context->CommitPipeline();
+
+    // Use border color and white texture for solid fill
+    QuadUniformData ubo = {};
+    ubo.mTransform = glm::mat4(quad->GetTransform());
+    ubo.mColor = quad->GetBorderColor();
+    ubo.mQuadParams = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    UniformBlock uniformBlock = WriteUniformBlock(&ubo, sizeof(ubo));
+
+    Renderer* renderer = Renderer::Get();
+    Texture* texture = renderer->mWhiteTexture.Get<Texture>();
+
+    DescriptorSet::Begin("Quad Border DS")
+        .WriteUniformBuffer(0, uniformBlock)
+        .WriteImage(1, texture->GetResource()->mImage)
+        .Build()
+        .Bind(cb, 1);
+
+    vkCmdDraw(cb, quad->GetBorderNumVertices(), 1, 0, 0);
 }
 
 void CreateTextResource(Text* text)
@@ -2551,6 +2619,7 @@ void DrawStaticMesh(StaticMesh* mesh, Material* material, const glm::mat4& trans
         BindForwardVertexType(vertType, material);
 
         BindMaterialResource(material);
+
         GetVulkanContext()->CommitPipeline();
 
         DescriptorSet::Begin("Free Mesh DS")

@@ -22,7 +22,7 @@ SOURCES		:=	Source \
 				Generated
 #DATA		:=	data
 #TEXTURES	:=	textures 
-INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet
+INCLUDES	:=	../Engine/Source ../Engine/Source/Engine ../External ../External/Bullet ../External/Lua
 OUTPUT_DIR	:=	$(CURDIR)/Build/Wii
 
 #---------------------------------------------------------------------------------
@@ -56,9 +56,12 @@ ifneq ($(notdir $(BUILD)),$(notdir $(CURDIR)))
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(TEXTURES),$(CURDIR)/$(dir))
+# Helper to handle both relative and absolute paths in VPATH
+MAKE_VPATH = $(if $(or $(filter /%,$(1)),$(findstring :,$(1))),$(1),$(CURDIR)/$(1))
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(call MAKE_VPATH,$(dir))) \
+					$(foreach dir,$(DATA),$(call MAKE_VPATH,$(dir))) \
+					$(foreach dir,$(TEXTURES),$(call MAKE_VPATH,$(dir)))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -91,7 +94,7 @@ export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES))) $(addsuffix .h,$(subst
 #---------------------------------------------------------------------------------
 # build a list of include paths
 #---------------------------------------------------------------------------------
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(call MAKE_VPATH,$(dir))) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					-I$(CURDIR)/$(BUILD) \
 					-I$(LIBOGC_INC)

@@ -10,6 +10,18 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 [Lua Documentation](Documentation/Lua/README.md)
 
+### Lua IntelliSense (VS Code)
+
+For autocompletion and type checking in Lua scripts, install the [Lua Language Server](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) extension and add the following to your workspace `.vscode/settings.json`:
+
+```json
+{
+  "Lua.workspace.library": [
+    "Engine/Generated/LuaMeta"
+  ]
+}
+```
+
 [Docker Documentation](Documentation/Docker/README.md)
 
 [Editor Hotkeys](Documentation/Info/Editor.md)
@@ -28,14 +40,15 @@ Instructions for building from source below.
    - devkitPPC for GameCube/Wii development
    - devkitARM for 3DS development
    - Instructions for installing the devkitPro toolchains can be found in the devkitPro wiki [here](https://devkitpro.org/wiki/Getting_Started)
-2. GameCube packaging currently only works on Linux or Docker. We recommend building GameCube games on Windows with Docker see instructions below. But if you want to try to get them to package on Windows:
+2. Install devkitPro:
    - Open your Start Menu and launch `devkitPro > MSys2`
    - `pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com`
    - `pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
    - Put this entry in `C:\devkitPro\msys2\etc\pacman.conf` above the `[dkp-libs]` entry:
    ```
-      [extremscorner-devkitpro]
-      Server = https://packages.extremscorner.org/devkitpro/windows/$arch
+   [libogc2-devkitpro]
+   Server = https://packages.libogc2.org/devkitpro/windows/$arch
+   Server = https://packages.extremscorner.org/devkitpro/windows/$arch
    ```
    - `pacman -Syuu`
    - `pacman -S gamecube-tools-git libogc2 libogc2-libdvm`
@@ -86,8 +99,9 @@ Instructions for building from source below.
    - `sudo dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE`
    - Put this entry in `/opt/devkitpro/pacman/etc/pacman.conf` above the `[dkp-libs]` entry:
    ```
-      [extremscorner-devkitpro]
-      Server = https://packages.extremscorner.org/devkitpro/linux/$arch
+   [libogc2-devkitpro]
+   Server = https://packages.libogc2.org/devkitpro/linux/$arch
+   Server = https://packages.extremscorner.org/devkitpro/linux/$arch
    ```
    - `sudo dkp-pacman -Syuu`
    - `sudo dkp-pacman -S gamecube-tools-git libogc2 libogc2-libdvm`

@@ -8,7 +8,7 @@
 
 class StaticMesh;
 
-class StaticMesh3D : public Mesh3D
+class OCTAVE_API StaticMesh3D : public Mesh3D
 {
 public:
 

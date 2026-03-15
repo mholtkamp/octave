@@ -42,7 +42,7 @@ ATTRIBUTE_ALIGNED16(struct) OctaveMotionState : public btMotionState
     }
 };
 
-class Primitive3D : public Node3D
+class OCTAVE_API Primitive3D : public Node3D
 {
 public:
 

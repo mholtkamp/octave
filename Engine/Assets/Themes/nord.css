@@ -1,0 +1,62 @@
+
+:root {
+    --polar0: #2E3440;
+    --polar1: #3B4252;
+    --polar2: #434C5E;
+    --polar3: #4C566A;
+    --snow0: #D8DEE9;
+    --snow1: #E5E9F0;
+    --snow2: #ECEFF4;
+    --frost0: #8FBCBB;
+    --frost1: #88C0D0;
+    --frost2: #81A1C1;
+    --frost3: #5E81AC;
+}
+
+style {
+    window-rounding: 4px;
+    frame-rounding: 2px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 12px;
+    tab-rounding: 2px;
+    grab-rounding: 2px;
+}
+
+window { background: var(--polar0); child-background: transparent; }
+popup { background: var(--polar1); }
+text { color: var(--snow2); disabled: var(--polar3); selected-background: var(--frost3); }
+border { color: var(--polar2); shadow: transparent; }
+
+frame { background: var(--polar1); }
+frame:hover { background: var(--polar2); }
+frame:active { background: var(--frost2); }
+
+title { background: var(--polar1); }
+title:active { background: var(--polar2); }
+title:collapsed { background: var(--polar1); }
+
+menubar { background: var(--polar0); }
+
+button { background: var(--frost2); }
+button:hover { background: var(--frost1); }
+button:active { background: var(--frost3); }
+
+header { background: var(--polar1); }
+header:hover { background: var(--polar2); }
+header:active { background: var(--frost2); }
+
+tab { color: var(--snow2); background: var(--polar1); }
+tab:hover { background: var(--frost2); }
+tab:active { background: var(--polar2); }
+tab:unfocused { background: var(--polar0); }
+tab:unfocused-active { background: var(--polar1); }
+
+scrollbar { background: var(--polar0); grab: var(--polar3); }
+scrollbar:hover { grab: #616E88; }
+scrollbar:active { grab: var(--frost2); }
+
+separator { color: var(--polar1); }
+checkbox { checkmark: var(--frost0); }
+slider { grab: var(--frost2); }
+slider:active { grab: var(--frost1); }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Rect.h"
 #include "EngineTypes.h"
 #include "Factory.h"
@@ -48,7 +49,7 @@ enum MarginFlag : uint8_t
     MF_Bottom       = 1 << 3
 };
 
-class Widget : public Node
+class OCTAVE_API Widget : public Node
 {
 public:
 
@@ -167,10 +168,14 @@ public:
 
     void SetScale(glm::vec2 scale);
     glm::vec2 GetScale() const;
+    glm::vec2 GetAbsoluteScale() const { return mAbsoluteScale; }
 
     bool IsScissorEnabled() const;
     void EnableScissor(bool enable);
     Rect GetScissorRect() const;
+
+    void SetUseGameResolution(bool use);
+    bool GetUseGameResolution() const;
 
 protected:
 
@@ -203,6 +208,7 @@ protected:
     AnchorMode mAnchorMode;
     uint8_t mActiveMargins;
     bool mUseScissor;
+    bool mUseGameResolution = false;
     uint8_t mOpacity;
 
 private:

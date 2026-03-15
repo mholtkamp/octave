@@ -1,0 +1,84 @@
+/* Adwaita Dark theme for Octave Editor */
+/* Based on GNOME's Adwaita Dark color scheme */
+
+:root {
+    --bg: #242424;
+    --view: #1e1e1e;
+    --headerbar: #303030;
+    --card: #383838;
+    --sidebar: #2a2a2a;
+    --border: #1b1b1b;
+    --fg: #ffffff;
+    --fg-dim: #919190;
+    --accent: #3584e4;
+    --accent-hover: #4A9AFF;
+    --accent-dark: #1B6ACB;
+    --destructive: #e01b24;
+    --success: #26a269;
+}
+
+style {
+    window-rounding: 6px;
+    frame-rounding: 6px;
+    frame-padding: 6px 4px;
+    item-spacing: 8px 4px;
+    scrollbar-size: 10px;
+    scrollbar-rounding: 6px;
+    tab-rounding: 6px;
+    grab-rounding: 6px;
+    popup-rounding: 8px;
+}
+
+window { background: var(--bg); child-background: transparent; }
+popup { background: var(--card); }
+text { color: var(--fg); disabled: var(--fg-dim); selected-background: var(--accent); }
+border { color: var(--border); shadow: transparent; }
+
+frame { background: var(--view); }
+frame:hover { background: var(--sidebar); }
+frame:active { background: var(--accent); }
+
+title { background: var(--headerbar); }
+title:active { background: var(--card); }
+title:collapsed { background: var(--headerbar); }
+
+menubar { background: var(--headerbar); }
+
+button { background: var(--card); }
+button:hover { background: #454545; }
+button:active { background: var(--accent); }
+
+header { background: var(--sidebar); }
+header:hover { background: var(--headerbar); }
+header:active { background: var(--accent); }
+
+tab { color: #ffffff; background: var(--headerbar); }
+tab:hover { background: #26a269; }
+tab:active { background: var(--accent); }
+tab:unfocused { background: var(--bg); }
+tab:unfocused-active { background: var(--headerbar); }
+
+scrollbar { background: var(--bg); grab: #545454; }
+scrollbar:hover { grab: #666666; }
+scrollbar:active { grab: var(--accent); }
+
+separator { color: var(--border); }
+separator:hover { color: var(--accent); }
+separator:active { color: var(--accent-dark); }
+
+checkbox { checkmark: var(--accent); }
+slider { grab: var(--accent); }
+slider:active { grab: var(--accent-hover); }
+
+resize-grip { background: transparent; }
+resize-grip:hover { background: var(--accent); }
+resize-grip:active { background: var(--accent-dark); }
+
+table { header-background: var(--headerbar); border-strong: var(--border); border-light: var(--view); row-background: transparent; row-background-alt: rgba(30, 30, 30, 0.5); }
+
+drag-drop { target: rgba(53, 132, 228, 0.5); }
+nav { highlight: var(--accent); windowing-highlight: rgba(255, 255, 255, 0.7); windowing-dim: rgba(36, 36, 36, 0.7); }
+modal { dim-background: rgba(30, 30, 30, 0.6); }
+
+plot { lines: var(--accent); histogram: var(--success); }
+plot:hover { lines: var(--accent-hover); histogram: #33CC88; }

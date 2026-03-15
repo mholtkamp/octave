@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Nodes/Node.h"
 #include "EngineTypes.h"
 
@@ -9,7 +10,7 @@
 
 class SkeletalMesh3D;
 
-class Node3D : public Node
+class OCTAVE_API Node3D : public Node
 {
 public:
 
@@ -38,6 +39,11 @@ public:
     virtual bool CheckNetRelevance(Node* playerNode) override;
 
     virtual void GatherProxyDraws(std::vector<DebugDraw>& inoutDraws);
+
+#if EDITOR
+    virtual void OnDrawGizmos();
+    virtual void OnDrawGizmosSelected();
+#endif
 
     glm::vec3 GetPosition() const;
     glm::vec3 GetRotationEuler() const;

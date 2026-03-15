@@ -7,11 +7,23 @@
 
 #include "glm/glm.hpp"
 
-class Quad : public Widget
+enum class ObjectFit : uint8_t
+{
+    Fill,
+    Contain,
+    Cover,
+    None,
+    Count
+};
+
+class OCTAVE_API Quad : public Widget
 {
 public:
 
     DECLARE_NODE(Quad, Widget);
+
+    static constexpr int32_t kCornerSegments = 8;
+    static constexpr int32_t kMaxQuadVertices = 2 + 4 * (kCornerSegments + 1); // 38
 
     friend class Button;
 
@@ -48,7 +60,24 @@ public:
     void SetUvOffset(glm::vec2 offset);
     glm::vec2 GetUvOffset() const;
 
+    void SetObjectFit(ObjectFit fit);
+    ObjectFit GetObjectFit() const;
+
+    void SetCornerRadius(float radius);
+    float GetCornerRadius() const;
+
+    void SetBorderWidth(float width);
+    float GetBorderWidth() const;
+
+    void SetBorderColor(glm::vec4 color);
+    glm::vec4 GetBorderColor() const;
+
     VertexUI* GetVertices();
+    uint32_t GetNumVertices() const;
+
+    QuadResource* GetBorderResource();
+    VertexUI* GetBorderVertices();
+    uint32_t GetBorderNumVertices() const;
 
 protected:
 
@@ -56,12 +85,31 @@ protected:
 
     void InitVertexData();
     void UpdateVertexData();
+    void UpdateBorders();
+
+    static uint32_t GenerateRoundedFan(
+        VertexUI* outVertices,
+        float posX, float posY, float posW, float posH,
+        float cornerRadius,
+        float uvX0, float uvY0, float uvX1, float uvY1);
 
     TextureRef mTexture;
-    VertexUI mVertices[4];
+    VertexUI mVertices[kMaxQuadVertices];
+    uint32_t mNumVertices = 0;
 
     glm::vec2 mUvScale;
     glm::vec2 mUvOffset;
+    ObjectFit mObjectFit = ObjectFit::Fill;
+    float mCornerRadius = 0.0f;
+
+    float mBorderWidth = 0.0f;
+    glm::vec4 mBorderColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // Border geometry (rendered as background pad behind main quad)
+    VertexUI mBorderVertices[kMaxQuadVertices];
+    uint32_t mBorderNumVertices = 0;
+    QuadResource mBorderResource;
+    bool mBorderResourceCreated = false;
 
     // Graphics Resource
     QuadResource mResource;

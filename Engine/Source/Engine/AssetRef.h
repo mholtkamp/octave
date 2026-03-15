@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Asset.h"
 #include "Constants.h"
 #include <vector>
@@ -11,9 +12,9 @@
 class AssetManager;
 struct AsyncLoadRequest;
 
-MutexObject* GetAssetRefMutex();
+OCTAVE_API MutexObject* GetAssetRefMutex();
 
-class AssetRef
+class OCTAVE_API AssetRef
 {
 public:
 
@@ -67,3 +68,5 @@ typedef AssetRef ParticleSystemRef;
 typedef AssetRef SoundWaveRef;
 typedef AssetRef FontRef;
 typedef AssetRef SceneRef;
+typedef AssetRef TimelineRef;
+typedef AssetRef DataAssetRef;

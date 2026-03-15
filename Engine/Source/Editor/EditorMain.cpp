@@ -12,6 +12,7 @@
 
 #include "Engine.h"
 #include "World.h"
+#include "Clock.h"
 #include "Renderer.h"
 #include "Log.h"
 
@@ -26,11 +27,20 @@
 #include "ActionManager.h"
 #include "InputManager.h"
 #include "Preferences/PreferencesManager.h"
+#include "Preferences/General/GeneralModule.h"
+#include "ProjectSelect/TemplateManager.h"
+#include "ProjectSelect/ProjectSelectWindow.h"
+#include "Addons/AddonManager.h"
+#include "Addons/NativeAddonManager.h"
+#include "EditorUIHookManager.h"
+#include "ControllerServer/ControllerServer.h"
+#include "Preferences/Network/NetworkModule.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
 #include "EditorState.h"
 #include "EditorImgui.h"
+#include "BuildDependencyWindow.h"
 #include "Utilities.h"
 
 void OctPreInitialize(EngineConfig& config);
@@ -103,6 +113,25 @@ void EditorMain(int32_t argc, char** argv)
     InputManager::Create();
     PreferencesManager::Create();
 
+    // Auto-start controller server if enabled in preferences (must be after PreferencesManager::Create)
+    NetworkModule* netModule = NetworkModule::Get();
+    if (netModule && netModule->GetControllerServerEnabled())
+    {
+        ControllerServer::Get()->Start(netModule->GetPort());
+        ControllerServer::Get()->SetLogRequests(netModule->GetLogRequests());
+    }
+
+    TemplateManager::Create();
+    AddonManager::Create();
+    EditorUIHookManager::Create();
+    NativeAddonManager::Create();
+
+    // Connect EditorUIHooks to NativeAddonManager's engine API
+    if (NativeAddonManager::Get() && EditorUIHookManager::Get())
+    {
+        NativeAddonManager::Get()->GetEngineAPI()->editorUI = EditorUIHookManager::Get()->GetHooks();
+    }
+
     InitializeGrid();
 
     if (engineConfig->mProjectPath != "")
@@ -124,8 +153,31 @@ void EditorMain(int32_t argc, char** argv)
         GetWorld(0)->SpawnNode<TestSpinner>();
     }
 
+    // Show Project Select window if no project is loaded
+    if (GetEngineState()->mProjectPath.empty())
+    {
+        GetProjectSelectWindow()->Open();
+    }
+
+    // Fire OnEditorReady on all loaded plugins
+    if (NativeAddonManager::Get() != nullptr)
+    {
+        NativeAddonManager::Get()->CallOnEditorReady();
+    }
+
     Renderer::Get()->EnableConsole(true);
     Renderer::Get()->EnableStatsOverlay(false);
+
+    GeneralModule* generalModule = static_cast<GeneralModule*>(
+        PreferencesManager::Get()->FindModule("General"));
+    if (generalModule != nullptr && generalModule->GetCheckBuildDepsOnStartup())
+    {
+        GetBuildDependencyWindow()->RunChecks();
+        if (GetBuildDependencyWindow()->HasMissing())
+        {
+            GetBuildDependencyWindow()->Open();
+        }
+    }
 
     bool ret = true;
 
@@ -142,6 +194,21 @@ void EditorMain(int32_t argc, char** argv)
         }
 
         ret = Update();
+
+        // Tick native addon plugins
+        if (NativeAddonManager::Get() != nullptr)
+        {
+            float deltaTime = GetAppClock()->DeltaTime();
+
+            // TickEditor runs every frame in editor (regardless of play state)
+            NativeAddonManager::Get()->TickEditorAllPlugins(deltaTime);
+
+            // Tick only runs during gameplay (Play In Editor)
+            if (playInEditor)
+            {
+                NativeAddonManager::Get()->TickAllPlugins(deltaTime);
+            }
+        }
 
         if (GetEditorState()->mEndPieAtEndOfFrame)
         {
@@ -171,6 +238,16 @@ void EditorMain(int32_t argc, char** argv)
         }
     }
 
+    // Fire OnEditorShutdown before cleanup
+    if (EditorUIHookManager::Get() != nullptr)
+    {
+        EditorUIHookManager::Get()->FireOnEditorShutdown();
+    }
+
+    NativeAddonManager::Destroy();
+    EditorUIHookManager::Destroy();
+    AddonManager::Destroy();
+    TemplateManager::Destroy();
     PreferencesManager::Destroy();
     GetEditorState()->Shutdown();
     Shutdown();

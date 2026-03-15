@@ -114,6 +114,114 @@
             "problemMatcher": [],
             "group": "build",
             "detail": "Build Linux Editor using Docker and output to dist/Octave"
+        },
+        {
+            "type": "shell",
+            "label": "Publish Docker Image - Linux",
+            "command": "docker build -f Docker/Dockerfile -t $OCTAVE_DOCKER_USER/octavegameengine-linux:latest . && docker push $OCTAVE_DOCKER_USER/octavegameengine-linux:latest",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Publish Linux Docker Image to Docker Hub as latest tag"
+        },
+        {
+            "type": "shell",
+            "label": "Publish Dev Docker Image - Linux",
+            "command": "docker build -f Docker/Dockerfile -t $OCTAVE_DOCKER_USER/octavegameengine-linux:dev . && docker push $OCTAVE_DOCKER_USER/octavegameengine-linux:dev",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Publish Dev Linux Docker Image to Docker Hub as dev tag"
+        },
+        {
+            "type": "shell",
+            "label": "Preview Docs - Linux",
+            "command": "docker stop octave-docs &&  docker rm octave-docs && docker build -t octave-docs -f Tools/CI/docs/Dockerfile Tools/CI/docs && docker run --rm -it --user 0:0  -p 8580:8000 --name octave-docs -v ${PWD}:/repo octave-docs serve",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - Linux"
+        },
+        {
+            "type": "shell",
+            "label": "Stop Docs - Linux",
+            "command": "docker stop octave-docs &&  docker rm octave-docs ",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Stop Docs - WSL",
+            "command": "wsl docker stop octave-docs &&  wsl docker rm octave-docs ",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Preview Docs - WSL",
+            "command": "wsl docker build -t octave-docs -f Tools/CI/docs/Dockerfile Tools/CI/docs && wsl docker run --rm  -it --user 0:0 --name octave-docs  -p 8580:8000 -v ${PWD}:/repo octave-docs serve",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Preview Docs - WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installer - Windows",
+            "command": "Installers\\build_installer_windows.bat",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Windows installer (.exe) with Inno Setup"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installers - WSL",
+            "command": "wsl bash Installers/build_deb_linux.sh && wsl bash Installers/build_tarball_linux.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Linux installers (.deb + .tar.gz) via WSL"
+        },
+        {
+            "type": "shell",
+            "label": "Build Installers - Linux",
+            "command": "bash Installers/build_deb_linux.sh && bash Installers/build_tarball_linux.sh",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Stage files and build Linux installers (.deb + .tar.gz)"
         }
     ],
     "version": "2.0.0"

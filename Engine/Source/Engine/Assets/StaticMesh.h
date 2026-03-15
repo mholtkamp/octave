@@ -14,7 +14,7 @@
 #include <assimp/scene.h>
 #endif
 
-class StaticMesh : public Asset
+class OCTAVE_API StaticMesh : public Asset
 {
 public:
 
@@ -26,6 +26,12 @@ public:
     void CreateRaw(
         uint32_t numVertices,
         Vertex* vertices,
+        uint32_t numIndices,
+        IndexType* indices);
+
+    void CreateRawColor(
+        uint32_t numVertices,
+        VertexColor* vertices,
         uint32_t numIndices,
         IndexType* indices);
 

@@ -16,6 +16,11 @@ public:
     std::vector<AssetDir*> mChildDirs;
     AssetDir* mParentDir;
     bool mEngineDir;
+    bool mAddonDir;
+
+#if EDITOR
+    std::vector<std::string> mLooseFiles; // Non-asset files (.css, etc.) shown in editor
+#endif
 
     ~AssetDir();
     AssetDir(const std::string& name,

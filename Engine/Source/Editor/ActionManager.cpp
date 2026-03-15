@@ -7,13 +7,21 @@
 #include <ShlObj.h>
 #endif
 
+#if PLATFORM_LINUX
+#include <sys/wait.h>
+#include <signal.h>
+#endif
+
 #include <stdint.h>
+#include <cstdlib>
 
 #include <vector>
+#include <set>
 #include <unordered_map>
 #include <string>
 #include <functional>
 #include <algorithm>
+#include <fstream>
 
 #include "Log.h"
 #include "EditorConstants.h"
@@ -25,18 +33,23 @@
 #include "EditorUtils.h"
 #include "Assets/Scene.h"
 #include "Assets/Texture.h"
+#include "Assets/Timeline.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/SkeletalMesh.h"
 #include "Assets/SoundWave.h"
 #include "Assets/MaterialLite.h"
+#include "Assets/MaterialBase.h"
+#include "Assets/MaterialInstance.h"
 #include "Assets/Font.h"
 #include "AssetDir.h"
 #include "EmbeddedFile.h"
 #include "Utilities.h"
 #include "EditorUtils.h"
 #include "EditorImgui.h"
+#include "Timeline/TimelineActions.h"
 #include "Log.h"
 
+#include "Nodes/3D/Mesh3d.h"
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/PointLight3d.h"
 #include "Nodes/3D/DirectionalLight3d.h"
@@ -53,14 +66,25 @@
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Script.h"
+#include "Datum.h"
 
 #include "System/System.h"
+#include "Packaging/PackagingSettings.h"
+#include "Addons/NativeAddonManager.h"
+#include "Addons/AddonManager.h"
+#include "EditorUIHookManager.h"
+#include "Packaging/PackagingWindow.h"
+#include "Preferences/PreferencesManager.h"
+#include "Preferences/External/LaunchersModule.h"
+
+#include "Stream.h"
+#include "document.h"
+#include "imgui.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#define USE_IMGUI_FILE_BROWSER (!PLATFORM_WINDOWS)
 
 #define SUB_SCENE_HIER_WARN_TEXT "Cannot modify sub-scene hierarchy. Must unlink scene first."
 
@@ -125,7 +149,11 @@ ActionManager::~ActionManager()
 
 void ActionManager::Update()
 {
-
+    if (mBuildPending)
+    {
+        mBuildPending = false;
+        BuildPhase1();
+    }
 }
 
 void ReplaceAllStrings(std::string& str, const std::string& from, const std::string& to)
@@ -141,6 +169,233 @@ void ReplaceAllStrings(std::string& str, const std::string& from, const std::str
     }
 }
 
+static void InjectNativeAddonSources(const std::string& makefilePath, const std::string& buildProjDir)
+{
+    LogWarning("[INJ] Start inject");
+    NativeAddonManager* nam = NativeAddonManager::Get();
+    if (nam == nullptr)
+    {
+        LogWarning("[INJ] NAM is null!");
+        return;
+    }
+
+    // Discover native addons if not already done
+    nam->DiscoverNativeAddons();
+
+    // Get addons with engine target (not editor-only)
+    std::vector<NativeAddonState> engineAddons = nam->GetEngineAddons();
+    LogWarning("[INJ] Engine addons: %zu", engineAddons.size());
+
+    if (engineAddons.empty())
+    {
+        LogWarning("[INJ] No addons to inject");
+        return;
+    }
+
+    LogWarning("[INJ] Injecting %zu addon(s)", engineAddons.size());
+
+    // Read existing makefile
+    Stream stream;
+    if (!stream.ReadFile(makefilePath.c_str(), false))
+    {
+        LogError("Failed to read makefile for native addon injection: %s", makefilePath.c_str());
+        return;
+    }
+
+    std::string makefileContent(stream.GetData(), stream.GetSize());
+
+    // Build source directories list for Makefile-based builds
+    std::string additionalSourceDirs;
+    std::vector<std::string> sourceDirs;
+
+    for (const NativeAddonState& addon : engineAddons)
+    {
+        std::string sourceDir = addon.mSourcePath + addon.mNativeMetadata.mSourceDir + "/";
+        LogWarning("[INJ] Addon: %s", addon.mAddonId.c_str());
+        LogWarning("[INJ] SrcDir: %s", sourceDir.c_str());
+
+        if (!DoesDirExist(sourceDir.c_str()))
+        {
+            LogWarning("[INJ] Dir NOT found!");
+            continue;
+        }
+        LogWarning("[INJ] Dir exists");
+
+        // Gather source directories (for Makefile-based builds that use directory wildcards)
+        std::function<void(const std::string&)> gatherSourceDirs;
+        gatherSourceDirs = [&](const std::string& dir)
+        {
+            // Check if this directory has any source files
+            bool hasSourceFiles = false;
+            DirEntry dirEntry;
+            SYS_OpenDirectory(dir, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (strcmp(dirEntry.mFilename, ".") != 0 && strcmp(dirEntry.mFilename, "..") != 0)
+                {
+                    std::string path = dir + dirEntry.mFilename;
+
+                    if (dirEntry.mDirectory)
+                    {
+                        gatherSourceDirs(path + "/");
+                    }
+                    else
+                    {
+                        std::string filename = dirEntry.mFilename;
+                        size_t dotPos = filename.find_last_of('.');
+                        if (dotPos != std::string::npos)
+                        {
+                            std::string ext = filename.substr(dotPos);
+                            if (ext == ".cpp" || ext == ".c")
+                            {
+                                hasSourceFiles = true;
+                                LogDebug("  Found source: %s", path.c_str());
+                            }
+                        }
+                    }
+                }
+
+                SYS_IterateDirectory(dirEntry);
+            }
+            SYS_CloseDirectory(dirEntry);
+
+            // Add this directory if it contains source files
+            if (hasSourceFiles)
+            {
+                sourceDirs.push_back(dir);
+            }
+        };
+
+        gatherSourceDirs(sourceDir);
+        LogDebug("Injected native addon: %s", addon.mAddonId.c_str());
+    }
+
+    // Build the source directories string for Makefile injection
+    LogWarning("[INJ] Total dirs: %zu", sourceDirs.size());
+    for (const std::string& dir : sourceDirs)
+    {
+        LogWarning("[INJ] +Dir: %s", dir.c_str());
+
+        // Convert Windows backslashes to forward slashes for Make compatibility
+        std::string normalizedDir = dir;
+        std::replace(normalizedDir.begin(), normalizedDir.end(), '\\', '/');
+
+        additionalSourceDirs += " \\\n\t\t\t\t" + normalizedDir;
+    }
+
+    // Inject into makefile
+    // Look for common patterns in makefiles to inject our additions
+    // This is a simple approach - we append to INCLUDES and SOURCES variables
+
+    if (!sourceDirs.empty())
+    {
+        // Build include directories string (just directories, no -I flags - Makefile adds those)
+        std::string additionalIncludeDirs;
+        for (const std::string& dir : sourceDirs)
+        {
+            // Convert Windows backslashes to forward slashes for Make compatibility
+            std::string normalizedDir = dir;
+            std::replace(normalizedDir.begin(), normalizedDir.end(), '\\', '/');
+            additionalIncludeDirs += " " + normalizedDir;
+        }
+
+        // Try to find INCLUDES := (the actual variable, not comments)
+        size_t includesPos = makefileContent.find("INCLUDES\t:=");
+        if (includesPos == std::string::npos)
+        {
+            includesPos = makefileContent.find("INCLUDES :=");
+        }
+        if (includesPos == std::string::npos)
+        {
+            includesPos = makefileContent.find("INCLUDES:=");
+        }
+
+        if (includesPos != std::string::npos)
+        {
+            // Find the end of this line and append our includes
+            size_t lineEnd = makefileContent.find('\n', includesPos);
+            if (lineEnd != std::string::npos)
+            {
+                makefileContent.insert(lineEnd, additionalIncludeDirs);
+            }
+        }
+        else
+        {
+            // Try CXXFLAGS as fallback (needs -I flags)
+            size_t cxxflagsPos = makefileContent.find("CXXFLAGS");
+            if (cxxflagsPos != std::string::npos)
+            {
+                std::string includesWithFlags;
+                for (const std::string& dir : sourceDirs)
+                {
+                    // Convert Windows backslashes to forward slashes for Make compatibility
+                    std::string normalizedDir = dir;
+                    std::replace(normalizedDir.begin(), normalizedDir.end(), '\\', '/');
+                    includesWithFlags += " -I" + normalizedDir;
+                }
+                size_t lineEnd = makefileContent.find('\n', cxxflagsPos);
+                if (lineEnd != std::string::npos)
+                {
+                    makefileContent.insert(lineEnd, includesWithFlags);
+                }
+            }
+        }
+    }
+
+    if (!additionalSourceDirs.empty())
+    {
+        // Try to find SOURCES := (the actual variable, not comments)
+        size_t sourcesPos = makefileContent.find("SOURCES\t\t:=");
+        if (sourcesPos == std::string::npos)
+        {
+            sourcesPos = makefileContent.find("SOURCES :=");
+        }
+        if (sourcesPos == std::string::npos)
+        {
+            sourcesPos = makefileContent.find("SOURCES:=");
+        }
+
+        if (sourcesPos != std::string::npos)
+        {
+            // Find the end of the SOURCES definition (may span multiple lines with backslash)
+            size_t pos = sourcesPos;
+            size_t lineEnd = pos;
+            while (pos < makefileContent.size())
+            {
+                lineEnd = makefileContent.find('\n', pos);
+                if (lineEnd == std::string::npos)
+                {
+                    lineEnd = makefileContent.size();
+                    break;
+                }
+                // Check if line continues (ends with backslash)
+                if (lineEnd > 0 && makefileContent[lineEnd - 1] == '\\')
+                {
+                    pos = lineEnd + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // Insert after the SOURCES definition
+            makefileContent.insert(lineEnd, additionalSourceDirs);
+        }
+        else
+        {
+            // Add a new ADDON_SOURCES line at the beginning
+            makefileContent = "ADDON_SOURCES :=" + additionalSourceDirs + "\n" + makefileContent;
+        }
+    }
+
+    // Write modified makefile back
+    Stream outStream(makefileContent.c_str(), (uint32_t)makefileContent.size());
+    outStream.WriteFile(makefilePath.c_str());
+
+    LogDebug("Native addon sources injected into makefile.");
+}
+
 void ReplaceStringInFile(const std::string& file, const std::string& srcString, const std::string& dstString)
 {
     Stream fileStream;
@@ -154,6 +409,96 @@ void ReplaceStringInFile(const std::string& file, const std::string& srcString, 
 
 void ActionManager::BuildData(Platform platform, bool embedded)
 {
+    if (IsBuildRunning())
+    {
+        LogError("A build is already in progress.");
+        return;
+    }
+
+    // In headless mode, run the entire build synchronously (original behavior)
+    if (IsHeadless())
+    {
+        // Reset state for synchronous use
+        mBuildState.mPlatform = platform;
+        mBuildState.mEmbedded = embedded;
+        mBuildState.mRunAfterBuild = false;
+        mBuildState.mRunOnDevice = false;
+        BuildPhase1();
+        if (mBuildState.mNeedCompile)
+        {
+            BuildCompileThreadFunc();
+        }
+        FinalizeLocalBuild();
+        return;
+    }
+
+    // Non-headless: open modal, defer Phase 1 to next frame
+    mBuildState.Reset();
+    mBuildState.mPlatform = platform;
+    mBuildState.mEmbedded = embedded;
+    mBuildDisplayOutput.clear();
+    mBuildAutoScroll = true;
+    mShowBuildModal = true;
+    mBuildPending = true;
+    AppendBuildOutput("Preparing build...\n");
+}
+
+bool ActionManager::IsBuildRunning() const
+{
+    return mBuildPending || mBuildState.mRunning.load() || (mShowBuildModal && !mBuildState.mComplete.load());
+}
+
+void ActionManager::AppendBuildOutput(const std::string& text)
+{
+    std::lock_guard<std::mutex> lock(mBuildState.mOutputMutex);
+    mBuildState.mOutput += text;
+    mBuildState.mOutputDirty = true;
+}
+
+void ActionManager::CancelBuild()
+{
+    mBuildState.mCancelRequested.store(true);
+
+#if PLATFORM_LINUX
+    if (mBuildState.mProcessId > 0)
+    {
+        kill(mBuildState.mProcessId, SIGTERM);
+    }
+#elif PLATFORM_WINDOWS
+    if (mBuildState.mProcessHandle != nullptr)
+    {
+        TerminateProcess(static_cast<HANDLE>(mBuildState.mProcessHandle), 1);
+    }
+#endif
+}
+
+void ActionManager::BuildPhase1()
+{
+    Platform platform = mBuildState.mPlatform;
+    bool embedded = mBuildState.mEmbedded;
+
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+
+    // Fire OnPreBuild hook (can cancel the build)
+    if (hookMgr != nullptr)
+    {
+        if (!hookMgr->FireOnPreBuild((int32_t)platform))
+        {
+            LogWarning("Build cancelled by addon hook.");
+            AppendBuildOutput("Build cancelled by addon hook.\n");
+            mBuildState.mComplete.store(true);
+            mBuildState.mSuccess.store(false);
+            return;
+        }
+    }
+
+    // Fire OnPackageStarted hook
+    if (hookMgr != nullptr)
+    {
+        hookMgr->FireOnPackageStarted((int32_t)platform);
+    }
+
+    AppendBuildOutput("Firing pre-build hooks...\n");
     LogDebug("Begin packaging...");
     std::string octaveDirectory = SYS_GetOctavePath();
 
@@ -168,25 +513,31 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (projectDir == "")
     {
         LogError("Project directory not set?");
+        AppendBuildOutput("ERROR: Project directory not set.\n");
+        mBuildState.mComplete.store(true);
+        mBuildState.mSuccess.store(false);
         return;
     }
 
+    // Store config for later phases
+    mBuildState.mProjectDir = projectDir;
+    mBuildState.mProjectName = projectName;
+    mBuildState.mStandalone = standalone;
+    mBuildState.mUseSteam = GetEngineConfig()->mPackageForSteam;
+
     std::string dkpPath = GetDevkitproPath();
     bool dkpInstalled = (dkpPath != "");
-
     LogDebug("DevkitPro is %s.", dkpInstalled ? "installed" : "not installed");
 
-    // Build Data is responsible for 3 things
-    // (1) Create a Packaged directory in ProjectDir/Packaged. Erase previous packaged first.
+    // (1) Create a Packaged directory
+    AppendBuildOutput("Creating packaged directory...\n");
     std::string packagedDir = projectDir + "Packaged/";
 
-    // Create top level Packaged dir first.
     if (!DoesDirExist(packagedDir.c_str()))
     {
         CreateDir(packagedDir.c_str());
     }
 
-    // Create platform-specific packaged dir. Delete old platform dir if it exists.
     packagedDir += GetPlatformString(platform);
     packagedDir += "/";
     if (DoesDirExist(packagedDir.c_str()))
@@ -195,8 +546,10 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     }
 
     CreateDir(packagedDir.c_str());
+    mBuildState.mPackagedDir = packagedDir;
 
-    // (2) Iterate over AssetDirs and save each file (platform-specific save) to the Packaged folder.
+    // (2) Cook assets
+    AppendBuildOutput("Cooking assets...\n");
     std::function<void(AssetDir*, bool)> saveDir = [&](AssetDir* dir, bool engine)
     {
         std::string packDir;
@@ -216,7 +569,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             CreateDir(packDir.c_str());
         }
 
-        // Cook the assets into our packaged folder
         for (uint32_t i = 0; i < dir->mAssetStubs.size(); ++i)
         {
             AssetStub* stub = dir->mAssetStubs[i];
@@ -232,13 +584,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             if (true)
             {
-                // Save the asset in the src location. There is probably a better time and place for this.
                 AssetManager::Get()->SaveAsset(*stub);
             }
 
-            // Currently either embed everything or embed nothing...
-            // Embed flag on Asset does nothing, but if we want to keep that feature, then 
-            // we need to load the asset if it's not loaded, add to embedded list if it's flagged and then probably unload it after.
             if (embedded && !useRomfs)
             {
                 embeddedAssets.push_back({ stub, packFile });
@@ -250,7 +598,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             }
         }
 
-        // Cook child dirs
         for (uint32_t i = 0; i < dir->mChildDirs.size(); ++i)
         {
             saveDir(dir->mChildDirs[i], engine);
@@ -267,8 +614,8 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     saveDir(engineAssetDir, true);
     saveDir(projectAssetDir, false);
 
-    // (3) Generate .cpp / .h files (empty if not embedded) using the .oct files in the Packaged folder.
-    // (4) Create and save an asset registry file with simple list of asset paths into Packaged folder.
+    // (3) Generate embedded files and asset registry
+    AppendBuildOutput("Generating asset registry...\n");
     std::unordered_map<std::string, AssetStub*>& assetMap = AssetManager::Get()->GetAssetMap();
     FILE* registryFile = nullptr;
 
@@ -305,7 +652,6 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         registryFile = nullptr;
     }
 
-    // Create a Generated folder inside the project folder if it doesn't exist
     if (!DoesDirExist((projectDir + "Generated").c_str()))
     {
         CreateDir((projectDir + "Generated").c_str());
@@ -315,31 +661,74 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     std::string embeddedSourcePath = projectDir + "Generated/EmbeddedAssets.cpp";
     GenerateEmbeddedAssetFiles(embeddedAssets, embeddedHeaderPath.c_str(), embeddedSourcePath.c_str());
 
-    // Generate embedded script source files. If not doing an embedded build, copy over the script folders.
+    // Generate embedded script source files
+    AppendBuildOutput("Copying scripts...\n");
     std::vector<std::string> scriptFiles;
 
     if (embedded && !useRomfs)
     {
         GatherScriptFiles((octaveDirectory + "Engine/Scripts/").c_str(), scriptFiles);
         GatherScriptFiles((projectDir + "/Scripts/").c_str(), scriptFiles);
+
+        std::string packagesDir = projectDir + "Packages/";
+        if (DoesDirExist(packagesDir.c_str()))
+        {
+            DirEntry dirEntry;
+            SYS_OpenDirectory(packagesDir, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory &&
+                    strcmp(dirEntry.mFilename, ".") != 0 &&
+                    strcmp(dirEntry.mFilename, "..") != 0)
+                {
+                    std::string packageScriptsDir = packagesDir + dirEntry.mFilename + "/Scripts/";
+                    if (DoesDirExist(packageScriptsDir.c_str()))
+                    {
+                        GatherScriptFiles(packageScriptsDir.c_str(), scriptFiles);
+                    }
+                }
+                SYS_IterateDirectory(dirEntry);
+            }
+            SYS_CloseDirectory(dirEntry);
+        }
     }
     else
     {
         SYS_CopyDirectory((octaveDirectory + "Engine/Scripts/").c_str(), (packagedDir + "Engine/Scripts/").c_str());
         SYS_CopyDirectory((projectDir + "Scripts/").c_str(), (packagedDir + projectName + "/Scripts/").c_str());
-        //SYS_Exec(std::string("cp -R Engine/Scripts " + packagedDir + "Engine/Scripts").c_str());
-        //SYS_Exec(std::string("cp -R " + projectDir + "Scripts " + packagedDir + projectName + "/Scripts").c_str());
+
+        std::string packagesDir = projectDir + "Packages/";
+        if (DoesDirExist(packagesDir.c_str()))
+        {
+            DirEntry dirEntry;
+            SYS_OpenDirectory(packagesDir, dirEntry);
+
+            while (dirEntry.mValid)
+            {
+                if (dirEntry.mDirectory &&
+                    strcmp(dirEntry.mFilename, ".") != 0 &&
+                    strcmp(dirEntry.mFilename, "..") != 0)
+                {
+                    std::string packageName = dirEntry.mFilename;
+                    std::string packageScriptsDir = packagesDir + packageName + "/Scripts/";
+                    if (DoesDirExist(packageScriptsDir.c_str()))
+                    {
+                        std::string destDir = packagedDir + projectName + "/Packages/" + packageName + "/Scripts/";
+                        SYS_CopyDirectory(packageScriptsDir.c_str(), destDir.c_str());
+                    }
+                }
+                SYS_IterateDirectory(dirEntry);
+            }
+            SYS_CloseDirectory(dirEntry);
+        }
 
         if (platform != Platform::Windows && platform != Platform::Linux)
         {
-            // Remove LuaPanda on consoles (it's a 148 KB file)
             SYS_RemoveFile((packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
-            //SYS_Exec(std::string("rm " + packagedDir + "Engine/Scripts" + "/LuaPanda.lua").c_str());
         }
     }
 
-    // Generate embedded script source files, even if not doing an embedded build. 
-    // So we don't need to worry about whether we include code that links to the embedded script array / script count.
     std::string scriptHeaderPath = projectDir + "Generated/EmbeddedScripts.h";
     std::string scriptSourcePath = projectDir + "Generated/EmbeddedScripts.cpp";
     GenerateEmbeddedScriptFiles(scriptFiles, scriptHeaderPath.c_str(), scriptSourcePath.c_str());
@@ -347,45 +736,40 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     if (standalone)
     {
         SYS_CopyDirectory((projectDir + "Generated").c_str(), "Standalone");
-        //std::string copyGeneratedFolder = "cp -R " + projectDir + "Generated " + "Standalone";
-        //SYS_Exec(copyGeneratedFolder.c_str());
     }
 
     // Copy .octp and Config.ini
     {
         SYS_CopyFile((projectDir + projectName + ".octp").c_str(), (packagedDir + projectName + ".octp").c_str());
-        //std::string copyOctpCmd = "cp " + projectDir + projectName + ".octp " + packagedDir + projectName;
-        //SYS_Exec(copyOctpCmd.c_str());
-
         SYS_CopyFile((projectDir + "Config.ini").c_str(), (packagedDir + "Config.ini").c_str());
-        //std::string copyConfigCmd = "cp " + projectDir + "Config.ini " + packagedDir;
-        //SYS_Exec(copyConfigCmd.c_str());
     }
 
     // Handle SpirV shaders on Vulkan platforms
-    // Make sure to do this before copying everything to "assets/" directory in the Android build.
     if (platform == Platform::Windows ||
         platform == Platform::Linux ||
         platform == Platform::Android)
     {
-        // Compile shaders
+        AppendBuildOutput("Compiling shaders...\n");
 #if PLATFORM_WINDOWS
-        SYS_Exec(("cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"").c_str());
+        std::string shaderCmd = "cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.bat\"";
 #else
-        SYS_Exec(("cd " + octaveDirectory + "Engine/Shaders/GLSL && \"./compile.sh\"").c_str());
+        std::string shaderCmd = "cd \"" + octaveDirectory + "Engine/Shaders/GLSL\" && \"./compile.sh\"";
 #endif
+        mBuildState.mShaderCompileCommand = shaderCmd;
 
-        // Then copy over the binaries.
+        // In headless mode, compile shaders synchronously here
+        if (IsHeadless())
+        {
+            SYS_Exec(shaderCmd.c_str());
+        }
+
         CreateDir((packagedDir + "Engine/Shaders/").c_str());
         CreateDir((packagedDir + "Engine/Shaders/GLSL/").c_str());
 
         SYS_CopyDirectory((octaveDirectory+"Engine/Shaders/GLSL/bin/").c_str(), (packagedDir + "Engine/Shaders/GLSL/bin/").c_str());
-        //SYS_Exec(std::string("cp -R Engine/Shaders/GLSL/bin " + packagedDir + "Engine/Shaders/GLSL/bin").c_str());
     }
 
-    // If we are running a 3DS build, copy all the packaged data to the
-    // Intermediate/Romfs directory.
-    // Clear existing Romfs directory first.
+    // Romfs setup for 3DS
     std::string intermediateDir = standalone ? octaveDirectory+"Standalone/Intermediate" : (projectDir + "/Intermediate");
     std::string romfsDir = intermediateDir + "/Romfs";
     RemoveDir(romfsDir.c_str());
@@ -401,34 +785,45 @@ void ActionManager::BuildData(Platform platform, bool embedded)
     #endif
     }
 
-    // ( ) Run the makefile to compile the game.
+    // Determine compilation needs
     bool needCompile = true;
-    std::string prebuiltExeName = (platform == Platform::Windows) ? "Octave.exe" : "Octave.elf";
-
-    // If packaging for Windows or Linux in standalone editor, we can use the existing octave executables.
-    // But in headless mode, always compile since we're doing a full build.
-    if (standalone && !IsHeadless() &&
-        (platform == Platform::Windows || platform == Platform::Linux))
-    {
-        needCompile = !SYS_DoesFileExist(prebuiltExeName.c_str(), false);
-    }
 
     std::string buildProjName = standalone ? "Standalone" : projectName;
     std::string buildProjDir = standalone ? octaveDirectory+"Standalone/" : projectDir;
     std::string buildDstExeName = standalone ? "Octave" : projectName;
 
-    bool useSteam = GetEngineConfig()->mPackageForSteam;
+    bool useSteam = mBuildState.mUseSteam;
+
+    std::string prebuiltExePath;
+    if (platform == Platform::Windows)
+    {
+        prebuiltExePath = buildProjDir + "Build/Windows/x64/"
+            + (useSteam ? "ReleaseSteam/" : "Release/")
+            + "Octave.exe";
+    }
+    else if (platform == Platform::Linux)
+    {
+        prebuiltExePath = buildProjDir + "Build/Linux/Octave.elf";
+    }
+
+    if (standalone && !IsHeadless() &&
+        (platform == Platform::Windows || platform == Platform::Linux))
+    {
+        needCompile = !SYS_DoesFileExist(prebuiltExePath.c_str(), false);
+    }
+
+    mBuildState.mNeedCompile = needCompile;
+    mBuildState.mBuildProjDir = buildProjDir;
+    mBuildState.mPrebuiltExePath = prebuiltExePath;
+
+    LogWarning("[BUILD] needCompile=%d plat=%d", needCompile ? 1 : 0, (int)platform);
 
     if (needCompile)
     {
-        LogDebug("Compiling game executable.");
+        AppendBuildOutput("Setting up compilation...\n");
 
         if (platform == Platform::Windows)
         {
-            // If devenv can't be found, add it to your PATH
-            // My devenv for VS2017 community was found here:
-            // C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE
-
             std::string solutionPath = "Octave.sln";
             if (engineState->mSolutionPath != "")
             {
@@ -445,40 +840,28 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 devenvCmd += std::string(" ") + solutionPath + " /Build \"Release|x64\" /Project " + buildProjName;
             }
             devenvCmd += "\"";
-
-            SYS_Exec(devenvCmd.c_str());
+            mBuildState.mCompileCommand = devenvCmd;
         }
         else if (platform == Platform::Android)
         {
-            // Copy contents of Packaged/Android folder into Android/app/src/main/assets folder so they get put into the APK.
             std::string androidAssetsDir = buildProjDir + "Android/app/src/main/assets/";
             if (!DoesDirExist(androidAssetsDir.c_str()))
             {
                 CreateDir(androidAssetsDir.c_str());
             }
             SYS_CopyDirectory(packagedDir.c_str(), androidAssetsDir.c_str());
-            //SYS_Exec(std::string("cp -R " + packagedDir + "/* " + androidAssetsDir).c_str());
 
-            // Invoke the gradle build
             std::string gradleDir = buildProjDir + "Android/";
 #if PLATFORM_WINDOWS
             std::string gradleCmd = "cd " + gradleDir + " && gradlew.bat assembleRelease";
 #else
             std::string gradleCmd = "cd " + gradleDir + " && \"./gradlew assembleRelease\"";
 #endif
-            SYS_Exec(gradleCmd.c_str());
-
-            // Rename the executable
-            std::string srcExeName = StringToLower(buildProjName);
-            srcExeName += "-release.apk";
-
-            std::string dstExeName = buildDstExeName + ".apk";
-
-            std::string renameCmd = std::string("mv ") + buildProjDir + "/Android/app/build/outputs/apk/release/" + srcExeName + " " + buildProjDir + "/Android/app/build/outputs/apk/release/" + dstExeName;
-            SYS_Exec(renameCmd.c_str());
+            mBuildState.mCompileCommand = gradleCmd;
         }
         else
         {
+            LogWarning("[BUILD] Makefile build path");
             std::string makefilePath = "Makefile_";
 
             switch (platform)
@@ -490,10 +873,9 @@ void ActionManager::BuildData(Platform platform, bool embedded)
             default: OCT_ASSERT(0); break;
             }
 
-            std::string srcMakefile = buildProjDir  + makefilePath;
+            std::string srcMakefile = buildProjDir + makefilePath;
             std::string tmpMakefile = buildProjDir + "Makefile_TEMP";
 
-            // Check if makefile exists in project directory, otherwise fall back to Standalone
             if (!SYS_DoesFileExist(srcMakefile.c_str(), false))
             {
                 std::string standaloneMakefile = "Standalone/" + makefilePath;
@@ -505,27 +887,21 @@ void ActionManager::BuildData(Platform platform, bool embedded)
                 else
                 {
                     LogError("Makefile not found: %s or %s", srcMakefile.c_str(), standaloneMakefile.c_str());
+                    AppendBuildOutput("ERROR: Makefile not found: " + srcMakefile + "\n");
+                    mBuildState.mComplete.store(true);
+                    mBuildState.mSuccess.store(false);
                     return;
                 }
             }
 
-            // Make a copy of the makefile so we can change the app name and things like that
             SYS_CopyFile(srcMakefile.c_str(), tmpMakefile.c_str());
 
-            // This is fragile, but we're going to modify the temp makefile to compile
-            // the way we need to for a given platform.
             if (platform == Platform::N3DS)
             {
                 ReplaceStringInFile(tmpMakefile, "OctaveApp", projectName);
                 ReplaceStringInFile(tmpMakefile, "$(CURDIR)/Makefile_3DS", "$(CURDIR)/Makefile_TEMP");
-
-                //if (!useRomfs)
-                //{
-                //    ReplaceStringInFile(tmpMakefile, "ROMFS :=", "#ROMFS :=");
-                //}
             }
 
-            // Copy Source folder from Standalone if it doesn't exist in project
             std::string projSourceDir = buildProjDir + "Source";
             if (!DoesDirExist(projSourceDir.c_str()))
             {
@@ -539,125 +915,484 @@ void ActionManager::BuildData(Platform platform, bool embedded)
 
             SYS_CreateDirectory((buildProjDir + "Generated").c_str());
 
-            // Copy over Generated files, sometimes they may have been modified or deleted.
             SYS_CopyFile(embeddedHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.h").c_str());
             SYS_CopyFile(embeddedSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedAssets.cpp").c_str());
             SYS_CopyFile(scriptHeaderPath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.h").c_str());
             SYS_CopyFile(scriptSourcePath.c_str(), (buildProjDir + "Generated/EmbeddedScripts.cpp").c_str());
 
+            InjectNativeAddonSources(tmpMakefile, buildProjDir);
 
-
-
-            std::string makeCmd = std::string("make -C ") + (buildProjDir) + " -f Makefile_TEMP -j 12";
-            SYS_Exec(makeCmd.c_str());
-
-            // Delete the temp makefile
-            SYS_RemoveFile(tmpMakefile.c_str());
-            //SYS_Exec(std::string("rm " + tmpMakefile).c_str());
+            mBuildState.mCompileCommand = std::string("make -C \"") + buildProjDir + "\" -f Makefile_TEMP -j 12";
+            mBuildState.mTmpMakefile = tmpMakefile;
 
             if (platform == Platform::Linux)
             {
-                // Strip out debug symbols to keep the file size small.
                 std::string exeName = standalone ? "Octave" : projectName;
-                std::string stripCmd = std::string("strip --strip-debug ") + buildProjDir + "Build/Linux/" + exeName + ".elf";
-                SYS_Exec(stripCmd.c_str());
+                mBuildState.mStripCommand = std::string("strip --strip-debug \"") + buildProjDir + "Build/Linux/" + exeName + ".elf\"";
             }
-          
+        }
+
+        // Compute exe source path and extension for post-build
+        std::string exeSrc = buildProjDir + "/Build/";
+        if (platform == Platform::Android)
+        {
+            exeSrc = buildProjDir;
+        }
+
+        switch (platform)
+        {
+        case Platform::Windows: exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
+        case Platform::Linux: exeSrc += "Linux/"; break;
+        case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
+        case Platform::GameCube: exeSrc += "GCN/"; break;
+        case Platform::Wii: exeSrc += "Wii/"; break;
+        case Platform::N3DS: exeSrc += "3DS/"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        std::string exeNameBase = standalone ? "Octave" : projectName;
+        std::string extension = ".exe";
+
+        switch (platform)
+        {
+        case Platform::Windows: extension = ".exe"; break;
+        case Platform::Linux: extension = ".elf"; break;
+        case Platform::Android: extension = ".apk"; break;
+        case Platform::GameCube: extension = ".dol"; break;
+        case Platform::Wii: extension = ".dol"; break;
+        case Platform::N3DS: extension = ".3dsx"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        exeSrc += exeNameBase + extension;
+        mBuildState.mExeSrc = exeSrc;
+        mBuildState.mExtension = extension;
+
+        // Launch compile thread (or run synchronously in headless)
+        if (IsHeadless())
+        {
+            // Headless: handled by caller (BuildData)
+        }
+        else
+        {
+            AppendBuildOutput("Compiling...\n");
+            mBuildState.mRunning.store(true);
+            mBuildState.mBuildThread = std::thread(&ActionManager::BuildCompileThreadFunc, this);
         }
     }
     else
     {
         LogDebug("Reusing pre-compiled game executable.");
-        // When running the standalone editor, we don't need to compile 
-        // (unless we are embeddeding assets into the executable).
-        // But we do need to copy over the Octave.exe and ideally rename it to the project name to make it more official :)
+        AppendBuildOutput("Reusing pre-compiled executable.\n");
+
+        // Compute exe path for the no-compile case
+        std::string exeSrc = buildProjDir + "/Build/";
+        if (platform == Platform::Android) exeSrc = buildProjDir;
+
+        switch (platform)
+        {
+        case Platform::Windows: exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
+        case Platform::Linux: exeSrc += "Linux/"; break;
+        case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
+        case Platform::GameCube: exeSrc += "GCN/"; break;
+        case Platform::Wii: exeSrc += "Wii/"; break;
+        case Platform::N3DS: exeSrc += "3DS/"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        std::string exeNameBase = standalone ? "Octave" : projectName;
+        std::string extension = ".exe";
+        switch (platform)
+        {
+        case Platform::Windows: extension = ".exe"; break;
+        case Platform::Linux: extension = ".elf"; break;
+        case Platform::Android: extension = ".apk"; break;
+        case Platform::GameCube: extension = ".dol"; break;
+        case Platform::Wii: extension = ".dol"; break;
+        case Platform::N3DS: extension = ".3dsx"; break;
+        default: OCT_ASSERT(0); break;
+        }
+
+        mBuildState.mExeSrc = prebuiltExePath;
+        mBuildState.mExtension = extension;
+
+        // No compilation needed — mark complete and go straight to finalize
+        mBuildState.mComplete.store(true);
+        mBuildState.mSuccess.store(true);
+
+        if (IsHeadless())
+        {
+            // Headless: handled by caller (BuildData)
+        }
+        else
+        {
+            // Auto-finalize on next modal draw
+        }
     }
+}
 
-    // ( ) Copy the executable into the Packaged folder.
-    std::string exeSrc = buildProjDir + "/Build/";
+void ActionManager::BuildCompileThreadFunc()
+{
+#if PLATFORM_WINDOWS
+#define popen _popen
+#define pclose _pclose
+#endif
 
-    if (platform == Platform::Android)
+    auto runStreamedCommand = [this](const std::string& cmd, const std::string& label) -> int
     {
-        exeSrc = buildProjDir;
-    }
+        AppendBuildOutput(label + "\n");
+        LogDebug("[BuildThread] %s", cmd.c_str());
 
-    switch (platform)
+        std::string fullCmd = cmd + " 2>&1";
+        FILE* pipe = popen(fullCmd.c_str(), "r");
+        if (pipe == nullptr)
+        {
+            AppendBuildOutput("ERROR: Failed to run command: " + cmd + "\n");
+            return -1;
+        }
+
+        char buffer[4096];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
+        {
+            if (mBuildState.mCancelRequested.load())
+            {
+                pclose(pipe);
+                AppendBuildOutput("Build cancelled.\n");
+                return -1;
+            }
+            AppendBuildOutput(buffer);
+        }
+
+        int status = pclose(pipe);
+#if PLATFORM_WINDOWS || PLATFORM_3DS || PLATFORM_DOLPHIN
+        int exitCode = status;
+#else
+        int exitCode = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+#endif
+        return exitCode;
+    };
+
+    // Compile shaders if needed (Vulkan platforms)
+    if (!mBuildState.mShaderCompileCommand.empty() && !mBuildState.mCancelRequested.load())
     {
-    case Platform::Windows:exeSrc += (useSteam ? "Windows/x64/ReleaseSteam/" : "Windows/x64/Release/"); break;
-    case Platform::Linux: exeSrc += "Linux/"; break;
-    case Platform::Android: exeSrc += "Android/app/build/outputs/apk/release/"; break;
-    case Platform::GameCube: exeSrc += "GCN/"; break;
-    case Platform::Wii: exeSrc += "Wii/"; break;
-    case Platform::N3DS: exeSrc += "3DS/"; break;
-    default: OCT_ASSERT(0); break;
+        int shaderExit = runStreamedCommand(mBuildState.mShaderCompileCommand, "--- Compiling shaders ---");
+        if (shaderExit != 0)
+        {
+            AppendBuildOutput("Shader compilation failed (exit code: " + std::to_string(shaderExit) + ")\n");
+            mBuildState.mExitCode.store(shaderExit);
+            mBuildState.mSuccess.store(false);
+            mBuildState.mComplete.store(true);
+            mBuildState.mRunning.store(false);
+            return;
+        }
     }
 
-    std::string exeNameBase = standalone ? "Octave" : projectName;
-    std::string exeName = exeNameBase;
-
-    std::string extension = ".exe";
-
-    switch (platform)
+    if (mBuildState.mCancelRequested.load())
     {
-    case Platform::Windows: extension = ".exe"; break;
-    case Platform::Linux: extension = ".elf"; break;
-    case Platform::Android: extension = ".apk"; break;
-    case Platform::GameCube: extension = ".dol"; break;
-    case Platform::Wii: extension = ".dol"; break;
-    case Platform::N3DS: extension = ".3dsx"; break;
-    default: OCT_ASSERT(0); break;
+        AppendBuildOutput("Build cancelled.\n");
+        mBuildState.mSuccess.store(false);
+        mBuildState.mComplete.store(true);
+        mBuildState.mRunning.store(false);
+        return;
     }
 
-    exeName += extension;
-    exeSrc += exeName;
+    // Run the main compile command
+    int exitCode = runStreamedCommand(mBuildState.mCompileCommand, "--- Compiling game ---");
+
+    if (exitCode != 0 || mBuildState.mCancelRequested.load())
+    {
+        if (mBuildState.mCancelRequested.load())
+        {
+            AppendBuildOutput("Build cancelled.\n");
+        }
+        else
+        {
+            AppendBuildOutput("Compilation failed (exit code: " + std::to_string(exitCode) + ")\n");
+        }
+        mBuildState.mExitCode.store(exitCode);
+        mBuildState.mSuccess.store(false);
+        mBuildState.mComplete.store(true);
+        mBuildState.mRunning.store(false);
+
+        // Clean up temp makefile even on failure
+        if (!mBuildState.mTmpMakefile.empty())
+        {
+            SYS_RemoveFile(mBuildState.mTmpMakefile.c_str());
+        }
+        return;
+    }
+
+    // Clean up temp makefile
+    if (!mBuildState.mTmpMakefile.empty())
+    {
+        SYS_RemoveFile(mBuildState.mTmpMakefile.c_str());
+    }
+
+    // Strip on Linux
+    if (!mBuildState.mStripCommand.empty())
+    {
+        AppendBuildOutput("Stripping debug symbols...\n");
+        runStreamedCommand(mBuildState.mStripCommand, "");
+    }
+
+    AppendBuildOutput("Compilation successful.\n");
+    mBuildState.mExitCode.store(0);
+    mBuildState.mSuccess.store(true);
+    mBuildState.mComplete.store(true);
+    mBuildState.mRunning.store(false);
+
+#if PLATFORM_WINDOWS
+#undef popen
+#undef pclose
+#endif
+}
+
+void ActionManager::FinalizeLocalBuild()
+{
+    // Join thread if joinable
+    if (mBuildState.mBuildThread.joinable())
+    {
+        mBuildState.mBuildThread.join();
+    }
+
+    Platform platform = mBuildState.mPlatform;
+    bool standalone = mBuildState.mStandalone;
+    std::string packagedDir = mBuildState.mPackagedDir;
+    std::string projectName = mBuildState.mProjectName;
+    std::string projectDir = mBuildState.mProjectDir;
+    std::string extension = mBuildState.mExtension;
+    std::string exeSrc = mBuildState.mExeSrc;
+    bool useSteam = mBuildState.mUseSteam;
+    bool needCompile = mBuildState.mNeedCompile;
+
+    if (!mBuildState.mSuccess.load())
+    {
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, false);
+        if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, false);
+        mShowBuildModal = false;
+        return;
+    }
 
     if (!needCompile)
     {
-        // Override exe path for uncompiled standalone builds
-        exeSrc = prebuiltExeName;
+        exeSrc = mBuildState.mPrebuiltExePath;
     }
 
-
+    // Copy the executable into the Packaged folder
     SYS_CopyDirectory(exeSrc.c_str(), packagedDir.c_str());
 
-    //std::string exeCopyCmd = std::string("cp ") + exeSrc + " " + packagedDir;
-    //SYS_Exec(exeCopyCmd.c_str());
+    // Delete the built binary so a stale file isn't copied on a subsequent failed build
+    if (needCompile)
+    {
+        SYS_RemoveFile(exeSrc.c_str());
+    }
 
     if (standalone)
     {
-        // Rename the executable to the project name
         SYS_MoveFile((packagedDir + "Octave" + extension).c_str(), (packagedDir + projectName + extension).c_str());
-        //std::string renameCmd = std::string("mv ") + packagedDir + "Octave" + extension + " " + packagedDir + projectName + extension;
-        //SYS_Exec(renameCmd.c_str());
     }
 
     if (platform == Platform::Windows && useSteam)
     {
-        // (1) Copy over redistributable DLL
         SYS_CopyDirectory((projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll").c_str(), packagedDir.c_str());
-        //std::string cpSteamDllCmd1 = std::string("cp ") + projectDir + (standalone ? "../" : "../Octave/") + "External/Steam/redistributable_bin/win64/steam_api64.dll " + packagedDir;
-        //SYS_Exec(cpSteamDllCmd1.c_str());
 
-        // (2) Create a steam_appid.txt with 480
         Stream idStream;
         const char* txtId = "480";
         idStream.WriteBytes((uint8_t*)txtId, (uint32_t)strlen(txtId));
         idStream.WriteFile((packagedDir + "steam_appid.txt").c_str());
     }
 
-    // Verify that the executable exists in the packaged directory
+    // Verify executable
     if (!SYS_DoesFileExist((packagedDir + projectName + extension).c_str(), false))
     {
         LogError("Packaged executable not found: %s", (packagedDir + projectName + extension).c_str());
         LogError("Packaging failed. Please check the log for errors.");
+
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, false);
+        if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, false);
         return;
     }
-      if(!IsHeadless()){
-                // Show the build output directory
-                SYS_ExplorerOpenDirectory((packagedDir ).c_str());
-            }
+
+    if (!IsHeadless())
+    {
+        SYS_ExplorerOpenDirectory(packagedDir.c_str());
+    }
 
     LogDebug("Finished packaging!");
+
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, true);
+    if (hookMgr != nullptr) hookMgr->FireOnPostBuild((int32_t)platform, true);
+
+    // Handle run-after-build
+    if (mBuildState.mRunAfterBuild)
+    {
+        std::string outputPath = packagedDir + projectName + extension;
+
+        if (mBuildState.mRunOnDevice && platform == Platform::N3DS)
+        {
+            // Delegate to PackagingWindow for 3dslink
+            GetPackagingWindow()->BuildAndRunWithProfile(platform, mBuildState.mEmbedded, true);
+        }
+        else
+        {
+            LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                PreferencesManager::Get()->FindModule("External/Launchers"));
+
+            if (launchers != nullptr && launchers->IsEmulatorConfigured(platform))
+            {
+                std::string cmd = launchers->BuildLaunchCommand(platform, outputPath);
+                LogDebug("Launching emulator: %s", cmd.c_str());
+                SYS_Exec(cmd.c_str());
+            }
+            else
+            {
+                LogError("Emulator not configured for %s", GetPlatformString(platform));
+            }
+        }
+    }
+
+    mShowBuildModal = false;
+}
+
+void ActionManager::DrawBuildModal()
+{
+    if (!mShowBuildModal)
+    {
+        return;
+    }
+
+    // Update display output from shared buffer
+    {
+        std::lock_guard<std::mutex> lock(mBuildState.mOutputMutex);
+        if (mBuildState.mOutputDirty)
+        {
+            mBuildDisplayOutput = mBuildState.mOutput;
+            mBuildState.mOutputDirty = false;
+        }
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(720, 500), ImGuiCond_FirstUseEver);
+
+    ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoCollapse;
+    bool finalized = false;
+
+    if (ImGui::Begin("Local Build", &mShowBuildModal, modalFlags))
+    {
+        bool isComplete = mBuildState.mComplete.load();
+        bool isSuccess = mBuildState.mSuccess.load();
+        bool isCancelled = mBuildState.mCancelRequested.load();
+        bool isRunning = mBuildState.mRunning.load();
+
+        // Status header
+        if (!isComplete && !isRunning)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Preparing...");
+        }
+        else if (!isComplete)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Compiling...");
+        }
+        else if (isCancelled)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Build Cancelled");
+        }
+        else if (isSuccess)
+        {
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Build Successful!");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Build Failed (exit code: %d)", mBuildState.mExitCode.load());
+        }
+
+        ImGui::Separator();
+
+        // Collapsible output section
+        if (ImGui::CollapsingHeader("Build Output", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            float footerHeight = ImGui::GetFrameHeightWithSpacing() + 8.0f;
+            ImVec2 outputSize(0, -footerHeight);
+
+            ImGui::BeginChild("BuildOutput", outputSize, true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::TextUnformatted(mBuildDisplayOutput.c_str());
+
+            if (mBuildAutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 10.0f)
+            {
+                ImGui::SetScrollHereY(1.0f);
+            }
+            ImGui::EndChild();
+        }
+
+        // Footer buttons
+        ImGui::Checkbox("Auto-scroll", &mBuildAutoScroll);
+
+        ImGui::SameLine();
+        if (ImGui::Button("Copy"))
+        {
+            ImGui::SetClipboardText(mBuildDisplayOutput.c_str());
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Save Log"))
+        {
+            std::string logPath = mBuildState.mProjectDir + "build_log.txt";
+            Stream logStream;
+            logStream.WriteBytes((uint8_t*)mBuildDisplayOutput.c_str(), (uint32_t)mBuildDisplayOutput.size());
+            logStream.WriteFile(logPath.c_str());
+            AppendBuildOutput("Log saved to: " + logPath + "\n");
+        }
+
+        ImGui::SameLine();
+        float buttonWidth = 80.0f;
+        float availWidth = ImGui::GetContentRegionAvail().x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - buttonWidth);
+
+        // Auto-finalize on successful completion
+        if (isComplete && isSuccess && !isCancelled)
+        {
+            FinalizeLocalBuild();
+            finalized = true;
+        }
+        else if (isComplete)
+        {
+            if (ImGui::Button("Close", ImVec2(buttonWidth, 0)))
+            {
+                FinalizeLocalBuild();
+                finalized = true;
+            }
+        }
+        else if (isRunning)
+        {
+            if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0)))
+            {
+                CancelBuild();
+            }
+        }
+    }
+    ImGui::End();
+
+    // Handle window close via X button (skip if already finalized above)
+    if (!mShowBuildModal && !finalized)
+    {
+        if (mBuildState.mRunning.load())
+        {
+            CancelBuild();
+            mShowBuildModal = true; // Re-show until build completes
+        }
+        else if (mBuildState.mComplete.load())
+        {
+            FinalizeLocalBuild();
+        }
+        else
+        {
+            mShowBuildModal = true;
+        }
+    }
 }
 
 void ActionManager::PrepareRelease()
@@ -745,7 +1480,11 @@ void ActionManager::PrepareRelease()
 
 void ActionManager::OnSelectedNodeChanged()
 {
-
+    EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+    if (hookMgr != nullptr)
+    {
+        hookMgr->FireOnSelectionChanged();
+    }
 }
 
 Node* ActionManager::SpawnNode(TypeId nodeType, Node* parent)
@@ -964,6 +1703,39 @@ Node* ActionManager::SpawnBasicNode(const std::string& name, Node* parent, Asset
         instMeshNode->SetCollisionMask(~ColGroup1);
         instMeshNode->AddInstanceData(MeshInstanceData());
     }
+    else if (name == BASIC_SKYBOX_TEXTURED || name == BASIC_SKYBOX_VERTEX_COLOR)
+    {
+        StaticMesh3D* skyNode = EXE_SpawnNode(StaticMesh3D::GetStaticType())->As<StaticMesh3D>();
+        skyNode->SetName("Skybox");
+
+        StaticMesh* mesh = (StaticMesh*)LoadAsset("SM_Sphere");
+        skyNode->SetStaticMesh(mesh);
+
+        if (srcAsset != nullptr && srcAsset->Is(Material::ClassRuntimeId()))
+        {
+            skyNode->SetMaterialOverride(static_cast<Material*>(srcAsset));
+        }
+
+        // Create a MaterialLite override with skybox render properties.
+        MaterialLite* skyMat = MaterialLite::New(skyNode->GetMaterial());
+        skyMat->SetShadingModel(ShadingModel::Unlit); // No lighting on skybox
+        skyMat->SetCullMode(CullMode::Front);      // Show inside of sphere
+        skyMat->SetDepthTestDisabled(true);         // Don't affect depth buffer
+        skyMat->SetSortPriority(-1000);             // Render before everything
+        skyMat->SetApplyFog(false);                 // No fog on skybox
+        skyNode->SetMaterialOverride(skyMat);
+
+        skyNode->EnableCollision(false);
+        skyNode->EnableOverlaps(false);
+        skyNode->EnablePhysics(false);
+        skyNode->EnableCastShadows(false);
+        skyNode->EnableReceiveShadows(false);
+        skyNode->EnableReceiveSimpleShadows(false);
+        skyNode->SetScale(glm::vec3(500.0f));
+        skyNode->SetTargetScreen(0xFF); // Render on all screens
+
+        spawnedNode = skyNode;
+    }
     else if (name == BASIC_SPLINE)
     {
         spawnedNode = EXE_SpawnNode(Spline3D::GetStaticType())->As<Spline3D>();
@@ -1029,6 +1801,9 @@ void ActionManager::Undo()
         action->Reverse();
 
         mActionFuture.push_back(action);
+
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnUndoRedo();
     }
 }
 
@@ -1045,6 +1820,9 @@ void ActionManager::Redo()
         action->Execute();
 
         mActionHistory.push_back(action);
+
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnUndoRedo();
     }
 }
 
@@ -1346,19 +2124,6 @@ void ActionManager::RestoreExiledNode(NodePtr node)
     OCT_ASSERT(restored);
 }
 
-static bool sHandleNewProjectCallbackCpp = false;
-static void HandleNewProjectCallback(const std::vector<std::string>& folderPaths)
-{
-    if (folderPaths.size() > 0 && folderPaths[0] != "")
-    {
-        ActionManager::Get()->CreateNewProject(folderPaths[0].c_str(), sHandleNewProjectCallbackCpp);
-    }
-    else
-    {
-        LogError("Bad folder for CreateNewProject.");
-    }
-}
-
 void CpyFile(const std::string& srcFile, const std::string& dstFile)
 {
 	SYS_CopyFile(srcFile.c_str(), dstFile.c_str());
@@ -1430,7 +2195,7 @@ static void CreateConfigIni(const std::string& projDir, const std::string projNa
     }
 }
 
-static void CreateAndSaveDefaultScene(const std::string& scenePath)
+static void CreateAndSaveDefaultScene(const std::string& scenePath, const std::string& sceneName = "SC_Default")
 {
     // Create a root Node3D using proper construction
     NodePtr root = Node::Construct(Node3D::GetStaticType());
@@ -1443,25 +2208,20 @@ static void CreateAndSaveDefaultScene(const std::string& scenePath)
 
     Scene scene;
     scene.Create();
-    scene.SetName("SC_Default");
+    scene.SetName(sceneName);
     scene.Capture(root.Get());
 
     scene.SaveFile(scenePath.c_str(), Platform::Count);
 
 }
 
-void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
+void ActionManager::CreateNewProject(const char* folderPath, bool cpp, const char* defaultSceneName)
 {
     std::string folderPathStr = folderPath ? folderPath : "";
 
     if (folderPathStr == "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        sHandleNewProjectCallbackCpp = cpp;
-        EditorOpenFileBrowser(HandleNewProjectCallback, true);
-#else
         folderPathStr = SYS_SelectFolderDialog();
-#endif
     }
 
     if (folderPathStr != "")
@@ -1608,22 +2368,10 @@ void ActionManager::CreateNewProject(const char* folderPath, bool cpp)
         // Create the Scenes folder and default scene for the new project
         std::string scenesFolder = assetsFolder + "/Scenes/";
         SYS_CreateDirectory(scenesFolder.c_str());
-        CreateAndSaveDefaultScene(scenesFolder + "SC_Default.oct");
+        CreateAndSaveDefaultScene(scenesFolder + std::string(defaultSceneName) + ".oct", defaultSceneName);
 
         // Finally, open the project
         OpenProject(projectFile.c_str());
-    }
-}
-
-static void HandleOpenProjectCallback(const std::vector<std::string>& filePaths)
-{
-    if (filePaths.size() > 0 && filePaths[0] != "")
-    {
-        ActionManager::Get()->OpenProject(filePaths[0].c_str());
-    }
-    else
-    {
-        LogError("Bad file for OpenProject.");
     }
 }
 
@@ -1633,29 +2381,50 @@ void ActionManager::OpenProject(const char* path)
 
     if (pathStr == "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleOpenProjectCallback, false);
-#else
         std::vector<std::string> paths = SYS_OpenFileDialog();
 
         if (paths.size() > 0)
         {
             pathStr = paths[0];
         }
-#endif
     }
 
     if (pathStr != "")
     {
+        // Save and destroy previous PackagingSettings before loading new project
+        if (PackagingSettings::Get() != nullptr)
+        {
+            PackagingSettings::Get()->SaveSettings();
+            PackagingSettings::Destroy();
+        }
+
         LoadProject(pathStr);
 
         // Handle new project directory
         GetEditorState()->ClearAssetDirHistory();
         GetEditorState()->SetAssetDirectory(AssetManager::Get()->FindProjectDirectory(), true);
         GetEditorState()->SetSelectedAssetStub(nullptr);
+        GetEditorState()->mTabCurrentDir[(int)AssetBrowserTab::Addons] = AssetManager::Get()->FindPackagesDirectory();
+
+        // Initialize PackagingSettings for the new project
+        PackagingSettings::Create();
+        PackagingSettings::Get()->LoadSettings();
 
         // Check if project needs upgrade to new UUID format
         CheckProjectNeedsUpgrade();
+        NativeAddonManager* nam = NativeAddonManager::Get();
+        if (nam != nullptr)
+        {
+            nam->ReloadAllNativeAddons();
+            LogDebug("Native addons reloaded.");
+        }
+
+        // Fire OnProjectOpen hook
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr)
+        {
+            hookMgr->FireOnProjectOpen(pathStr.c_str());
+        }
     }
 }
 
@@ -1733,6 +2502,14 @@ void ActionManager::SaveScene(bool saveAs)
         scene->Capture(root);
         root->SetScene(scene);
         AssetManager::Get()->SaveAsset(scene->GetName());
+
+        // Fire OnProjectSave and OnAssetSaved hooks
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr)
+        {
+            hookMgr->FireOnProjectSave(scene->GetName().c_str());
+            hookMgr->FireOnAssetSaved(scene->GetName().c_str());
+        }
     }
 }
 
@@ -1784,19 +2561,15 @@ static void HandleRunScriptCallback(const std::vector<std::string>& filePaths)
         // Don't use ScriptUtils::RunScript(). Allow script to exist outside of the project.
         if (luaL_dofile(L, filePaths[i].c_str()))
         {
-            LogError("Lua Error: %s\n", lua_tostring(L, -1));
+            LogError("3Lua Error: %s\n", lua_tostring(L, -1));
         }
     }
 }
 
 void ActionManager::RunScript()
 {
-#if USE_IMGUI_FILE_BROWSER
-    EditorOpenFileBrowser(HandleRunScriptCallback, false);
-#else
     std::vector<std::string> filePaths = SYS_OpenFileDialog();
     HandleRunScriptCallback(filePaths);
-#endif
 }
 
 static void HandleImportCallback(const std::vector<std::string>& filePaths)
@@ -1845,12 +2618,8 @@ void ActionManager::ImportAsset()
 {
     if (GetEngineState()->mProjectPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportCallback(filePaths);
-#endif
     }
     else
     {
@@ -1993,6 +2762,10 @@ Asset* ActionManager::ImportAsset(const std::string& path)
             AssetManager::Get()->SaveAsset(*stub);
 
             retAsset = newAsset;
+
+            // Fire OnAssetImported hook
+            EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+            if (hookMgr != nullptr) hookMgr->FireOnAssetImported(stub->mName.c_str());
         }
         else
         {
@@ -2021,6 +2794,19 @@ static std::string GetFixedFilename(const char* name, const char* prefix)
     }
 
     return nameStr;
+}
+
+static std::string SanitizeCppIdentifier(const std::string& name)
+{
+    std::string result = name;
+    for (char& c : result)
+    {
+        if (!isalnum(c) && c != '_')
+            c = '_';
+    }
+    if (!result.empty() && isdigit(result[0]))
+        result = "_" + result;
+    return result;
 }
 
 static void ConvertFileToByteString(
@@ -2059,33 +2845,543 @@ static void ConvertFileToByteString(
     outString += "\n};\n\n";
 }
 
-static void SpawnAiNode(aiNode* node, Node* root, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options)
+static void ParseGltfExtrasFromDoc(const rapidjson::Document& doc, std::unordered_map<std::string, OctaveNodeExtras>& result)
+{
+    if (!doc.HasMember("nodes") || !doc["nodes"].IsArray())
+    {
+        return;
+    }
+
+    const rapidjson::Value& nodes = doc["nodes"];
+    for (rapidjson::SizeType i = 0; i < nodes.Size(); ++i)
+    {
+        const rapidjson::Value& node = nodes[i];
+        if (!node.HasMember("name") || !node["name"].IsString())
+            continue;
+        if (!node.HasMember("extras") || !node["extras"].IsObject())
+            continue;
+
+        std::string nodeName = node["name"].GetString();
+        const rapidjson::Value& extras = node["extras"];
+
+        OctaveNodeExtras data;
+        bool hasOctaveData = false;
+
+        // New mesh_type string property
+        if (extras.HasMember("mesh_type") && extras["mesh_type"].IsString())
+        {
+            std::string mt = extras["mesh_type"].GetString();
+            if (mt == "Node3D")
+                data.mMeshType = OctaveMeshType::Node3D;
+            else if (mt == "InstancedMesh")
+                data.mMeshType = OctaveMeshType::InstancedMesh;
+            else
+                data.mMeshType = OctaveMeshType::StaticMesh;
+            hasOctaveData = true;
+        }
+        else
+        {
+            // Backward compat: check old instance_mesh / static_mesh bools
+            bool instanceMesh = false;
+            bool hasLegacy = false;
+
+            if (extras.HasMember("instance_mesh") && extras["instance_mesh"].IsBool())
+            {
+                instanceMesh = extras["instance_mesh"].GetBool();
+                hasLegacy = true;
+            }
+            else if (extras.HasMember("instance_mesh") && extras["instance_mesh"].IsInt())
+            {
+                instanceMesh = (extras["instance_mesh"].GetInt() != 0);
+                hasLegacy = true;
+            }
+
+            if (extras.HasMember("static_mesh") && extras["static_mesh"].IsBool())
+            {
+                hasLegacy = true;
+            }
+            else if (extras.HasMember("static_mesh") && extras["static_mesh"].IsInt())
+            {
+                hasLegacy = true;
+            }
+
+            if (hasLegacy)
+            {
+                data.mMeshType = instanceMesh ? OctaveMeshType::InstancedMesh : OctaveMeshType::StaticMesh;
+                hasOctaveData = true;
+            }
+        }
+
+        if (extras.HasMember("octave_asset") && extras["octave_asset"].IsString())
+        {
+            data.mAssetName = extras["octave_asset"].GetString();
+            if (!data.mAssetName.empty())
+                hasOctaveData = true;
+        }
+
+        if (extras.HasMember("octave_asset_uuid") && extras["octave_asset_uuid"].IsString())
+        {
+            data.mAssetUuid = strtoull(extras["octave_asset_uuid"].GetString(), nullptr, 10);
+            if (data.mAssetUuid != 0)
+                hasOctaveData = true;
+        }
+
+        if (extras.HasMember("octave_script") && extras["octave_script"].IsString())
+        {
+            data.mScriptPath = extras["octave_script"].GetString();
+            if (!data.mScriptPath.empty())
+                hasOctaveData = true;
+        }
+
+        if (extras.HasMember("octave_main_camera") && extras["octave_main_camera"].IsBool())
+        {
+            data.mMainCamera = extras["octave_main_camera"].GetBool();
+            if (data.mMainCamera)
+                hasOctaveData = true;
+        }
+        else if (extras.HasMember("octave_main_camera") && extras["octave_main_camera"].IsInt())
+        {
+            data.mMainCamera = (extras["octave_main_camera"].GetInt() != 0);
+            if (data.mMainCamera)
+                hasOctaveData = true;
+        }
+
+        if (extras.HasMember("octave_script_props") && extras["octave_script_props"].IsString())
+        {
+            data.mScriptPropsJson = extras["octave_script_props"].GetString();
+        }
+        if (extras.HasMember("octave_script_props_types") && extras["octave_script_props_types"].IsString())
+        {
+            data.mScriptPropsTypesJson = extras["octave_script_props_types"].GetString();
+        }
+
+        if (extras.HasMember("octave_material_type") && extras["octave_material_type"].IsString())
+        {
+            data.mMaterialType = extras["octave_material_type"].GetString();
+            hasOctaveData = true;
+        }
+
+        if (hasOctaveData)
+        {
+            LogDebug("GltfExtras: node='%s' asset='%s' uuid=%llu meshType=%d script='%s'",
+                nodeName.c_str(), data.mAssetName.c_str(), data.mAssetUuid,
+                (int)data.mMeshType, data.mScriptPath.c_str());
+            result[nodeName] = data;
+        }
+    }
+}
+
+static Property* FindScriptProperty(Script* script, const char* name)
+{
+    std::vector<Property>& props = script->GetScriptProperties();
+    for (uint32_t i = 0; i < props.size(); ++i)
+    {
+        if (props[i].mName == name)
+            return &props[i];
+    }
+    return nullptr;
+}
+
+static void ApplyScriptPropertyOverrides(Node* node, const OctaveNodeExtras& extras)
+{
+    if (extras.mScriptPropsJson.empty() || extras.mScriptPropsTypesJson.empty())
+        return;
+
+    Script* script = node->GetScript();
+    if (script == nullptr)
+        return;
+
+    rapidjson::Document propsDoc;
+    propsDoc.Parse(extras.mScriptPropsJson.c_str());
+    if (propsDoc.HasParseError() || !propsDoc.IsObject())
+        return;
+
+    rapidjson::Document typesDoc;
+    typesDoc.Parse(extras.mScriptPropsTypesJson.c_str());
+    if (typesDoc.HasParseError() || !typesDoc.IsObject())
+        return;
+
+    for (auto it = propsDoc.MemberBegin(); it != propsDoc.MemberEnd(); ++it)
+    {
+        const char* key = it->name.GetString();
+
+        if (!typesDoc.HasMember(key) || !typesDoc[key].IsInt())
+            continue;
+
+        int datumTypeInt = typesDoc[key].GetInt();
+        const rapidjson::Value& val = it->value;
+
+        Property* prop = FindScriptProperty(script, key);
+        if (prop == nullptr || prop->mType != static_cast<DatumType>(datumTypeInt))
+            continue;
+
+        switch (static_cast<DatumType>(datumTypeInt))
+        {
+        case DatumType::Integer:
+            if (val.IsInt()) prop->SetInteger((int32_t)val.GetInt());
+            break;
+        case DatumType::Float:
+            if (val.IsNumber()) prop->SetFloat((float)val.GetDouble());
+            break;
+        case DatumType::Bool:
+            if (val.IsBool()) prop->SetBool(val.GetBool());
+            break;
+        case DatumType::String:
+            if (val.IsString()) prop->SetString(val.GetString());
+            break;
+        case DatumType::Vector2D:
+            if (val.IsArray() && val.Size() >= 2)
+            {
+                glm::vec2 v((float)val[0].GetDouble(), (float)val[1].GetDouble());
+                prop->SetVector2D(v);
+            }
+            break;
+        case DatumType::Vector:
+            if (val.IsArray() && val.Size() >= 3)
+            {
+                glm::vec3 v((float)val[0].GetDouble(), (float)val[1].GetDouble(), (float)val[2].GetDouble());
+                prop->SetVector(v);
+            }
+            break;
+        case DatumType::Color:
+            if (val.IsArray() && val.Size() >= 4)
+            {
+                glm::vec4 v((float)val[0].GetDouble(), (float)val[1].GetDouble(),
+                            (float)val[2].GetDouble(), (float)val[3].GetDouble());
+                prop->SetColor(v);
+            }
+            break;
+        case DatumType::Asset:
+            if (val.IsString())
+            {
+                Asset* asset = AssetManager::Get()->LoadAsset(val.GetString());
+                prop->SetAsset(asset);
+            }
+            break;
+        case DatumType::Byte:
+            if (val.IsInt()) prop->SetByte((uint8_t)val.GetInt());
+            break;
+        case DatumType::Short:
+            if (val.IsInt()) prop->SetShort((int16_t)val.GetInt());
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+static std::unordered_map<std::string, OctaveNodeExtras> ParseGltfExtras(const std::string& filePath)
+{
+    std::unordered_map<std::string, OctaveNodeExtras> result;
+
+    int32_t dotIndex = int32_t(filePath.find_last_of('.'));
+    std::string extension = filePath.substr(dotIndex, filePath.size() - dotIndex);
+
+    Stream stream;
+    if (!stream.ReadFile(filePath.c_str(), false))
+    {
+        LogWarning("ParseGltfExtras: Failed to read file %s", filePath.c_str());
+        return result;
+    }
+
+    std::string jsonStr;
+
+    if (extension == ".glb")
+    {
+        // GLB format: 12-byte header, then chunks
+        // Header: magic(4) + version(4) + length(4)
+        // Each chunk: chunkLength(4) + chunkType(4) + chunkData(chunkLength)
+        // First chunk is JSON (type 0x4E4F534A)
+        const char* rawData = stream.GetData();
+        uint32_t fileSize = stream.GetSize();
+
+        if (fileSize < 20) // 12 header + 8 chunk header minimum
+        {
+            LogWarning("ParseGltfExtras: GLB file too small %s", filePath.c_str());
+            return result;
+        }
+
+        uint32_t jsonChunkLength;
+        memcpy(&jsonChunkLength, rawData + 12, sizeof(uint32_t));
+
+        uint32_t jsonChunkType;
+        memcpy(&jsonChunkType, rawData + 16, sizeof(uint32_t));
+
+        if (jsonChunkType != 0x4E4F534A) // "JSON" in little-endian
+        {
+            LogWarning("ParseGltfExtras: First GLB chunk is not JSON in %s", filePath.c_str());
+            return result;
+        }
+
+        if (20 + jsonChunkLength > fileSize)
+        {
+            LogWarning("ParseGltfExtras: GLB JSON chunk exceeds file size in %s", filePath.c_str());
+            return result;
+        }
+
+        jsonStr.assign(rawData + 20, jsonChunkLength);
+    }
+    else
+    {
+        // .gltf text JSON
+        jsonStr.assign(stream.GetData(), stream.GetSize());
+    }
+
+    rapidjson::Document doc;
+    doc.Parse(jsonStr.c_str());
+
+    if (doc.HasParseError() || !doc.IsObject())
+    {
+        LogWarning("ParseGltfExtras: Failed to parse JSON from %s", filePath.c_str());
+        return result;
+    }
+
+    ParseGltfExtrasFromDoc(doc, result);
+
+    return result;
+}
+
+static void ApplyMaterialTypeOverride(StaticMesh* mesh, const std::string& materialType)
+{
+    if (mesh == nullptr)
+        return;
+
+    Material* mat = mesh->GetMaterial();
+    if (mat == nullptr || !mat->IsLite())
+        return;
+
+    MaterialLite* matLite = static_cast<MaterialLite*>(mat);
+
+    if (materialType == "UNLIT")
+    {
+        matLite->SetShadingModel(ShadingModel::Unlit);
+    }
+    else if (materialType == "LIT")
+    {
+        matLite->SetShadingModel(ShadingModel::Lit);
+    }
+    else if (materialType == "VERTEX_COLOR")
+    {
+        matLite->SetVertexColorMode(VertexColorMode::Modulate);
+    }
+}
+
+static void SpawnAiNode(aiNode* node, Node* root, const glm::mat4& parentTransform, const std::vector<StaticMesh*>& meshList, const SceneImportOptions& options, const std::unordered_map<std::string, OctaveNodeExtras>& extrasMap)
 {
     if (node == nullptr || root == nullptr)
         return;
 
-    World* world = GetWorld(0);
-
     glm::mat4 transform = parentTransform * glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 
-    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
-    {
-        uint32_t meshIndex = node->mMeshes[i];
-        StaticMesh3D* newMesh = root->CreateChild<StaticMesh3D>();
+    std::string nodeName = node->mName.C_Str();
 
-        newMesh->SetStaticMesh(meshList[meshIndex]);
-        newMesh->SetUseTriangleCollision(meshList[meshIndex]->IsTriangleCollisionMeshEnabled());
-        newMesh->SetTransform(transform);
-        newMesh->SetName(/*options.mPrefix + */node->mName.C_Str());
-        newMesh->EnableCastShadows(true);
-        newMesh->SetBakeLighting(true);
-        newMesh->SetUseTriangleCollision(true);
-        newMesh->EnableCollision(options.mEnableCollision);
+    OctaveNodeExtras extras;
+    if (options.mApplyGltfExtras)
+    {
+        auto octIt = extrasMap.find(nodeName);
+        if (octIt != extrasMap.end())
+        {
+            extras = octIt->second;
+        }
+    }
+
+    // Resolve asset from extras (UUID first, then name)
+    StaticMesh* assetMesh = nullptr;
+    if (options.mApplyGltfExtras)
+    {
+        if (extras.mAssetUuid != 0 || !extras.mAssetName.empty())
+        {
+            LogDebug("OctaveExtras: Resolving asset for node '%s' — uuid=%llu name='%s'",
+                nodeName.c_str(), extras.mAssetUuid, extras.mAssetName.c_str());
+        }
+
+        if (extras.mAssetUuid != 0)
+        {
+            Asset* a = AssetManager::Get()->GetAssetByUuid(extras.mAssetUuid);
+            if (a)
+            {
+                assetMesh = a->As<StaticMesh>();
+                LogDebug("OctaveExtras: UUID lookup SUCCESS for node '%s' -> asset '%s'",
+                    nodeName.c_str(), a->GetName().c_str());
+            }
+            else
+            {
+                LogWarning("OctaveExtras: Could not find asset by UUID %llu for node '%s'", extras.mAssetUuid, nodeName.c_str());
+            }
+        }
+
+        if (assetMesh == nullptr && !extras.mAssetName.empty())
+        {
+            // Try path-based lookup first (e.g. "Assets/Models/SM_Cube"), then name-based
+            LogDebug("OctaveExtras: Trying path lookup '%s' for node '%s'", extras.mAssetName.c_str(), nodeName.c_str());
+            Asset* a = AssetManager::Get()->LoadAssetByPath(extras.mAssetName);
+            if (a)
+            {
+                assetMesh = a->As<StaticMesh>();
+                LogDebug("OctaveExtras: Path lookup SUCCESS -> '%s' (type=%s)",
+                    a->GetName().c_str(), Asset::GetNameFromTypeId(a->GetType()));
+            }
+            else
+            {
+                LogDebug("OctaveExtras: Path lookup FAILED, trying name lookup '%s'", extras.mAssetName.c_str());
+                assetMesh = LoadAsset<StaticMesh>(extras.mAssetName);
+                if (assetMesh)
+                {
+                    LogDebug("OctaveExtras: Name lookup SUCCESS -> '%s'", assetMesh->GetName().c_str());
+                }
+            }
+
+            if (assetMesh == nullptr)
+            {
+                LogWarning("OctaveExtras: Could not load asset '%s' for node '%s'", extras.mAssetName.c_str(), nodeName.c_str());
+            }
+        }
+    }
+
+    if (node->mNumMeshes > 0)
+    {
+        for (uint32_t i = 0; i < node->mNumMeshes; ++i)
+        {
+            uint32_t meshIndex = node->mMeshes[i];
+            StaticMesh* meshToUse = assetMesh ? assetMesh : meshList[meshIndex];
+
+            Node* newNode = nullptr;
+
+            switch (extras.mMeshType)
+            {
+            case OctaveMeshType::Node3D:
+            {
+                Node3D* newNode3D = root->CreateChild<Node3D>();
+                newNode3D->SetTransform(transform);
+                newNode3D->SetName(nodeName);
+                newNode = newNode3D;
+                break;
+            }
+            case OctaveMeshType::InstancedMesh:
+            {
+                InstancedMesh3D* newInst = root->CreateChild<InstancedMesh3D>();
+                newInst->SetStaticMesh(meshToUse);
+                newInst->SetTransform(transform);
+                newInst->SetName(nodeName);
+                newInst->EnableCastShadows(true);
+                newInst->SetBakeLighting(true);
+                newInst->EnableCollision(options.mEnableCollision);
+                {
+                    MeshInstanceData data;
+                    glm::vec3 skew;
+                    glm::vec4 perspective;
+                    glm::quat rotation;
+                    glm::vec3 scale;
+                    glm::vec3 translation;
+                    glm::decompose(transform, scale, rotation, translation, skew, perspective);
+   
+                    newInst->SetInstanceData({ data });
+                }
+                newNode = newInst;
+                break;
+            }
+            case OctaveMeshType::StaticMesh:
+            default:
+            {
+                StaticMesh3D* newMesh = root->CreateChild<StaticMesh3D>();
+                newMesh->SetStaticMesh(meshToUse);
+                newMesh->SetUseTriangleCollision(meshToUse->IsTriangleCollisionMeshEnabled());
+                newMesh->SetTransform(transform);
+                newMesh->SetName(nodeName);
+                newMesh->EnableCastShadows(true);
+                newMesh->SetBakeLighting(true);
+                newMesh->SetUseTriangleCollision(true);
+                newMesh->EnableCollision(options.mEnableCollision);
+                newNode = newMesh;
+                break;
+            }
+            }
+
+            if (!assetMesh && !extras.mMaterialType.empty())
+            {
+                ApplyMaterialTypeOverride(meshToUse, extras.mMaterialType);
+            }
+
+            if (newNode != nullptr && !extras.mScriptPath.empty())
+            {
+                newNode->SetScriptFile(extras.mScriptPath);
+                ApplyScriptPropertyOverrides(newNode, extras);
+            }
+        }
+    }
+    else if (options.mApplyGltfExtras && (!extras.mAssetName.empty() || extras.mAssetUuid != 0))
+    {
+        // Node has no embedded mesh but has an octave_asset reference
+        Node* newNode = nullptr;
+
+        switch (extras.mMeshType)
+        {
+        case OctaveMeshType::Node3D:
+        {
+            Node3D* newNode3D = root->CreateChild<Node3D>();
+            newNode3D->SetTransform(transform);
+            newNode3D->SetName(nodeName);
+            newNode = newNode3D;
+            break;
+        }
+        case OctaveMeshType::InstancedMesh:
+        {
+            if (assetMesh != nullptr)
+            {
+                InstancedMesh3D* newInst = root->CreateChild<InstancedMesh3D>();
+                newInst->SetStaticMesh(assetMesh);
+                newInst->SetTransform(transform);
+                newInst->SetName(nodeName);
+                newInst->EnableCastShadows(true);
+                newInst->SetBakeLighting(true);
+                newInst->EnableCollision(options.mEnableCollision);
+                MeshInstanceData data;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::quat rotation;
+                glm::vec3 scale;
+                glm::vec3 translation;
+                glm::decompose(transform, scale, rotation, translation, skew, perspective);
+       /*         data.mPosition = translation;
+                data.mRotation = glm::degrees(glm::eulerAngles(rotation));
+                data.mScale = scale;*/
+                newInst->SetInstanceData({ data });
+				//newInst->SetPosition({ 0,0,0 });
+
+                newNode = newInst;
+            }
+            break;
+        }
+        case OctaveMeshType::StaticMesh:
+        default:
+        {
+            if (assetMesh != nullptr)
+            {
+                StaticMesh3D* newMesh = root->CreateChild<StaticMesh3D>();
+                newMesh->SetStaticMesh(assetMesh);
+                newMesh->SetUseTriangleCollision(assetMesh->IsTriangleCollisionMeshEnabled());
+                newMesh->SetTransform(transform);
+                newMesh->SetName(nodeName);
+                newMesh->EnableCastShadows(true);
+                newMesh->SetBakeLighting(true);
+                newMesh->SetUseTriangleCollision(true);
+                newMesh->EnableCollision(options.mEnableCollision);
+                newNode = newMesh;
+            }
+            break;
+        }
+        }
+
+        if (newNode != nullptr && !extras.mScriptPath.empty())
+        {
+            newNode->SetScriptFile(extras.mScriptPath);
+            ApplyScriptPropertyOverrides(newNode, extras);
+        }
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        SpawnAiNode(node->mChildren[i], root, parentTransform, meshList, options);
+        SpawnAiNode(node->mChildren[i], root, transform, meshList, options, extrasMap);
     }
 }
 
@@ -2198,7 +3494,8 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
         if (extension == ".glb" ||
             extension == ".gltf" ||
-            extension == ".dae")
+            extension == ".dae" ||
+            extension == ".blend")
         {
             LogDebug("Begin scene import...");
             Assimp::Importer importer;
@@ -2210,11 +3507,35 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 return;
             }
 
+            // Parse Octave extras from glTF files
+            std::unordered_map<std::string, OctaveNodeExtras> extrasMap;
+            if (options.mApplyGltfExtras && (extension == ".gltf" || extension == ".glb"))
+            {
+                extrasMap = ParseGltfExtras(filename);
+                LogDebug("Parsed %zu glTF extras entries", extrasMap.size());
+                for (auto& kv : extrasMap)
+                {
+                    LogDebug("  extras['%s']: asset='%s' uuid=%llu meshType=%d",
+                        kv.first.c_str(), kv.second.mAssetName.c_str(),
+                        kv.second.mAssetUuid, (int)kv.second.mMeshType);
+                }
+            }
+
+            bool isReimport = (options.mReimportSceneStub != nullptr);
+
             // Get the current directory in the asset panel (all assets will be saved there)
             AssetDir* curDir = GetEditorState()->GetAssetDirectory();
 
             const std::string& sceneName = options.mSceneName;
-            AssetDir* sceneDir = curDir->CreateSubdirectory(sceneName);
+            AssetDir* sceneDir = nullptr;
+            if (isReimport)
+            {
+                sceneDir = options.mReimportSceneStub->mDirectory;
+            }
+            else
+            {
+                sceneDir = curDir->CreateSubdirectory(sceneName);
+            }
 
             std::string fullSceneName = "SC_" + sceneName;
             for (uint32_t i = 0; i < GetEditorState()->mEditScenes.size(); ++i)
@@ -2236,7 +3557,11 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 return;
             }
 
-            sceneDir->Purge();
+            if (!isReimport)
+            {
+                LogDebug("Purging scene dir: %s (%zu assets)", sceneDir->mPath.c_str(), sceneDir->mAssetStubs.size());
+                sceneDir->Purge();
+            }
             GetEditorState()->SetAssetDirectory(sceneDir, true);
 
             SharedPtr<Node3D> rootNode = Node::Construct<Node3D>();
@@ -2247,9 +3572,56 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
             std::vector<StaticMesh*> meshList;
             std::unordered_map<std::string, Texture*> textureMap;
 
+            // Pre-scan: determine which mesh indices actually need new assets created.
+            // If ALL nodes referencing a mesh have an octave_asset extra, skip creating that mesh.
+            std::set<uint32_t> neededMeshIndices;
+            std::function<void(aiNode*)> collectNeededMeshes = [&](aiNode* n) {
+                if (!n) return;
+                std::string name = n->mName.C_Str();
+                bool hasAssetExtra = false;
+                if (options.mApplyGltfExtras)
+                {
+                    auto it = extrasMap.find(name);
+                    if (it != extrasMap.end() && (!it->second.mAssetName.empty() || it->second.mAssetUuid != 0))
+                    {
+                        hasAssetExtra = true;
+                    }
+                }
+                if (!hasAssetExtra)
+                {
+                    for (uint32_t m = 0; m < n->mNumMeshes; ++m)
+                    {
+                        neededMeshIndices.insert(n->mMeshes[m]);
+                    }
+                }
+                for (uint32_t c = 0; c < n->mNumChildren; ++c)
+                {
+                    collectNeededMeshes(n->mChildren[c]);
+                }
+            };
+            collectNeededMeshes(scene->mRootNode);
+
+            // Derive which material indices are needed (only those used by needed meshes)
+            std::set<uint32_t> neededMaterialIndices;
+            for (uint32_t idx : neededMeshIndices)
+            {
+                neededMaterialIndices.insert(scene->mMeshes[idx]->mMaterialIndex);
+            }
+
+            LogDebug("Pre-scan: %zu/%u meshes needed, %zu/%u materials needed",
+                neededMeshIndices.size(), scene->mNumMeshes,
+                neededMaterialIndices.size(), scene->mNumMaterials);
+
             uint32_t numMaterials = scene->mNumMaterials;
             for (uint32_t i = 0; i < numMaterials; ++i)
             {
+                // Skip materials not needed by any mesh we're actually creating
+                if (neededMaterialIndices.find(i) == neededMaterialIndices.end())
+                {
+                    materialList.push_back(nullptr);
+                    continue;
+                }
+
                 aiMaterial* aMaterial = scene->mMaterials[i];
                 std::string materialName = options.mPrefix + aMaterial->GetName().C_Str();
 
@@ -2262,8 +3634,21 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 MaterialLite* newMaterial = nullptr;
                 if (options.mImportMaterials)
                 {
-                    materialStub = EditorAddUniqueAsset(materialName.c_str(), sceneDir, MaterialLite::GetStaticType(), true);
-                    newMaterial = static_cast<MaterialLite*>(materialStub->mAsset);
+                    if (isReimport)
+                    {
+                        AssetStub* existingStub = AssetManager::Get()->GetAssetStub(materialName);
+                        if (existingStub && existingStub->mType == MaterialLite::GetStaticType())
+                        {
+                            materialStub = existingStub;
+                            if (!existingStub->mAsset) AssetManager::Get()->LoadAsset(*existingStub);
+                            newMaterial = static_cast<MaterialLite*>(existingStub->mAsset);
+                        }
+                    }
+                    if (materialStub == nullptr)
+                    {
+                        materialStub = EditorAddUniqueAsset(materialName.c_str(), sceneDir, MaterialLite::GetStaticType(), true);
+                        newMaterial = static_cast<MaterialLite*>(materialStub->mAsset);
+                    }
                     newMaterial->SetShadingModel(options.mDefaultShadingModel);
                     newMaterial->SetVertexColorMode(options.mDefaultVertexColorMode);
                 }
@@ -2296,11 +3681,18 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                             bool importTexture = false;
 
-                            std::string assetName = EditorGetAssetNameFromPath(texturePath);
-                            if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
+                            std::string assetName;
+                            if (texturePath.size() > 1 && texturePath[0] == '*')
                             {
-                                // Remove the T_ prefix, reapply later with sceneName.
-                                assetName = assetName.substr(2);
+                                assetName = "Texture" + texturePath.substr(1);
+                            }
+                            else
+                            {
+                                assetName = EditorGetAssetNameFromPath(texturePath);
+                                if (assetName.size() >= 2 && (strncmp(assetName.c_str(), "T_", 2) == 0))
+                                {
+                                    assetName = assetName.substr(2);
+                                }
                             }
 
                             assetName = options.mPrefix + assetName;
@@ -2314,10 +3706,60 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                                 textureToAssign = LoadAsset<Texture>(assetName);
                             }
 
-                            bool embeddedTexturePath = (texturePath.size() > 1 && texturePath[0] == '*');
-                            if (textureToAssign == nullptr && !embeddedTexturePath)
+                            if (isReimport && textureToAssign == nullptr)
                             {
-                                Asset* importedAsset = ImportAsset(importDir + texturePath);
+                                if (options.mReimportTextures)
+                                {
+                                    if (existingStub)
+                                    {
+                                        AssetManager::Get()->PurgeAsset(assetName.c_str());
+                                        existingStub = nullptr;
+                                    }
+                                }
+                                else
+                                {
+                                    textureToAssign = LoadAsset<Texture>(assetName);
+                                }
+                            }
+
+                            bool embeddedTexturePath = (texturePath.size() > 1 && texturePath[0] == '*');
+
+                            // Resolve the texture source to a file path
+                            std::string resolvedTexturePath;
+                            bool tempFileCreated = false;
+
+                            if (textureToAssign == nullptr && embeddedTexturePath)
+                            {
+                                // GLB embedded texture — extract to a temp file for import
+                                int embIndex = std::atoi(texturePath.c_str() + 1);
+                                if (embIndex >= 0 && (uint32_t)embIndex < scene->mNumTextures)
+                                {
+                                    aiTexture* embTex = scene->mTextures[embIndex];
+                                    if (embTex->mHeight == 0)
+                                    {
+                                        // Compressed format (PNG/JPG) — mWidth is the data size in bytes
+                                        std::string ext = ".";
+                                        ext += embTex->achFormatHint;
+                                        resolvedTexturePath = importDir + "__octave_emb_" + std::to_string(embIndex) + ext;
+
+                                        std::ofstream tmpFile(resolvedTexturePath, std::ios::binary);
+                                        if (tmpFile)
+                                        {
+                                            tmpFile.write(reinterpret_cast<const char*>(embTex->pcData), embTex->mWidth);
+                                            tmpFile.close();
+                                            tempFileCreated = true;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (textureToAssign == nullptr)
+                            {
+                                resolvedTexturePath = importDir + texturePath;
+                            }
+
+                            if (textureToAssign == nullptr && !resolvedTexturePath.empty())
+                            {
+                                Asset* importedAsset = ImportAsset(resolvedTexturePath);
                                 OCT_ASSERT(importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType());
 
                                 if (importedAsset == nullptr || importedAsset->GetType() == Texture::GetStaticType())
@@ -2330,6 +3772,11 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                                     AssetManager::Get()->RenameAsset(importedAsset, assetName);
                                     AssetManager::Get()->SaveAsset(assetName);
                                 }
+                            }
+
+                            if (tempFileCreated)
+                            {
+                                std::remove(resolvedTexturePath.c_str());
                             }
 
                             if (textureToAssign != nullptr)
@@ -2357,6 +3804,13 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
             for (uint32_t i = 0; i < numMeshes; ++i)
             {
+                // Skip meshes not needed (all referencing nodes have octave_asset extras)
+                if (neededMeshIndices.find(i) == neededMeshIndices.end())
+                {
+                    meshList.push_back(nullptr);
+                    continue;
+                }
+
                 aiMesh* aMesh = scene->mMeshes[i];
                 std::string meshName = options.mPrefix + aMesh->mName.C_Str();
 
@@ -2370,7 +3824,7 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
                 int32_t uniqueNum = 1;
                 for (int32_t u = 0; u < (int32_t)meshList.size(); ++u)
                 {
-                    if (meshList[u]->GetName() == uniqueName)
+                    if (meshList[u] != nullptr && meshList[u]->GetName() == uniqueName)
                     {
                         uniqueName = meshName + "_" + std::to_string(uniqueNum);
                         uniqueNum++;
@@ -2489,29 +3943,76 @@ void ActionManager::ImportScene(const SceneImportOptions& options)
 
                     newCamera->SetName(aCamera->mName.C_Str());
 
+                    if (options.mApplyGltfExtras)
+                    {
+                        auto camExtIt = extrasMap.find(aCamera->mName.C_Str());
+                        if (camExtIt != extrasMap.end() && camExtIt->second.mMainCamera)
+                        {
+                            newCamera->SetIsMainCamera(true);
+                        }
+                    }
+
                 }
 			}
-            aiNode* node = scene->mRootNode;
-            SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options);
-
-            AssetStub* sceneStub = EditorAddUniqueAsset(fullSceneName.c_str(), sceneDir, Scene::GetStaticType(), true);
-            Scene* newScene = sceneStub->mAsset ? sceneStub->mAsset->As<Scene>() : nullptr;
-
-            if (newScene)
+            LogDebug("Spawning scene nodes — meshList has %zu entries, extrasMap has %zu entries",
+                meshList.size(), extrasMap.size());
+            // Dump all referenced asset names/UUIDs so we can cross-check with engine asset registry
+            for (auto& kv : extrasMap)
             {
-                newScene->Capture(rootNode.Get());
-                AssetManager::Get()->SaveAsset(*sceneStub);
+                if (!kv.second.mAssetName.empty())
+                {
+                    AssetStub* stub = AssetManager::Get()->GetAssetStub(kv.second.mAssetName);
+                    AssetStub* stubByPath = AssetManager::Get()->GetAssetStubByPath(kv.second.mAssetName);
+                    LogDebug("  Pre-spawn check '%s': byName=%s byPath=%s uuidInMap=%s",
+                        kv.first.c_str(),
+                        stub ? stub->mName.c_str() : "NULL",
+                        stubByPath ? stubByPath->mName.c_str() : "NULL",
+                        kv.second.mAssetUuid != 0 ?
+                            (AssetManager::Get()->GetAssetByUuid(kv.second.mAssetUuid) ? "FOUND" : "MISS") : "N/A");
+                }
+            }
+            aiNode* node = scene->mRootNode;
+            SpawnAiNode(node, rootNode.Get(), glm::mat4(1), meshList, options, extrasMap);
 
-                GetEditorState()->OpenEditScene(newScene);
+            if (isReimport)
+            {
+                if (!options.mReimportSceneStub->mAsset)
+                {
+                    AssetManager::Get()->LoadAsset(*options.mReimportSceneStub);
+                }
+                Scene* existingScene = options.mReimportSceneStub->mAsset ?
+                    options.mReimportSceneStub->mAsset->As<Scene>() : nullptr;
+                if (existingScene)
+                {
+                    existingScene->Capture(rootNode.Get());
+                    AssetManager::Get()->SaveAsset(*options.mReimportSceneStub);
+                    GetEditorState()->OpenEditScene(existingScene);
+                }
+                else
+                {
+                    LogError("Failed to access existing scene asset for reimport");
+                }
             }
             else
             {
-                LogError("Failed to create new scene asset for scene import");
+                AssetStub* sceneStub = EditorAddUniqueAsset(fullSceneName.c_str(), sceneDir, Scene::GetStaticType(), true);
+                Scene* newScene = sceneStub->mAsset ? sceneStub->mAsset->As<Scene>() : nullptr;
+
+                if (newScene)
+                {
+                    newScene->Capture(rootNode.Get());
+                    AssetManager::Get()->SaveAsset(*sceneStub);
+                    GetEditorState()->OpenEditScene(newScene);
+                }
+                else
+                {
+                    LogError("Failed to create new scene asset for scene import");
+                }
             }
         }
         else
         {
-            LogError("Failed to import scene. File format must be .glb or .gltf");
+            LogError("Failed to import scene. File format must be .glb, .gltf, .dae, or .blend");
         }
     }
 }
@@ -2520,12 +4021,8 @@ void ActionManager::BeginImportScene()
 {
     if (GetEngineState()->mProjectPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportSceneCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportSceneCallback(filePaths);
-#endif
     }
     else
     {
@@ -2539,12 +4036,8 @@ void ActionManager::BeginImportCamera()
 	std::string  prevIOPath = GetEngineState()->mProjectPath;
     if (prevIOPath != "")
     {
-#if USE_IMGUI_FILE_BROWSER
-        EditorOpenFileBrowser(HandleImportCameraCallback, false);
-#else
         std::vector<std::string> filePaths = SYS_OpenFileDialog();
         HandleImportCameraCallback(filePaths);
-#endif
     }
     else
     {
@@ -2552,6 +4045,40 @@ void ActionManager::BeginImportCamera()
     }
 
 }
+
+static void HandleReimportSceneCallback(const std::vector<std::string>& filePaths)
+{
+    if (filePaths.size() > 1)
+    {
+        LogWarning("Can only reimport one scene at a time. Ignoring extra files.");
+    }
+
+    if (filePaths.size() >= 1)
+    {
+        GetEditorState()->mPendingReimportScenePath = filePaths[0];
+    }
+}
+
+void ActionManager::BeginReimportScene(AssetStub* sceneStub)
+{
+    if (GetEngineState()->mProjectPath == "")
+    {
+        LogWarning("Cannot reimport scene. No project loaded.");
+        return;
+    }
+
+    if (sceneStub == nullptr || sceneStub->mType != Scene::GetStaticType())
+    {
+        LogWarning("Cannot reimport scene. Invalid scene asset.");
+        return;
+    }
+
+    GetEditorState()->mPendingReimportSceneStub = sceneStub;
+
+    std::vector<std::string> filePaths = SYS_OpenFileDialog();
+    HandleReimportSceneCallback(filePaths);
+}
+
 void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*, std::string> >& assets,
     const char* headerPath,
     const char* sourcePath)
@@ -2580,7 +4107,7 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         {
             AssetStub* stub = assets[i].first;
             const std::string& packPath = assets[i].second;
-            std::string dataVarName = stub->mName + "_Data";
+            std::string dataVarName = SanitizeCppIdentifier(stub->mName) + "_Data";
             uint32_t dataSize = 0;
 
             std::string sourceString;
@@ -2845,12 +4372,18 @@ void ActionManager::DeleteAsset(AssetStub* stub)
 
         if (GetEditorState()->GetInspectedObject() == stub->mAsset)
         {
-            GetEditorState()->InspectObject(nullptr);
+            GetEditorState()->InspectObject(nullptr, true);
         }
 
+        GetEditorState()->RemoveFromInspectHistory(stub->mAsset);
+
         std::string path = stub->mPath;
+        std::string assetName = stub->mName;
         AssetManager::Get()->PurgeAsset(stub->mName.c_str());
         SYS_RemoveFile(path.c_str());
+
+        EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+        if (hookMgr != nullptr) hookMgr->FireOnAssetDeleted(assetName.c_str());
     }
     else
     {
@@ -3690,6 +5223,555 @@ void ActionSetInstanceData::Reverse()
             mInstMesh->AddInstanceData(mPrevData[i], mStartIndex + i);
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// ActionReplaceWithAsset
+// ---------------------------------------------------------------------------
+
+ActionReplaceWithAsset::ActionReplaceWithAsset(Asset* asset, const std::vector<Node*>& nodes)
+{
+    OCT_ASSERT(asset != nullptr);
+    mAsset = asset;
+
+    TypeId assetType = asset->GetType();
+
+    if (assetType == StaticMesh::GetStaticType())
+    {
+        mMode = ReplaceMode::StaticMesh;
+        for (Node* n : nodes)
+        {
+            StaticMesh3D* sm = n->As<StaticMesh3D>();
+            if (sm)
+            {
+                mMeshNodes.push_back(sm);
+                mPrevMeshes.push_back(StaticMeshRef(sm->GetStaticMesh()));
+            }
+        }
+    }
+    else if (assetType == MaterialLite::GetStaticType() ||
+             assetType == MaterialBase::GetStaticType() ||
+             assetType == MaterialInstance::GetStaticType())
+    {
+        mMode = ReplaceMode::Material;
+        for (Node* n : nodes)
+        {
+            Mesh3D* mesh = n->As<Mesh3D>();
+            if (mesh)
+            {
+                mMatNodes.push_back(mesh);
+                mPrevMaterials.push_back(MaterialRef(mesh->GetMaterialOverride()));
+            }
+        }
+    }
+    else if (assetType == Scene::GetStaticType())
+    {
+        mMode = ReplaceMode::Scene;
+        for (Node* n : nodes)
+        {
+            Node3D* node3d = n->As<Node3D>();
+            if (node3d && node3d->GetParent())
+            {
+                SceneReplaceEntry entry;
+                entry.mOriginal = ResolvePtr(n);
+                entry.mParent = ResolvePtr(n->GetParent());
+                entry.mChildIndex = n->GetParent()->FindChildIndex(n);
+                mSceneEntries.push_back(entry);
+            }
+        }
+    }
+    else
+    {
+        LogWarning("ActionReplaceWithAsset: Unsupported asset type.");
+        mMode = ReplaceMode::Invalid;
+    }
+}
+
+void ActionReplaceWithAsset::Execute()
+{
+    Action::Execute();
+
+    switch (mMode)
+    {
+    case ReplaceMode::StaticMesh:
+    {
+        StaticMesh* mesh = mAsset.Get<StaticMesh>();
+        for (uint32_t i = 0; i < mMeshNodes.size(); ++i)
+        {
+            mMeshNodes[i]->SetStaticMesh(mesh);
+        }
+        break;
+    }
+    case ReplaceMode::Material:
+    {
+        Material* mat = mAsset.Get<Material>();
+        for (uint32_t i = 0; i < mMatNodes.size(); ++i)
+        {
+            mMatNodes[i]->SetMaterialOverride(mat);
+        }
+        break;
+    }
+    case ReplaceMode::Scene:
+    {
+        Scene* scene = mAsset.Get<Scene>();
+        if (scene == nullptr)
+            break;
+
+        for (uint32_t i = 0; i < mSceneEntries.size(); ++i)
+        {
+            SceneReplaceEntry& entry = mSceneEntries[i];
+
+            if (entry.mSpawnedNode == nullptr)
+            {
+                // First execute: spawn and position
+                NodePtr spawned = scene->Instantiate();
+                if (spawned == nullptr)
+                    continue;
+
+                Node3D* orig3d = entry.mOriginal->As<Node3D>();
+                Node3D* spawned3d = spawned->As<Node3D>();
+
+                entry.mParent->AddChild(spawned.Get(), entry.mChildIndex);
+
+                if (orig3d && spawned3d)
+                {
+                    spawned3d->SetWorldPosition(orig3d->GetWorldPosition());
+                    spawned3d->SetWorldRotation(orig3d->GetWorldRotationQuat());
+                    spawned3d->SetWorldScale(orig3d->GetWorldScale());
+                }
+
+                entry.mOriginal->Detach();
+                ActionManager::Get()->ExileNode(entry.mOriginal);
+                entry.mSpawnedNode = spawned;
+            }
+            else
+            {
+                // Re-execute: restore spawned, exile original
+                ActionManager::Get()->RestoreExiledNode(entry.mSpawnedNode);
+                entry.mParent->AddChild(entry.mSpawnedNode.Get(), entry.mChildIndex);
+
+                entry.mOriginal->Detach();
+                ActionManager::Get()->ExileNode(entry.mOriginal);
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void ActionReplaceWithAsset::Reverse()
+{
+    Action::Reverse();
+
+    switch (mMode)
+    {
+    case ReplaceMode::StaticMesh:
+    {
+        for (uint32_t i = 0; i < mMeshNodes.size(); ++i)
+        {
+            mMeshNodes[i]->SetStaticMesh(mPrevMeshes[i].Get<StaticMesh>());
+        }
+        break;
+    }
+    case ReplaceMode::Material:
+    {
+        for (uint32_t i = 0; i < mMatNodes.size(); ++i)
+        {
+            mMatNodes[i]->SetMaterialOverride(mPrevMaterials[i].Get<Material>());
+        }
+        break;
+    }
+    case ReplaceMode::Scene:
+    {
+        for (uint32_t i = 0; i < mSceneEntries.size(); ++i)
+        {
+            SceneReplaceEntry& entry = mSceneEntries[i];
+
+            if (entry.mSpawnedNode != nullptr)
+            {
+                entry.mSpawnedNode->Detach();
+                ActionManager::Get()->ExileNode(entry.mSpawnedNode);
+            }
+
+            ActionManager::Get()->RestoreExiledNode(entry.mOriginal);
+            entry.mParent->AddChild(entry.mOriginal.Get(), entry.mChildIndex);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ActionReplaceWithInstancedMesh
+// ---------------------------------------------------------------------------
+
+ActionReplaceWithInstancedMesh::ActionReplaceWithInstancedMesh(const std::vector<Node*>& nodes, bool merge)
+{
+    // Collect valid StaticMesh3D nodes (excluding InstancedMesh3D)
+    std::vector<StaticMesh3D*> validNodes;
+    for (Node* n : nodes)
+    {
+        StaticMesh3D* sm = n->As<StaticMesh3D>();
+        if (sm && !sm->IsInstancedMesh3D() && sm->GetStaticMesh() != nullptr)
+        {
+            validNodes.push_back(sm);
+        }
+    }
+
+    if (merge)
+    {
+        // Group by mesh pointer: all nodes sharing a mesh become one InstancedMesh3D
+        std::map<StaticMesh*, std::vector<StaticMesh3D*>> groups;
+        for (StaticMesh3D* sm : validNodes)
+        {
+            groups[sm->GetStaticMesh()].push_back(sm);
+        }
+
+        for (auto& pair : groups)
+        {
+            GroupEntry group;
+            StaticMesh3D* firstNode = pair.second[0];
+
+            for (StaticMesh3D* sm : pair.second)
+            {
+                group.mOriginalNodes.push_back(ResolvePtr(sm));
+                group.mOriginalParents.push_back(ResolvePtr(sm->GetParent()));
+                group.mOriginalChildIndices.push_back(
+                    sm->GetParent() ? sm->GetParent()->FindChildIndex(sm) : -1);
+            }
+
+            group.mInstancedParent = ResolvePtr(firstNode->GetParent());
+            group.mInstancedChildIndex = firstNode->GetParent()
+                ? firstNode->GetParent()->FindChildIndex(firstNode)
+                : -1;
+
+            mGroups.push_back(group);
+        }
+    }
+    else
+    {
+        // 1:1 conversion: each StaticMesh3D becomes its own InstancedMesh3D
+        for (StaticMesh3D* sm : validNodes)
+        {
+            GroupEntry group;
+            group.mOriginalNodes.push_back(ResolvePtr(sm));
+            group.mOriginalParents.push_back(ResolvePtr(sm->GetParent()));
+            group.mOriginalChildIndices.push_back(
+                sm->GetParent() ? sm->GetParent()->FindChildIndex(sm) : -1);
+
+            group.mInstancedParent = ResolvePtr(sm->GetParent());
+            group.mInstancedChildIndex = sm->GetParent()
+                ? sm->GetParent()->FindChildIndex(sm)
+                : -1;
+
+            mGroups.push_back(group);
+        }
+    }
+}
+
+void ActionReplaceWithInstancedMesh::Execute()
+{
+    Action::Execute();
+
+    if (mFirstExecute)
+    {
+        mFirstExecute = false;
+
+        for (GroupEntry& group : mGroups)
+        {
+            // Create InstancedMesh3D
+            NodePtr instNode = Node::Construct(InstancedMesh3D::GetStaticType());
+            InstancedMesh3D* inst = instNode->As<InstancedMesh3D>();
+
+            StaticMesh3D* firstSrc = group.mOriginalNodes[0]->As<StaticMesh3D>();
+            inst->SetStaticMesh(firstSrc->GetStaticMesh());
+            inst->SetMaterialOverride(firstSrc->GetMaterialOverride());
+            inst->SetName(firstSrc->GetStaticMesh()->GetName() + "_Instanced");
+
+            // Populate instance data from each source node
+            for (uint32_t i = 0; i < group.mOriginalNodes.size(); ++i)
+            {
+                Node3D* src3d = group.mOriginalNodes[i]->As<Node3D>();
+                if (src3d)
+                {
+                    MeshInstanceData data;
+                    data.mPosition = src3d->GetPosition();
+                    data.mRotation = src3d->GetWorldRotationEuler();
+                    data.mScale = src3d->GetWorldScale();
+                    inst->AddInstanceData(data);
+                }
+            }
+
+            // Attach to parent
+            if (group.mInstancedParent != nullptr)
+            {
+                group.mInstancedParent->AddChild(instNode.Get(), group.mInstancedChildIndex);
+            }
+
+            group.mInstancedNode = instNode;
+
+            // Exile all original nodes
+            for (uint32_t i = 0; i < group.mOriginalNodes.size(); ++i)
+            {
+                group.mOriginalNodes[i]->Detach();
+                ActionManager::Get()->ExileNode(group.mOriginalNodes[i]);
+            }
+        }
+    }
+    else
+    {
+        // Re-execute: restore instanced nodes, exile originals
+        for (GroupEntry& group : mGroups)
+        {
+            ActionManager::Get()->RestoreExiledNode(group.mInstancedNode);
+            if (group.mInstancedParent != nullptr)
+            {
+                group.mInstancedParent->AddChild(group.mInstancedNode.Get(), group.mInstancedChildIndex);
+            }
+
+            for (uint32_t i = 0; i < group.mOriginalNodes.size(); ++i)
+            {
+                group.mOriginalNodes[i]->Detach();
+                ActionManager::Get()->ExileNode(group.mOriginalNodes[i]);
+            }
+        }
+    }
+
+    // Select the first instanced mesh
+    if (!mGroups.empty() && mGroups[0].mInstancedNode != nullptr)
+    {
+        GetEditorState()->SetSelectedNode(mGroups[0].mInstancedNode.Get());
+    }
+}
+
+void ActionReplaceWithInstancedMesh::Reverse()
+{
+    Action::Reverse();
+
+    for (GroupEntry& group : mGroups)
+    {
+        // Remove instanced node
+        if (group.mInstancedNode != nullptr)
+        {
+            group.mInstancedNode->Detach();
+            ActionManager::Get()->ExileNode(group.mInstancedNode);
+        }
+
+        // Restore originals
+        for (uint32_t i = 0; i < group.mOriginalNodes.size(); ++i)
+        {
+            ActionManager::Get()->RestoreExiledNode(group.mOriginalNodes[i]);
+            if (group.mOriginalParents[i] != nullptr)
+            {
+                group.mOriginalParents[i]->AddChild(
+                    group.mOriginalNodes[i].Get(),
+                    group.mOriginalChildIndices[i]);
+            }
+        }
+    }
+
+    // Select first original node
+    if (!mGroups.empty() && !mGroups[0].mOriginalNodes.empty())
+    {
+        GetEditorState()->SetSelectedNode(mGroups[0].mOriginalNodes[0].Get());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ActionReplaceWithStaticMesh
+// ---------------------------------------------------------------------------
+
+ActionReplaceWithStaticMesh::ActionReplaceWithStaticMesh(const std::vector<Node*>& nodes)
+{
+    for (Node* n : nodes)
+    {
+        InstancedMesh3D* inst = n->As<InstancedMesh3D>();
+        if (inst && inst->GetNumInstances() > 0)
+        {
+            SplitEntry entry;
+            entry.mOriginalNode = ResolvePtr(n);
+            entry.mOriginalParent = ResolvePtr(n->GetParent());
+            entry.mOriginalChildIndex = n->GetParent()
+                ? n->GetParent()->FindChildIndex(n)
+                : -1;
+            mEntries.push_back(entry);
+        }
+    }
+}
+
+void ActionReplaceWithStaticMesh::Execute()
+{
+    Action::Execute();
+
+    if (mFirstExecute)
+    {
+        mFirstExecute = false;
+
+        for (SplitEntry& entry : mEntries)
+        {
+            InstancedMesh3D* inst = entry.mOriginalNode->As<InstancedMesh3D>();
+            StaticMesh* mesh = inst->GetStaticMesh();
+            Material* mat = inst->GetMaterialOverride();
+
+            for (uint32_t i = 0; i < inst->GetNumInstances(); ++i)
+            {
+                const MeshInstanceData& instData = inst->GetInstanceData(i);
+
+                NodePtr newNode = Node::Construct(StaticMesh3D::GetStaticType());
+                StaticMesh3D* sm = newNode->As<StaticMesh3D>();
+                sm->SetStaticMesh(mesh);
+                sm->SetMaterialOverride(mat);
+                sm->SetName(mesh ? mesh->GetName() : "StaticMesh3D");
+
+                // Compute world transform from instance data
+                // InstancedMesh3D stores world-space transforms in instance data
+                sm->SetWorldPosition(instData.mPosition);
+                sm->SetWorldRotation(instData.mRotation);
+                sm->SetWorldScale(instData.mScale);
+
+                if (entry.mOriginalParent != nullptr)
+                {
+                    entry.mOriginalParent->AddChild(newNode.Get());
+                }
+
+                entry.mCreatedNodes.push_back(newNode);
+            }
+
+            // Exile original
+            entry.mOriginalNode->Detach();
+            ActionManager::Get()->ExileNode(entry.mOriginalNode);
+        }
+    }
+    else
+    {
+        // Re-execute: restore created, exile originals
+        for (SplitEntry& entry : mEntries)
+        {
+            for (uint32_t i = 0; i < entry.mCreatedNodes.size(); ++i)
+            {
+                ActionManager::Get()->RestoreExiledNode(entry.mCreatedNodes[i]);
+                if (entry.mOriginalParent != nullptr)
+                {
+                    entry.mOriginalParent->AddChild(entry.mCreatedNodes[i].Get());
+                }
+            }
+
+            entry.mOriginalNode->Detach();
+            ActionManager::Get()->ExileNode(entry.mOriginalNode);
+        }
+    }
+
+    // Select first created node
+    if (!mEntries.empty() && !mEntries[0].mCreatedNodes.empty())
+    {
+        GetEditorState()->SetSelectedNode(mEntries[0].mCreatedNodes[0].Get());
+    }
+}
+
+void ActionReplaceWithStaticMesh::Reverse()
+{
+    Action::Reverse();
+
+    for (SplitEntry& entry : mEntries)
+    {
+        // Remove created nodes
+        for (uint32_t i = 0; i < entry.mCreatedNodes.size(); ++i)
+        {
+            entry.mCreatedNodes[i]->Detach();
+            ActionManager::Get()->ExileNode(entry.mCreatedNodes[i]);
+        }
+
+        // Restore original
+        ActionManager::Get()->RestoreExiledNode(entry.mOriginalNode);
+        if (entry.mOriginalParent != nullptr)
+        {
+            entry.mOriginalParent->AddChild(
+                entry.mOriginalNode.Get(),
+                entry.mOriginalChildIndex);
+        }
+    }
+
+    // Select first original
+    if (!mEntries.empty())
+    {
+        GetEditorState()->SetSelectedNode(mEntries[0].mOriginalNode.Get());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// EXE_ methods for replace actions
+// ---------------------------------------------------------------------------
+
+void ActionManager::EXE_ReplaceSelectedWithAsset(Asset* asset, const std::vector<Node*>& nodes)
+{
+    if (asset == nullptr || nodes.empty())
+    {
+        LogWarning("EXE_ReplaceSelectedWithAsset: Invalid asset or empty node list.");
+        return;
+    }
+
+    ActionReplaceWithAsset* action = new ActionReplaceWithAsset(asset, nodes);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_ReplaceWithInstancedMesh(const std::vector<Node*>& nodes, bool merge)
+{
+    if (nodes.empty())
+        return;
+
+    ActionReplaceWithInstancedMesh* action = new ActionReplaceWithInstancedMesh(nodes, merge);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes)
+{
+    if (nodes.empty())
+        return;
+
+    ActionReplaceWithStaticMesh* action = new ActionReplaceWithStaticMesh(nodes);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+// ======= Timeline Actions =======
+
+void ActionManager::EXE_TimelineAddTrack(Timeline* timeline, TypeId trackType)
+{
+    ActionTimelineAddTrack* action = new ActionTimelineAddTrack(timeline, trackType);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineRemoveTrack(Timeline* timeline, int32_t trackIndex)
+{
+    ActionTimelineRemoveTrack* action = new ActionTimelineRemoveTrack(timeline, trackIndex);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineAddClip(Timeline* timeline, int32_t trackIndex, TypeId clipType, float startTime, float duration)
+{
+    ActionTimelineAddClip* action = new ActionTimelineAddClip(timeline, trackIndex, clipType, startTime, duration);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineRemoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex)
+{
+    ActionTimelineRemoveClip* action = new ActionTimelineRemoveClip(timeline, trackIndex, clipIndex);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineMoveClip(Timeline* timeline, int32_t trackIndex, int32_t clipIndex, float oldStartTime, float newStartTime)
+{
+    ActionTimelineMoveClip* action = new ActionTimelineMoveClip(timeline, trackIndex, clipIndex, oldStartTime, newStartTime);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_TimelineBindTrack(Timeline* timeline, int32_t trackIndex, uint64_t oldUuid, uint64_t newUuid, const std::string& oldName, const std::string& newName)
+{
+    ActionTimelineBindTrack* action = new ActionTimelineBindTrack(timeline, trackIndex, oldUuid, newUuid, oldName, newName);
+    ActionManager::Get()->ExecuteAction(action);
 }
 
 // Static storage for assets needing upgrade (used in both headless and editor modes)

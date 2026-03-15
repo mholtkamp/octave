@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "OctaveAPI.h"
 #include "Object.h"
 #include "Assertion.h"
 #include "EngineTypes.h"
@@ -62,7 +63,7 @@ struct NodeNetData
 };
 #endif
 
-class Node : public Object
+class OCTAVE_API Node : public Object
 {
 public:
 
@@ -117,6 +118,10 @@ public:
         btPersistentManifold* manifold);
 
     NodeId GetNodeId() const;
+
+    uint64_t GetPersistentUuid() const;
+    void SetPersistentUuid(uint64_t uuid);
+    void EnsurePersistentUuid();
 
     void EmitSignal(const std::string& name, const std::vector<Datum>& args);
     void ConnectSignal(const std::string& name, Node* listener, SignalHandlerFP func);
@@ -179,6 +184,9 @@ public:
 
     void SetScene(Scene* scene);
     Scene* GetScene();
+
+    uint8_t GetTargetScreen() const { return mTargetScreen; }
+    void SetTargetScreen(uint8_t screen) { mTargetScreen = screen; }
 
     std::vector<NetDatum>& GetReplicatedData();
 
@@ -463,8 +471,10 @@ protected:
 
     // Merged from Actor
     SceneRef mScene;
+    uint8_t mTargetScreen = 0; // 0 = Top Screen, 1 = Bottom Screen
     std::vector<std::string> mTags;
     NodeId mNodeId = INVALID_NODE_ID;
+    uint64_t mPersistentUuid = 0;
 
     // Network Data
     // This is only about 44 bytes, so right now, we will keep this data as direct members of Node.

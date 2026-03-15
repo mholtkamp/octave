@@ -38,6 +38,11 @@ public:
     static Renderer* Get();
 
     void Render(World* world, int32_t screenIndex);
+#if EDITOR
+    void RenderSecondScreen(World* world, class Image* colorTarget, class Image* depthTarget,
+                            uint32_t width, uint32_t height, class Camera3D* cameraOverride = nullptr,
+                            int32_t targetScreen = -1);
+#endif
     ~Renderer();
     void Initialize();
 
@@ -119,6 +124,11 @@ public:
     void SetColorScale(float colorScale);
     float GetColorScale() const;
     float GetColorScaleInverse() const;
+
+    void SetSelectedColor(const glm::vec4& color);
+    glm::vec4 GetSelectedColor() const;
+    void SetSelectedCheckerSize(float size);
+    float GetSelectedCheckerSize() const;
 
     bool IsPostProcessPassEnabled(PostProcessPassId passId) const;
     void EnablePostProcessPass(PostProcessPassId passId, bool enable);
@@ -219,6 +229,7 @@ private:
     World* mCurrentWorld = nullptr;
     uint32_t mFrameIndex = 0;
     uint32_t mScreenIndex = 0;
+    int32_t mTargetScreenFilter = -1;  // -1 = no filter, 0 = top screen, 1 = bottom screen
     uint32_t mFrameNumber = 0;
     float mGlobalUiScale = 1.0f;
     DebugMode mDebugMode = DEBUG_NONE;
@@ -233,6 +244,8 @@ private:
     float mLightFadeSpeed = 1.0f;
     glm::vec4 mClearColor = {};
     float mColorScale = 1.0f;
+    glm::vec4 mSelectedColor = { 0.2f, 0.1f, 1.0f, 0.6f };
+    float mSelectedCheckerSize = 8.0f;
 
     // Path tracing
     uint32_t mRaysPerPixel = 4;

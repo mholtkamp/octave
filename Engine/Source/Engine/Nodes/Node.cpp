@@ -597,6 +597,13 @@ void Node::GatherProperties(std::vector<Property>& outProps)
 #endif
     }
 
+    {
+        SCOPED_CATEGORY("Screen");
+        static const char* sTargetScreenNames[] = { "Top Screen", "Bottom Screen" };
+        outProps.push_back(Property(DatumType::Byte, "Target Screen", this, &mTargetScreen,
+            1, nullptr, NULL_DATUM, 2, sTargetScreenNames));
+    }
+
     if (mScript != nullptr)
     {
         mScript->AppendScriptProperties(outProps);
@@ -734,6 +741,24 @@ void Node::OnCollision(
 NodeId Node::GetNodeId() const
 {
     return mNodeId;
+}
+
+uint64_t Node::GetPersistentUuid() const
+{
+    return mPersistentUuid;
+}
+
+void Node::SetPersistentUuid(uint64_t uuid)
+{
+    mPersistentUuid = uuid;
+}
+
+void Node::EnsurePersistentUuid()
+{
+    if (mPersistentUuid == 0)
+    {
+        mPersistentUuid = Maths::GenerateAssetUuid();
+    }
 }
 
 void Node::EmitSignal(const std::string& name, const std::vector<Datum>& args)
@@ -914,7 +939,7 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
 
             for (auto& prop : props)
             {
-                if (prop.mType == DatumType::Node &&
+                if (IsNodeDatumType(prop.mType) &&
                     prop.mCount > 0)
                 {
                     Datum extraData;

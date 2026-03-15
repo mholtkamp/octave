@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "OctaveAPI.h"
 #include "Assertion.h"
 #include "Maths.h"
 #include "Swap.h"
@@ -16,7 +17,7 @@
 class AssetRef;
 struct AsyncLoadRequest;
 
-class Stream
+class OCTAVE_API Stream
 {
 public:
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "System/SystemTypes.h"
 
 #include <string>
@@ -21,6 +22,7 @@ std::string SYS_GetOctavePath();
 std::string SYS_GetCurrentDirectoryPath();
 std::string SYS_GetAbsolutePath(const std::string& relativePath);
 void SYS_ExplorerOpenDirectory(const std::string& dirPath);
+void SYS_OpenFileWithDefaultApp(const std::string& filePath);
 void SYS_SetWorkingDirectory(const std::string& dirPath);
 bool SYS_CreateDirectory(const char* dirPath);
 void SYS_RemoveDirectory(const char* dirPath);
@@ -56,6 +58,20 @@ uint64_t SYS_GetTimeMicroseconds();
 // Process
 void SYS_Exec(const char* cmd, std::string* output = nullptr);
 
+/**
+ * @brief Execute a command with full output capture.
+ *
+ * Unlike SYS_Exec which only captures the first 1024 bytes,
+ * this function captures complete stdout/stderr output.
+ *
+ * @param cmd Command to execute
+ * @param outStdout Pointer to receive stdout (can be nullptr)
+ * @param outStderr Pointer to receive stderr (can be nullptr)
+ * @param outExitCode Pointer to receive exit code (can be nullptr)
+ * @return true if command executed successfully
+ */
+bool SYS_ExecFull(const char* cmd, std::string* outStdout, std::string* outStderr, int* outExitCode);
+
 // Memory
 void* SYS_AlignedMalloc(uint32_t size, uint32_t alignment);
 void SYS_AlignedFree(void* pointer);
@@ -74,7 +90,7 @@ std::string SYS_GetClipboardText();
 
 // Misc
 void SYS_Log(LogSeverity severity, const char* format, va_list arg);
-void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
+OCTAVE_API void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber);
 void SYS_Alert(const char* message);
 void SYS_UpdateConsole();
 int32_t SYS_GetPlatformTier();

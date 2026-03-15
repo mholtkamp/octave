@@ -4,7 +4,7 @@
 
 #include "Assets/SoundWave.h"
 
-class Audio3D : public Node3D
+class OCTAVE_API Audio3D : public Node3D
 {
 public:
 

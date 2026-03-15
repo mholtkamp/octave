@@ -2,7 +2,7 @@
 
 #include "Light3d.h"
 
-class DirectionalLight3D : public Light3D
+class OCTAVE_API DirectionalLight3D : public Light3D
 {
 public:
 

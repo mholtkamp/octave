@@ -350,14 +350,14 @@ void SYS_Update()
         }
     }
 
-    if (INP_IsKeyDown(KEY_ALT_L) || INP_IsKeyDown(KEY_ALT_R))
+    if (INP_IsKeyDown(OCTAVE_KEY_ALT_L) || INP_IsKeyDown(OCTAVE_KEY_ALT_R))
     {
-        if (INP_IsKeyJustDown(KEY_ENTER))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_ENTER))
         {
             SYS_SetFullscreen(!GetEngineState()->mSystem.mFullscreen);
         }
 
-        if (INP_IsKeyJustDown(KEY_F4))
+        if (INP_IsKeyJustDown(OCTAVE_KEY_F4))
         {
             Quit();
         }
@@ -500,8 +500,9 @@ void SYS_RemoveDirectory(const char* dirPath)
             path[i] = '\\';
         }
     }
-
-    std::string cmd = std::string("rmdir ") + path + " /s /q";
+    // check if path includes a space, if so wrap in quotes
+    std::string quotedPath = "\"" + path + "\"";
+    std::string cmd = "rmdir /s /q " + quotedPath;
     SYS_Exec(cmd.c_str());
 }
 
@@ -523,7 +524,7 @@ void SYS_OpenDirectory(const std::string& dirPath, DirEntry& outDirEntry)
     outDirEntry.mFindHandle = FindFirstFile(dirString.c_str(), &outDirEntry.mFindData);
     if (outDirEntry.mFindHandle == INVALID_HANDLE_VALUE)
     {
-        LogError("Invalid first file");
+        // Directory doesn't exist or is empty — not an error, caller checks mValid.
         return;
     }
 
@@ -1133,7 +1134,7 @@ void SYS_Log(LogSeverity severity, const char* format, va_list arg)
     OutputDebugString("\n");
 }
 
-void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
+OCTAVE_API void SYS_Assert(const char* exprString, const char* fileString, uint32_t lineNumber)
 {
     const char* fileName = strrchr(fileString, '\\') ? strrchr(fileString, '\\') + 1 : fileString;
     LogError("[Assert] %s, %s, line %d", exprString, fileName, lineNumber);
@@ -1258,6 +1259,11 @@ void SYS_GetWindowRect(int32_t& outX, int32_t& outY, int32_t& outWidth, int32_t&
 void SYS_ExplorerOpenDirectory(const std::string& dirPath)
 {
     ShellExecute(NULL, "open", dirPath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+}
+
+void SYS_OpenFileWithDefaultApp(const std::string& filePath)
+{
+    ShellExecute(NULL, "open", filePath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
 }
 
 #endif

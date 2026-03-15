@@ -82,7 +82,7 @@ struct Animation
     std::vector<AnimEventTrack> mEventTracks;
 };
 
-class SkeletalMesh : public Asset
+class OCTAVE_API SkeletalMesh : public Asset
 {
 public:
 

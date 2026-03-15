@@ -1109,14 +1109,85 @@ void GFX_DrawQuad(Quad* quad)
     gGxContext.mLighting.mMaterialSrc = GX_SRC_VTX;
     SetupLightingChannels();
 
-    GX_Begin(GX_TRIANGLESTRIP, GX_VTXFMT0, 4);
+    uint32_t numVertices = quad->GetNumVertices();
+    GX_Begin(GX_TRIANGLEFAN, GX_VTXFMT0, numVertices);
 
-    for (uint32_t i = 0; i < 4; ++i)
+    for (uint32_t i = 0; i < numVertices; ++i)
     {
         GX_Position2f32(vertices[i].mPosition.x,
             vertices[i].mPosition.y);
 
         // Color needs to come before texcoord for some reason.
+        uint8_t* color = (uint8_t*)&(vertices[i].mColor);
+        GX_Color4u8(color[3], color[2], color[1], color[0]);
+
+        GX_TexCoord2f32(vertices[i].mTexcoord.x,
+            vertices[i].mTexcoord.y);
+    }
+
+    GX_End();
+}
+
+// Quad Border
+void GFX_CreateQuadBorderResource(Quad* quad)
+{
+}
+
+void GFX_DestroyQuadBorderResource(Quad* quad)
+{
+}
+
+void GFX_UpdateQuadBorderResourceVertexData(Quad* quad)
+{
+}
+
+void GFX_DrawQuadBorder(Quad* quad)
+{
+    Renderer* renderer = Renderer::Get();
+    Texture* texture = renderer->mWhiteTexture.Get<Texture>();
+
+    GX_SetNumTevStages(2);
+    GX_SetNumTexGens(1);
+    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    GX_LoadTexObj(&texture->GetResource()->mGxTexObj, GX_TEXMAP0);
+
+    glm::vec4 borderColor = glm::clamp(quad->GetBorderColor(), 0.0f, 1.0f);
+    GX_SetTevColor(GX_TEVREG0, { uint8_t(borderColor.r * 255.0f),
+                                 uint8_t(borderColor.g * 255.0f),
+                                 uint8_t(borderColor.b * 255.0f),
+                                 uint8_t(borderColor.a * 255.0f) });
+
+    GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_C0, GX_CC_CPREV, GX_CC_ZERO);
+    GX_SetTevAlphaIn(GX_TEVSTAGE1, GX_CA_ZERO, GX_CA_A0, GX_CA_APREV, GX_CA_ZERO);
+    GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORDNULL, GX_TEXMAP_DISABLE, GX_COLOR0A0);
+
+    GX_SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
+    GX_SetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+
+    Mtx modelViewUI;
+    guMtxIdentity(modelViewUI);
+    ApplyWidgetRotation(modelViewUI, quad);
+    GX_LoadPosMtxImm(modelViewUI, GX_PNMTX0);
+
+    VertexUI* vertices = quad->GetBorderVertices();
+
+    gGxContext.mLighting.mEnabled = false;
+    gGxContext.mLighting.mMaterialSrc = GX_SRC_VTX;
+    SetupLightingChannels();
+
+    uint32_t numVertices = quad->GetBorderNumVertices();
+    GX_Begin(GX_TRIANGLEFAN, GX_VTXFMT0, numVertices);
+
+    for (uint32_t i = 0; i < numVertices; ++i)
+    {
+        GX_Position2f32(vertices[i].mPosition.x,
+            vertices[i].mPosition.y);
+
         uint8_t* color = (uint8_t*)&(vertices[i].mColor);
         GX_Color4u8(color[3], color[2], color[1], color[0]);
 

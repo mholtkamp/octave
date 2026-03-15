@@ -1,14 +1,15 @@
 #pragma once
 
+#include "OctaveAPI.h"
 #include "Utilities.h"
 #include "EngineTypes.h"
 #include "ScriptAutoReg.h"
 #include <string>
 #include <stdint.h>
 
-int CreateClassMetatable(const char* className, const char* classFlag, const char* parentClassName);
+OCTAVE_API int CreateClassMetatable(const char* className, const char* classFlag, const char* parentClassName);
 
-class Object
+class OCTAVE_API Object
 {
 public:
     virtual ~Object() = default;

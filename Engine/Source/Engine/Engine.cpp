@@ -7,6 +7,24 @@
 #include "Log.h"
 #include "Script.h"
 #include "Assets/Scene.h"
+#include "Assets/Timeline.h"
+#include "Assets/NodeGraphAsset.h"
+#include "Timeline/TimelineTrack.h"
+#include "Timeline/TimelineClip.h"
+#include "Timeline/Tracks/TransformTrack.h"
+#include "Timeline/Tracks/TransformClip.h"
+#include "Timeline/Tracks/AudioTrack.h"
+#include "Timeline/Tracks/AudioClip.h"
+#include "Timeline/Tracks/AnimationTrack.h"
+#include "Timeline/Tracks/AnimationClip.h"
+#include "Timeline/Tracks/ScriptValueTrack.h"
+#include "Timeline/Tracks/ScriptValueClip.h"
+#include "Timeline/Tracks/ActivateTrack.h"
+#include "Timeline/Tracks/ActivateClip.h"
+#include "Timeline/Tracks/FunctionCallTrack.h"
+#include "Timeline/Tracks/FunctionCallClip.h"
+#include "Nodes/TimelinePlayer.h"
+#include "Nodes/NodeGraphPlayer.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "AudioManager.h"
@@ -25,6 +43,14 @@
 #include "Graphics/Graphics.h"
 #include "Input/Input.h"
 #include "Audio/Audio.h"
+#include "Plugins/RuntimePluginManager.h"
+#include "NodeGraph/GraphDomainManager.h"
+#include "NodeGraph/Domains/MaterialDomain.h"
+#include "NodeGraph/Domains/ShaderDomain.h"
+#include "NodeGraph/Domains/ProceduralDomain.h"
+#include "NodeGraph/Domains/AnimationDomain.h"
+#include "NodeGraph/Domains/FSMDomain.h"
+#include "NodeGraph/Domains/SceneGraphDomain.h"
 
 #if PLATFORM_WINDOWS
 // I think this is needed for the WinMain parameters
@@ -40,6 +66,8 @@
 #if EDITOR
 #include "EditorState.h"
 #include "EditorImgui.h"
+#include "SecondScreenPreview/SecondScreenPreview.h"
+#include "GamePreview/GamePreview.h"
 
 // Located in Editor/EditorMain.cpp
 void EditorMain(int32_t argc, char** argv);
@@ -156,6 +184,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(ShadowMesh3D);
     FORCE_LINK_CALL(TextMesh3D);
     FORCE_LINK_CALL(InstancedMesh3D);
+    FORCE_LINK_CALL(TimelinePlayer);
+    FORCE_LINK_CALL(NodeGraphPlayer);
     FORCE_LINK_CALL(Spline3D);
     FORCE_LINK_CALL(NavMesh3D);
 
@@ -172,6 +202,37 @@ void ForceLinkage()
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
     FORCE_LINK_CALL(Font);
+    FORCE_LINK_CALL(UIDocument);
+    FORCE_LINK_CALL(Timeline);
+    FORCE_LINK_CALL(TimelineTrack);
+    FORCE_LINK_CALL(TimelineClip);
+    FORCE_LINK_CALL(TransformTrack);
+    FORCE_LINK_CALL(TransformClip);
+    FORCE_LINK_CALL(AudioTrack);
+    FORCE_LINK_CALL(AudioClip);
+    FORCE_LINK_CALL(AnimationTrack);
+    FORCE_LINK_CALL(AnimationClip);
+    FORCE_LINK_CALL(ScriptValueTrack);
+    FORCE_LINK_CALL(ScriptValueClip);
+    FORCE_LINK_CALL(ActivateTrack);
+    FORCE_LINK_CALL(ActivateClip);
+    FORCE_LINK_CALL(FunctionCallTrack);
+    FORCE_LINK_CALL(FunctionCallClip);
+
+    // Node Graph Types
+    FORCE_LINK_CALL(NodeGraphAsset);
+    FORCE_LINK_CALL(MathNodes);
+    FORCE_LINK_CALL(ValueNodes);
+    FORCE_LINK_CALL(MaterialNodes);
+    FORCE_LINK_CALL(ShaderNodes);
+    FORCE_LINK_CALL(ProceduralNodes);
+    FORCE_LINK_CALL(AnimationNodes);
+    FORCE_LINK_CALL(FSMNodes);
+    FORCE_LINK_CALL(SceneGraphNodes);
+    FORCE_LINK_CALL(InputNodes);
+    FORCE_LINK_CALL(FunctionNodes);
+    FORCE_LINK_CALL(GizmoNodes);
+    FORCE_LINK_CALL(NavMeshNodes);
 
     // Widget Types
     FORCE_LINK_CALL(ArrayWidget);
@@ -457,6 +518,28 @@ bool Initialize()
     // Because we need to register all of the classes by their constructors.
     ForceLinkage();
 
+    // Initialize runtime plugin manager (for both editor and game builds)
+    // This handles plugins compiled directly into the executable
+    RuntimePluginManager::Create();
+    if (RuntimePluginManager::Get())
+    {
+        RuntimePluginManager::Get()->Initialize();
+    }
+    else
+    {
+        LogError("[ENG] RPM is NULL!");
+    }
+
+    // Initialize node graph domain system
+    GraphDomainManager::Create();
+    GraphDomainManager::Get()->RegisterDomain(new MaterialDomain());
+    GraphDomainManager::Get()->RegisterDomain(new ShaderDomain());
+    GraphDomainManager::Get()->RegisterDomain(new ProceduralDomain());
+    GraphDomainManager::Get()->RegisterDomain(new AnimationDomain());
+    GraphDomainManager::Get()->RegisterDomain(new FSMDomain());
+    GraphDomainManager::Get()->RegisterDomain(new SceneGraphDomain());
+    GraphDomainManager::Get()->ProcessExternalRegistrations();
+
 #if !EDITOR
     Scene* defaultScene = nullptr;
 
@@ -594,9 +677,32 @@ bool Update()
 
     GetTimerManager()->Update(gameDeltaTime);
 
+#if EDITOR
+    GetGamePreview()->BeginInputRemap();
+    GetSecondScreenPreview()->BeginInputRemap();
+#endif
+
     for (uint32_t i = 0; i < sWorlds.size(); ++i)
     {
         sWorlds[i]->Update(gameDeltaTime);
+    }
+
+#if EDITOR
+    GetSecondScreenPreview()->EndInputRemap();
+    GetGamePreview()->EndInputRemap();
+#endif
+
+#if EDITOR
+    if (GetSecondScreenPreview()->IsEnabled())
+    {
+        GetSecondScreenPreview()->Update(gameDeltaTime);
+    }
+#endif
+
+    // Tick all runtime plugins
+    if (RuntimePluginManager::Get())
+    {
+        RuntimePluginManager::Get()->TickAllPlugins(gameDeltaTime);
     }
 
     NetworkManager::Get()->PostTickUpdate(realDeltaTime);
@@ -629,6 +735,7 @@ void Shutdown()
 #if EDITOR
     // Shutdown FileWatcher first
     DestroyFileWatcher();
+    GetSecondScreenPreview()->Disable();
 #endif
 
     NetworkManager::Get()->Shutdown();
@@ -641,6 +748,11 @@ void Shutdown()
     }
 
     sWorlds.clear();
+
+    GraphDomainManager::Destroy();
+
+    // Shutdown runtime plugins before Lua closes
+    RuntimePluginManager::Destroy();
 
 #if LUA_ENABLED
     lua_close(sEngineState.mLua);
@@ -739,8 +851,6 @@ void LoadProject(const std::string& path, bool discoverAssets)
             sEngineState.mProjectPath = "";
             sEngineState.mProjectDirectory = "";
         }
-
-        ScriptUtils::UnloadAllScriptFiles();
     }
 #endif
 
@@ -786,6 +896,9 @@ void LoadProject(const std::string& path, bool discoverAssets)
         sEngineState.mProjectName != "")
     {
         AssetManager::Get()->Discover(sEngineState.mProjectName.c_str(), (sEngineState.mProjectDirectory + "Assets/").c_str());
+
+        std::string packagesDir = sEngineState.mProjectDirectory + "Packages/";
+        AssetManager::Get()->DiscoverAddonPackages(packagesDir);
     }
 
     if (!IsHeadless())

@@ -3,12 +3,13 @@
 #include "Nodes/3D/Primitive3d.h"
 #include "Assets/Material.h"
 #include "Assets/MaterialInstance.h"
+#include "Assets/MaterialLite.h"
 
 #if EDITOR
 #include <assimp/scene.h>
 #endif
 
-class Mesh3D : public Primitive3D
+class OCTAVE_API Mesh3D : public Primitive3D
 {
 public:
 
@@ -19,6 +20,9 @@ public:
 
     virtual const char* GetTypeName() const override;
     virtual void GatherProperties(std::vector<Property>& outProps) override;
+
+    virtual void SaveStream(Stream& stream, Platform platform) override;
+    virtual void LoadStream(Stream& stream, Platform platform, uint32_t version) override;
 
     virtual bool IsStaticMesh3D() const;
     virtual bool IsSkeletalMesh3D() const;

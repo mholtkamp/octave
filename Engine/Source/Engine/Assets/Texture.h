@@ -6,7 +6,7 @@
 
 #include "Graphics/GraphicsTypes.h"
 
-class Texture : public Asset
+class OCTAVE_API Texture : public Asset
 {
 
 public:

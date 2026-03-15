@@ -1,0 +1,190 @@
+site_name: Octave Engine Docs
+docs_dir: Documentation
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - include-markdown
+
+
+
+nav:
+  - Home: index.md
+
+  - Info:
+      - Editor: Info/Editor.md
+      - Scripting: Info/Scripting.md
+      - Templates: Info/Templates.md
+      - Addons: Info/Addons.md
+      - Build Profiles: Info/BuildProfiles.md
+      - Docker: Info/Docker.md
+      - LLM Docs: Info/LLM.md
+
+  - Development:
+      - Mesh Instancing: Development/MeshInstancing.md
+      - Packaging Flow: Development/PackagingFlow.md
+      - Themes / CSS: Development/ThemesCss.md
+      - 3DS:
+          - Overview: Development/Platforms/3DS/Overview.md
+          - Screens: Development/Platforms/3DS/Screens.md
+      - UI:
+          - Overview: Development/UI/Overview.md
+          - Displaying Images: Development/UI/DisplayingImages.md
+          - Text: Development/UI/Text.md
+          - Buttons: Development/UI/Buttons.md
+          - Animation: Development/UI/Animation.md
+          - Building UI: Development/UI/BuildingUI.md
+      - Input:
+          - Overview: Development/Input/Overview.md
+          - Keyboard: Development/Input/Keyboard.md
+          - Mouse: Development/Input/Mouse.md
+          - Gamepad: Development/Input/Gamepad.md
+          - Touch: Development/Input/Touch.md
+          - Platform Specific: Development/Input/PlatformSpecific.md
+          - Known Gaps: Development/Input/KnownGaps.md
+      - Logging:
+          - Overview: Development/Logging/Overview.md
+          - Configuration: Development/Logging/Configuration.md
+          - C++ API: Development/Logging/CppAPI.md
+          - Lua API: Development/Logging/LuaAPI.md
+          - Editor Debug Log: Development/Logging/EditorDebugLog.md
+      - Node Graph:
+          - Overview: Development/NodeGraph/Overview.md
+          - Graph Types: Development/NodeGraph/GraphTypes.md
+          - Creating Domains: Development/NodeGraph/CreatingDomains.md
+          - Creating Nodes: Development/NodeGraph/CreatingNodes.md
+          - NodeGraphPlayer: Development/NodeGraph/NodeGraphPlayer.md
+      - Timeline:
+          - Overview: Development/Timeline/Overview.md
+          - TimelinePlayer: Development/Timeline/TimelinePlayer.md
+          - Tracks and Clips: Development/Timeline/TracksAndClips.md
+          - Lua API: Development/Timeline/LuaAPI.md
+          - Creating Custom Tracks: Development/Timeline/CreatingCustomTracks.md
+      - Native Addons:
+          - Overview: Development/NativeAddon/NativeAddon.md
+          - General Examples:
+              - Custom Context Menu Item: Development/NativeAddon/Examples/CustomContextMenuItem.md
+              - Custom Debug Window: Development/NativeAddon/Examples/CustomDebugWindow.md
+              - Custom Menu Item: Development/NativeAddon/Examples/CustomMenuItem.md
+              - Custom Script Inspector: Development/NativeAddon/Examples/CustomScriptInspector.md
+              - Custom Theme: Development/NativeAddon/Examples/CustomTheme.md
+              - Debug Log: Development/NativeAddon/Examples/DebugLog.md
+              - Coin: Development/NativeAddon/Examples/Coin.md
+              - Select Handler: Development/NativeAddon/Examples/SelectHandler.md
+          - Editor Examples:
+              - Add Node Menu: Development/NativeAddon/Examples/Editor/AddNodeMenu.md
+              - Asset Importer: Development/NativeAddon/Examples/Editor/AssetImporter.md
+              - Asset Open Hooks: Development/NativeAddon/Examples/Editor/AssetOpenHooks.md
+              - Asset Pipeline Hooks: Development/NativeAddon/Examples/Editor/AssetPipelineHooks.md
+              - Build Pipeline: Development/NativeAddon/Examples/Editor/BuildPipeline.md
+              - Custom Dock Panel: Development/NativeAddon/Examples/Editor/CustomDockablePanel.md
+              - Custom Play Target: Development/NativeAddon/Examples/Editor/CustomPlayTarget.md
+              - Drag and Drop Asset: Development/NativeAddon/Examples/Editor/DragAndDropAsset.md
+              - Editor Init Hooks: Development/NativeAddon/Examples/Editor/EditorInitHooks.md
+              - Editor Shutdown Hook: Development/NativeAddon/Examples/Editor/EditorShutdownHook.md
+              - Game Preview Resolution: Development/NativeAddon/Examples/Editor/GamePreviewResolution.md
+              - Gizmo Tool: Development/NativeAddon/Examples/Editor/GizmoTool.md
+              - Hierarchy Item GUI: Development/NativeAddon/Examples/Editor/HierarchyItemGUI.md
+              - Keyboard Shortcuts: Development/NativeAddon/Examples/Editor/KeyboardShortcuts.md
+              - Menu Positioning: Development/NativeAddon/Examples/Editor/MenuPositioning.md
+              - Packaging Hooks: Development/NativeAddon/Examples/Editor/PackagingHooks.md
+              - Play Mode Hooks: Development/NativeAddon/Examples/Editor/PlayModeHooks.md
+              - Preferences Panel: Development/NativeAddon/Examples/Editor/PreferencesPanel.md
+              - Project Lifecycle: Development/NativeAddon/Examples/Editor/ProjectLifecycle.md
+              - Property Drawer: Development/NativeAddon/Examples/Editor/PropertyDrawer.md
+              - Scene Lifecycle: Development/NativeAddon/Examples/Editor/SceneLifecycle.md
+              - Scene Type Registration: Development/NativeAddon/Examples/Editor/SceneTypeRegistration.md
+              - Selection Handler: Development/NativeAddon/Examples/Editor/SelectionHandler.md
+              - Toolbar Extension: Development/NativeAddon/Examples/Editor/ToolbarExtension.md
+              - Top Level Menu: Development/NativeAddon/Examples/Editor/TopLevelMenu.md
+              - Undo / Redo: Development/NativeAddon/Examples/Editor/UndoRedoHook.md
+              - Viewport Overlay: Development/NativeAddon/Examples/Editor/ViewportOverlay.md
+              - Node Graph:
+                  - Custom Domain: Development/NativeAddon/Examples/Editor/NodeGraph/CustomDomain.md
+                  - Custom Material Type: Development/NativeAddon/Examples/Editor/NodeGraph/CustomMaterialType.md
+                  - Custom Node: Development/NativeAddon/Examples/Editor/NodeGraph/CustomNode.md
+                  - Domain Callbacks: Development/NativeAddon/Examples/Editor/NodeGraph/DomainCallbacks.md
+
+  - Lua API:
+      - Overview: Lua/README.md
+
+      - Systems:
+          - Engine: Lua/Systems/Engine.md
+          - Renderer: Lua/Systems/Renderer.md
+          - Input: Lua/Systems/Input.md
+          - Audio: Lua/Systems/Audio.md
+          - Network: Lua/Systems/Network.md
+          - Timer Manager: Lua/Systems/TimerManager.md
+          - System: Lua/Systems/System.md
+          - Log: Lua/Systems/Log.md
+          - Math: Lua/Systems/Math.md
+          - Script: Lua/Systems/Script.md
+          - Asset Manager: Lua/Systems/AssetManager.md
+
+      - Assets:
+          - Asset: Lua/Assets/Asset.md
+          - Font: Lua/Assets/Font.md
+          - Material: Lua/Assets/Material.md
+          - Material Base: Lua/Assets/MaterialBase.md
+          - Material Instance: Lua/Assets/MaterialInstance.md
+          - Material Lite: Lua/Assets/MaterialLite.md
+          - Particle System: Lua/Assets/ParticleSystem.md
+          - Particle System Instance: Lua/Assets/ParticleSystemInstance.md
+          - Scene: Lua/Assets/Scene.md
+          - Skeletal Mesh: Lua/Assets/SkeletalMesh.md
+          - Sound Wave: Lua/Assets/SoundWave.md
+          - Static Mesh: Lua/Assets/StaticMesh.md
+          - Texture: Lua/Assets/Texture.md
+
+      - Misc:
+          - Enums: Lua/Misc/Enums.md
+          - Globals: Lua/Misc/Globals.md
+          - Property: Lua/Misc/Property.md
+          - Rect: Lua/Misc/Rect.md
+          - Signal: Lua/Misc/Signal.md
+          - Stream: Lua/Misc/Stream.md
+          - Vector: Lua/Misc/Vector.md
+          - World: Lua/Misc/World.md
+
+      - Nodes:
+          - Node: Lua/Nodes/Node.md
+          - 3D:
+              - Audio3D: Lua/Nodes/3D/Audio3D.md
+              - Box3D: Lua/Nodes/3D/Box3D.md
+              - Camera3D: Lua/Nodes/3D/Camera3D.md
+              - Capsule3D: Lua/Nodes/3D/Capsule3D.md
+              - DirectionalLight3D: Lua/Nodes/3D/DirectionalLight3D.md
+              - InstancedMesh3D: Lua/Nodes/3D/InstancedMesh3D.md
+              - Light3D: Lua/Nodes/3D/Light3D.md
+              - Mesh3D: Lua/Nodes/3D/Mesh3D.md
+              - Node3D: Lua/Nodes/3D/Node3D.md
+              - Particle3D: Lua/Nodes/3D/Particle3D.md
+              - PointLight3D: Lua/Nodes/3D/PointLight3D.md
+              - Primitive3D: Lua/Nodes/3D/Primitive3D.md
+              - ShadowMesh3D: Lua/Nodes/3D/ShadowMesh3D.md
+              - SkeletalMesh3D: Lua/Nodes/3D/SkeletalMesh3D.md
+              - Sphere3D: Lua/Nodes/3D/Sphere3D.md
+              - Spline3D: Lua/Nodes/3D/Spline3D.md
+              - StaticMesh3D: Lua/Nodes/3D/StaticMesh3D.md
+              - TextMesh3D: Lua/Nodes/3D/TextMesh3D.md
+
+      - Widgets:
+          - Widget: Lua/Nodes/Widgets/Widget.md
+          - Button: Lua/Nodes/Widgets/Button.md
+          - Poly: Lua/Nodes/Widgets/Poly.md
+          - PolyRect: Lua/Nodes/Widgets/PolyRect.md
+          - Quad: Lua/Nodes/Widgets/Quad.md
+          - Text: Lua/Nodes/Widgets/Text.md
+
+  - API Reference:
+      - C++ API (HTML): api/index.html

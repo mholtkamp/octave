@@ -154,6 +154,12 @@ struct GlobalUniformData
     int32_t mLinearColorSpace;
     float mColorScale;
 
+    glm::vec4 mSelectedColor;
+    float mSelectedCheckerSize;
+    float mSelectedPad0;
+    float mSelectedPad1;
+    float mSelectedPad2;
+
     LightUniformData mLights[MAX_LIGHTS_PER_FRAME];
 };
 
@@ -218,6 +224,7 @@ struct QuadUniformData
 {
     glm::mat4 mTransform;
     glm::vec4 mColor;
+    glm::vec4 mQuadParams; // x = cornerRadius, y = width, z = height, w = unused
 };
 
 struct TextUniformData
