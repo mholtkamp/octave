@@ -82,14 +82,14 @@ RUN apt-get update && apt-get install -y libnss3 nss-plugin-pem ca-certificates 
 # Create /etc/mtab symlink needed by pacman in Docker
 RUN ln -sf /proc/self/mounts /etc/mtab
 
-# Add extremscorner GPG key from keyserver (direct URL returns 403 behind Cloudflare)
+# Add libogc2 GPG key from keyserver (direct URL returns 403 behind Cloudflare)
 RUN dkp-pacman-key --recv-keys C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE --keyserver keyserver.ubuntu.com
 
-# Sign the extremscorner key
+# Sign the libogc2 key
 RUN dkp-pacman-key --lsign-key C8A2759C315CFBC3429CC2E422B803BA8AA3D7CE
 
-# Add extremscorner repo to pacman config
-RUN echo '[extremscorner-devkitpro]\nServer = https://packages.extremscorner.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf
+# Add libogc2 repo to pacman config
+RUN echo '[libogc2-devkitpro]\nServer = https://packages.libogc2.org/devkitpro/linux/$arch\nServer = https://packages.extremscorner.org/devkitpro/linux/$arch' >> /opt/devkitpro/pacman/etc/pacman.conf
 
 # Install console dev packages
 RUN dkp-pacman -Syyu --noconfirm 3ds-dev wii-dev gamecube-tools-git libogc2 libogc2-libdvm
