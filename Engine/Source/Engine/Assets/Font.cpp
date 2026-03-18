@@ -126,8 +126,8 @@ void Font::LoadStream(Stream& stream, Platform platform)
     uint32_t ttfDataSize = stream.ReadUint32();
     if (ttfDataSize > 0)
     {
-        mTtfData.Resize(ttfDataSize);
-        mTtfData.ReadBytes((uint8_t*)stream.GetData() + stream.GetPos(), ttfDataSize);
+        mTtfData.resize(ttfDataSize);
+        stream.ReadBytes(mTtfData.data(), ttfDataSize);
         stream.SetPos(stream.GetPos() + ttfDataSize);
     }
 #endif
@@ -183,12 +183,12 @@ void Font::SaveStream(Stream& stream, Platform platform)
     if (platform == Platform::Count)
     {
         // Save TTF data so we can rebuild the font bitmap with different settings.
-        uint32_t ttfDataSize = mTtfData.GetSize();
+        uint32_t ttfDataSize = (uint32_t)mTtfData.size();
         stream.WriteUint32(ttfDataSize);
 
         if (ttfDataSize > 0)
         {
-            stream.WriteBytes((uint8_t*)mTtfData.GetData(), ttfDataSize);
+            stream.WriteBytes(mTtfData.data(), ttfDataSize);
         }
     }
 #endif
@@ -220,8 +220,13 @@ bool Font::Import(const std::string& path, ImportOptions* options)
     {
         // Reset the ttf data.
         mTtf = true;
-        mTtfData.Reset();
-        mTtfData.ReadFile(path.c_str(), false);
+        Stream ttfStream;
+        ttfStream.ReadFile(path.c_str(), false);
+
+        mTtfData.clear();
+        mTtfData.resize(ttfStream.GetSize());
+        ttfStream.ReadBytes(mTtfData.data(), ttfStream.GetSize());
+
         RebuildFont();
     }
     else
@@ -317,7 +322,7 @@ void Font::SetTexture(Texture* texture)
 void Font::RebuildFont()
 {
 #if EDITOR
-    if (mTtfData.GetSize() > 0)
+    if (mTtfData.size() > 0)
     {
         int bakeResult = -1;
         int32_t texWidth = 128;
@@ -334,7 +339,7 @@ void Font::RebuildFont()
 
         {
             stbtt_fontinfo fontInfo;
-            stbtt_InitFont(&fontInfo, (uint8_t*)mTtfData.GetData(), 0);
+            stbtt_InitFont(&fontInfo, mTtfData.data(), 0);
 
             float normalScale = stbtt_ScaleForPixelHeight(&fontInfo, fontSize);
             float emScale = stbtt_ScaleForMappingEmToPixels(&fontInfo, fontSize);
@@ -347,7 +352,7 @@ void Font::RebuildFont()
             uint8_t* tempBitmap = new uint8_t[texWidth * texHeight];
             memset(tempBitmap, 0, texWidth * texHeight);
 
-            bakeResult = stbtt_BakeFontBitmap((uint8_t*)mTtfData.GetData(), 0, emFontSize, tempBitmap, texWidth, texHeight, 32, 96, charData); // no guarantee this fits!
+            bakeResult = stbtt_BakeFontBitmap(mTtfData.data(), 0, emFontSize, tempBitmap, texWidth, texHeight, 32, 96, charData); // no guarantee this fits!
 
             if (bakeResult >= 0)
             {

@@ -72,6 +72,6 @@ protected:
 
 #if EDITOR
     // Keep TTF data loaded in Editor.
-    Stream mTtfData;
+    std::vector<uint8_t> mTtfData;
 #endif
 };
