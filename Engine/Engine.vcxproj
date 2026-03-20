@@ -761,12 +761,16 @@
     <ClCompile Include="Source\Engine\Assets\SoundWave.cpp" />
     <ClCompile Include="Source\Engine\Assets\StaticMesh.cpp" />
     <ClCompile Include="Source\Engine\Assets\Texture.cpp" />
+    <ClCompile Include="Source\Engine\Assets\TinyLLMAsset.cpp" />
+    <ClCompile Include="Source\Engine\Assets\TinyLLMTokenizerAsset.cpp" />
     <ClCompile Include="Source\Engine\Assets\Timeline.cpp" />
     <ClCompile Include="Source\Engine\Assets\NodeGraphAsset.cpp" />
     <ClCompile Include="Source\Engine\AudioManager.cpp" />
     <ClCompile Include="Source\Engine\Clock.cpp" />
     <ClCompile Include="Source\Engine\Datum.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
+    <ClCompile Include="Source\Engine\TinyLLMInference.cpp" />
+    <ClCompile Include="Source\Engine\TinyLLMManager.cpp" />
     <ClCompile Include="Source\Engine\Gizmos.cpp" />
     <ClCompile Include="Source\Engine\EngineTypes.cpp" />
     <ClCompile Include="Source\Engine\FileWatcher.cpp" />
@@ -966,6 +970,7 @@
     <ClCompile Include="Source\LuaBindings\StaticMesh_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Stream_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\System_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\TinyLLM_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\TextMesh3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Texture_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Text_Lua.cpp" />
@@ -1113,6 +1118,8 @@
     <ClInclude Include="Source\Engine\Assets\SoundWave.h" />
     <ClInclude Include="Source\Engine\Assets\StaticMesh.h" />
     <ClInclude Include="Source\Engine\Assets\Texture.h" />
+    <ClInclude Include="Source\Engine\Assets\TinyLLMAsset.h" />
+    <ClInclude Include="Source\Engine\Assets\TinyLLMTokenizerAsset.h" />
     <ClInclude Include="Source\Engine\Assets\Timeline.h" />
     <ClInclude Include="Source\Engine\Assets\NodeGraphAsset.h" />
     <ClInclude Include="Source\Engine\AudioManager.h" />
@@ -1122,6 +1129,8 @@
     <ClInclude Include="Source\Engine\Datum.h" />
     <ClInclude Include="Source\Engine\EmbeddedFile.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
+    <ClInclude Include="Source\Engine\TinyLLMInference.h" />
+    <ClInclude Include="Source\Engine\TinyLLMManager.h" />
     <ClInclude Include="Source\Engine\EngineTypes.h" />
     <ClInclude Include="Source\Engine\Enums.h" />
     <ClInclude Include="Source\Engine\Factory.h" />
@@ -1331,6 +1340,7 @@
     <ClInclude Include="Source\LuaBindings\TextMesh3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Texture_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Text_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\TinyLLM_Lua.h" />
     <ClInclude Include="Source\LuaBindings\TimerManager_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Node3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Vector_Lua.h" />

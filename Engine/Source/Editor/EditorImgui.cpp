@@ -4622,6 +4622,16 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
             actMan->BeginImportScene();
         }
 
+        if (ImGui::Selectable("Import TinyLLM Model"))
+        {
+            actMan->ImportTinyLLMModel();
+        }
+
+        if (ImGui::Selectable("Import TinyLLM Tokenizer"))
+        {
+            actMan->ImportTinyLLMTokenizer();
+        }
+
         if (ImGui::BeginMenu("Create Asset"))
         {
             bool showPopup = false;

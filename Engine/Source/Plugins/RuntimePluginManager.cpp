@@ -7,6 +7,7 @@
 #include "Engine/Clock.h"
 #include "Engine/Nodes/Node.h"
 #include "Engine/Nodes/3D/Node3d.h"
+#include "Engine/Assets/TinyLLMAsset.h"
 #include "Input/Input.h"
 #include "Log.h"
 
@@ -222,6 +223,67 @@ static void PluginUnloadAsset(const char* name)
     {
         UnloadAsset(name);
     }
+}
+
+// ===== TinyLLM =====
+
+static int32_t PluginTinyLLM_Encode(Asset* model, const char* text, bool addBos, bool addEos,
+                                     int32_t* outTokens, int32_t maxTokens)
+{
+    if (!model || !text || !outTokens || maxTokens <= 0)
+    {
+        return -1;
+    }
+
+    TinyLLMAsset* llmAsset = model->As<TinyLLMAsset>();
+    if (!llmAsset)
+    {
+        return -1;
+    }
+
+    std::vector<int32_t> tokens;
+    llmAsset->Encode(text, addBos, addEos, tokens);
+
+    int32_t count = (int32_t)tokens.size();
+    if (count > maxTokens)
+    {
+        count = maxTokens;
+    }
+
+    for (int32_t i = 0; i < count; i++)
+    {
+        outTokens[i] = tokens[i];
+    }
+
+    return count;
+}
+
+static int32_t PluginTinyLLM_Decode(Asset* model, int32_t prevToken, int32_t token,
+                                     char* outStr, int32_t maxLen)
+{
+    if (!model || !outStr || maxLen <= 0)
+    {
+        return -1;
+    }
+
+    TinyLLMAsset* llmAsset = model->As<TinyLLMAsset>();
+    if (!llmAsset)
+    {
+        return -1;
+    }
+
+    std::string decoded = llmAsset->Decode(prevToken, token);
+    int32_t len = (int32_t)decoded.size();
+
+    if (len >= maxLen)
+    {
+        len = maxLen - 1;
+    }
+
+    memcpy(outStr, decoded.c_str(), len);
+    outStr[len] = '\0';
+
+    return len;
 }
 
 // ===== Audio =====
@@ -490,6 +552,10 @@ void RuntimePluginManager::InitializeEngineAPI()
     mEngineAPI.LoadAsset = PluginLoadAsset;
     mEngineAPI.FetchAsset = PluginFetchAsset;
     mEngineAPI.UnloadAsset = PluginUnloadAsset;
+
+    // TinyLLM
+    mEngineAPI.TinyLLM_Encode = PluginTinyLLM_Encode;
+    mEngineAPI.TinyLLM_Decode = PluginTinyLLM_Decode;
 
     // Audio
     mEngineAPI.PlaySound2D = PluginPlaySound2D;

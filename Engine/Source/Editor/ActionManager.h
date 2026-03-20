@@ -241,6 +241,8 @@ public:
     void RunScript();
     void ImportAsset();
     Asset* ImportAsset(const std::string& path);
+    void ImportTinyLLMModel();
+    void ImportTinyLLMTokenizer();
     void ImportCamera(const CameraImportOptions& options);
     void ImportScene(const SceneImportOptions& options);
     void BeginImportScene();

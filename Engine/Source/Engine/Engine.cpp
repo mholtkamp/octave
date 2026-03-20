@@ -9,6 +9,9 @@
 #include "Assets/Scene.h"
 #include "Assets/Timeline.h"
 #include "Assets/NodeGraphAsset.h"
+#include "Assets/TinyLLMAsset.h"
+#include "Assets/TinyLLMTokenizerAsset.h"
+#include "TinyLLMManager.h"
 #include "Timeline/TimelineTrack.h"
 #include "Timeline/TimelineClip.h"
 #include "Timeline/Tracks/TransformTrack.h"
@@ -201,6 +204,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(SoundWave);
     FORCE_LINK_CALL(StaticMesh);
     FORCE_LINK_CALL(Texture);
+    FORCE_LINK_CALL(TinyLLMAsset);
+    FORCE_LINK_CALL(TinyLLMTokenizerAsset);
     FORCE_LINK_CALL(Font);
     FORCE_LINK_CALL(UIDocument);
     FORCE_LINK_CALL(Timeline);
@@ -345,6 +350,7 @@ bool Initialize()
     Renderer::Create();
     AssetManager::Create();
     NetworkManager::Create();
+    TinyLLMManager::Create();
 
 #if EDITOR
     EditorImguiInit();
@@ -763,6 +769,7 @@ void Shutdown()
     EditorImguiPreShutdown();
 #endif
 
+    TinyLLMManager::Destroy();
     NetworkManager::Destroy();
     Renderer::Destroy();
     AssetManager::Destroy();

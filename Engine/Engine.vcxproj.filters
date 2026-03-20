@@ -224,6 +224,12 @@
     <ClCompile Include="Source\Engine\Engine.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\TinyLLMInference.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\TinyLLMManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Engine\Gizmos.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -423,6 +429,12 @@
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Texture.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\TinyLLMAsset.cpp">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Assets\TinyLLMTokenizerAsset.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\Timeline.cpp">
@@ -1248,6 +1260,12 @@
     <ClInclude Include="Source\Engine\Assets\Texture.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\TinyLLMAsset.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Assets\TinyLLMTokenizerAsset.h">
+      <Filter>Source Files\Engine\Assets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Assets\Timeline.h">
       <Filter>Source Files\Engine\Assets</Filter>
     </ClInclude>
@@ -1396,6 +1414,12 @@
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Engine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\TinyLLMInference.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\TinyLLMManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\EngineTypes.h">
@@ -1633,6 +1657,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Texture_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\TinyLLM_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\TimerManager_Lua.h">

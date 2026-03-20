@@ -243,6 +243,33 @@ struct OctaveEngineAPI
      */
     void (*UnloadAsset)(const char* name);
 
+    // ===== TinyLLM =====
+
+    /**
+     * @brief Encode text to tokens using a TinyLLMAsset's tokenizer.
+     * @param model TinyLLMAsset pointer
+     * @param text Text to encode
+     * @param addBos Add BOS token
+     * @param addEos Add EOS token
+     * @param outTokens Output buffer for tokens (caller allocates)
+     * @param maxTokens Size of output buffer
+     * @return Number of tokens written, or -1 on error
+     */
+    int32_t (*TinyLLM_Encode)(Asset* model, const char* text, bool addBos, bool addEos,
+                              int32_t* outTokens, int32_t maxTokens);
+
+    /**
+     * @brief Decode a token to string using a TinyLLMAsset's tokenizer.
+     * @param model TinyLLMAsset pointer
+     * @param prevToken Previous token (for space handling)
+     * @param token Token to decode
+     * @param outStr Output buffer (caller allocates)
+     * @param maxLen Size of output buffer
+     * @return Length of decoded string, or -1 on error
+     */
+    int32_t (*TinyLLM_Decode)(Asset* model, int32_t prevToken, int32_t token,
+                              char* outStr, int32_t maxLen);
+
     // ===== Audio =====
 
     /**

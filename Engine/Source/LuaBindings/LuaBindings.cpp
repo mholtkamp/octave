@@ -65,6 +65,7 @@
 #include "LuaBindings/Property_Lua.h"
 
 #include "LuaBindings/Misc_Lua.h"
+#include "LuaBindings/TinyLLM_Lua.h"
 
 static std::string sOriginalPath;
 
@@ -140,6 +141,8 @@ void BindLuaInterface()
     PolyRect_Lua::Bind();
 
     Misc_Lua::BindMisc();
+
+    TinyLLM_Lua_Register(GetLua());
 }
 
 void UpdateLuaPath()

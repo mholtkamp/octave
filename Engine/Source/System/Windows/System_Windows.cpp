@@ -426,17 +426,33 @@ void SYS_ReleaseFileData(char* data)
 }
 std::string SYS_GetOctavePath()
 {
-    std::string octaveDirectory = SYS_GetCurrentDirectoryPath();
-    if(SYS_DoesFileExist((octaveDirectory + "Octave/imgui.ini").c_str(), false)){
-        octaveDirectory = octaveDirectory + "Octave/";
-        }
-    if(!SYS_DoesFileExist((octaveDirectory + "Standalone/Standalone.rc").c_str(), false)){
-        std::string octaveEXE = SYS_GetExecutablePath();
-        size_t lastSlash = octaveEXE.find_last_of("\\/");
-        octaveDirectory = octaveEXE.substr(0, lastSlash + 1);
+    // Try executable directory first (most reliable for development)
+    std::string octaveEXE = SYS_GetExecutablePath();
+    size_t lastSlash = octaveEXE.find_last_of("\\/");
+    std::string exeDir = octaveEXE.substr(0, lastSlash + 1);
 
+    // Check if we're running from the Octave engine directory
+    // by looking for Engine/Source which always exists in development
+    if (SYS_DoesFileExist((exeDir + "Engine/Source/Engine/Engine.h").c_str(), false))
+    {
+        return exeDir;
     }
-    return octaveDirectory;
+
+    // Check current directory
+    std::string currentDir = SYS_GetCurrentDirectoryPath();
+    if (SYS_DoesFileExist((currentDir + "Engine/Source/Engine/Engine.h").c_str(), false))
+    {
+        return currentDir;
+    }
+
+    // Check for Octave subdirectory (installed layout)
+    if (SYS_DoesFileExist((currentDir + "Octave/imgui.ini").c_str(), false))
+    {
+        return currentDir + "Octave/";
+    }
+
+    // Fallback to executable directory
+    return exeDir;
 }
 std::string SYS_GetExecutablePath()
 {

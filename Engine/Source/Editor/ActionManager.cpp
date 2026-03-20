@@ -41,6 +41,8 @@
 #include "Assets/MaterialBase.h"
 #include "Assets/MaterialInstance.h"
 #include "Assets/Font.h"
+#include "Assets/TinyLLMAsset.h"
+#include "Assets/TinyLLMTokenizerAsset.h"
 #include "AssetDir.h"
 #include "EmbeddedFile.h"
 #include "Utilities.h"
@@ -2777,6 +2779,104 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     }
 
     return retAsset;
+}
+
+void ActionManager::ImportTinyLLMModel()
+{
+    if (GetEngineState()->mProjectPath == "")
+    {
+        LogWarning("Cannot import asset. No project loaded.");
+        return;
+    }
+
+    std::vector<std::string> filePaths = SYS_OpenFileDialog();
+
+    for (const std::string& path : filePaths)
+    {
+        // Get filename without path
+        std::string filename = path;
+        size_t lastSlashIdx = filename.find_last_of("/\\");
+        if (lastSlashIdx != std::string::npos)
+        {
+            filename = filename.substr(lastSlashIdx + 1);
+        }
+
+        int32_t dotIndex = int32_t(filename.find_last_of('.'));
+        std::string assetName = filename.substr(0, dotIndex);
+
+        // Create TinyLLMAsset
+        TinyLLMAsset* newAsset = new TinyLLMAsset();
+        newAsset->SetName(assetName);
+
+        bool success = newAsset->Import(path, nullptr);
+
+        if (success)
+        {
+            AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
+            std::string octFilename = assetName + ".oct";
+
+            AssetStub* stub = AssetManager::Get()->RegisterAsset(octFilename, newAsset->GetType(), assetDir, nullptr, false);
+            stub->mAsset = newAsset;
+            newAsset->SetName(stub->mName);
+            AssetManager::Get()->SaveAsset(*stub);
+
+            LogDebug("Imported TinyLLM model: %s", assetName.c_str());
+        }
+        else
+        {
+            LogError("Failed to import TinyLLM model.");
+            delete newAsset;
+        }
+    }
+}
+
+void ActionManager::ImportTinyLLMTokenizer()
+{
+    if (GetEngineState()->mProjectPath == "")
+    {
+        LogWarning("Cannot import asset. No project loaded.");
+        return;
+    }
+
+    std::vector<std::string> filePaths = SYS_OpenFileDialog();
+
+    for (const std::string& path : filePaths)
+    {
+        // Get filename without path
+        std::string filename = path;
+        size_t lastSlashIdx = filename.find_last_of("/\\");
+        if (lastSlashIdx != std::string::npos)
+        {
+            filename = filename.substr(lastSlashIdx + 1);
+        }
+
+        int32_t dotIndex = int32_t(filename.find_last_of('.'));
+        std::string assetName = filename.substr(0, dotIndex);
+
+        // Create TinyLLMTokenizerAsset
+        TinyLLMTokenizerAsset* newAsset = new TinyLLMTokenizerAsset();
+        newAsset->SetName(assetName);
+
+        bool success = newAsset->Import(path, nullptr);
+
+        if (success)
+        {
+            AssetDir* assetDir = GetEditorState()->GetAssetDirectory();
+            std::string octFilename = assetName + ".oct";
+
+            AssetStub* stub = AssetManager::Get()->RegisterAsset(octFilename, newAsset->GetType(), assetDir, nullptr, false);
+            stub->mAsset = newAsset;
+            newAsset->SetName(stub->mName);
+            AssetManager::Get()->SaveAsset(*stub);
+
+            LogDebug("Imported TinyLLM tokenizer: %s", assetName.c_str());
+        }
+        else
+        {
+            LogError("Failed to import TinyLLM tokenizer.");
+            delete newAsset;
+        }
+    }
 }
 
 static std::string GetFixedFilename(const char* name, const char* prefix)
