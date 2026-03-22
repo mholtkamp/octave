@@ -115,6 +115,11 @@ private:
     void Draw3dsLinkWarningPopup();
 
     /**
+     * @brief Draws the wiiload warning popup.
+     */
+    void DrawWiiloadWarningPopup();
+
+    /**
      * @brief Draws the Docker build output modal.
      */
     void DrawBuildOutputModal();
@@ -199,6 +204,12 @@ private:
     void Launch3dsLink(const std::string& outputPath);
 
     /**
+     * @brief Sends build to Wii hardware via wiiload.
+     * @param outputPath Path to the built .dol/.elf file
+     */
+    void LaunchWiiload(const std::string& outputPath);
+
+    /**
      * @brief Checks if Docker is available on the system.
      * @return True if Docker is installed and running
      */
@@ -226,6 +237,9 @@ private:
 
     /** @brief Whether to show the 3dslink warning popup */
     bool mShow3dsLinkWarning = false;
+
+    /** @brief Whether to show the wiiload warning popup */
+    bool mShowWiiloadWarning = false;
 
     /** @brief Whether a build is currently in progress */
     bool mBuildInProgress = false;

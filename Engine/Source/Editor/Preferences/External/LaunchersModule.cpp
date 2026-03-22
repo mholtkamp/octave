@@ -86,6 +86,30 @@ void LaunchersModule::Render()
     ImGui::Spacing();
     ImGui::Spacing();
 
+    // Wiiload settings (Wii Hardware)
+    ImGui::Text("Wiiload (Wii Hardware)");
+    ImGui::Separator();
+
+    ImGui::Text("Wii IP Address:");
+    ImGui::SetNextItemWidth(-1);
+    char wiiloadIPBuffer[64];
+    strncpy(wiiloadIPBuffer, mWiiloadIP.c_str(), sizeof(wiiloadIPBuffer) - 1);
+    wiiloadIPBuffer[sizeof(wiiloadIPBuffer) - 1] = '\0';
+    if (ImGui::InputText("##WiiloadIP", wiiloadIPBuffer, sizeof(wiiloadIPBuffer)))
+    {
+        mWiiloadIP = wiiloadIPBuffer;
+        changed = true;
+    }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("IP address of your Wii (found in Homebrew Channel settings)");
+    }
+
+    ImGui::TextDisabled("Requires devkitPro and Homebrew Channel on Wii.");
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
     // Placeholder help
     ImGui::TextDisabled("Placeholders: {emulator}, {output}, {outputdir}");
 
@@ -101,6 +125,7 @@ void LaunchersModule::LoadSettings(const rapidjson::Document& doc)
     mDolphinArgs = JsonSettings::GetString(doc, "dolphinArgs", "{emulator} --batch -e {output}");
     mAzaharPath = JsonSettings::GetString(doc, "azaharPath", "");
     mAzaharArgs = JsonSettings::GetString(doc, "azaharArgs", "{emulator} {output}");
+    mWiiloadIP = JsonSettings::GetString(doc, "wiiloadIP", "");
 }
 
 void LaunchersModule::SaveSettings(rapidjson::Document& doc)
@@ -109,6 +134,7 @@ void LaunchersModule::SaveSettings(rapidjson::Document& doc)
     JsonSettings::SetString(doc, "dolphinArgs", mDolphinArgs);
     JsonSettings::SetString(doc, "azaharPath", mAzaharPath);
     JsonSettings::SetString(doc, "azaharArgs", mAzaharArgs);
+    JsonSettings::SetString(doc, "wiiloadIP", mWiiloadIP);
 }
 
 bool LaunchersModule::IsEmulatorConfigured(Platform platform) const
@@ -137,6 +163,25 @@ bool LaunchersModule::Is3dsLinkConfigured() const
     // On Linux, just check if 3dslink command exists
     std::string output;
     SYS_Exec("which 3dslink", &output);
+    return !output.empty();
+#endif
+}
+
+bool LaunchersModule::IsWiiloadConfigured() const
+{
+    // Wiiload requires devkitPro installed and IP address set
+    if (mWiiloadIP.empty())
+    {
+        return false;
+    }
+
+#if PLATFORM_WINDOWS
+    // Check if wiiload.exe exists at the standard devkitPro location
+    return SYS_DoesFileExist("C:/devkitPro/tools/bin/wiiload.exe", false);
+#else
+    // On Linux, just check if wiiload command exists
+    std::string output;
+    SYS_Exec("which wiiload", &output);
     return !output.empty();
 #endif
 }
@@ -212,6 +257,38 @@ std::string LaunchersModule::Build3dsLinkCommand(const std::string& outputPath) 
 #else
     // On Linux, just run 3dslink directly
     return "3dslink \"" + outputPath + "\"";
+#endif
+}
+
+std::string LaunchersModule::BuildWiiloadCommand(const std::string& outputPath) const
+{
+    if (mWiiloadIP.empty())
+    {
+        LogError("Wii IP address not configured");
+        return "";
+    }
+
+#if PLATFORM_WINDOWS
+    // On Windows, wiiload.exe is at C:\devkitPro\tools\bin\wiiload.exe
+    std::string wiiloadPath = "C:\\devkitPro\\tools\\bin\\wiiload.exe";
+
+    if (!SYS_DoesFileExist(wiiloadPath.c_str(), false))
+    {
+        LogError("wiiload.exe not found at %s", wiiloadPath.c_str());
+        return "";
+    }
+
+    // Normalize path to use backslashes on Windows
+    std::string normalizedPath = outputPath;
+    ReplaceAll(normalizedPath, "/", "\\");
+
+    // Set WIILOAD env var inline and run wiiload
+    std::string cmd = "cmd /c \"set WIILOAD=tcp:" + mWiiloadIP +
+                      " && \"" + wiiloadPath + "\" \"" + normalizedPath + "\"\"";
+    return cmd;
+#else
+    // On Linux, export WIILOAD inline and run wiiload
+    return "WIILOAD=tcp:" + mWiiloadIP + " wiiload \"" + outputPath + "\"";
 #endif
 }
 

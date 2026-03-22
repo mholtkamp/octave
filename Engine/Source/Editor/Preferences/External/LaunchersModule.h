@@ -55,6 +55,15 @@ public:
     bool Is3dsLinkConfigured() const;
 
     /**
+     * @brief Checks if wiiload is configured.
+     * @return True if wiiload can be used (devkitPro installed and IP set)
+     */
+    bool IsWiiloadConfigured() const;
+
+    /** @brief IP address of Wii for wiiload */
+    std::string mWiiloadIP;
+
+    /**
      * @brief Builds the full launch command with placeholder substitution.
      * @param platform The target platform
      * @param outputPath Full path to the built executable
@@ -69,6 +78,14 @@ public:
      * @return The complete command string ready for SYS_Exec
      */
     std::string Build3dsLinkCommand(const std::string& outputPath) const;
+
+    /**
+     * @brief Builds the wiiload command for sending to Wii hardware.
+     * Requires devkitPro and a configured Wii IP address.
+     * @param outputPath Full path to the built .dol/.elf file
+     * @return The complete command string ready for SYS_Exec
+     */
+    std::string BuildWiiloadCommand(const std::string& outputPath) const;
 
 private:
     /**

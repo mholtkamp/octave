@@ -58,6 +58,7 @@ void PackagingWindow::Open()
     mIsOpen = true;
     mShowDockerWarning = false;
     mShow3dsLinkWarning = false;
+    mShowWiiloadWarning = false;
 
     // Initialize buffers with selected profile data
     PackagingSettings* settings = PackagingSettings::Get();
@@ -131,6 +132,7 @@ void PackagingWindow::Draw()
     // Draw popups
     DrawDockerWarningPopup();
     Draw3dsLinkWarningPopup();
+    DrawWiiloadWarningPopup();
     DrawBuildOutputModal();
 
     // Handle window close
@@ -340,7 +342,9 @@ void PackagingWindow::DrawBuildButtons()
     }
 
     float buttonWidth = 100.0f;
+    float dropdownButtonWidth = 130.0f;
     float deviceButtonWidth = 150.0f;
+    float arrowWidth = 20.0f;
     float gearWidth = 30.0f;
 
     if (ImGui::Button("Build", ImVec2(buttonWidth, 0)))
@@ -352,15 +356,50 @@ void PackagingWindow::DrawBuildButtons()
 
     bool supportsRun = profile && PlatformSupportsRun(profile->mTargetPlatform);
     bool is3DS = profile && profile->mTargetPlatform == Platform::N3DS;
+    bool isWii = profile && profile->mTargetPlatform == Platform::Wii;
 
     if (!supportsRun)
     {
         ImGui::BeginDisabled();
     }
 
-    if (ImGui::Button("Build & Run", ImVec2(buttonWidth, 0)))
+    // For Wii: Show dropdown with Dolphin and Wii LAN options
+    if (isWii)
     {
-        OnBuildAndRun();
+        // Main button
+        if (ImGui::Button("Build & Run", ImVec2(dropdownButtonWidth, 0)))
+        {
+            ImGui::OpenPopup("WiiBuildRunMenu");
+        }
+
+        // Dropdown arrow
+        ImGui::SameLine(0, 0);
+        if (ImGui::ArrowButton("##WiiRunArrow", ImGuiDir_Down))
+        {
+            ImGui::OpenPopup("WiiBuildRunMenu");
+        }
+
+        // Popup menu
+        if (ImGui::BeginPopup("WiiBuildRunMenu"))
+        {
+            if (ImGui::MenuItem("Dolphin", nullptr, false))
+            {
+                OnBuildAndRun();
+            }
+            if (ImGui::MenuItem("Wii LAN", nullptr, false))
+            {
+                OnBuildAndRunOnDevice();
+            }
+            ImGui::EndPopup();
+        }
+    }
+    else
+    {
+        // Standard Build & Run button for other platforms
+        if (ImGui::Button("Build & Run", ImVec2(buttonWidth, 0)))
+        {
+            OnBuildAndRun();
+        }
     }
 
     if (!supportsRun)
@@ -488,6 +527,52 @@ void PackagingWindow::Draw3dsLinkWarningPopup()
         if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0)))
         {
             mShow3dsLinkWarning = false;
+            mPendingOutputPath.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void PackagingWindow::DrawWiiloadWarningPopup()
+{
+    if (mShowWiiloadWarning)
+    {
+        ImGui::OpenPopup("Wii Hardware Transfer");
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Wii Hardware Transfer", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Please make sure your Wii has Homebrew");
+        ImGui::Text("Channel open and is ready to receive");
+        ImGui::Text("files via wiiload.");
+        ImGui::Spacing();
+        ImGui::Text("Both devices must be on the same network.");
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        float buttonWidth = 80.0f;
+
+        if (ImGui::Button("Send", ImVec2(buttonWidth, 0)))
+        {
+            mShowWiiloadWarning = false;
+            ImGui::CloseCurrentPopup();
+
+            // Execute wiiload
+            LaunchWiiload(mPendingOutputPath);
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0)))
+        {
+            mShowWiiloadWarning = false;
             mPendingOutputPath.clear();
             ImGui::CloseCurrentPopup();
         }
@@ -695,6 +780,38 @@ void PackagingWindow::Launch3dsLink(const std::string& outputPath)
     }
 
     LogDebug("Launching 3dslink: %s", cmd.c_str());
+    SYS_Exec(cmd.c_str());
+}
+
+void PackagingWindow::LaunchWiiload(const std::string& outputPath)
+{
+    // Get launcher settings from Preferences module
+    LaunchersModule* launchers = static_cast<LaunchersModule*>(
+        PreferencesManager::Get()->FindModule("External/Launchers"));
+
+    if (launchers == nullptr)
+    {
+        LogError("Launchers module not found");
+        return;
+    }
+
+    // Check if wiiload is available
+    if (!launchers->IsWiiloadConfigured())
+    {
+        LogError("wiiload not available. Please ensure devkitPro is installed and Wii IP is configured in Preferences > External > Launchers.");
+        return;
+    }
+
+    // Build and execute the wiiload command
+    std::string cmd = launchers->BuildWiiloadCommand(outputPath);
+
+    if (cmd.empty())
+    {
+        LogError("Failed to build wiiload command");
+        return;
+    }
+
+    LogDebug("Launching wiiload: %s", cmd.c_str());
     SYS_Exec(cmd.c_str());
 }
 
@@ -1104,6 +1221,12 @@ void PackagingWindow::FinalizeBuild()
             // Show 3dslink warning popup
             mPendingOutputPath = mBuildState.mOutputPath;
             mShow3dsLinkWarning = true;
+        }
+        else if (mBuildState.mRunOnDevice && mBuildState.mTargetPlatform == Platform::Wii)
+        {
+            // Show wiiload warning popup
+            mPendingOutputPath = mBuildState.mOutputPath;
+            mShowWiiloadWarning = true;
         }
         else if (PlatformSupportsRun(mBuildState.mTargetPlatform))
         {

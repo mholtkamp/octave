@@ -1238,6 +1238,26 @@ void ActionManager::FinalizeLocalBuild()
             // Delegate to PackagingWindow for 3dslink
             GetPackagingWindow()->BuildAndRunWithProfile(platform, mBuildState.mEmbedded, true);
         }
+        else if (mBuildState.mRunOnDevice && platform == Platform::Wii)
+        {
+            // Launch wiiload directly
+            LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                PreferencesManager::Get()->FindModule("External/Launchers"));
+
+            if (launchers != nullptr && launchers->IsWiiloadConfigured())
+            {
+                std::string cmd = launchers->BuildWiiloadCommand(outputPath);
+                if (!cmd.empty())
+                {
+                    LogDebug("Launching wiiload: %s", cmd.c_str());
+                    SYS_Exec(cmd.c_str());
+                }
+            }
+            else
+            {
+                LogError("wiiload not configured. Set Wii IP in Preferences > External > Launchers.");
+            }
+        }
         else
         {
             LaunchersModule* launchers = static_cast<LaunchersModule*>(
