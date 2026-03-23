@@ -14,6 +14,7 @@ WRAPPER="/usr/local/bin/octave-editor"
 DESKTOP_FILE="/usr/share/applications/octave-editor.desktop"
 MIME_FILE="/usr/share/mime/packages/octave-editor.xml"
 ICON_FILE="/usr/share/icons/hicolor/128x128/apps/octave-editor.png"
+PROFILE_SCRIPT="/etc/profile.d/octave.sh"
 
 # Check for root
 if [ "$(id -u)" -ne 0 ]; then
@@ -56,6 +57,12 @@ fi
 if [ -f "$ICON_FILE" ]; then
     echo "Removing icon..."
     rm -f "$ICON_FILE"
+fi
+
+# --- Remove OCTAVE_PATH environment variable ---
+if [ -f "$PROFILE_SCRIPT" ]; then
+    echo "Removing OCTAVE_PATH environment variable..."
+    rm -f "$PROFILE_SCRIPT"
 fi
 
 # --- Update system caches ---

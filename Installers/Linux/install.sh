@@ -15,6 +15,7 @@ WRAPPER="/usr/local/bin/octave-editor"
 DESKTOP_DIR="/usr/share/applications"
 MIME_DIR="/usr/share/mime/packages"
 ICON_DIR="/usr/share/icons/hicolor/128x128/apps"
+PROFILE_SCRIPT="/etc/profile.d/octave.sh"
 
 # Check for root
 if [ "$(id -u)" -ne 0 ]; then
@@ -76,6 +77,14 @@ if [ -f "$INSTALL_DIR/OctaveLogo_128.png" ]; then
     cp "$INSTALL_DIR/OctaveLogo_128.png" "$ICON_DIR/octave-editor.png"
 fi
 
+# --- Set OCTAVE_PATH environment variable ---
+echo "Setting OCTAVE_PATH environment variable..."
+cat > "$PROFILE_SCRIPT" << 'PROFILE_EOF'
+# Octave Engine environment
+export OCTAVE_PATH="/opt/octave"
+PROFILE_EOF
+chmod 644 "$PROFILE_SCRIPT"
+
 # --- Update system caches ---
 echo "Updating system caches..."
 if command -v update-desktop-database > /dev/null 2>&1; then
@@ -92,4 +101,7 @@ echo ""
 echo "============================================"
 echo " Installation complete!"
 echo " Run: octave-editor"
+echo ""
+echo " OCTAVE_PATH has been set to $INSTALL_DIR"
+echo " (Log out and back in to apply)"
 echo "============================================"

@@ -61,6 +61,7 @@ Name: "docs"; Description: "Documentation"; Types: full
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "addtopath"; Description: "Add Octave to system PATH"; GroupDescription: "System integration:"
+Name: "setoctavepath"; Description: "Set OCTAVE_PATH environment variable"; GroupDescription: "System integration:"; Flags: checkedonce
 Name: "associateoctp"; Description: "Associate .octp files with Octave"; GroupDescription: "System integration:"
 
 [Files]
@@ -197,6 +198,8 @@ begin
   begin
     if IsTaskSelected('addtopath') then
       AddToPath(ExpandConstant('{app}'));
+    if IsTaskSelected('setoctavepath') then
+      RegWriteStringValue(HKEY_LOCAL_MACHINE, EnvironmentKey, 'OCTAVE_PATH', ExpandConstant('{app}'));
   end;
 end;
 
@@ -205,5 +208,6 @@ begin
   if CurUninstallStep = usPostUninstall then
   begin
     RemoveFromPath(ExpandConstant('{app}'));
+    RegDeleteValue(HKEY_LOCAL_MACHINE, EnvironmentKey, 'OCTAVE_PATH');
   end;
 end;
