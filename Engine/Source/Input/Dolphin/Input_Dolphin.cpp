@@ -147,7 +147,16 @@ void INP_Update()
             // IR support
             struct ir_t irData;
             WPAD_IR(i, &irData);
-            INP_SetTouchPosition((int32_t)irData.x, (int32_t)irData.y, i);
+
+            if (irData.valid)
+            {
+                INP_SetTouch(i);
+                INP_SetTouchPosition((int32_t)irData.x, (int32_t)irData.y, i);
+            }
+            else
+            {
+                INP_ClearTouch(i);
+            }
 
             // Orientation
             orient_t orientation;

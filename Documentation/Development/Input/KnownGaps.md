@@ -14,12 +14,6 @@ True gyroscope data would require **MotionPlus** extension support, which is not
 
 **Source**: `Engine/Source/Input/Dolphin/Input_Dolphin.cpp` - no gyro read calls present.
 
-### IR Valid Flag Not Checked
-
-The Wiimote IR pointer data is always read and set via `INP_SetTouchPosition()`, but the `irData.valid` flag is not checked. If the IR sensor loses line-of-sight to the sensor bar, stale position data may be returned instead of being cleared.
-
-**Source**: `Engine/Source/Input/Dolphin/Input_Dolphin.cpp:148-150`
-
 ### Nunchuk Accelerometer Not Read
 
 The Nunchuk has its own independent accelerometer, but only the Wiimote's accelerometer data is currently read. The Nunchuk accelerometer data is ignored.
