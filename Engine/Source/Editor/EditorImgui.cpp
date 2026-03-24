@@ -106,6 +106,8 @@ static bool sUnsavedModalActive = false;
 static std::vector<std::string> sSceneList;
 static int32_t sDevModeClicks = 0;
 
+static bool sOpenCredits = false;
+
 static void PopulateFileBrowserDirs()
 {
     sFileBrowserDoubleClickBlock = 0.2f;
@@ -4304,6 +4306,11 @@ static void DrawViewportPanel()
             }
         }
 
+        if (ImGui::Selectable("Credits"))
+        {
+            sOpenCredits = true;
+        }
+
         if (GetEditorState()->mDevMode &&
             GetEngineState()->mStandalone &&
             ImGui::Selectable("Prepare Release"))
@@ -4441,8 +4448,6 @@ static void DrawViewportPanel()
         ImGui::EndPopup();
     }
 
-    ImGui::End();
-
     // Set up ImGuizmo rect for the viewport area
     // edState was already declared earlier in this function
     // Account for interface scale - ImGui operates in scaled coordinates
@@ -4459,6 +4464,67 @@ static void DrawViewportPanel()
         (float)edState->mViewportWidth * invInterfaceScale,
         (float)edState->mViewportHeight * invInterfaceScale
     );
+
+    if (sOpenCredits)
+    {
+        ImGui::OpenPopup("Credits");
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(465, 490));
+
+        sOpenCredits = false;
+
+    }
+
+    bool creditsOpen = true;
+    if (ImGui::BeginPopupModal("Credits" , &creditsOpen))
+    {
+        // TODO: If continuing the project in the future, conisder adding a Credits.md file
+        //   and programmatically populate the credits list.
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 1.0f, 1.0f));
+        ImGui::Text("Creator:");
+        ImGui::PopStyleColor();
+        ImGui::Text("Martin Holtkamp");
+        ImGui::Text("https://github.com/mholtkamp");
+        ImGui::Text("https://www.youtube.com/@Dinglemancer");
+        ImGui::Spacing();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 1.0f, 1.0f));
+        ImGui::Text("Supporters:");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("Greenie");
+        ImGui::Text("lemurdog chaos");
+        ImGui::Text("TheHumanPerson9753");
+        ImGui::Spacing();
+
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 1.0f, 1.0f));
+        ImGui::Text("Contributors:");
+        ImGui::PopStyleColor();
+
+        ImGui::Text("AxelElRojo");
+        ImGui::Text("Bloxxel64");
+        ImGui::Text("BttrDrgn");
+        ImGui::Text("CarsonKompon");
+        ImGui::Text("cobalt2727");
+        ImGui::Text("ethanarns");
+        ImGui::Text("Extrems");
+        ImGui::Text("Ggjorven");
+        ImGui::Text("KAUTARUMA");
+        ImGui::Text("mardy");
+        ImGui::Text("myuu-151");
+        ImGui::Text("radish64");
+        ImGui::Text("SandwichMan5");
+        ImGui::Text("SnoFlak");
+        ImGui::Text("Valereon");
+        ImGui::Text("vltmedia");
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::End();
 }
 
 static void DrawPaintColorsPanel()
