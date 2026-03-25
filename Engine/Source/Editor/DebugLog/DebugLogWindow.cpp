@@ -384,8 +384,17 @@ void DebugLogWindow::DrawContent()
                 default: break;
             }
 
+            // Replace newlines with visual separator for single-line display
+            // (full message preserved in entry.mMessage for copy operations)
+            std::string displayMsg = entry.mMessage;
+            for (size_t i = 0; i < displayMsg.size(); ++i)
+            {
+                if (displayMsg[i] == '\n' || displayMsg[i] == '\r')
+                    displayMsg[i] = ' ';
+            }
+
             char label[1280];
-            snprintf(label, sizeof(label), "%s [%02d:%02d:%02d] %s", severityIcon, hours, mins, secs, entry.mMessage.c_str());
+            snprintf(label, sizeof(label), "%s [%02d:%02d:%02d] %s", severityIcon, hours, mins, secs, displayMsg.c_str());
 
             ImVec4 color;
             switch (entry.mSeverity)
@@ -480,9 +489,16 @@ void DebugLogWindow::DrawContent()
                 if (ImGui::Selectable("Copy"))
                 {
                     if (mSelectedEntries.size() > 1)
+                    {
                         CopySelectedToClipboard();
+                    }
                     else
-                        ImGui::SetClipboardText(label);
+                    {
+                        // Copy with original message (preserving newlines)
+                        char copyText[1280];
+                        snprintf(copyText, sizeof(copyText), "[%02d:%02d:%02d] %s", hours, mins, secs, entry.mMessage.c_str());
+                        ImGui::SetClipboardText(copyText);
+                    }
                 }
                 if (ImGui::Selectable("Copy All"))
                 {

@@ -354,20 +354,20 @@ NodePtr Scene::Instantiate()
         // if the user renames a native child, then we will have a duplicate so we need to destroy the native one.
         std::vector<Node*> nativeChildren;
 
-        LogDebug("Scene::Instantiate() - scene '%s' has %u nodeDefs", GetName().c_str(), (uint32_t)mNodeDefs.size());
+        //LogDebug("Scene::Instantiate() - scene '%s' has %u nodeDefs", GetName().c_str(), (uint32_t)mNodeDefs.size());
 
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
-            LogDebug("  [%u] name='%s' type=%u parentIdx=%u hasScene=%d",
-                i, mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType,
-                (uint32_t)mNodeDefs[i].mParentIndex, mNodeDefs[i].mScene != nullptr ? 1 : 0);
+            // LogDebug("  [%u] name='%s' type=%u parentIdx=%u hasScene=%d",
+            //     i, mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType,
+            //     (uint32_t)mNodeDefs[i].mParentIndex, mNodeDefs[i].mScene != nullptr ? 1 : 0);
 
             NodePtr nodePtr;
             NodePtr parent = (i > 0 && nodeList.size() > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
             if (i > 0 && nodeList.size() <= mNodeDefs[i].mParentIndex)
             {
-                LogError("Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
+                // LogError("Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
                 parent = nodeList[0];
             }
 
@@ -406,7 +406,11 @@ NodePtr Scene::Instantiate()
                         }
                     }
 
-                    OCT_ASSERT(isNativeChild);
+                    if (!isNativeChild)
+                    {
+                        LogWarning("Scene '%s': Node '%s' expected to be native child but wasn't found in nativeChildren list",
+                            GetName().c_str(), mNodeDefs[i].mName.c_str());
+                    }
                 }
             }
 
@@ -416,15 +420,15 @@ NodePtr Scene::Instantiate()
                 if (mNodeDefs[i].mScene != nullptr)
                 {
                     Scene* scene = mNodeDefs[i].mScene.Get<Scene>();
-                    LogDebug("  -> Instantiating subscene for node '%s'", mNodeDefs[i].mName.c_str());
+                    // LogDebug("  -> Instantiating subscene for node '%s'", mNodeDefs[i].mName.c_str());
                     nodePtr = scene->Instantiate();
-                    LogDebug("  -> Subscene result: %s", nodePtr != nullptr ? "OK" : "NULL");
+                    // LogDebug("  -> Subscene result: %s", nodePtr != nullptr ? "OK" : "NULL");
                 }
                 else
                 {
-                    LogDebug("  -> Node::Construct(type=%u) for '%s'", (uint32_t)mNodeDefs[i].mType, mNodeDefs[i].mName.c_str());
+                    // LogDebug("  -> Node::Construct(type=%u) for '%s'", (uint32_t)mNodeDefs[i].mType, mNodeDefs[i].mName.c_str());
                     nodePtr = Node::Construct(mNodeDefs[i].mType);
-                    LogDebug("  -> Construct result: %s (ptr=%p)", nodePtr != nullptr ? "OK" : "NULL", (void*)nodePtr.Get());
+                    // LogDebug("  -> Construct result: %s (ptr=%p)", nodePtr != nullptr ? "OK" : "NULL", (void*)nodePtr.Get());
                 }
 
                 if (nodePtr == nullptr)
@@ -432,7 +436,7 @@ NodePtr Scene::Instantiate()
                     LogWarning("Failed to construct node '%s' (type=%u, unknown type?), using Node3D placeholder.",
                         mNodeDefs[i].mName.c_str(), (uint32_t)mNodeDefs[i].mType);
                     nodePtr = Node::Construct("Node3D");
-                    LogDebug("  -> Node3D fallback result: %s", nodePtr != nullptr ? "OK" : "NULL");
+                    // LogDebug("  -> Node3D fallback result: %s", nodePtr != nullptr ? "OK" : "NULL");
                 }
 
                 if (nodePtr != nullptr)
@@ -444,7 +448,7 @@ NodePtr Scene::Instantiate()
                     }
 #endif
 
-                    LogDebug("  -> GetNumChildren() on node ptr=%p", (void*)nodePtr.Get());
+                    // LogDebug("  -> GetNumChildren() on node ptr=%p", (void*)nodePtr.Get());
                     for (uint32_t c = 0; c < nodePtr->GetNumChildren(); ++c)
                     {
                         nativeChildren.push_back(nodePtr->GetChild(c));

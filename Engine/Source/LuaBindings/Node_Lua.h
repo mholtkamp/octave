@@ -12,7 +12,7 @@
 
 #define NODE_LUA_NAME "Node"
 #define NODE_LUA_FLAG "cfNode"
-#define CHECK_NODE(L, arg)  CheckNodeWrapper(L, arg);
+#define CHECK_NODE(L, arg)  CheckNodeLuaType(L, arg, NODE_LUA_NAME, NODE_LUA_FLAG);
 #define CHECK_NODE_PTR(L, arg)  CheckNodeWrapperPtr(L, arg);
 
 struct Node_Lua

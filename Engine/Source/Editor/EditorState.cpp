@@ -767,8 +767,7 @@ void EditorState::EndPlayInEditor()
 void EditorState::EjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        !mEjected &&
-        !mPlayInGameWindow)
+        !mEjected)
     {
         SetSelectedNode(nullptr);
 
@@ -781,6 +780,7 @@ void EditorState::EjectPlayInEditor()
             mEditorCamera->SetTransform(activeCam->GetTransform());
         }
 
+        mGamePreviewCaptured = false;
         INP_TrapCursor(false);
         INP_ShowCursor(true);
         INP_LockCursor(false);
@@ -798,13 +798,18 @@ void EditorState::EjectPlayInEditor()
 void EditorState::InjectPlayInEditor()
 {
     if (mPlayInEditor &&
-        mEjected &&
-        !mPlayInGameWindow)
+        mEjected)
     {
         SetSelectedNode(nullptr);
 
         ShowEditorUi(false);
         mEjected = false;
+
+        // Re-capture cursor if in game window mode
+        if (mPlayInGameWindow)
+        {
+            mGamePreviewCaptured = true;
+        }
     }
 }
 

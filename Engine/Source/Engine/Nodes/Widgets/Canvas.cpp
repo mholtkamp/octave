@@ -141,15 +141,9 @@ void Canvas::EditorTick(float deltaTime)
 
     UIDocument* sourceDoc = static_cast<UIDocument*>(mUIDocumentRef.Get());
 
-    if (sourceDoc != nullptr && mRuntimeDocument == nullptr)
+    // Tear down preview if source was cleared
+    if (sourceDoc == nullptr && mRuntimeDocument != nullptr)
     {
-        // Auto-generate preview when source is set but no runtime doc exists
-        // (handles scene-open and post-Stop)
-        GenerateEditorPreview();
-    }
-    else if (sourceDoc == nullptr && mRuntimeDocument != nullptr)
-    {
-        // Source was cleared — tear down preview
         DestroyRuntimeDocument();
     }
 }
@@ -179,16 +173,10 @@ bool Canvas::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         success = true;
 
 #if EDITOR
-        if (!IsPlayingInEditor())
+        // Clear preview if document was removed; user can click "Regenerate Preview" to rebuild
+        if (!IsPlayingInEditor() && canvas->mUIDocumentRef.Get() == nullptr)
         {
-            if (canvas->mUIDocumentRef.Get() != nullptr)
-            {
-                canvas->GenerateEditorPreview();
-            }
-            else
-            {
-                canvas->DestroyRuntimeDocument();
-            }
+            canvas->DestroyRuntimeDocument();
         }
 #endif
     }

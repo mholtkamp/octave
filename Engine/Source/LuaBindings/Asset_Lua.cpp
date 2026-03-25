@@ -34,7 +34,7 @@ int Asset_Lua::Destroy(lua_State* L)
 {
     CHECK_ASSET_USERDATA(L, 1);
     Asset_Lua* assetLua = (Asset_Lua*)lua_touserdata(L, 1);
-    assetLua->~Asset_Lua(); // Should decement refcount
+    assetLua->~Asset_Lua();
     return 0;
 }
 

@@ -54,21 +54,8 @@ bool ScriptUtils::CallLuaFunc(int numArgs, int numResults)
         const char* errMsg = lua_tostring(L, -1);
         if (errMsg)
         {
-            size_t len = strlen(errMsg);
-            const size_t chunkSize = 40;
-            LogError("LuaErr:");
-            for (size_t i = 0; i < len; i += chunkSize)
-            {
-                char chunk[48];
-                size_t copyLen = (len - i < chunkSize) ? (len - i) : chunkSize;
-                strncpy(chunk, errMsg + i, copyLen);
-                chunk[copyLen] = '\0';
-                LogError("%s", chunk);
-            }
+            LogError("Lua Error:\n%s", errMsg);
         }
-        // Debug: check RPM status
-        RuntimePluginManager* rpm = RuntimePluginManager::Get();
-        LogError("RPM:%s P:%zu", rpm ? "Y" : "N", rpm ? rpm->GetPluginCount() : 0);
         if (sBreakOnScriptError) { OCT_ASSERT(0); }
         success = false;
     }
@@ -344,21 +331,9 @@ bool ScriptUtils::RunScript(const char* fileName, Datum* ret)
             const char* errMsg = lua_tostring(L, -1);
             if (errMsg)
             {
-                size_t len = strlen(errMsg);
-                const size_t chunkSize = 40;
-                LogError("LuaErr2:");
-                for (size_t i = 0; i < len; i += chunkSize)
-                {
-                    char chunk[48];
-                    size_t copyLen = (len - i < chunkSize) ? (len - i) : chunkSize;
-                    strncpy(chunk, errMsg + i, copyLen);
-                    chunk[copyLen] = '\0';
-                    LogError("%s", chunk);
-                }
+                LogError("Lua Load Error (%s):\n%s", className.c_str(), errMsg);
             }
             if (sBreakOnScriptError) { OCT_ASSERT(0); }
-
-            LogError("Load fail: %s", className.c_str());
         }
         else
         {

@@ -26,6 +26,7 @@ public:
 
     void SetUIDocument(UIDocument* doc);
     UIDocument* GetUIDocument() const;
+    UIDocument* GetRuntimeDocument() const { return mRuntimeDocument; }
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 

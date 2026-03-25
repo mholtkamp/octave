@@ -16,6 +16,8 @@
 
 struct Canvas_Lua
 {
+    static int GetUIDocument(lua_State* L);
+
     static void Bind();
 };
 

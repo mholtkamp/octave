@@ -100,22 +100,42 @@ static void CallLuaRefFunc(lua_State* L, int ref, Node* arg)
 }
 
 //------------------------------------------------------------
-// UI.Load(path) → UIDocument
+// UI.Load(pathOrAsset) → UIDocument
+// Accepts either a string path or a UIDocument asset
 //------------------------------------------------------------
 
 int UIDocument_Lua::Load(lua_State* L)
 {
+    // Check if argument is a UIDocument asset
+    if (lua_isuserdata(L, 1))
+    {
+        Asset* asset = CHECK_ASSET_USERDATA(L, 1);
+        if (asset != nullptr && asset->GetType() == UIDocument::GetStaticType())
+        {
+            // Just return the source asset directly - Mount() will call Instantiate()
+            // to create a fresh widget tree
+            Asset_Lua::Create(L, asset);
+            return 1;
+        }
+        else
+        {
+            luaL_error(L, "UI.Load: expected UIDocument asset or string path");
+            return 0;
+        }
+    }
+
+    // String path - original behavior
     const char* path = CHECK_STRING(L, 1);
 
-    // Resolve relative paths against the project directory
-    std::string fullPath = GetEngineState()->mProjectDirectory + path;
+    // Resolve relative paths against the project Assets directory
+    std::string fullPath = GetEngineState()->mProjectDirectory + "Assets/" + path;
 
     UIDocument* doc = new UIDocument();
     doc->Create();
 
     if (!doc->Import(fullPath, nullptr))
     {
-        LogError("UI.Load: Failed to import '%s'", path);
+        LogError("UI.Load: Failed to import '%s' (full path: %s)", path, fullPath.c_str());
         doc->Destroy();
         delete doc;
         lua_pushnil(L);
@@ -323,14 +343,18 @@ int UIDocument_Lua::Tick(lua_State* L)
 
 int UIDocument_Lua::Destroy(lua_State* L)
 {
-    // Get the Asset_Lua userdata and clean up
-    UIDocument* doc = CHECK_UIDOCUMENT(L, 1);
-    if (doc)
+    // Get the Asset_Lua userdata - may be null if already destroyed
+    Asset_Lua* assetLua = (Asset_Lua*)lua_touserdata(L, 1);
+    if (assetLua && assetLua->mAsset.Get() != nullptr)
     {
-        doc->Unmount();
+        UIDocument* doc = assetLua->mAsset.Get()->As<UIDocument>();
+        if (doc)
+        {
+            doc->Unmount();
+        }
     }
 
-    // Delegate to Asset_Lua::Destroy for ref cleanup
+    // Delegate to Asset_Lua::Destroy for ref cleanup (safe for multiple calls)
     return Asset_Lua::Destroy(L);
 }
 
@@ -360,6 +384,7 @@ void UIDocument_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetData);
     REGISTER_TABLE_FUNC(L, mtIndex, SetCallback);
     REGISTER_TABLE_FUNC(L, mtIndex, Tick);
+    REGISTER_TABLE_FUNC(L, mtIndex, Destroy);
     REGISTER_TABLE_FUNC_EX(L, mtIndex, Destroy, "__gc");
 
     lua_pop(L, 1);

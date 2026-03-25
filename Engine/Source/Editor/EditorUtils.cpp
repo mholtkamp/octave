@@ -116,6 +116,7 @@ AssetStub* EditorAddUniqueAsset(const char* baseName, AssetDir* dir, TypeId asse
             {
                 Asset* newAsset = Asset::CreateInstance(assetType);
                 newAsset->SetName(name);
+                newAsset->SetUuid(stub->mUuid);
                 stub->mAsset = newAsset;
             }
         }

@@ -189,6 +189,10 @@ static const ImVec4 kToggledColor = ImVec4(0.7f, 0.2f, 0.2f, 1.0f);
 constexpr const uint32_t kPopupInputBufferSize = 256;
 static char sPopupInputBuffer[kPopupInputBufferSize] = {};
 
+// XML to UIDocument conversion state
+static std::string sConvertXmlSourcePath;
+static bool sShowUIDocumentPicker = false;
+
 static int sNewSceneType = 1;        // 0=2D, 1=3D
 static bool sNewSceneCreateCamera = true;
 static int32_t sZooColumns = 5;
@@ -231,6 +235,9 @@ static int32_t sDevModeClicks = 0;
 
 static std::string sReplaceAssetInput;
 static std::vector<std::string> sReplaceAssetSuggestions;
+
+static Node* sCreateSceneTargetNode = nullptr;
+static AssetDir* sCreateSceneTargetDir = nullptr;
 
 static AssetStub* sAssetDropStub = nullptr;
 static Node* sAssetDropParentNode = nullptr;
@@ -388,6 +395,7 @@ static void DrawScenePanel();
 static void DrawAssetsPanel();
 static void DrawPropertiesPanel();
 static void DrawScriptsPanel();
+static void DrawDirPickerTree(AssetDir* dir, AssetDir** selectedDir);
 
 // Alternating row background helpers
 static void BeginAlternatingRows();
@@ -3864,6 +3872,17 @@ static void DrawScenePanel()
                     }
                 }
 
+                if (!nodeSceneLinked && !inSubScene && node->GetNumChildren() > 0 && ImGui::Selectable("Create Scene...", false, ImGuiSelectableFlags_DontClosePopups))
+                {
+                    ImGui::OpenPopup("Create Scene From Node");
+                    std::string defaultName = "SC_" + node->GetName();
+                    strncpy(sPopupInputBuffer, defaultName.c_str(), kPopupInputBufferSize - 1);
+                    sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    sCreateSceneTargetNode = node;
+                    sCreateSceneTargetDir = GetEditorState()->GetAssetDirectory();
+                    setTextInputFocus = true;
+                }
+
                 // Plugin/addon context menu items
                 ImGui::Separator();
                 {
@@ -4082,6 +4101,66 @@ static void DrawScenePanel()
 
                     if (ImGui::Button("Cancel"))
                     {
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginPopup("Create Scene From Node"))
+                {
+                    if (setTextInputFocus)
+                    {
+                        ImGui::SetKeyboardFocusHere();
+                    }
+
+                    ImGui::Text("Scene name:");
+                    ImGui::InputText("##CreateSceneName", sPopupInputBuffer, kPopupInputBufferSize);
+
+                    ImGui::Spacing();
+                    ImGui::Text("Output directory:");
+                    if (sCreateSceneTargetDir != nullptr)
+                    {
+                        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "%s", sCreateSceneTargetDir->mPath.c_str());
+                    }
+
+                    ImGui::Spacing();
+                    if (ImGui::TreeNode("Select Directory"))
+                    {
+                        AssetDir* rootDir = AssetManager::Get()->GetRootDirectory();
+                        if (rootDir != nullptr)
+                        {
+                            ImGui::BeginChild("DirTree", ImVec2(300, 150), true);
+                            for (AssetDir* child : rootDir->mChildDirs)
+                            {
+                                DrawDirPickerTree(child, &sCreateSceneTargetDir);
+                            }
+                            ImGui::EndChild();
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    ImGui::Spacing();
+                    bool canCreate = (sCreateSceneTargetNode != nullptr && strlen(sPopupInputBuffer) > 0 && sCreateSceneTargetDir != nullptr);
+                    if (!canCreate)
+                        ImGui::BeginDisabled();
+                    if (ImGui::Button("Create"))
+                    {
+                        AssetStub* stub = EditorAddUniqueAsset(sPopupInputBuffer, sCreateSceneTargetDir, Scene::GetStaticType(), true);
+                        GetEditorState()->CaptureAndSaveScene(stub, sCreateSceneTargetNode);
+                        sCreateSceneTargetNode = nullptr;
+                        sCreateSceneTargetDir = nullptr;
+                        ImGui::CloseCurrentPopup();
+                        closeContextPopup = true;
+                    }
+                    if (!canCreate)
+                        ImGui::EndDisabled();
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel"))
+                    {
+                        sCreateSceneTargetNode = nullptr;
+                        sCreateSceneTargetDir = nullptr;
                         ImGui::CloseCurrentPopup();
                     }
 
@@ -5114,6 +5193,55 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 }
 
 // Flat directory picker for dialogs (e.g., Save Scene As)
+static void DrawDirPickerTree(AssetDir* dir, AssetDir** selectedDir)
+{
+    if (dir == nullptr || selectedDir == nullptr)
+        return;
+
+    // Skip engine/addon directories
+    if (dir->mEngineDir || dir->mAddonDir)
+        return;
+
+    ImGuiTreeNodeFlags dirFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+    // Check if this is the selected directory
+    if (*selectedDir == dir)
+        dirFlags |= ImGuiTreeNodeFlags_Selected;
+
+    // Check if directory has no subdirectories
+    bool hasSubdirs = false;
+    for (AssetDir* child : dir->mChildDirs)
+    {
+        if (!child->mEngineDir && !child->mAddonDir)
+        {
+            hasSubdirs = true;
+            break;
+        }
+    }
+    if (!hasSubdirs)
+        dirFlags |= ImGuiTreeNodeFlags_Leaf;
+
+    std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + dir->mName;
+    ImGui::PushID(dir);
+    bool nodeOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
+
+    // Click to select
+    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+    {
+        *selectedDir = dir;
+    }
+
+    if (nodeOpen)
+    {
+        for (AssetDir* child : dir->mChildDirs)
+        {
+            DrawDirPickerTree(child, selectedDir);
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
 static void DrawDirPicker()
 {
     AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
@@ -5546,6 +5674,31 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
             {
                 std::string dirPath = dir->mPath;
                 SYS_ExplorerOpenDirectory(dirPath);
+            }
+
+            // Convert submenu for XML files
+            if (ext && _stricmp(ext, ".xml") == 0)
+            {
+                if (ImGui::BeginMenu("Convert"))
+                {
+                    if (ImGui::MenuItem("New UIDocument"))
+                    {
+                        sConvertXmlSourcePath = fullPath;
+                        std::string baseName = Asset::GetNameFromPath(fullPath);
+                        if (baseName.length() < 3 || baseName.substr(0, 3) != "UI_")
+                            baseName = "UI_" + baseName;
+                        strncpy(sPopupInputBuffer, baseName.c_str(), kPopupInputBufferSize - 1);
+                        sPopupInputBuffer[kPopupInputBufferSize - 1] = '\0';
+                    }
+
+                    if (ImGui::MenuItem("Refresh UIDocument"))
+                    {
+                        sConvertXmlSourcePath = fullPath;
+                        sShowUIDocumentPicker = true;
+                    }
+
+                    ImGui::EndMenu();
+                }
             }
 
             ImGui::Separator();
@@ -8348,6 +8501,152 @@ static void DrawMainMenuBar()
         if (ImGui::Button("Cancel"))
         {
             GetEditorState()->mIOAssetPath = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Convert XML to New UIDocument popup
+    if (!sConvertXmlSourcePath.empty() && !sShowUIDocumentPicker)
+    {
+        ImGui::OpenPopup("Convert to UIDocument");
+    }
+
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("Convert to UIDocument", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::Text("Create UIDocument from XML:");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "%s", sConvertXmlSourcePath.c_str());
+        ImGui::Separator();
+
+        bool create = ImGui::InputText("Asset Name", sPopupInputBuffer, kPopupInputBufferSize,
+                                        ImGuiInputTextFlags_EnterReturnsTrue);
+
+        ImGui::SameLine();
+        if (ImGui::Button("Create"))
+            create = true;
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel##ConvertCancel"))
+        {
+            sConvertXmlSourcePath.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (create && sPopupInputBuffer[0] != '\0')
+        {
+            std::string assetName = sPopupInputBuffer;
+            AssetDir* currentDir = GetEditorState()->GetAssetDirectory();
+
+            if (currentDir != nullptr)
+            {
+                AssetStub* stub = EditorAddUniqueAsset(assetName.c_str(), currentDir,
+                                                        UIDocument::GetStaticType(), false);
+                if (stub != nullptr && stub->mAsset != nullptr)
+                {
+                    UIDocument* doc = stub->mAsset->As<UIDocument>();
+                    if (doc != nullptr && doc->Import(sConvertXmlSourcePath, nullptr))
+                    {
+                        AssetManager::Get()->SaveAsset(*stub);
+                        LogDebug("Created UIDocument '%s' from: %s", assetName.c_str(),
+                                 sConvertXmlSourcePath.c_str());
+                    }
+                    else
+                    {
+                        LogError("Failed to import XML: %s", sConvertXmlSourcePath.c_str());
+                    }
+                }
+            }
+
+            sConvertXmlSourcePath.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Refresh UIDocument picker popup
+    if (sShowUIDocumentPicker)
+    {
+        ImGui::OpenPopup("Refresh UIDocument");
+        sShowUIDocumentPicker = false;
+    }
+
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    }
+
+    if (ImGui::BeginPopupModal("Refresh UIDocument", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::Text("Select UIDocument to refresh with XML:");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "%s", sConvertXmlSourcePath.c_str());
+        ImGui::Separator();
+
+        static char filterBuffer[128] = {};
+        ImGui::InputText("Search", filterBuffer, sizeof(filterBuffer));
+
+        std::string filterLower = filterBuffer;
+        std::transform(filterLower.begin(), filterLower.end(), filterLower.begin(), ::tolower);
+
+        if (ImGui::BeginListBox("##UIDocList", ImVec2(350, 250)))
+        {
+            TypeId uiDocType = UIDocument::GetStaticType();
+            const auto& assetMap = AssetManager::Get()->GetAssetMap();
+
+            for (const auto& pair : assetMap)
+            {
+                AssetStub* stub = pair.second;
+                if (stub == nullptr || stub->mType != uiDocType)
+                    continue;
+
+                // Filter by search
+                if (!filterLower.empty())
+                {
+                    std::string nameLower = stub->mName;
+                    std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+                    if (nameLower.find(filterLower) == std::string::npos)
+                        continue;
+                }
+
+                if (ImGui::Selectable(stub->mName.c_str()))
+                {
+                    // Load if needed
+                    if (stub->mAsset == nullptr)
+                        AssetManager::Get()->LoadAsset(*stub);
+
+                    if (stub->mAsset != nullptr)
+                    {
+                        UIDocument* doc = stub->mAsset->As<UIDocument>();
+                        if (doc != nullptr && doc->Import(sConvertXmlSourcePath, nullptr))
+                        {
+                            AssetManager::Get()->SaveAsset(*stub);
+                            LogDebug("Refreshed UIDocument '%s' from: %s", stub->mName.c_str(),
+                                     sConvertXmlSourcePath.c_str());
+                        }
+                        else
+                        {
+                            LogError("Failed to refresh UIDocument: %s", stub->mName.c_str());
+                        }
+                    }
+
+                    filterBuffer[0] = '\0';
+                    sConvertXmlSourcePath.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            ImGui::EndListBox();
+        }
+
+        if (ImGui::Button("Cancel##RefreshCancel"))
+        {
+            filterBuffer[0] = '\0';
+            sConvertXmlSourcePath.clear();
             ImGui::CloseCurrentPopup();
         }
 
