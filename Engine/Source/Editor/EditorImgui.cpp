@@ -5764,7 +5764,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
             }
 
             // Convert submenu for XML files
-            if (ext && _stricmp(ext, ".xml") == 0)
+            if (ext && strcasecmp(ext, ".xml") == 0)
             {
                 if (ImGui::BeginMenu("Convert"))
                 {
