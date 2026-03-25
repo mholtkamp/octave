@@ -17,6 +17,7 @@
 #include "imgui.h"
 
 #include <cstring>
+#include <cstdio>
 #include <thread>
 #include <mutex>
 
@@ -193,15 +194,30 @@ void PackagingWindow::DrawProfileList()
     std::vector<BuildProfile>& profiles = settings->GetProfiles();
     int32_t selectedIndex = settings->GetSelectedProfileIndex();
 
+    uint32_t currentTargetId = settings->GetCurrentTargetProfileId();
+
     for (int32_t i = 0; i < static_cast<int32_t>(profiles.size()); ++i)
     {
         BuildProfile& profile = profiles[i];
         bool isSelected = (i == selectedIndex);
+        bool isCurrentTarget = (profile.mId == currentTargetId);
 
         // Use profile ID for unique ImGui ID to prevent crash with empty names
         ImGui::PushID(static_cast<int>(profile.mId));
-        const char* displayName = profile.mName.empty() ? " " : profile.mName.c_str();
-        if (ImGui::Selectable(displayName, isSelected))
+
+        // Build display name with star prefix for current target
+        char displayBuffer[512];
+        const char* name = profile.mName.empty() ? " " : profile.mName.c_str();
+        if (isCurrentTarget)
+        {
+            snprintf(displayBuffer, sizeof(displayBuffer), "* %s", name);
+        }
+        else
+        {
+            snprintf(displayBuffer, sizeof(displayBuffer), "  %s", name);
+        }
+
+        if (ImGui::Selectable(displayBuffer, isSelected))
         {
             settings->SetSelectedProfileIndex(i);
 
@@ -212,6 +228,29 @@ void PackagingWindow::DrawProfileList()
             strncpy(mOutputDirBuffer, profile.mOutputDirectory.c_str(), sizeof(mOutputDirBuffer) - 1);
             mOutputDirBuffer[sizeof(mOutputDirBuffer) - 1] = '\0';
         }
+
+        // Right-click context menu
+        // The PushID above makes "ProfileContextMenu" unique per profile
+        ImGui::OpenPopupOnItemClick("ProfileContextMenu", ImGuiPopupFlags_MouseButtonRight);
+        if (ImGui::BeginPopup("ProfileContextMenu"))
+        {
+            if (isCurrentTarget)
+            {
+                if (ImGui::MenuItem("Clear as Current Target"))
+                {
+                    settings->SetCurrentTargetProfileId(0);
+                }
+            }
+            else
+            {
+                if (ImGui::MenuItem("Set as Current Target"))
+                {
+                    settings->SetCurrentTargetProfileId(profile.mId);
+                }
+            }
+            ImGui::EndPopup();
+        }
+
         ImGui::PopID();
     }
 }

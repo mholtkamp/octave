@@ -35,6 +35,7 @@
 #include "EditorUIHookManager.h"
 #include "ControllerServer/ControllerServer.h"
 #include "Preferences/Network/NetworkModule.h"
+#include "Profiling/ProfilingWindow.h"
 #include "Grid.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Font.h"
@@ -209,6 +210,9 @@ void EditorMain(int32_t argc, char** argv)
                 NativeAddonManager::Get()->TickAllPlugins(deltaTime);
             }
         }
+
+        // Tick profiling window to record frame time history
+        GetProfilingWindow()->Tick();
 
         if (GetEditorState()->mEndPieAtEndOfFrame)
         {

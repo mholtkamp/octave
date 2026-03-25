@@ -80,6 +80,24 @@ public:
     void SetSelectedProfileIndex(int32_t index);
 
     /**
+     * @brief Gets the current target profile for profiling/diagnostics.
+     * @return Pointer to the current target profile, or nullptr if none set
+     */
+    BuildProfile* GetCurrentTargetProfile();
+
+    /**
+     * @brief Sets the current target profile by ID.
+     * @param profileId The ID of the profile to set as current target (0 = none)
+     */
+    void SetCurrentTargetProfileId(uint32_t profileId);
+
+    /**
+     * @brief Gets the current target profile ID.
+     * @return The current target profile ID (0 = none)
+     */
+    uint32_t GetCurrentTargetProfileId() const { return mCurrentTargetProfileId; }
+
+    /**
      * @brief Loads settings from the project's settings file.
      * Called when a project is opened.
      */
@@ -111,6 +129,9 @@ private:
 
     /** @brief Next unique ID to assign to new profiles */
     uint32_t mNextProfileId = 1;
+
+    /** @brief ID of the current target profile for profiling/diagnostics (0 = none) */
+    uint32_t mCurrentTargetProfileId = 0;
 };
 
 #endif

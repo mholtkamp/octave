@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "InputDevices.h"
 #include "Plugins/ImGuiPluginContext.h"
+#include "Profiling/ProfilingWindow.h"
 
 #include "imgui.h"
 #include "imgui_dock.h"
@@ -950,6 +951,48 @@ void EditorUIHookManager::InitializeHooks()
 
         mgr->mOnControllerServerStateChanged.push_back({hookId, callback, userData});
     };
+
+    // ===== Profiling Window Extension Hooks =====
+
+    mHooks.RegisterProfilingStat = [](HookId hookId, const char* statName, const char* category, float maxValue, bool showAsBar) {
+        ProfilingWindow* profiling = GetProfilingWindow();
+        if (profiling != nullptr)
+        {
+            profiling->RegisterCustomStat(hookId, statName, category, maxValue, showAsBar);
+        }
+    };
+
+    mHooks.UnregisterProfilingStat = [](HookId hookId, const char* statName) {
+        ProfilingWindow* profiling = GetProfilingWindow();
+        if (profiling != nullptr)
+        {
+            profiling->UnregisterCustomStat(hookId, statName);
+        }
+    };
+
+    mHooks.SetProfilingStatValue = [](const char* statName, float value) {
+        ProfilingWindow* profiling = GetProfilingWindow();
+        if (profiling != nullptr)
+        {
+            profiling->SetCustomStatValue(statName, value);
+        }
+    };
+
+    mHooks.RegisterProfilingSection = [](HookId hookId, const char* sectionName, void (*drawFunc)(void*), void* userData) {
+        ProfilingWindow* profiling = GetProfilingWindow();
+        if (profiling != nullptr)
+        {
+            profiling->RegisterCustomSection(hookId, sectionName, drawFunc, userData);
+        }
+    };
+
+    mHooks.UnregisterProfilingSection = [](HookId hookId, const char* sectionName) {
+        ProfilingWindow* profiling = GetProfilingWindow();
+        if (profiling != nullptr)
+        {
+            profiling->UnregisterCustomSection(hookId, sectionName);
+        }
+    };
 }
 
 const std::vector<RegisteredMenuItem>& EditorUIHookManager::GetMenuItems(const std::string& menuPath) const
@@ -1227,6 +1270,13 @@ void EditorUIHookManager::RemoveAllHooks(HookId hookId)
     removeByHookId(mGamePreviewResolutions);
     removeByHookId(mControllerRoutes);
     removeByHookId(mOnControllerServerStateChanged);
+
+    // Remove profiling hooks (managed by ProfilingWindow)
+    ProfilingWindow* profiling = GetProfilingWindow();
+    if (profiling != nullptr)
+    {
+        profiling->RemoveAllHooks(hookId);
+    }
 }
 
 // ===== Top-Level Menus and Toolbar Drawing =====

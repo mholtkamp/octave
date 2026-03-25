@@ -183,6 +183,9 @@ struct EditorState
 
     // Timeline Panel state
     bool mShowTimelinePanel = false;
+
+    // Profiling Panel state
+    bool mShowProfilingPanel = false;
     TimelineRef mEditedTimelineRef;
     TimelineInstance* mTimelinePreviewInstance = nullptr;
     float mTimelinePlayheadTime = 0.0f;

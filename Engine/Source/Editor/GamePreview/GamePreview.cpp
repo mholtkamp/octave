@@ -13,6 +13,7 @@
 #include "EditorState.h"
 #include "EditorIcons.h"
 #include "EditorUIHookManager.h"
+#include "Packaging/PackagingSettings.h"
 #include "Input/Input.h"
 
 #include "imgui.h"
@@ -37,7 +38,7 @@ GamePreview* GetGamePreview()
 
 const std::vector<ResolutionPreset> GamePreview::sBuiltInPresets = {
     { "GameCube  640x480",   640,  480 },
-    { "Wii  854x480",       854,  480 },
+    { "Wii 4:3  640x480",       640,  480 },
     { "3DS Top  400x240",   400,  240 },
     { "3DS Bottom  320x240",320,  240 },
     { "720p  1280x720",    1280,  720 },
@@ -177,9 +178,71 @@ ResolutionPreset GamePreview::GetCurrentPreset()
     return { "Default  640x480", 640, 480 };
 }
 
+// Helper to get resolution for a platform
+static void GetPlatformResolution(Platform platform, uint32_t& outWidth, uint32_t& outHeight, const char*& outName)
+{
+    switch (platform)
+    {
+        case Platform::GameCube:
+            outWidth = 640;
+            outHeight = 480;
+            outName = "GameCube";
+            break;
+        case Platform::Wii:
+            outWidth = 640;
+            outHeight = 480;
+            outName = "Wii";
+            break;
+        case Platform::N3DS:
+            outWidth = 400;
+            outHeight = 240;
+            outName = "3DS Top";
+            break;
+        case Platform::Windows:
+            outWidth = 1280;
+            outHeight = 720;
+            outName = "Windows";
+            break;
+        case Platform::Linux:
+            outWidth = 1280;
+            outHeight = 720;
+            outName = "Linux";
+            break;
+        default:
+            outWidth = 640;
+            outHeight = 480;
+            outName = "Default";
+            break;
+    }
+}
+
 std::vector<ResolutionPreset> GamePreview::GetAllPresets()
 {
-    std::vector<ResolutionPreset> all = sBuiltInPresets;
+    std::vector<ResolutionPreset> all;
+
+    // Add "Target Platform" preset at top if a current target is set
+    PackagingSettings* pkgSettings = PackagingSettings::Get();
+    if (pkgSettings != nullptr)
+    {
+        BuildProfile* target = pkgSettings->GetCurrentTargetProfile();
+        if (target != nullptr)
+        {
+            uint32_t w, h;
+            const char* platformName;
+            GetPlatformResolution(target->mTargetPlatform, w, h, platformName);
+
+            char presetName[128];
+            snprintf(presetName, sizeof(presetName), "* %s [%s]  %ux%u",
+                     target->mName.c_str(), platformName, w, h);
+            all.push_back({ presetName, w, h });
+        }
+    }
+
+    // Add built-in presets
+    for (const auto& preset : sBuiltInPresets)
+    {
+        all.push_back(preset);
+    }
 
     // Append addon presets from hook manager
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();

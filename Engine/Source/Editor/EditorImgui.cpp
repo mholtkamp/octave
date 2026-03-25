@@ -67,6 +67,7 @@
 #include "Preferences/Appearance/Theme/CssThemeParser.h"
 #include "Timeline/TimelinePanel.h"
 #include "NodeGraph/NodeGraphPanel.h"
+#include "Profiling/ProfilingWindow.h"
 #include "Preferences/General/GeneralModule.h"
 #include "Preferences/PreferencesManager.h"
 #include "Preferences/External/LaunchersModule.h"
@@ -644,6 +645,18 @@ static void DrawDockspace()
     ImGui::EndDock();
     ImGui::PopStyleColor();
 
+    // --- Profiling dock ---
+    {
+        ImVec4 bg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, bg);
+    }
+    if (ImGui::BeginDock(ICON_CURVEGRAPH "  Profiling", nullptr, 0))
+    {
+        GetProfilingWindow()->DrawContent();
+    }
+    ImGui::EndDock();
+    ImGui::PopStyleColor();
+
     // Draw plugin/addon dockable windows
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr)
@@ -673,6 +686,7 @@ static void DrawDockspace()
             ImGui::DockTo("EditorDock", ICON_CIB_NINTENDO_3DS "  3DS Preview", ICON_INFO "  Properties", ImGuiDockSlot_Left, 0.6f);
             ImGui::DockTo("EditorDock", ICON_IX_VIDEO_CAMERA_FILLED "  Game Preview",ICON_CIB_NINTENDO_3DS "  3DS Preview",  ImGuiDockSlot_Tab);
             ImGui::DockTo("EditorDock", ICON_IC_BASELINE_SHARE "  Node Graph", ICON_ASSETS "  Assets", ImGuiDockSlot_Right, 0.5f);
+            ImGui::DockTo("EditorDock", ICON_CURVEGRAPH "  Profiling", ICON_IC_BASELINE_SHARE "  Node Graph", ImGuiDockSlot_Tab);
 
             // Defer activating the Viewport tab — docks call setActive() on their
             // first BeginDock frame, so we need to wait a couple frames for all
@@ -1945,6 +1959,35 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
             }
         }
     }
+
+    // Per-element delete button for vector properties
+    if (prop.IsVector() && prop.GetCount() > prop.mMinCount)
+    {
+        ImGui::SameLine(0.0f, 2.0f);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
+        if (ImGui::Button(ICON_RAPHAEL_NO "##NodeDelete"))
+        {
+            if (prop.IsExternal())
+            {
+                prop.EraseVector(index);
+            }
+            else
+            {
+                prop.Erase(index);
+                if (prop.GetCount() > 0)
+                {
+                    prop.SetValue(prop.GetValue(0), 0, prop.GetCount());
+                }
+                else if (prop.mChangeHandler)
+                {
+                    prop.mChangeHandler(&prop, 0, nullptr);
+                }
+            }
+        }
+        ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Remove element [%d]", index);
+    }
 }
 
 // A reusable autocomplete dropdown function that works with various input types
@@ -2298,6 +2341,35 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         }
     }
 
+    // Per-element delete button for vector properties
+    if (prop.IsVector() && prop.GetCount() > prop.mMinCount)
+    {
+        ImGui::SameLine(0.0f, 2.0f);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
+        if (ImGui::Button(ICON_RAPHAEL_NO "##AssetDelete"))
+        {
+            if (prop.IsExternal())
+            {
+                prop.EraseVector(index);
+            }
+            else
+            {
+                prop.Erase(index);
+                if (prop.GetCount() > 0)
+                {
+                    prop.SetValue(prop.GetValue(0), 0, prop.GetCount());
+                }
+                else if (prop.mChangeHandler)
+                {
+                    prop.mChangeHandler(&prop, 0, nullptr);
+                }
+            }
+        }
+        ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Remove element [%d]", index);
+    }
+
     // If we have an extra property with type information, use it to filter assets
     TypeId assetTypeFilter = 0;
     if (prop.mExtra)
@@ -2598,6 +2670,21 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
         for (uint32_t i = 0; i < prop.GetCount(); ++i)
         {
             ImGui::PushID(i);
+
+            // Visual separation between array elements (skip first)
+            if (prop.IsVector() && i > 0)
+            {
+                ImGui::Separator();
+            }
+
+            // Index label for vector properties
+            if (prop.IsVector())
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+                ImGui::Text("[%d]", i);
+                ImGui::PopStyleColor();
+                ImGui::SameLine();
+            }
 
             switch (propType)
             {
@@ -7368,6 +7455,9 @@ static void DrawMainMenuBar()
 
             if (ImGui::MenuItem("Node Graph"))
                 GetEditorState()->mShowNodeGraphPanel = !GetEditorState()->mShowNodeGraphPanel;
+
+            if (ImGui::MenuItem("Profiling"))
+                GetEditorState()->mShowProfilingPanel = !GetEditorState()->mShowProfilingPanel;
 
             ImGui::Separator();
             if (ImGui::MenuItem("Reset Layout"))

@@ -117,6 +117,18 @@
         },
         {
             "type": "shell",
+            "label": "Docker Build Editor - WSL",
+            "command": "wsl docker run --rm -v ${workspaceFolder}:/workspace alpine sh -c 'rm -rf /workspace/dist && wsl mkdir -p /workspace/dist/Octave'; docker build -f   Docker/Dockerfile -t octavegameengine ${workspaceFolder} && wsl docker run --rm -v ${workspaceFolder}/dist/Octave:/game -v ${workspaceFolder}:/project octavegameengine build-editor",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "build",
+            "detail": "Build Linux Editor using Docker and output to dist/Octave"
+        },
+        {
+            "type": "shell",
             "label": "Publish Docker Image - Linux",
             "command": "docker build -f Docker/Dockerfile -t $OCTAVE_DOCKER_USER/octavegameengine-linux:latest . && docker push $OCTAVE_DOCKER_USER/octavegameengine-linux:latest",
             "args": [],

@@ -873,6 +873,56 @@ struct EditorUIHooks
      */
     void (*RegisterOnControllerServerStateChanged)(HookId hookId, ControllerServerEventCallback callback, void* userData);
 
+    // ===== Profiling Window Extension =====
+
+    /**
+     * @brief Register a custom stat to display in the Profiling window.
+     * @param hookId Unique identifier for this hook
+     * @param statName Display name for the stat
+     * @param category Category name for grouping (optional, can be nullptr)
+     * @param maxValue Maximum value for bar visualization (use 16.67f for frame time stats)
+     * @param showAsBar If true, display as progress bar; if false, display as text
+     */
+    void (*RegisterProfilingStat)(HookId hookId, const char* statName, const char* category, float maxValue, bool showAsBar);
+
+    /**
+     * @brief Unregister a custom profiling stat.
+     * @param hookId Hook identifier used during registration
+     * @param statName Name of the stat to unregister
+     */
+    void (*UnregisterProfilingStat)(HookId hookId, const char* statName);
+
+    /**
+     * @brief Set the current value of a custom profiling stat.
+     * Call this each frame to update the displayed value.
+     * @param statName Name of the stat (must match RegisterProfilingStat name)
+     * @param value Current value to display
+     */
+    void (*SetProfilingStatValue)(const char* statName, float value);
+
+    /**
+     * @brief Callback for drawing custom profiling section content.
+     * @param userData User data passed during registration
+     */
+    typedef void (*ProfilingSectionDrawCallback)(void* userData);
+
+    /**
+     * @brief Register a custom section in the Profiling window.
+     * The section appears as a collapsible header with custom ImGui content.
+     * @param hookId Unique identifier for this hook
+     * @param sectionName Display name for the section header
+     * @param drawFunc Function called to draw section content (use ImGui calls)
+     * @param userData User data passed to drawFunc
+     */
+    void (*RegisterProfilingSection)(HookId hookId, const char* sectionName, void (*drawFunc)(void*), void* userData);
+
+    /**
+     * @brief Unregister a custom profiling section.
+     * @param hookId Hook identifier used during registration
+     * @param sectionName Name of the section to unregister
+     */
+    void (*UnregisterProfilingSection)(HookId hookId, const char* sectionName);
+
     // ===== Cleanup =====
 
     /**

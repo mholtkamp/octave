@@ -115,6 +115,21 @@ void PackagingSettings::SetSelectedProfileIndex(int32_t index)
     }
 }
 
+BuildProfile* PackagingSettings::GetCurrentTargetProfile()
+{
+    if (mCurrentTargetProfileId == 0)
+    {
+        return nullptr;
+    }
+    return GetProfile(mCurrentTargetProfileId);
+}
+
+void PackagingSettings::SetCurrentTargetProfileId(uint32_t profileId)
+{
+    mCurrentTargetProfileId = profileId;
+    SaveSettings();
+}
+
 std::string PackagingSettings::GetSettingsFilePath() const
 {
     const EngineState* engine = GetEngineState();
@@ -173,6 +188,12 @@ void PackagingSettings::LoadSettings()
         mNextProfileId = doc["nextProfileId"].GetUint();
     }
 
+    // Load current target profile ID
+    if (doc.HasMember("currentTargetProfileId") && doc["currentTargetProfileId"].IsUint())
+    {
+        mCurrentTargetProfileId = doc["currentTargetProfileId"].GetUint();
+    }
+
     // Load profiles
     if (doc.HasMember("profiles") && doc["profiles"].IsArray())
     {
@@ -229,6 +250,9 @@ void PackagingSettings::SaveSettings()
 
     // Save next profile ID
     doc.AddMember("nextProfileId", mNextProfileId, allocator);
+
+    // Save current target profile ID
+    doc.AddMember("currentTargetProfileId", mCurrentTargetProfileId, allocator);
 
     // Save profiles
     rapidjson::Value profilesArray(rapidjson::kArrayType);

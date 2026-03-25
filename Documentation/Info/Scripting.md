@@ -77,9 +77,13 @@ function Bomber:GatherProperties()
     {
         { name = "moveSpeed", type = DatumType.Float },
         { name = "bombScene", type = DatumType.Asset },
+        { name = "targets", type = DatumType.Node3D, array = true },
+        { name = "waypoints", type = DatumType.Widget, array = true },
     }
 end
 ```
+
+Set `array = true` to create an array property. In the editor, you can use the `+` button to add elements and the red X button on each element to remove it.
 
 See [DatumType](../Lua/Misc/Enums.md#datumtype) for a list of possible property types.
 

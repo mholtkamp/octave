@@ -159,6 +159,9 @@
     <Filter Include="Source Files\Editor\NodeGraph">
       <UniqueIdentifier>{a1b2c3d4-5e6f-7a8b-9c0d-e1f2a3b4c5d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Editor\Profiling">
+      <UniqueIdentifier>{b6ac0ac8-f99c-4795-bf56-fb0e576e5242}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\Editor\NodeEditor">
       <UniqueIdentifier>{b2c3d4e5-6f7a-8b9c-0d1e-f2a3b4c5d6e7}</UniqueIdentifier>
     </Filter>
@@ -1060,6 +1063,9 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\NodeGraph\NodeGraphPanel.cpp">
       <Filter>Source Files\Editor\NodeGraph</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\Profiling\ProfilingWindow.cpp">
+      <Filter>Source Files\Editor\Profiling</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Assets\NodeGraphAsset.cpp">
       <Filter>Source Files\Engine\Assets</Filter>
@@ -2087,6 +2093,9 @@
     </ClInclude>
     <ClInclude Include="Source\Editor\NodeGraph\NodeGraphPanel.h">
       <Filter>Source Files\Editor\NodeGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\Profiling\ProfilingWindow.h">
+      <Filter>Source Files\Editor\Profiling</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Assets\NodeGraphAsset.h">
       <Filter>Source Files\Engine\Assets</Filter>
