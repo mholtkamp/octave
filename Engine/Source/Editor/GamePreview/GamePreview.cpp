@@ -667,6 +667,18 @@ void GamePreview::BeginInputRemap()
         });
     }
 
+    // Ensure the active camera has up-to-date matrices for the game viewport.
+    // ComputeMatrices() is normally called during rendering, but World::Update()
+    // (where game code calls TraceScreenToWorld) happens before rendering.
+    if (world != nullptr)
+    {
+        Camera3D* cam = world->GetActiveCamera();
+        if (cam != nullptr && cam != edState->GetEditorCamera())
+        {
+            cam->ComputeMatrices();
+        }
+    }
+
     mInputRemapActive = true;
 }
 
