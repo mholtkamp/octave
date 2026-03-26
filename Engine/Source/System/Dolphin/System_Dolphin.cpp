@@ -94,11 +94,7 @@ void SYS_Shutdown()
 
 void SYS_Update()
 {
-#if PLATFORM_WII
     GetEngineState()->mQuit = !SYS_MainLoop();
-#else
-    GetEngineState()->mQuit = !sRunning;
-#endif
 }
 
 // Files
