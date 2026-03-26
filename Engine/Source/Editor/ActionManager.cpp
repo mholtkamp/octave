@@ -1,6 +1,7 @@
 #if EDITOR
 
 #include "ActionManager.h"
+#include "BuildCache.h"
 
 #if PLATFORM_WINDOWS
 #include <Windows.h>
@@ -416,6 +417,114 @@ void ActionManager::BuildData(Platform platform, bool embedded)
         LogError("A build is already in progress.");
         return;
     }
+
+    // Check build cache (unless force rebuild is set)
+    BuildCache* cache = BuildCache::Get();
+    if (cache != nullptr && !mBuildState.mForceRebuild)
+    {
+        BuildCacheResult cacheResult = cache->CheckRebuildNeeded(platform, embedded);
+
+        if (cacheResult == BuildCacheResult::UpToDate)
+        {
+            LogDebug("Build cache: up to date, skipping rebuild.");
+
+            const EngineState* engineState = GetEngineState();
+            std::string projectDir = engineState->mProjectDirectory;
+            std::string projectName = engineState->mProjectName;
+            std::string packagedDir = projectDir + "Packaged/" + GetPlatformString(platform) + "/";
+
+            // Get platform extension
+            std::string extension;
+            switch (platform)
+            {
+            case Platform::Windows: extension = ".exe"; break;
+            case Platform::Linux: extension = ""; break;
+            case Platform::Android: extension = ".apk"; break;
+            case Platform::GameCube: extension = ".dol"; break;
+            case Platform::Wii: extension = ".dol"; break;
+            case Platform::N3DS: extension = ".3dsx"; break;
+            default: extension = ""; break;
+            }
+
+            std::string outputPath = packagedDir + projectName + extension;
+
+            if (!IsHeadless())
+            {
+                // Save flags before Reset clears them
+                bool runAfterBuild = mBuildState.mRunAfterBuild;
+                bool runOnDevice = mBuildState.mRunOnDevice;
+
+                // Handle run-after-build by launching emulator directly (no modal)
+                if (runAfterBuild)
+                {
+                    LogDebug("Build cache: up to date, launching %s", outputPath.c_str());
+
+                    if (runOnDevice && platform == Platform::N3DS)
+                    {
+                        // 3dslink needs special handling
+                        LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                            PreferencesManager::Get()->FindModule("External/Launchers"));
+                        if (launchers != nullptr && launchers->Is3dsLinkConfigured())
+                        {
+                            std::string cmd = launchers->Build3dsLinkCommand(outputPath);
+                            if (!cmd.empty())
+                            {
+                                LogDebug("Launching 3dslink: %s", cmd.c_str());
+                                SYS_Exec(cmd.c_str());
+                            }
+                        }
+                    }
+                    else if (runOnDevice && platform == Platform::Wii)
+                    {
+                        LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                            PreferencesManager::Get()->FindModule("External/Launchers"));
+                        if (launchers != nullptr && launchers->IsWiiloadConfigured())
+                        {
+                            std::string cmd = launchers->BuildWiiloadCommand(outputPath);
+                            if (!cmd.empty())
+                            {
+                                LogDebug("Launching wiiload: %s", cmd.c_str());
+                                SYS_Exec(cmd.c_str());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LaunchersModule* launchers = static_cast<LaunchersModule*>(
+                            PreferencesManager::Get()->FindModule("External/Launchers"));
+                        if (launchers != nullptr && launchers->IsEmulatorConfigured(platform))
+                        {
+                            std::string cmd = launchers->BuildLaunchCommand(platform, outputPath);
+                            LogDebug("Launching emulator: %s", cmd.c_str());
+                            SYS_Exec(cmd.c_str());
+                        }
+                    }
+                }
+                else
+                {
+                    // Just "Build" without run - show brief skip message
+                    mBuildState.Reset();
+                    mBuildState.mPlatform = platform;
+                    mBuildState.mEmbedded = embedded;
+                    mBuildDisplayOutput.clear();
+                    mBuildAutoScroll = true;
+                    mShowBuildModal = true;
+                    AppendBuildOutput("Build cache: all files unchanged, skipping rebuild.\n");
+                    AppendBuildOutput("Output: " + outputPath + "\n");
+                    mBuildState.mComplete.store(true);
+                    mBuildState.mSuccess.store(false); // Prevent auto-finalize
+                }
+            }
+            return;
+        }
+        else
+        {
+            LogDebug("Build cache: %s", cache->GetRebuildReason().c_str());
+        }
+    }
+
+    // Reset force rebuild flag after checking
+    mBuildState.mForceRebuild = false;
 
     // In headless mode, run the entire build synchronously (original behavior)
     if (IsHeadless())
@@ -1223,6 +1332,14 @@ void ActionManager::FinalizeLocalBuild()
     }
 
     LogDebug("Finished packaging!");
+
+    // Save build manifest for incremental builds
+    BuildCache* cache = BuildCache::Get();
+    if (cache != nullptr)
+    {
+        cache->BuildCurrentManifest(platform, mBuildState.mEmbedded);
+        cache->SaveManifest();
+    }
 
     EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
     if (hookMgr != nullptr) hookMgr->FireOnPackageFinished((int32_t)platform, true);

@@ -692,6 +692,7 @@
     <ClCompile Include="Source\Audio\Linux\Audio_Linux.cpp" />
     <ClCompile Include="Source\Audio\Windows\Audio_Windows.cpp" />
     <ClCompile Include="Source\Editor\ActionManager.cpp" />
+    <ClCompile Include="Source\Editor\BuildCache.cpp" />
     <ClCompile Include="Source\Editor\CustomImgui.cpp" />
     <ClCompile Include="Source\Editor\DebugLog\DebugLogWindow.cpp" />
     <ClCompile Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.cpp" />
@@ -1040,6 +1041,7 @@
     <ClInclude Include="Source\Audio\AudioConstants.h" />
     <ClInclude Include="Source\Audio\AudioTypes.h" />
     <ClInclude Include="Source\Editor\ActionManager.h" />
+    <ClInclude Include="Source\Editor\BuildCache.h" />
     <ClInclude Include="Source\Editor\CustomImgui.h" />
     <ClInclude Include="Source\Editor\DebugLog\DebugLogWindow.h" />
     <ClInclude Include="Source\Editor\SecondScreenPreview\SecondScreenPreview.h" />

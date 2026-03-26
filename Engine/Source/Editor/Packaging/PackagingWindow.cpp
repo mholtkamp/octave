@@ -375,6 +375,16 @@ void PackagingWindow::DrawBuildButtons()
 
     bool canBuild = (profile != nullptr) && !mBuildInProgress;
 
+    // Force Rebuild checkbox
+    ImGui::Checkbox("Force Rebuild", &mForceRebuild);
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Rebuild even if no files have changed");
+    }
+    ImGui::SameLine();
+    ImGui::Spacing();
+    ImGui::SameLine();
+
     if (!canBuild)
     {
         ImGui::BeginDisabled();
@@ -749,8 +759,12 @@ void PackagingWindow::ExecuteLocalBuild(const BuildProfile& profile, bool runAft
     ActionManager* am = ActionManager::Get();
     if (am != nullptr)
     {
+        // Set flags before BuildData (for cache check which may return early)
+        am->GetBuildState().mForceRebuild = mForceRebuild;
+        am->GetBuildState().mRunAfterBuild = runAfterBuild;
+        am->GetBuildState().mRunOnDevice = runOnDevice;
         am->BuildData(profile.mTargetPlatform, profile.mEmbedded);
-        // Set run-after-build flags after BuildData (which resets state for non-headless)
+        // Re-set run-after-build flags after BuildData (Reset() clears them in normal path)
         am->GetBuildState().mRunAfterBuild = runAfterBuild;
         am->GetBuildState().mRunOnDevice = runOnDevice;
     }

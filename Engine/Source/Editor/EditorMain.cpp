@@ -25,6 +25,7 @@
 #include "Nodes/3D/TestSpinner.h"
 
 #include "ActionManager.h"
+#include "BuildCache.h"
 #include "InputManager.h"
 #include "Preferences/PreferencesManager.h"
 #include "Preferences/General/GeneralModule.h"
@@ -72,6 +73,7 @@ void EditorMain(int32_t argc, char** argv)
         LogDebug("Headless mode: Build platform = %d", (int)engineConfig->mBuildPlatform);
 
         ActionManager::Create();
+        BuildCache::Create();
 
         // Load project directly without editor state
         if (engineConfig->mProjectPath != "")
@@ -102,6 +104,7 @@ void EditorMain(int32_t argc, char** argv)
         }
 
         // Cleanup and exit
+        BuildCache::Destroy();
         ActionManager::Destroy();
         Shutdown();
         return;
@@ -111,6 +114,7 @@ void EditorMain(int32_t argc, char** argv)
     GetEditorState()->Init();
 
     ActionManager::Create();
+    BuildCache::Create();
     InputManager::Create();
     PreferencesManager::Create();
 
@@ -252,6 +256,7 @@ void EditorMain(int32_t argc, char** argv)
     EditorUIHookManager::Destroy();
     AddonManager::Destroy();
     TemplateManager::Destroy();
+    BuildCache::Destroy();
     PreferencesManager::Destroy();
     GetEditorState()->Shutdown();
     Shutdown();

@@ -267,6 +267,9 @@ private:
 
     /** @brief Whether to auto-close the modal when build finishes */
     bool mAutoCloseOnFinish = false;
+
+    /** @brief Whether to force rebuild even if cache is up-to-date */
+    bool mForceRebuild = false;
 };
 
 /**

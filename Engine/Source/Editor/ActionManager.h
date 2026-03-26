@@ -61,6 +61,7 @@ struct LocalBuildState
     // Post-build flags
     bool mRunAfterBuild{false};
     bool mRunOnDevice{false};
+    bool mForceRebuild{false};
 
     void Reset()
     {
@@ -93,6 +94,7 @@ struct LocalBuildState
         mStripCommand.clear();
         mRunAfterBuild = false;
         mRunOnDevice = false;
+        mForceRebuild = false;
 #if PLATFORM_LINUX
         mProcessId = 0;
 #elif PLATFORM_WINDOWS

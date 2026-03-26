@@ -290,6 +290,9 @@
     <ClCompile Include="Source\Editor\ActionManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Editor\BuildCache.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Editor\EditorMain.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
@@ -1228,6 +1231,9 @@
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\ActionManager.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\BuildCache.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Editor\EditorConstants.h">
