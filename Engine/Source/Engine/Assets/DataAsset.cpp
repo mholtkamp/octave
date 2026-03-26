@@ -146,9 +146,25 @@ void DataAsset::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::String, "Script File", this, &mScriptFile, 1, HandlePropChange));
 
     // Add all dynamic properties from the Lua script
+    // Create external-storage properties pointing to the data in mProperties
     for (Property& prop : mProperties)
     {
-        outProps.push_back(prop);
+        if (prop.IsVector())
+        {
+            // Vector properties need special handling - copy the property but keep
+            // a reference by not using internal storage
+            // For now, just copy - vector editing in DataAssets is limited
+            outProps.push_back(prop);
+        }
+        else
+        {
+            // Non-vector: create external property pointing to the original's data
+            Property extProp(prop.mType, prop.mName, this, prop.GetValue(0), prop.mCount, HandleAssetPropChange);
+#if EDITOR
+            extProp.mCategory = prop.mCategory;
+#endif
+            outProps.push_back(extProp);
+        }
     }
 }
 
@@ -315,7 +331,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     int32_t defaultVal = lua_isinteger(L, -1) ? (int32_t)lua_tointeger(L, -1) : 0;
                     lua_pop(L, 1);
-                    newProp.SetInteger(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Float:
@@ -323,7 +339,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     float defaultVal = lua_isnumber(L, -1) ? (float)lua_tonumber(L, -1) : 0.0f;
                     lua_pop(L, 1);
-                    newProp.SetFloat(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Bool:
@@ -331,7 +347,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     bool defaultVal = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
-                    newProp.SetBool(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::String:
@@ -339,7 +355,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     std::string defaultVal = lua_isstring(L, -1) ? lua_tostring(L, -1) : "";
                     lua_pop(L, 1);
-                    newProp.SetString(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Vector2D:
@@ -360,7 +376,7 @@ void DataAsset::LoadPropertiesFromLua()
                         defaultVal = CHECK_VECTOR(L, -1);
                     }
                     lua_pop(L, 1);
-                    newProp.SetVector2D(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Vector:
@@ -384,7 +400,7 @@ void DataAsset::LoadPropertiesFromLua()
                         defaultVal = CHECK_VECTOR(L, -1);
                     }
                     lua_pop(L, 1);
-                    newProp.SetVector(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Color:
@@ -411,13 +427,13 @@ void DataAsset::LoadPropertiesFromLua()
                         defaultVal = CHECK_VECTOR(L, -1);
                     }
                     lua_pop(L, 1);
-                    newProp.SetColor(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Asset:
                 {
                     // Assets default to nullptr
-                    newProp.SetAsset(nullptr);
+                    newProp.PushBack((Asset*)nullptr);
                     break;
                 }
                 case DatumType::Byte:
@@ -425,7 +441,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     uint8_t defaultVal = lua_isinteger(L, -1) ? (uint8_t)lua_tointeger(L, -1) : 0;
                     lua_pop(L, 1);
-                    newProp.SetByte(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 case DatumType::Short:
@@ -433,7 +449,7 @@ void DataAsset::LoadPropertiesFromLua()
                     lua_getfield(L, propIdx, "default");
                     int16_t defaultVal = lua_isinteger(L, -1) ? (int16_t)lua_tointeger(L, -1) : 0;
                     lua_pop(L, 1);
-                    newProp.SetShort(defaultVal);
+                    newProp.PushBack(defaultVal);
                     break;
                 }
                 default:

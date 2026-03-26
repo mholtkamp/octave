@@ -67,6 +67,9 @@ private:
     float mMaxFrameTime = 16.67f;
     float mAvgFrameTime = 16.67f;
 
+    // Frame graph scale (0=Auto, 1=16.67ms, 2=33.33ms, 3=50ms, 4=100ms, 5=200ms)
+    int mFrameGraphScaleIndex = 0;
+
     // Custom addon stats and sections
     std::vector<CustomProfilingStat> mCustomStats;
     std::vector<CustomProfilingSection> mCustomSections;

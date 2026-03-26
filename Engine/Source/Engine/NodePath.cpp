@@ -13,15 +13,29 @@ std::string FindRelativeNodePath(Node* src, Node* dst)
 
     std::string path;
 
+    // Check if both nodes are in the same subscene - if so, don't traverse above the SubRoot
+    // This prevents paths like "../../Target_Coin/coin" when both nodes are in the same scene instance
+    Node* srcSubRoot = src->GetSubRoot();
+    Node* dstSubRoot = dst->GetSubRoot();
+    Node* pathBoundary = nullptr;
+
+    if (srcSubRoot == dstSubRoot && srcSubRoot != nullptr)
+    {
+        // Same subscene - constrain path to stay within the subscene
+        pathBoundary = srcSubRoot;
+    }
+
     std::vector<Node*> dstAncestors;
 
-    // Find all of the dst node's ancestors
+    // Find all of the dst node's ancestors (up to the path boundary if set)
     {
         Node* dstAncestor = dst;
 
         while (dstAncestor != nullptr)
         {
             dstAncestors.push_back(dstAncestor);
+            if (dstAncestor == pathBoundary)
+                break;
             dstAncestor = dstAncestor->GetParent();
         }
     }
@@ -45,12 +59,16 @@ std::string FindRelativeNodePath(Node* src, Node* dst)
         if (commonIndex != -1)
             break;
 
+        // Don't traverse above the path boundary
+        if (commonAncestor == pathBoundary)
+            break;
+
         path += "../";
         commonAncestor = commonAncestor->GetParent();
     }
 
-    // No valid path
-    if (commonAncestor == nullptr)
+    // No valid path (nodes in different subscenes with no common ancestor within boundary)
+    if (commonAncestor == nullptr || commonIndex == -1)
         return "";
 
     OCT_ASSERT(commonIndex >= 0);

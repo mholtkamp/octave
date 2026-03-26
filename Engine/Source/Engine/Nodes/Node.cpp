@@ -379,9 +379,9 @@ void Node::Copy(Node* srcNode, bool recurse)
 
             if (i >= GetNumChildren())
             {
-                LogError("Aborting recursive node copy. Mismatched number of children.");
+                // Source has more children than destination. This is expected when copying
+                // native children - Clone() will handle cloning the extra children separately.
                 break;
-                //dstChild = CreateChild(srcChild->GetType());
             }
             else
             {
@@ -976,14 +976,17 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
             }
         }
 
-        if (recurse && !srcScene && !hasNativeChildren)
+        if (recurse && !srcScene)
         {
-            // Clone children
-            for (uint32_t i = 0; i < GetNumChildren(); ++i)
+            // Clone children. If hasNativeChildren is true, Copy() already handled copying
+            // properties for the native children, so we start from the native child count.
+            // Any additional children beyond the native count need to be cloned here.
+            uint32_t startIndex = hasNativeChildren ? clonedNode->GetNumChildren() : 0;
+            for (uint32_t i = startIndex; i < GetNumChildren(); ++i)
             {
                 // Note: instantiateLinkedScene is always defaulted to true here.
                 // That option was added just for PIE when cloning the EditScene. Because
-                // in that case we don't want to instantiate from the Scene. It may not be saved 
+                // in that case we don't want to instantiate from the Scene. It may not be saved
                 // and we want to carry over the current state instead of what was last saved.
                 NodePtr childClone = GetChild(i)->Clone(recurse, true, resolveNodePaths);
                 clonedNode->AddChild(childClone.Get());

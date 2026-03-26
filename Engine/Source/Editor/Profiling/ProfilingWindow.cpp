@@ -460,18 +460,41 @@ void ProfilingWindow::DrawFrameGraph()
             return;
         }
 
+        // Scale options
+        static const char* scaleNames[] = { "Auto", "16.67ms (60fps)", "33.33ms (30fps)", "50ms", "100ms", "200ms", "500ms", "1s", "5s", "10s", "20s" };
+        static const float scaleValues[] = { 0.0f, 16.67f, 33.33f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 5000.0f, 10000.0f, 20000.0f };
+        static const int scaleCount = sizeof(scaleValues) / sizeof(scaleValues[0]);
+
+        // Scale dropdown
+        ImGui::SetNextItemWidth(150.0f);
+        ImGui::Combo("Scale", &mFrameGraphScaleIndex, scaleNames, scaleCount);
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Zoom out to see larger frame time spikes");
+        }
+
         // Convert deque to vector for ImGui
         std::vector<float> values(mFrameTimeHistory.begin(), mFrameTimeHistory.end());
 
-        // Find max for scaling (minimum 16.67ms = 60fps baseline)
-        float maxVal = 16.67f;
-        for (float v : values)
+        // Determine max scale value
+        float maxVal;
+        if (mFrameGraphScaleIndex == 0)
         {
-            maxVal = std::max(maxVal, v);
+            // Auto: scale based on actual data
+            maxVal = 16.67f;
+            for (float v : values)
+            {
+                maxVal = std::max(maxVal, v);
+            }
+            maxVal *= 1.2f; // Add headroom
         }
-
-        // Add some headroom
-        maxVal *= 1.2f;
+        else
+        {
+            // Fixed scale
+            maxVal = scaleValues[mFrameGraphScaleIndex];
+        }
 
         // Draw the graph
         char overlayText[64];

@@ -4227,7 +4227,27 @@ void ActionManager::GenerateEmbeddedAssetFiles(std::vector<std::pair<AssetStub*,
         {
             AssetStub* stub = assets[i].first;
             const std::string& packPath = assets[i].second;
-            std::string dataVarName = SanitizeCppIdentifier(stub->mName) + "_Data";
+
+            // Build unique variable name using full relative path to avoid collisions
+            // when assets with the same name exist in different directories
+            std::string uniqueName;
+            AssetDir* projDir = AssetManager::Get()->FindProjectDirectory();
+            AssetDir* engDir = AssetManager::Get()->FindEngineDirectory();
+            AssetDir* rootDir = stub->mEngineAsset ? engDir : projDir;
+            AssetDir* dir = stub->mDirectory;
+            std::vector<std::string> pathParts;
+            while (dir != nullptr && dir != rootDir)
+            {
+                pathParts.push_back(dir->mName);
+                dir = dir->mParentDir;
+            }
+            for (int j = (int)pathParts.size() - 1; j >= 0; --j)
+            {
+                uniqueName += pathParts[j] + "_";
+            }
+            uniqueName += stub->mName;
+
+            std::string dataVarName = SanitizeCppIdentifier(uniqueName) + "_Data";
             uint32_t dataSize = 0;
 
             std::string sourceString;

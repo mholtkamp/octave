@@ -1926,6 +1926,7 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
     ImGui::SameLine();
 
     static std::string sTempString;
+    static ImGuiID sActiveInputId = 0;
 
     Node* src = owner->As<Node>();
 
@@ -1934,9 +1935,24 @@ static void DrawNodeProperty(Property& prop, uint32_t index, Object* owner, Prop
         src = owner->As<Script>()->GetOwner();
     }
 
-    sTempString = FindRelativeNodePath(src, node);
+    // Only update the temp string when not actively editing this field
+    // Otherwise user's input gets overwritten every frame
+    ImGuiID inputId = ImGui::GetID("##NodeNameStr");
+    if (sActiveInputId != inputId)
+    {
+        sTempString = FindRelativeNodePath(src, node);
+    }
 
     ImGui::InputText("##NodeNameStr", &sTempString);
+
+    if (ImGui::IsItemActive())
+    {
+        sActiveInputId = inputId;
+    }
+    else if (sActiveInputId == inputId)
+    {
+        sActiveInputId = 0;
+    }
 
     if (ImGui::IsItemDeactivatedAfterEdit())
     {
@@ -4774,6 +4790,31 @@ static void DrawAssetsContextPopup(AssetStub* stub, AssetDir* dir)
 #endif
             }
         }
+
+        if (stub && ImGui::Selectable("Copy Path"))
+        {
+            // Build the relative path from project root to the asset
+            std::string relativePath;
+            AssetDir* projDir = AssetManager::Get()->FindProjectDirectory();
+            AssetDir* dir = stub->mDirectory;
+
+            // Walk up the directory tree to build the path
+            std::vector<std::string> pathParts;
+            while (dir != nullptr && dir != projDir)
+            {
+                pathParts.push_back(dir->mName);
+                dir = dir->mParentDir;
+            }
+
+            // Build path from root to asset
+            for (int i = (int)pathParts.size() - 1; i >= 0; --i)
+            {
+                relativePath += pathParts[i] + "/";
+            }
+            relativePath += stub->mName;
+
+            ImGui::SetClipboardText(relativePath.c_str());
+        }
     }
 
     if (curDir && !curDir->mEngineDir && !curDir->mAddonDir)
@@ -6890,6 +6931,29 @@ static void DrawScriptsPanel()
 #endif
                             }
                         }
+                        if (ImGui::Selectable("Copy Path"))
+                        {
+                            // Copy the directory path (relative to Scripts folder)
+                            // Find the first file and extract the directory portion of its display name
+                            std::function<const ScriptFileEntry*(const TreeNode&)> findFirst;
+                            findFirst = [&](const TreeNode& n) -> const ScriptFileEntry* {
+                                if (!n.files.empty()) return n.files[0];
+                                for (auto& child : n.children) {
+                                    const ScriptFileEntry* f = findFirst(child.second);
+                                    if (f) return f;
+                                }
+                                return nullptr;
+                            };
+                            const ScriptFileEntry* firstFile = findFirst(pair.second);
+                            if (firstFile)
+                            {
+                                std::string dirPath = firstFile->mDisplayName;
+                                size_t lastSlash = dirPath.find_last_of('/');
+                                if (lastSlash != std::string::npos)
+                                    dirPath = dirPath.substr(0, lastSlash);
+                                ImGui::SetClipboardText(dirPath.c_str());
+                            }
+                        }
                         ImGui::EndPopup();
                     }
 
@@ -6935,6 +6999,11 @@ static void DrawScriptsPanel()
                             std::string dirPath = absPath.substr(0, absPath.find_last_of('/'));
                             SYS_Exec(("xdg-open \"" + dirPath + "\" &").c_str());
 #endif
+                        }
+                        if (ImGui::Selectable("Copy Path"))
+                        {
+                            // Copy the script reference path (relative to Scripts folder)
+                            ImGui::SetClipboardText(entry->mDisplayName.c_str());
                         }
                         ImGui::EndPopup();
                     }
