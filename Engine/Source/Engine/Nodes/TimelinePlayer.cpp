@@ -62,6 +62,12 @@ void TimelinePlayer::Tick(float deltaTime)
             {
                 mCurrentTime = duration;
                 mPlaying = false;
+
+                // Emit signals
+                EmitSignal("OnFinished", {});
+                EmitSignal("OnStateChanged", {});
+                CallFunction("OnFinished");
+                CallFunction("OnStateChanged");
             }
         }
 
@@ -128,11 +134,21 @@ void TimelinePlayer::Play()
     {
         mCurrentTime = 0.0f;
     }
+
+    // Emit signals
+    EmitSignal("OnStarted", {});
+    EmitSignal("OnStateChanged", {});
+    CallFunction("OnStarted");
+    CallFunction("OnStateChanged");
 }
 
 void TimelinePlayer::Pause()
 {
     mPaused = true;
+
+    // Emit signals
+    EmitSignal("OnStateChanged", {});
+    CallFunction("OnStateChanged");
 }
 
 void TimelinePlayer::StopPlayback()
@@ -153,6 +169,12 @@ void TimelinePlayer::StopPlayback()
     mPlaying = false;
     mPaused = false;
     mCurrentTime = 0.0f;
+
+    // Emit signals
+    EmitSignal("OnStopped", {});
+    EmitSignal("OnStateChanged", {});
+    CallFunction("OnStopped");
+    CallFunction("OnStateChanged");
 }
 
 void TimelinePlayer::SetTime(float time)
@@ -191,6 +213,14 @@ bool TimelinePlayer::IsPlaying() const
 bool TimelinePlayer::IsPaused() const
 {
     return mPaused;
+}
+
+float TimelinePlayer::GetProgress() const
+{
+    float duration = GetDuration();
+    if (duration <= 0.0f)
+        return 0.0f;
+    return glm::clamp(mCurrentTime / duration, 0.0f, 1.0f);
 }
 
 void TimelinePlayer::SetTimeline(Timeline* timeline)

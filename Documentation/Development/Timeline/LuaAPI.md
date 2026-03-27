@@ -56,6 +56,11 @@ local paused = player:IsPaused()    -- returns: boolean
 ```
 Returns `true` if playback is paused.
 
+```lua
+local progress = player:GetProgress()    -- returns: number (0.0 to 1.0)
+```
+Returns the playback progress as a normalized value.
+
 ### Asset Management
 
 ```lua
@@ -79,6 +84,51 @@ Set whether the timeline should auto-play when the scene starts.
 local auto = player:GetPlayOnStart()    -- returns: boolean
 ```
 Get the auto-play setting.
+
+### Signals and Callbacks
+
+TimelinePlayer emits signals when playback state changes. Connect to them or define script callbacks:
+
+**Using Signals:**
+```lua
+function Start()
+    local player = self:FindChild("TimelinePlayer")
+    player:ConnectSignal("OnFinished", self, OnTimelineFinished)
+end
+
+function OnTimelineFinished()
+    print("Timeline completed!")
+end
+```
+
+**Using Script Callbacks:**
+```lua
+-- Define these functions on the TimelinePlayer's script component
+function OnStarted()
+    print("Playback started")
+end
+
+function OnFinished()
+    print("Playback finished")
+end
+
+function OnStopped()
+    print("Playback stopped manually")
+end
+
+function OnStateChanged()
+    -- Called on any state change
+    local player = self
+    print("Progress: " .. (player:GetProgress() * 100) .. "%")
+end
+```
+
+| Signal | When Emitted |
+|--------|--------------|
+| `OnStarted` | `Play()` is called |
+| `OnFinished` | Timeline reaches end (non-looping) |
+| `OnStopped` | `Stop()` is called |
+| `OnStateChanged` | Any state change |
 
 ## Timeline Asset Methods
 

@@ -86,6 +86,26 @@ bool GetPlayOnStart() const;
 ```
 Returns the auto-play setting.
 
+### Progress
+
+```cpp
+float GetProgress() const;
+```
+Returns the playback progress as a value from 0.0 to 1.0 (currentTime / duration).
+
+### Signals
+
+TimelinePlayer emits the following signals that scripts can connect to:
+
+| Signal | Emitted When |
+|--------|--------------|
+| `OnStarted` | `Play()` is called |
+| `OnFinished` | Timeline reaches the end (non-looping only) |
+| `OnStopped` | `StopPlayback()` is called |
+| `OnStateChanged` | Any playback state change |
+
+Scripts can also define callback functions with the same names (e.g., `OnFinished()`) which will be called automatically.
+
 ### Evaluation
 
 ```cpp

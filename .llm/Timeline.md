@@ -50,10 +50,19 @@ class TimelinePlayer : public Node {
     void StopPlayback();
     void SetTime(float time);
     float GetTime() const;
+    float GetProgress() const;    // Returns 0.0-1.0
     bool IsPlaying() const;
     void SetPlayOnStart(bool);    // Auto-play on game start
 };
 ```
+
+**Signals:**
+- `OnStarted` — when Play() is called
+- `OnFinished` — when non-looping timeline reaches end
+- `OnStopped` — when StopPlayback() is called
+- `OnStateChanged` — on any state change
+
+Pattern: `EmitSignal("SignalName", {})` + `CallFunction("SignalName")` for script callbacks.
 
 **Tick flow:**
 1. Advance `mCurrentTime` by `deltaTime * playRate`

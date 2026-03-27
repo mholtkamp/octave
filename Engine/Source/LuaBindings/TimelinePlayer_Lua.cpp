@@ -63,6 +63,13 @@ int TimelinePlayer_Lua::IsPaused(lua_State* L)
     return 1;
 }
 
+int TimelinePlayer_Lua::GetProgress(lua_State* L)
+{
+    TimelinePlayer* node = CHECK_TIMELINE_PLAYER(L, 1);
+    lua_pushnumber(L, node->GetProgress());
+    return 1;
+}
+
 int TimelinePlayer_Lua::SetTimeline(lua_State* L)
 {
     TimelinePlayer* node = CHECK_TIMELINE_PLAYER(L, 1);
@@ -119,6 +126,7 @@ void TimelinePlayer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetDuration);
     REGISTER_TABLE_FUNC(L, mtIndex, IsPlaying);
     REGISTER_TABLE_FUNC(L, mtIndex, IsPaused);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetProgress);
     REGISTER_TABLE_FUNC(L, mtIndex, SetTimeline);
     REGISTER_TABLE_FUNC(L, mtIndex, GetTimeline);
     REGISTER_TABLE_FUNC(L, mtIndex, SetPlayOnStart);

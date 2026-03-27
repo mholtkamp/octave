@@ -25,6 +25,7 @@ struct TimelinePlayer_Lua
     static int GetDuration(lua_State* L);
     static int IsPlaying(lua_State* L);
     static int IsPaused(lua_State* L);
+    static int GetProgress(lua_State* L);
     static int SetTimeline(lua_State* L);
     static int GetTimeline(lua_State* L);
     static int SetPlayOnStart(lua_State* L);

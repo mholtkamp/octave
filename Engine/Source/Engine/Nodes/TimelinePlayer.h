@@ -34,6 +34,7 @@ public:
     float GetDuration() const;
     bool IsPlaying() const;
     bool IsPaused() const;
+    float GetProgress() const;
 
     // Asset
     void SetTimeline(Timeline* timeline);
