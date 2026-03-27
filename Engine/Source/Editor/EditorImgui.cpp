@@ -15,6 +15,7 @@
 #include "NodePath.h"
 #include "FeatureFlags.h"
 #include "EditorIcons.h"
+#include "EditorIconRegistry.h"
 
 #include "Nodes/3D/StaticMesh3d.h"
 #include "Nodes/3D/InstancedMesh3d.h"
@@ -135,7 +136,17 @@ static const char* GetNodeIcon(Node* node)
     if (node->As<Quad>())                     return ICON_RECT;
     if (node->As<ArrayWidget>())              return ICON_LAYERS;
     if (node->As<TimelinePlayer>())           return ICON_CLAPPERBOARD_CLOSE;
-    if (node->IsSceneLinked())                return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+    if (node->IsSceneLinked())
+    {
+        Scene* scene = node->GetScene();
+        if (scene != nullptr)
+        {
+            const char* customIcon = GetSceneIconByIndex(scene->GetIconOverride());
+            if (customIcon != nullptr)
+                return customIcon;
+        }
+        return ICON_STREAMLINE_PLUMP_WORLD_REMIX;
+    }
     if (node->IsNode3D())                     return ICON_PH_SPHERE;
     if (node->IsWidget())                     return ICON_UIWIDGET;
     return ICON_STREAMLINE_PLUMP_WORLD_REMIX;

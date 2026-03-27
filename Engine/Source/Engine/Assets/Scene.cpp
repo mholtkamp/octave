@@ -11,6 +11,26 @@
 
 #if EDITOR
 #include "EditorState.h"
+#include "EditorIconRegistry.h"
+
+static std::string sSceneIconStringStorage[kSceneIconCount];
+static const char* sSceneIconStrings[kSceneIconCount + 1];
+static bool sSceneIconStringsInit = false;
+
+static void InitSceneIconStrings()
+{
+    if (!sSceneIconStringsInit)
+    {
+        for (int32_t i = 0; i < kSceneIconCount; ++i)
+        {
+            // Build "icon  name" string with icon preview
+            sSceneIconStringStorage[i] = std::string(kSceneIconEntries[i].mIcon) + "  " + kSceneIconEntries[i].mName;
+            sSceneIconStrings[i] = sSceneIconStringStorage[i].c_str();
+        }
+        sSceneIconStrings[kSceneIconCount] = nullptr;
+        sSceneIconStringsInit = true;
+    }
+}
 #endif
 
 FORCE_LINK_DEF(Scene);
@@ -153,6 +173,11 @@ void Scene::LoadStream(Stream& stream, Platform platform)
     mFogDensityFunc = (FogDensityFunc)stream.ReadUint8();
     mFogNear = stream.ReadFloat();
     mFogFar = stream.ReadFloat();
+
+    if (mVersion >= ASSET_VERSION_SCENE_ICON_OVERRIDE)
+        mIconOverride = stream.ReadUint8();
+    else
+        mIconOverride = 0;
 }
 
 void Scene::SaveStream(Stream& stream, Platform platform)
@@ -280,6 +305,8 @@ void Scene::SaveStream(Stream& stream, Platform platform)
     stream.WriteUint8(uint8_t(mFogDensityFunc));
     stream.WriteFloat(mFogNear);
     stream.WriteFloat(mFogFar);
+
+    stream.WriteUint8(mIconOverride);
 }
 
 void Scene::Create()
@@ -307,6 +334,11 @@ void Scene::GatherProperties(std::vector<Property>& outProps)
     outProps.push_back(Property(DatumType::Byte, "Fog Density", this, &mFogDensityFunc, 1, HandlePropChange, NULL_DATUM, int32_t(FogDensityFunc::Count), sFogDensityStrings));
     outProps.push_back(Property(DatumType::Float, "Fog Near", this, &mFogNear, 1, HandlePropChange));
     outProps.push_back(Property(DatumType::Float, "Fog Far", this, &mFogFar, 1, HandlePropChange));
+
+#if EDITOR
+    InitSceneIconStrings();
+    outProps.push_back(Property(DatumType::Byte, "Icon Override", this, &mIconOverride, 1, HandlePropChange, NULL_DATUM, kSceneIconCount, sSceneIconStrings));
+#endif
 }
 
 glm::vec4 Scene::GetTypeColor()

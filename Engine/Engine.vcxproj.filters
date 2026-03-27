@@ -1827,6 +1827,9 @@
     <ClInclude Include="Source\Editor\EditorImgui.h">
       <Filter>Source Files\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\EditorIconRegistry.h">
+      <Filter>Source Files\Editor</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Editor\EditorUtils.h">
       <Filter>Source Files\Graphics</Filter>
     </ClInclude>

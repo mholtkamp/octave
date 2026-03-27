@@ -88,4 +88,9 @@ protected:
     FogDensityFunc mFogDensityFunc = FogDensityFunc::Linear;
     float mFogNear = 0.0f;
     float mFogFar = 100.0f;
+
+    uint8_t mIconOverride = 0;  // 0 = default, 1+ = icon index
+
+public:
+    uint8_t GetIconOverride() const { return mIconOverride; }
 };

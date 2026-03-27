@@ -1048,6 +1048,7 @@
     <ClInclude Include="Source\Editor\GamePreview\GamePreview.h" />
     <ClInclude Include="Source\Editor\EditorConstants.h" />
     <ClInclude Include="Source\Editor\EditorIcons.h" />
+    <ClInclude Include="Source\Editor\EditorIconRegistry.h" />
     <ClInclude Include="Source\Editor\EditorImgui.h" />
     <ClInclude Include="Source\Editor\EditorState.h" />
     <ClInclude Include="Source\Editor\ImGuizmo\ImGuizmo.h" />
