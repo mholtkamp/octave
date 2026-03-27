@@ -1,6 +1,7 @@
 #if EDITOR
 #include <vector>
 #include <algorithm>
+#include <ctime>
 #include "EditorState.h"
 #include "EditorConstants.h"
 #include "Timeline/TimelineInstance.h"
@@ -39,10 +40,11 @@ static EditorState sEditorState;
 
 constexpr const char* kEditorProjectSaveFile = "EditorProject.sav";
 constexpr const char* kEditorSaveFile = "Editor.sav";
-constexpr int32_t kEditorProjectSaveVersion = 2;
+constexpr int32_t kEditorProjectSaveVersion = 3;
 constexpr int32_t kEditorSaveVersion = 1;
 
 constexpr const uint32_t kMaxRecentProjects = 10;
+constexpr const uint32_t kMaxRecentScenes = 10;
 
 EditorState* GetEditorState()
 {
@@ -311,6 +313,10 @@ void EditorState::ReadEditorProjectSave()
     const std::string& projDir = GetEngineState()->mProjectDirectory;
     std::string saveFilePath = projDir + "Saves/" + kEditorProjectSaveFile;
 
+    // Clear previous project data
+    mFavoritedDirs.clear();
+    mRecentScenes.clear();
+
     if (projDir != "" &&
         SYS_DoesFileExist(saveFilePath.c_str(), false))
     {
@@ -321,15 +327,27 @@ void EditorState::ReadEditorProjectSave()
 
         int32_t version = stream.ReadInt32();
 
-        if (version == kEditorProjectSaveVersion)
+        if (version >= 2 && version <= kEditorProjectSaveVersion)
         {
             uint32_t numFavDirs = stream.ReadUint32();
-            mFavoritedDirs.clear();
             for (uint32_t i = 0; i < numFavDirs; ++i)
             {
                 std::string favDir;
                 stream.ReadString(favDir);
                 mFavoritedDirs.push_back(favDir);
+            }
+
+            // Read recent scenes (v3+)
+            if (version >= 3)
+            {
+                uint32_t numRecentScenes = stream.ReadUint32();
+                for (uint32_t i = 0; i < numRecentScenes; ++i)
+                {
+                    RecentScene recent;
+                    stream.ReadString(recent.mSceneName);
+                    recent.mTimestamp = stream.ReadUint64();
+                    mRecentScenes.push_back(recent);
+                }
             }
         }
         else
@@ -350,6 +368,21 @@ void EditorState::WriteEditorProjectSave()
         for (uint32_t i = 0; i < mFavoritedDirs.size(); ++i)
         {
             stream.WriteString(mFavoritedDirs[i]);
+        }
+
+        // Write recent scenes (filter out deleted scenes)
+        std::vector<RecentScene> validScenes;
+        AssetManager* assetMgr = AssetManager::Get();
+        for (const RecentScene& r : mRecentScenes)
+        {
+            if (assetMgr && assetMgr->DoesAssetExist(r.mSceneName))
+                validScenes.push_back(r);
+        }
+        stream.WriteUint32((uint32_t)validScenes.size());
+        for (const RecentScene& r : validScenes)
+        {
+            stream.WriteString(r.mSceneName);
+            stream.WriteUint64(r.mTimestamp);
         }
 
         std::string projSavesDir = projDir + "Saves";
@@ -1122,6 +1155,12 @@ void EditorState::OpenEditScene(Scene* scene)
     {
         const char* sceneName = scene ? scene->GetName().c_str() : "";
         hookMgr->FireOnSceneOpen(sceneName);
+    }
+
+    // Track in recent scenes
+    if (scene != nullptr)
+    {
+        AddRecentScene(scene->GetName());
     }
 }
 
@@ -1960,5 +1999,30 @@ void EditorState::AddRecentProject(const std::string& projPath)
     mRecentProjects.insert(mRecentProjects.begin(), fullPath);
 }
 
+void EditorState::AddRecentScene(const std::string& sceneName)
+{
+    if (sceneName.empty())
+        return;
+
+    // Remove if already in the list
+    for (uint32_t i = 0; i < mRecentScenes.size(); ++i)
+    {
+        if (mRecentScenes[i].mSceneName == sceneName)
+        {
+            mRecentScenes.erase(mRecentScenes.begin() + i);
+            break;
+        }
+    }
+
+    while (mRecentScenes.size() >= kMaxRecentScenes)
+    {
+        mRecentScenes.pop_back();
+    }
+
+    RecentScene recent;
+    recent.mSceneName = sceneName;
+    recent.mTimestamp = (uint64_t)time(nullptr);
+    mRecentScenes.insert(mRecentScenes.begin(), recent);
+}
 
 #endif

@@ -90,6 +90,12 @@ struct EditScene
     std::vector<LinkedSceneProps> mLinkedSceneProps;
 };
 
+struct RecentScene
+{
+    std::string mSceneName;
+    uint64_t mTimestamp = 0;
+};
+
 struct EditorState
 {
     // Data
@@ -150,6 +156,7 @@ struct EditorState
     SharedPtr<Text> mOverlayText = nullptr;
     std::vector<std::string> mFavoritedDirs;
     std::vector<std::string> mRecentProjects;
+    std::vector<RecentScene> mRecentScenes;
     PaintMode mPaintMode = PaintMode::None;
     PaintManager* mPaintManager = nullptr;
     bool mNodePropertySelect = false;
@@ -309,6 +316,7 @@ struct EditorState
     void RemoveFavoriteDir(const std::string& dirPath);
 
     void AddRecentProject(const std::string& projPath);
+    void AddRecentScene(const std::string& sceneName);
 };
 
 EditorState* GetEditorState();

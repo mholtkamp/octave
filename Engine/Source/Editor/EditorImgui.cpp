@@ -7315,6 +7315,37 @@ static void DrawMainMenuBar()
                 }
                 ImGui::EndMenu();
             }
+            if (ImGui::BeginMenu("Recent Scenes"))
+            {
+                const std::vector<RecentScene>& recentScenes = GetEditorState()->mRecentScenes;
+                AssetManager* assetMgr = AssetManager::Get();
+                bool hasValid = false;
+
+                for (const RecentScene& r : recentScenes)
+                {
+                    if (assetMgr && assetMgr->DoesAssetExist(r.mSceneName))
+                    {
+                        hasValid = true;
+                        if (ImGui::MenuItem(r.mSceneName.c_str()))
+                        {
+                            AssetStub* stub = assetMgr->GetAssetStub(r.mSceneName);
+                            if (stub)
+                            {
+                                if (!stub->mAsset)
+                                    assetMgr->LoadAsset(*stub);
+                                Scene* scene = stub->mAsset ? stub->mAsset->As<Scene>() : nullptr;
+                                if (scene)
+                                    GetEditorState()->OpenEditScene(scene);
+                            }
+                        }
+                    }
+                }
+
+                if (!hasValid)
+                    ImGui::TextDisabled("(No recent scenes)");
+
+                ImGui::EndMenu();
+            }
             if (ImGui::MenuItem("New Project"))
                 am->CreateNewProject();
             if (ImGui::MenuItem("New C++ Project"))
