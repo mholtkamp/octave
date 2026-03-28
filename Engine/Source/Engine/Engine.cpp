@@ -250,6 +250,13 @@ void ForceLinkage()
     FORCE_LINK_CALL(Text);
     FORCE_LINK_CALL(Widget);
     FORCE_LINK_CALL(Button);
+    FORCE_LINK_CALL(Slider);
+    FORCE_LINK_CALL(InputField);
+    FORCE_LINK_CALL(LineEdit);
+    FORCE_LINK_CALL(CheckBox);
+    FORCE_LINK_CALL(ProgressBar);
+    FORCE_LINK_CALL(SpinBox);
+    FORCE_LINK_CALL(ComboBox);
 }
 
 Platform StringToPlatform(const char* str)

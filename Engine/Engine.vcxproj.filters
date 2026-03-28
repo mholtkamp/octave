@@ -914,7 +914,49 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Slider.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\InputField.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\LineEdit.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ProgressBar.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\SpinBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Slider_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\InputField_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\LineEdit_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\ProgressBar_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\SpinBox_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\SystemUtils.cpp">
@@ -1944,7 +1986,49 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Slider.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\InputField.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\LineEdit.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\CheckBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ProgressBar.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\SpinBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Button_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Slider_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\InputField_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\LineEdit_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ProgressBar_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SpinBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\System\SystemUtils.h">
