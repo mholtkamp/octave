@@ -59,6 +59,9 @@
 #include "LuaBindings/InputField_Lua.h"
 #include "LuaBindings/LineEdit_Lua.h"
 #include "LuaBindings/CheckBox_Lua.h"
+#include "LuaBindings/ProgressBar_Lua.h"
+#include "LuaBindings/SpinBox_Lua.h"
+#include "LuaBindings/ComboBox_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
@@ -144,6 +147,9 @@ void BindLuaInterface()
     InputField_Lua::Bind();
     LineEdit_Lua::Bind();
     CheckBox_Lua::Bind();
+    ProgressBar_Lua::Bind();
+    SpinBox_Lua::Bind();
+    ComboBox_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();

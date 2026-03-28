@@ -926,6 +926,15 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ProgressBar.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\SpinBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -939,6 +948,15 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\ProgressBar_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\SpinBox_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\SystemUtils.cpp">
@@ -1980,6 +1998,15 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\CheckBox.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ProgressBar.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\SpinBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Button_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -1993,6 +2020,15 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ProgressBar_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\SpinBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\System\SystemUtils.h">

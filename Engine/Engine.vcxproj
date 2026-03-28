@@ -812,6 +812,9 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\InputField.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\LineEdit.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\CheckBox.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ProgressBar.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\SpinBox.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
@@ -933,6 +936,9 @@
     <ClCompile Include="Source\LuaBindings\InputField_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\LineEdit_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\CheckBox_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\ProgressBar_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\SpinBox_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Canvas_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
@@ -1185,6 +1191,9 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\InputField.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\LineEdit.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\CheckBox.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ProgressBar.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\SpinBox.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
@@ -1312,6 +1321,9 @@
     <ClInclude Include="Source\LuaBindings\InputField_Lua.h" />
     <ClInclude Include="Source\LuaBindings\LineEdit_Lua.h" />
     <ClInclude Include="Source\LuaBindings\CheckBox_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\ProgressBar_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\SpinBox_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />

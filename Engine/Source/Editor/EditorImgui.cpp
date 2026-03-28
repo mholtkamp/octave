@@ -2940,8 +2940,16 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                 }
                 else
                 {
+                    bool isMultiline = (prop.mName == "Options");
 
-                    ImGui::InputText("", &sTempString);
+                    if (isMultiline)
+                    {
+                        ImGui::InputTextMultiline("", &sTempString, ImVec2(-1, 80));
+                    }
+                    else
+                    {
+                        ImGui::InputText("", &sTempString);
+                    }
 
                     if (ImGui::IsItemActivated())
                     {
