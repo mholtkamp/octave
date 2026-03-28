@@ -117,6 +117,16 @@ void CheckBox::Tick(float deltaTime)
     }
 }
 
+void CheckBox::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateAppearance();
+    }
+}
+
 void CheckBox::PreRender()
 {
     Super::PreRender();
@@ -129,6 +139,11 @@ void CheckBox::PreRender()
 
 void CheckBox::UpdateAppearance()
 {
+    if (mBoxQuad == nullptr || mText == nullptr)
+    {
+        return;
+    }
+
     float height = GetHeight();
 
     // Update box - centered vertically within parent

@@ -89,6 +89,16 @@ void ProgressBar::GatherProperties(std::vector<Property>& props)
     }
 }
 
+void ProgressBar::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateAppearance();
+    }
+}
+
 void ProgressBar::PreRender()
 {
     Super::PreRender();
@@ -101,6 +111,11 @@ void ProgressBar::PreRender()
 
 void ProgressBar::UpdateAppearance()
 {
+    if (mBackground == nullptr || mFill == nullptr || mText == nullptr)
+    {
+        return;
+    }
+
     float width = GetWidth();
     float height = GetHeight();
 

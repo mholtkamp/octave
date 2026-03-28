@@ -189,6 +189,16 @@ void ComboBox::Tick(float deltaTime)
     }
 }
 
+void ComboBox::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateAppearance();
+    }
+}
+
 void ComboBox::PreRender()
 {
     Super::PreRender();
@@ -201,6 +211,11 @@ void ComboBox::PreRender()
 
 void ComboBox::UpdateAppearance()
 {
+    if (mBackground == nullptr || mText == nullptr || mArrow == nullptr)
+    {
+        return;
+    }
+
     float width = GetWidth();
     float height = GetHeight();
 

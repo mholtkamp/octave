@@ -139,6 +139,16 @@ void SpinBox::Tick(float deltaTime)
     }
 }
 
+void SpinBox::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateAppearance();
+    }
+}
+
 void SpinBox::PreRender()
 {
     Super::PreRender();
@@ -151,6 +161,11 @@ void SpinBox::PreRender()
 
 void SpinBox::UpdateAppearance()
 {
+    if (mBackground == nullptr || mText == nullptr || mDecrementButton == nullptr || mIncrementButton == nullptr)
+    {
+        return;
+    }
+
     float width = GetWidth();
     float height = GetHeight();
 

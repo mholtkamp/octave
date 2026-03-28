@@ -17,6 +17,7 @@ public:
     virtual void Create() override;
     virtual void GatherProperties(std::vector<Property>& props) override;
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
     virtual void PreRender() override;
 
     // Options

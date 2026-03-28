@@ -14,7 +14,9 @@ public:
 
     virtual void Create() override;
     virtual void GatherProperties(std::vector<Property>& props) override;
+    void GatherInputFieldProperties(std::vector<Property>& props);
     virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
     virtual void PreRender() override;
 
     // Text manipulation

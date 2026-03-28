@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include "System/System.h"
 #include "Assets/Font.h"
+#include "Assets/Texture.h"
 
 FORCE_LINK_DEF(InputField);
 DEFINE_NODE(InputField, Widget);
@@ -78,7 +79,11 @@ void InputField::Create()
 void InputField::GatherProperties(std::vector<Property>& props)
 {
     Super::GatherProperties(props);
+    GatherInputFieldProperties(props);
+}
 
+void InputField::GatherInputFieldProperties(std::vector<Property>& props)
+{
     {
         SCOPED_CATEGORY("InputField");
 
@@ -101,6 +106,7 @@ void InputField::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Color, "Selection Color", this, &mSelectionColor, 1, HandlePropChange));
     }
 
+    if (mText != nullptr)
     {
         SCOPED_CATEGORY("Text Style");
         mText->GatherTextProperties(props);
@@ -336,6 +342,18 @@ void InputField::Tick(float deltaTime)
         {
             SelectAll();
         }
+    }
+}
+
+void InputField::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateDisplayText();
+        UpdateCaretVisual();
+        UpdateSelectionVisual();
     }
 }
 
@@ -623,6 +641,11 @@ int32_t InputField::GetCharacterAtPosition(float x)
 
 void InputField::UpdateDisplayText()
 {
+    if (mBackground == nullptr || mText == nullptr)
+    {
+        return;
+    }
+
     mBackground->SetTexture(mBackgroundTexture.Get<Texture>());
     mBackground->SetColor(mFocused ? mFocusedBackgroundColor : mBackgroundColor);
 
@@ -648,6 +671,11 @@ void InputField::UpdateDisplayText()
 
 void InputField::UpdateCaretVisual()
 {
+    if (mCaret == nullptr)
+    {
+        return;
+    }
+
     if (!mFocused || !mCaretVisible)
     {
         mCaret->SetVisible(false);
@@ -668,6 +696,11 @@ void InputField::UpdateCaretVisual()
 
 void InputField::UpdateSelectionVisual()
 {
+    if (mSelection == nullptr)
+    {
+        return;
+    }
+
     if (!HasSelection())
     {
         mSelection->SetVisible(false);

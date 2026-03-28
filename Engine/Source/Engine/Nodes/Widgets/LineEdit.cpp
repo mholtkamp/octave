@@ -67,10 +67,30 @@ void LineEdit::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Color, "Title Color", this, &mTitleColor, 1, HandlePropChange));
     }
 
-    // Gather InputField properties
+    // Gather InputField-specific properties (not Widget base properties)
     if (mInputField != nullptr)
     {
-        mInputField->GatherProperties(props);
+        mInputField->GatherInputFieldProperties(props);
+    }
+}
+
+void LineEdit::Tick(float deltaTime)
+{
+    Super::Tick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateLayout();
+    }
+}
+
+void LineEdit::EditorTick(float deltaTime)
+{
+    Super::EditorTick(deltaTime);
+
+    if (IsDirty())
+    {
+        UpdateLayout();
     }
 }
 
@@ -86,6 +106,11 @@ void LineEdit::PreRender()
 
 void LineEdit::UpdateLayout()
 {
+    if (mTitleWidget == nullptr || mInputField == nullptr)
+    {
+        return;
+    }
+
     // Update title - FullStretch with right margin to limit width
     float rightMargin = GetWidth() - mTitleWidth;
     mTitleWidget->SetMargins(0.0f, 0.0f, rightMargin, 0.0f);
