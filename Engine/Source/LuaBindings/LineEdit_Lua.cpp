@@ -1,16 +1,54 @@
 #include "LuaBindings/LineEdit_Lua.h"
-#include "LuaBindings/Quad_Lua.h"
 #include "LuaBindings/Text_Lua.h"
+#include "LuaBindings/InputField_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 
 #include "LuaBindings/Vector_Lua.h"
-#include "LuaBindings/Asset_Lua.h"
-#include "LuaBindings/Texture_Lua.h"
 
-#include "Assets/Texture.h"
+#include "Nodes/Widgets/InputField.h"
 
 #if LUA_ENABLED
+
+int LineEdit_Lua::SetTitle(lua_State* L)
+{
+    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
+    const char* title = CHECK_STRING(L, 2);
+
+    lineEdit->SetTitle(title);
+
+    return 0;
+}
+
+int LineEdit_Lua::GetTitle(lua_State* L)
+{
+    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
+
+    const std::string& ret = lineEdit->GetTitle();
+
+    lua_pushstring(L, ret.c_str());
+    return 1;
+}
+
+int LineEdit_Lua::SetTitleWidth(lua_State* L)
+{
+    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
+    float width = CHECK_NUMBER(L, 2);
+
+    lineEdit->SetTitleWidth(width);
+
+    return 0;
+}
+
+int LineEdit_Lua::GetTitleWidth(lua_State* L)
+{
+    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
+
+    float ret = lineEdit->GetTitleWidth();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
 
 int LineEdit_Lua::SetText(lua_State* L)
 {
@@ -230,171 +268,21 @@ int LineEdit_Lua::IsEditable(lua_State* L)
     return 1;
 }
 
-int LineEdit_Lua::SetBackgroundColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetBackgroundColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetBackgroundColor(lua_State* L)
+int LineEdit_Lua::GetTitleWidget(lua_State* L)
 {
     LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
 
-    glm::vec4 ret = lineEdit->GetBackgroundColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetFocusedBackgroundColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetFocusedBackgroundColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetFocusedBackgroundColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    glm::vec4 ret = lineEdit->GetFocusedBackgroundColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetTextColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetTextColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetTextColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    glm::vec4 ret = lineEdit->GetTextColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetPlaceholderColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetPlaceholderColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetPlaceholderColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    glm::vec4 ret = lineEdit->GetPlaceholderColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetCaretColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetCaretColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetCaretColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    glm::vec4 ret = lineEdit->GetCaretColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetSelectionColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    glm::vec4 color = CHECK_VECTOR(L, 2);
-
-    lineEdit->SetSelectionColor(color);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetSelectionColor(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    glm::vec4 ret = lineEdit->GetSelectionColor();
-
-    Vector_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::SetTextPadding(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-    float padding = CHECK_NUMBER(L, 2);
-
-    lineEdit->SetTextPadding(padding);
-
-    return 0;
-}
-
-int LineEdit_Lua::GetTextPadding(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    float ret = lineEdit->GetTextPadding();
-
-    lua_pushnumber(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::GetBackground(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    Quad* ret = lineEdit->GetBackground();
+    Text* ret = lineEdit->GetTitleWidget();
 
     Node_Lua::Create(L, ret);
     return 1;
 }
 
-int LineEdit_Lua::GetTextWidget(lua_State* L)
+int LineEdit_Lua::GetInputField(lua_State* L)
 {
     LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
 
-    Text* ret = lineEdit->GetTextWidget();
-
-    Node_Lua::Create(L, ret);
-    return 1;
-}
-
-int LineEdit_Lua::GetCaret(lua_State* L)
-{
-    LineEdit* lineEdit = CHECK_LINEEDIT(L, 1);
-
-    Quad* ret = lineEdit->GetCaret();
+    InputField* ret = lineEdit->GetInputField();
 
     Node_Lua::Create(L, ret);
     return 1;
@@ -410,6 +298,13 @@ void LineEdit_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
+    // Title
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTitle);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTitle);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTitleWidth);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTitleWidth);
+
+    // InputField passthrough
     REGISTER_TABLE_FUNC(L, mtIndex, SetText);
     REGISTER_TABLE_FUNC(L, mtIndex, GetText);
     REGISTER_TABLE_FUNC(L, mtIndex, SetPlaceholder);
@@ -432,23 +327,10 @@ void LineEdit_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetMaxLength);
     REGISTER_TABLE_FUNC(L, mtIndex, SetEditable);
     REGISTER_TABLE_FUNC(L, mtIndex, IsEditable);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetBackgroundColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetBackgroundColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetFocusedBackgroundColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetFocusedBackgroundColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetTextColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetTextColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetPlaceholderColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetPlaceholderColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetCaretColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetCaretColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetSelectionColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetSelectionColor);
-    REGISTER_TABLE_FUNC(L, mtIndex, SetTextPadding);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetTextPadding);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetBackground);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetTextWidget);
-    REGISTER_TABLE_FUNC(L, mtIndex, GetCaret);
+
+    // Children
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTitleWidget);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetInputField);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

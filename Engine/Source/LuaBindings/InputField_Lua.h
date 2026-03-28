@@ -3,25 +3,18 @@
 #include "EngineTypes.h"
 #include "Log.h"
 
-#include "Nodes/Widgets/LineEdit.h"
+#include "Nodes/Widgets/InputField.h"
 
 #include "LuaBindings/LuaUtils.h"
 
 #if LUA_ENABLED
 
-#define LINEEDIT_LUA_NAME "LineEdit"
-#define LINEEDIT_LUA_FLAG "cfLineEdit"
-#define CHECK_LINEEDIT(L, arg) (LineEdit*)CheckNodeLuaType(L, arg, LINEEDIT_LUA_NAME, LINEEDIT_LUA_FLAG);
+#define INPUTFIELD_LUA_NAME "InputField"
+#define INPUTFIELD_LUA_FLAG "cfInputField"
+#define CHECK_INPUTFIELD(L, arg) (InputField*)CheckNodeLuaType(L, arg, INPUTFIELD_LUA_NAME, INPUTFIELD_LUA_FLAG);
 
-struct LineEdit_Lua
+struct InputField_Lua
 {
-    // Title
-    static int SetTitle(lua_State* L);
-    static int GetTitle(lua_State* L);
-    static int SetTitleWidth(lua_State* L);
-    static int GetTitleWidth(lua_State* L);
-
-    // InputField passthrough
     static int SetText(lua_State* L);
     static int GetText(lua_State* L);
     static int SetPlaceholder(lua_State* L);
@@ -44,10 +37,23 @@ struct LineEdit_Lua
     static int GetMaxLength(lua_State* L);
     static int SetEditable(lua_State* L);
     static int IsEditable(lua_State* L);
-
-    // Children
-    static int GetTitleWidget(lua_State* L);
-    static int GetInputField(lua_State* L);
+    static int SetBackgroundColor(lua_State* L);
+    static int GetBackgroundColor(lua_State* L);
+    static int SetFocusedBackgroundColor(lua_State* L);
+    static int GetFocusedBackgroundColor(lua_State* L);
+    static int SetTextColor(lua_State* L);
+    static int GetTextColor(lua_State* L);
+    static int SetPlaceholderColor(lua_State* L);
+    static int GetPlaceholderColor(lua_State* L);
+    static int SetCaretColor(lua_State* L);
+    static int GetCaretColor(lua_State* L);
+    static int SetSelectionColor(lua_State* L);
+    static int GetSelectionColor(lua_State* L);
+    static int SetTextPadding(lua_State* L);
+    static int GetTextPadding(lua_State* L);
+    static int GetBackground(lua_State* L);
+    static int GetTextWidget(lua_State* L);
+    static int GetCaret(lua_State* L);
 
     static void Bind();
 };

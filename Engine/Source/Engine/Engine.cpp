@@ -251,6 +251,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Widget);
     FORCE_LINK_CALL(Button);
     FORCE_LINK_CALL(Slider);
+    FORCE_LINK_CALL(InputField);
     FORCE_LINK_CALL(LineEdit);
 }
 
