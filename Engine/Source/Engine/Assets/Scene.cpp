@@ -178,6 +178,11 @@ void Scene::LoadStream(Stream& stream, Platform platform)
         mIconOverride = stream.ReadUint8();
     else
         mIconOverride = 0;
+
+    if (mVersion >= ASSET_VERSION_SCENE_MENU_OVERRIDE)
+        stream.ReadString(mMenuOverride);
+    else
+        mMenuOverride.clear();
 }
 
 void Scene::SaveStream(Stream& stream, Platform platform)
@@ -307,6 +312,7 @@ void Scene::SaveStream(Stream& stream, Platform platform)
     stream.WriteFloat(mFogFar);
 
     stream.WriteUint8(mIconOverride);
+    stream.WriteString(mMenuOverride);
 }
 
 void Scene::Create()
@@ -338,6 +344,7 @@ void Scene::GatherProperties(std::vector<Property>& outProps)
 #if EDITOR
     InitSceneIconStrings();
     outProps.push_back(Property(DatumType::Byte, "Icon Override", this, &mIconOverride, 1, HandlePropChange, NULL_DATUM, kSceneIconCount, sSceneIconStrings));
+    outProps.push_back(Property(DatumType::String, "Menu Override", this, &mMenuOverride, 1, HandlePropChange));
 #endif
 }
 

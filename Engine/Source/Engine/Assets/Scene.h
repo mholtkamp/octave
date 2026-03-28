@@ -90,8 +90,10 @@ protected:
     float mFogFar = 100.0f;
 
     uint8_t mIconOverride = 0;  // 0 = default, 1+ = icon index
+    std::string mMenuOverride;  // Empty = "Scene" menu, or category like "3D", "UI", "Gameplay"
 
 public:
     uint8_t GetIconOverride() const { return mIconOverride; }
+    const std::string& GetMenuOverride() const { return mMenuOverride; }
     const std::vector<Property>* GetRootNodeProperties() const { return mNodeDefs.empty() ? nullptr : &mNodeDefs[0].mProperties; }
 };

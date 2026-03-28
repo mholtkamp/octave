@@ -81,6 +81,7 @@
 #include <functional>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
 #include "backends/imgui_impl_vulkan.cpp"
@@ -243,6 +244,7 @@ static std::vector<bool> sUnsavedAssetsSelected;
 static bool sUnsavedModalActive = false;
 
 static std::vector<std::string> sSceneList;
+static std::unordered_map<std::string, std::vector<std::string>> sScenesByCategory;
 static int32_t sDevModeClicks = 0;
 
 static std::string sReplaceAssetInput;
@@ -3253,6 +3255,59 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
     }
 }
 
+static void SpawnSceneAsNode(const std::string& sceneName, Node* parentNode)
+{
+    Scene* scene = LoadAsset<Scene>(sceneName);
+    if (scene != nullptr)
+    {
+        Node* spawnedNode = ActionManager::Get()->EXE_SpawnNode(scene);
+        if (spawnedNode)
+        {
+            Node* selNode = GetEditorState()->GetSelectedNode();
+            Node* parent = parentNode ? parentNode : (selNode ? selNode : GetWorld(0)->GetRootNode());
+
+            if (parent != nullptr)
+            {
+                parent->AddChild(spawnedNode);
+            }
+            else
+            {
+                GetWorld(0)->SetRootNode(spawnedNode);
+            }
+
+            GetEditorState()->SetSelectedNode(spawnedNode);
+        }
+    }
+}
+
+static void BuildSceneCategoryMap()
+{
+    sScenesByCategory.clear();
+
+    auto& assetMap = AssetManager::Get()->GetAssetMap();
+    for (auto it : assetMap)
+    {
+        if (it.second &&
+            it.second->mType == Scene::GetStaticType() &&
+            !it.second->mEngineAsset)
+        {
+            Scene* scene = LoadAsset<Scene>(it.second->mName);
+            if (scene)
+            {
+                const std::string& category = scene->GetMenuOverride();
+                std::string key = category.empty() ? "Scene" : category;
+                sScenesByCategory[key].push_back(it.second->mName);
+            }
+        }
+    }
+
+    // Sort each category alphabetically
+    for (auto& pair : sScenesByCategory)
+    {
+        std::sort(pair.second.begin(), pair.second.end());
+    }
+}
+
 static void DrawAddNodeMenu(Node* node)
 {
     ActionManager* am = ActionManager::Get();
@@ -3276,6 +3331,12 @@ static void DrawAddNodeMenu(Node* node)
         }
         
         GetEditorState()->SetSelectedNode(newNode);
+    }
+
+    // Build scene category map if needed
+    if (sScenesByCategory.empty())
+    {
+        BuildSceneCategoryMap();
     }
 
     if (ImGui::BeginMenu("3D"))
@@ -3307,6 +3368,19 @@ static void DrawAddNodeMenu(Node* node)
             ImGui::EndMenu();
         }
 
+        // Draw scenes with "3D" menu override
+        if (sScenesByCategory.count("3D") > 0)
+        {
+            ImGui::Separator();
+            for (const auto& sceneName : sScenesByCategory["3D"])
+            {
+                if (ImGui::MenuItem(sceneName.c_str()))
+                {
+                    SpawnSceneAsNode(sceneName, node);
+                }
+            }
+        }
+
         // Draw addon node menu items for "3D" category
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -3335,6 +3409,19 @@ static void DrawAddNodeMenu(Node* node)
             }
         }
 
+        // Draw scenes with "Widget" menu override
+        if (sScenesByCategory.count("Widget") > 0)
+        {
+            ImGui::Separator();
+            for (const auto& sceneName : sScenesByCategory["Widget"])
+            {
+                if (ImGui::MenuItem(sceneName.c_str()))
+                {
+                    SpawnSceneAsNode(sceneName, node);
+                }
+            }
+        }
+
         // Draw addon node menu items for "Widget" category
         {
             EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
@@ -3344,59 +3431,17 @@ static void DrawAddNodeMenu(Node* node)
         ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Scene"))
+    // Default "Scene" menu - shows scenes with no menu override
+    if (sScenesByCategory.count("Scene") > 0 && ImGui::BeginMenu("Scene"))
     {
-        // Populate the scene list if needed
-        if (sSceneList.size() == 0)
+        for (const auto& sceneName : sScenesByCategory["Scene"])
         {
-            auto& assetMap = AssetManager::Get()->GetAssetMap();
-            for (auto it : assetMap)
+            if (ImGui::MenuItem(sceneName.c_str()))
             {
-                if (it.second &&
-                    it.second->mType == Scene::GetStaticType() &&
-                    !it.second->mEngineAsset)
-                {
-                    sSceneList.push_back(it.second->mName);
-                }
-            }
-
-            std::sort(sSceneList.begin(), sSceneList.end());
-        }
-
-        for (uint32_t i = 0; i < sSceneList.size(); ++i)
-        {
-            if (ImGui::MenuItem(sSceneList[i].c_str()))
-            {
-                Scene* scene = LoadAsset<Scene>(sSceneList[i]);
-                if (scene != nullptr)
-                {
-                    Node* spawnedNode = ActionManager::Get()->EXE_SpawnNode(scene);
-
-                    if (spawnedNode)
-                    {
-                        Node* selNode = GetEditorState()->GetSelectedNode();
-                        Node* parent = selNode ? selNode : GetWorld(0)->GetRootNode();
-
-                        if (parent != nullptr)
-                        {
-                            parent->AddChild(spawnedNode);
-                        }
-                        else
-                        {
-                            GetWorld(0)->SetRootNode(spawnedNode);
-                        }
-
-                        GetEditorState()->SetSelectedNode(spawnedNode);
-                    }
-                }
+                SpawnSceneAsNode(sceneName, node);
             }
         }
-
         ImGui::EndMenu();
-    }
-    else
-    {
-        sSceneList.clear();
     }
 
     if (sNodeOtherNames.size() > 0 &&
@@ -3427,11 +3472,90 @@ static void DrawAddNodeMenu(Node* node)
         ImGui::EndMenu();
     }
 
+    // Draw custom scene category menus (categories other than Scene, 3D, Widget, Other)
+    // Supports nested paths like "ShootingGallery/Targets"
+    {
+        // Build a tree structure from category paths
+        struct MenuNode
+        {
+            std::map<std::string, MenuNode> children;
+            std::vector<std::string> scenes;
+        };
+        MenuNode rootMenu;
+
+        for (const auto& pair : sScenesByCategory)
+        {
+            if (pair.first == "Scene" || pair.first == "3D" || pair.first == "Widget" || pair.first == "Other")
+                continue;
+
+            // Parse path segments (e.g., "ShootingGallery/Targets" -> ["ShootingGallery", "Targets"])
+            std::vector<std::string> segments;
+            std::string remaining = pair.first;
+            size_t pos;
+            while ((pos = remaining.find('/')) != std::string::npos)
+            {
+                std::string segment = remaining.substr(0, pos);
+                if (!segment.empty())
+                    segments.push_back(segment);
+                remaining = remaining.substr(pos + 1);
+            }
+            if (!remaining.empty())
+                segments.push_back(remaining);
+
+            // Navigate/create the tree path
+            MenuNode* current = &rootMenu;
+            for (const auto& segment : segments)
+            {
+                current = &current->children[segment];
+            }
+            // Add scenes at this level
+            for (const auto& sceneName : pair.second)
+            {
+                current->scenes.push_back(sceneName);
+            }
+        }
+
+        // Recursive lambda to draw menu tree
+        std::function<void(MenuNode&)> drawMenuTree = [&](MenuNode& menuNode)
+        {
+            // Draw child submenus first (sorted)
+            for (auto& childPair : menuNode.children)
+            {
+                if (ImGui::BeginMenu(childPair.first.c_str()))
+                {
+                    drawMenuTree(childPair.second);
+                    ImGui::EndMenu();
+                }
+            }
+            // Draw scenes at this level
+            for (const auto& sceneName : menuNode.scenes)
+            {
+                if (ImGui::MenuItem(sceneName.c_str()))
+                {
+                    SpawnSceneAsNode(sceneName, node);
+                }
+            }
+        };
+
+        // Draw top-level custom categories
+        for (auto& topPair : rootMenu.children)
+        {
+            if (ImGui::BeginMenu(topPair.first.c_str()))
+            {
+                drawMenuTree(topPair.second);
+                ImGui::EndMenu();
+            }
+        }
+    }
+
     // Draw addon custom node categories
     {
         EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
         if (hookMgr != nullptr) hookMgr->DrawCustomNodeCategories(node);
     }
+
+    // Clear scene category cache at end so it refreshes next time menu opens
+    sScenesByCategory.clear();
 }
 
 static void DrawImportMenu(Node* node)

@@ -38,7 +38,8 @@ class AssetDir;
 #define ASSET_VERSION_NODE_GRAPH_FUNCTIONS 16
 #define ASSET_VERSION_NODE_GRAPH_VARIABLES 17
 #define ASSET_VERSION_SCENE_ICON_OVERRIDE 18
-#define ASSET_VERSION_CURRENT 18
+#define ASSET_VERSION_SCENE_MENU_OVERRIDE 19
+#define ASSET_VERSION_CURRENT 19
 // ----------------------------------------------------
 
 #define DECLARE_ASSET(Base, Parent) DECLARE_FACTORY(Base, Asset); DECLARE_OBJECT(Base, Parent);
