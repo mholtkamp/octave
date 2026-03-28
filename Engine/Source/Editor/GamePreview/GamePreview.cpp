@@ -15,6 +15,7 @@
 #include "EditorUIHookManager.h"
 #include "Packaging/PackagingSettings.h"
 #include "Input/Input.h"
+#include "../Preferences/Appearance/Viewport/ViewportModule.h"
 
 #include "imgui.h"
 
@@ -52,6 +53,13 @@ void GamePreview::Enable()
 
     if (mEnabled)
         return;
+
+    // Load gizmos setting from preferences
+    ViewportModule* vm = ViewportModule::Get();
+    if (vm)
+    {
+        mShowGizmos = vm->GetShowGizmosInPreview();
+    }
 
     ResolutionPreset preset = GetCurrentPreset();
     CreateRenderTargets(preset.mWidth, preset.mHeight);
@@ -523,7 +531,14 @@ void GamePreview::DrawPanel()
 
     // Toolbar: Gizmos | Screenshot | Play/Stop
     {
-        ImGui::Checkbox("Gizmos", &mShowGizmos);
+        if (ImGui::Checkbox("Gizmos", &mShowGizmos))
+        {
+            ViewportModule* vm = ViewportModule::Get();
+            if (vm)
+            {
+                vm->SetShowGizmosInPreview(mShowGizmos);
+            }
+        }
 
         ImGui::SameLine();
         if (ImGui::Button("Screenshot"))

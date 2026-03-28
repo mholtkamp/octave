@@ -93,4 +93,5 @@ protected:
 
 public:
     uint8_t GetIconOverride() const { return mIconOverride; }
+    const std::vector<Property>* GetRootNodeProperties() const { return mNodeDefs.empty() ? nullptr : &mNodeDefs[0].mProperties; }
 };

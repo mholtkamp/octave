@@ -118,6 +118,7 @@ void ViewportModule::LoadSettings(const rapidjson::Document& doc)
     mSelectedColor = JsonSettings::GetVec4(doc, "selectedColor", glm::vec4(0.2f, 0.1f, 1.0f, 0.6f));
     mSelectedCheckerSize = JsonSettings::GetFloat(doc, "selectedCheckerSize", 8.0f);
     mMenuBarPadding = JsonSettings::GetFloat(doc, "menuBarPadding", 8.0f);
+    mShowGizmosInPreview = JsonSettings::GetBool(doc, "showGizmosInPreview", false);
 
     ApplyBackgroundColorToRenderer();
     SetGridColor(mGridColor);
@@ -134,6 +135,7 @@ void ViewportModule::SaveSettings(rapidjson::Document& doc)
     JsonSettings::SetVec4(doc, "selectedColor", mSelectedColor);
     JsonSettings::SetFloat(doc, "selectedCheckerSize", mSelectedCheckerSize);
     JsonSettings::SetFloat(doc, "menuBarPadding", mMenuBarPadding);
+    JsonSettings::SetBool(doc, "showGizmosInPreview", mShowGizmosInPreview);
 }
 
 void ViewportModule::ApplyBackgroundColorToRenderer() const
@@ -186,6 +188,21 @@ void ViewportModule::ApplyGridVisibility()
     sSyncingGridState = true;
     EnableGrid(mShowGrid);
     sSyncingGridState = false;
+}
+
+void ViewportModule::SetShowGizmosInPreview(bool show)
+{
+    if (mShowGizmosInPreview != show)
+    {
+        mShowGizmosInPreview = show;
+        SetDirty(true);
+
+        PreferencesManager* prefs = PreferencesManager::Get();
+        if (prefs)
+        {
+            prefs->SaveModule(this);
+        }
+    }
 }
 
 #endif

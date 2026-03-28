@@ -27,6 +27,8 @@ public:
     glm::vec4 GetSelectedColor() const { return mSelectedColor; }
     float GetSelectedCheckerSize() const { return mSelectedCheckerSize; }
     float GetMenuBarPadding() const { return mMenuBarPadding; }
+    bool GetShowGizmosInPreview() const { return mShowGizmosInPreview; }
+    void SetShowGizmosInPreview(bool show);
 
     static ViewportModule* Get();
     static void HandleExternalGridToggle(bool enabled);
@@ -43,6 +45,7 @@ private:
     glm::vec4 mSelectedColor = glm::vec4(0.2f, 0.1f, 1.0f, 0.6f);
     float mSelectedCheckerSize = 8.0f;
     float mMenuBarPadding = 8.0f;
+    bool mShowGizmosInPreview = false;
 
     static ViewportModule* sInstance;
     static bool sSyncingGridState;

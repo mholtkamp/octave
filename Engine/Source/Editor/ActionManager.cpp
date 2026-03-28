@@ -2179,6 +2179,15 @@ void ActionManager::EXE_UnlinkScene(Node* node)
     }
 }
 
+void ActionManager::EXE_ResetScene(Node* node)
+{
+    if (node->IsSceneLinked() && node->GetScene() != nullptr)
+    {
+        ActionResetScene* action = new ActionResetScene(node);
+        ActionManager::Get()->ExecuteAction(action);
+    }
+}
+
 void ActionManager::EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data)
 {
     ActionSetInstanceColors* action = new ActionSetInstanceColors(data);
@@ -5370,6 +5379,45 @@ void ActionUnlinkScene::Reverse()
     Action::Reverse();
 
     mNode->SetScene(mScene.Get<Scene>());
+}
+
+ActionResetScene::ActionResetScene(Node* node)
+{
+    mNode = node;
+    mScene = node->GetScene();
+    OCT_ASSERT(mNode);
+    OCT_ASSERT(mScene != nullptr);
+
+    // Save current properties for undo
+    mNode->GatherProperties(mPrevProperties);
+}
+
+void ActionResetScene::Execute()
+{
+    Action::Execute();
+
+    Scene* scene = mScene.Get<Scene>();
+    if (scene == nullptr)
+        return;
+
+    const std::vector<Property>* sceneProps = scene->GetRootNodeProperties();
+    if (sceneProps == nullptr)
+        return;
+
+    // Get current node properties and copy scene values over them
+    std::vector<Property> nodeProps;
+    mNode->GatherProperties(nodeProps);
+    CopyPropertyValues(nodeProps, *sceneProps);
+}
+
+void ActionResetScene::Reverse()
+{
+    Action::Reverse();
+
+    // Restore the previous property values
+    std::vector<Property> nodeProps;
+    mNode->GatherProperties(nodeProps);
+    CopyPropertyValues(nodeProps, mPrevProperties);
 }
 
 ActionSetInstanceColors::ActionSetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data)

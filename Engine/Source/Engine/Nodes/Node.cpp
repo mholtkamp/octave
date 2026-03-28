@@ -949,13 +949,15 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
 
                         // Only resolve internal nodes.
                         // If we duplicate a node in editor for instance, then we want to
-                        // make a deep copy for any of the internal node references. But if 
+                        // make a deep copy for any of the internal node references. But if
                         // a node property is outside of the top level node being duplicated, then
                         // we want to leave the "shallow" reference because when we resolve the
                         // pending node paths, top level cloned node won't be parented to anything.
                         // Meaning it won't be able to reference the higher level nodes.
+                        // Note: Include the root itself (HasAncestor doesn't return true for self)
                         if (targetNode != nullptr &&
-                            targetNode->HasAncestor(sTopLevelSourceNode.Get()))
+                            (targetNode == sTopLevelSourceNode.Get() ||
+                             targetNode->HasAncestor(sTopLevelSourceNode.Get())))
                         {
                             std::string nodePath = FindRelativeNodePath(this, targetNode);
                             extraData.PushBack(nodePath);
@@ -1005,6 +1007,78 @@ NodePtr Node::Clone(bool recurse, bool instantiateLinkedScene, bool resolveNodeP
             for (uint32_t i = 0; i < overs.size(); ++i)
             {
                 ApplySubSceneOverride(clonedNode.Get(), overs[i]);
+            }
+
+            // For scene-linked nodes, we need to gather pending node paths from all descendants.
+            // The Instantiate() path doesn't go through Clone() recursively, so external references
+            // (e.g., from inside this scene to sibling nodes) won't be remapped otherwise.
+            if (resolveNodePaths && sTopLevelSourceNode.IsValid())
+            {
+                std::function<void(Node*, Node*)> gatherDescendantPaths = [&](Node* srcNode, Node* dstNode)
+                {
+                    std::vector<Property> props;
+                    srcNode->GatherProperties(props);
+
+                    for (auto& prop : props)
+                    {
+                        if (IsNodeDatumType(prop.mType) && prop.mCount > 0)
+                        {
+                            Datum extraData;
+                            bool hasInternalRef = false;
+
+                            for (uint32_t x = 0; x < prop.mCount; ++x)
+                            {
+                                Node* targetNode = prop.GetNode(x).Get();
+
+                                // Check if target is internal (within the clone hierarchy)
+                                // Include the root itself (HasAncestor doesn't return true for self)
+                                if (targetNode != nullptr &&
+                                    (targetNode == sTopLevelSourceNode.Get() ||
+                                     targetNode->HasAncestor(sTopLevelSourceNode.Get())))
+                                {
+                                    std::string nodePath = FindRelativeNodePath(srcNode, targetNode);
+                                    extraData.PushBack(nodePath);
+                                    hasInternalRef = true;
+                                }
+                                else
+                                {
+                                    extraData.PushBack("");
+                                }
+                            }
+
+                            if (hasInternalRef)
+                            {
+                                PendingNodePath pendingPath;
+                                pendingPath.mNode = ResolveWeakPtr(dstNode);
+                                pendingPath.mPropName = prop.mName;
+                                pendingPath.mPath = extraData;
+                                sPendingNodePaths.push_back(pendingPath);
+                            }
+                        }
+                    }
+
+                    // Recurse into children
+                    for (uint32_t i = 0; i < srcNode->GetNumChildren(); ++i)
+                    {
+                        Node* srcChild = srcNode->GetChild(i);
+                        Node* dstChild = (i < dstNode->GetNumChildren()) ? dstNode->GetChild(i) : nullptr;
+                        if (dstChild != nullptr)
+                        {
+                            gatherDescendantPaths(srcChild, dstChild);
+                        }
+                    }
+                };
+
+                // Gather paths from all descendants of the scene-linked node
+                for (uint32_t i = 0; i < GetNumChildren(); ++i)
+                {
+                    Node* srcChild = GetChild(i);
+                    Node* dstChild = (i < clonedNode->GetNumChildren()) ? clonedNode->GetChild(i) : nullptr;
+                    if (dstChild != nullptr)
+                    {
+                        gatherDescendantPaths(srcChild, dstChild);
+                    }
+                }
             }
         }
 

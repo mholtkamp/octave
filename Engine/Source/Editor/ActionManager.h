@@ -158,6 +158,7 @@ public:
     void EXE_SetWorldPosition(Node3D* node, glm::vec3 pos);
     void EXE_SetWorldScale(Node3D* node, glm::vec3 scale);
     void EXE_UnlinkScene(Node* node);
+    void EXE_ResetScene(Node* node);
     void EXE_SetInstanceColors(const std::vector<ActionSetInstanceColorsData>& data);
     void EXE_SetInstanceData(InstancedMesh3D* instMesh, int32_t startIndex, const std::vector<MeshInstanceData>& data);
 
@@ -427,6 +428,19 @@ protected:
     Node* mNode = nullptr;
     SceneRef mScene;
 
+};
+
+class ActionResetScene : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(ResetScene);
+    ActionResetScene(Node* node);
+
+protected:
+
+    Node* mNode = nullptr;
+    SceneRef mScene;
+    std::vector<Property> mPrevProperties;
 };
 
 struct ActionSetInstanceColorsData

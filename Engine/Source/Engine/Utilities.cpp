@@ -716,6 +716,30 @@ void ApplySubSceneOverride(Node* sceneRoot, const SubSceneOverride& over)
 
     CopyPropertyValues(dstProps, over.mProperties);
 
+    // Resolve node paths for node reference properties.
+    // GatherNonDefaultProperties stores relative paths in mExtra, we need to resolve them
+    // relative to the destination node so cloned scenes reference their own internal nodes.
+    for (uint32_t i = 0; i < over.mProperties.size(); ++i)
+    {
+        const Property& srcProp = over.mProperties[i];
+        if (IsNodeDatumType(srcProp.mType) && srcProp.mExtra != nullptr)
+        {
+            Property* dstProp = FindProperty(dstProps, srcProp.mName);
+            if (dstProp != nullptr)
+            {
+                for (uint32_t j = 0; j < srcProp.mExtra->GetCount(); ++j)
+                {
+                    std::string path = srcProp.mExtra->GetString(j);
+                    if (!path.empty())
+                    {
+                        Node* resolvedNode = ResolveNodePath(dst, path);
+                        dstProp->SetNode(ResolveWeakPtr(resolvedNode), j);
+                    }
+                }
+            }
+        }
+    }
+
     // Restore any transient assets that were incorrectly nulled out by legacy overrides.
     for (auto& saved : transientAssets)
     {

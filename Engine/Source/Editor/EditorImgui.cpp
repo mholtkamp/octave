@@ -2368,6 +2368,18 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         }
     }
 
+    // Inspect button - view asset properties
+    if (asset != nullptr)
+    {
+        ImGui::SameLine(0.0f, 2.0f);
+        if (ImGui::Button(ICON_INFO "##AssetInspect"))
+        {
+            GetEditorState()->InspectObject(asset);
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Inspect asset properties");
+    }
+
     // Per-element delete button for vector properties
     if (prop.IsVector() && prop.GetCount() > prop.mMinCount)
     {
@@ -3534,6 +3546,89 @@ static void DrawSpawnBasicWidgetMenu(Node* node)
     }
 }
 
+static void BuildHierarchyJson(Node* node, std::string& out, int depth)
+{
+    if (node == nullptr)
+        return;
+
+    auto indent = [&out](int d) {
+        for (int i = 0; i < d; ++i)
+            out += "  ";
+    };
+
+    indent(depth);
+    out += "{\n";
+
+    // Name
+    indent(depth + 1);
+    out += "\"name\": \"";
+    out += node->GetName();
+    out += "\",\n";
+
+    // Type
+    indent(depth + 1);
+    out += "\"type\": \"";
+    out += node->GetTypeName();
+    out += "\"";
+
+    // Script (if any)
+    Script* script = node->GetScript();
+    if (script != nullptr && !script->GetFile().empty())
+    {
+        out += ",\n";
+        indent(depth + 1);
+        out += "\"script\": \"";
+        out += script->GetFile();
+        out += "\"";
+    }
+
+    // Scene reference (if linked)
+    if (node->IsSceneLinked() && node->GetScene() != nullptr)
+    {
+        out += ",\n";
+        indent(depth + 1);
+        out += "\"linkedScene\": \"";
+        out += node->GetScene()->GetName();
+        out += "\"";
+    }
+
+    // Children
+    if (node->GetNumChildren() > 0)
+    {
+        out += ",\n";
+        indent(depth + 1);
+        out += "\"children\": [\n";
+
+        for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+        {
+            BuildHierarchyJson(node->GetChild(i), out, depth + 2);
+            if (i < node->GetNumChildren() - 1)
+                out += ",";
+            out += "\n";
+        }
+
+        indent(depth + 1);
+        out += "]";
+    }
+
+    out += "\n";
+    indent(depth);
+    out += "}";
+}
+
+static void CopyNodeHierarchyToClipboard(Node* node)
+{
+    if (node == nullptr)
+        return;
+
+    std::string json;
+    BuildHierarchyJson(node, json, 0);
+    json += "\n";
+
+    ImGui::SetClipboardText(json.c_str());
+    LogDebug("Copied hierarchy JSON to clipboard (%d characters)", (int)json.size());
+}
+
 static void DrawPackageMenu()
 {
     ActionManager* am = ActionManager::Get();
@@ -3925,6 +4020,10 @@ static void DrawScenePanel()
                 {
                     am->EXE_UnlinkScene(node->GetSubRoot());
                 }
+                if ((nodeSceneLinked || inSubScene) && ImGui::Selectable("Reset Scene"))
+                {
+                    am->EXE_ResetScene(node->GetSubRoot());
+                }
                 if (!inSubScene && ImGui::Selectable("Delete"))
                 {
                     am->EXE_DeleteNode(node);
@@ -4079,6 +4178,12 @@ static void DrawScenePanel()
                             }
                         }
                     }
+                }
+
+                ImGui::Separator();
+                if (ImGui::Selectable("Copy Hierarchy"))
+                {
+                    CopyNodeHierarchyToClipboard(node);
                 }
 
                 //if (ImGui::Selectable("Add Scene..."))

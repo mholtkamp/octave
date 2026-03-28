@@ -42,7 +42,7 @@ private:
     bool mEnabled = true;
     int32_t mSelectedPresetIndex = 0;
     int32_t mSelectedCameraIndex = 0;
-    bool mShowGizmos = true;
+    bool mShowGizmos = false;
 
     // Render targets (recreated on resolution change)
     Image* mColorTarget = nullptr;
