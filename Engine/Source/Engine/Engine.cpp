@@ -253,6 +253,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Slider);
     FORCE_LINK_CALL(InputField);
     FORCE_LINK_CALL(LineEdit);
+    FORCE_LINK_CALL(CheckBox);
 }
 
 Platform StringToPlatform(const char* str)

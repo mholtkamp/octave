@@ -38,15 +38,15 @@ void LineEdit::Create()
     mInputField->mHiddenInTree = true;
 #endif
 
-    // Setup title
-    mTitleWidget->SetAnchorMode(AnchorMode::MidLeft);
+    // Setup title - FullStretch, text aligned left/center
+    mTitleWidget->SetAnchorMode(AnchorMode::FullStretch);
     mTitleWidget->SetHorizontalJustification(Justification::Left);
     mTitleWidget->SetVerticalJustification(Justification::Center);
     mTitleWidget->SetText(mTitle);
     mTitleWidget->SetColor(mTitleColor);
 
-    // Setup input field - positioned to the right of title
-    mInputField->SetAnchorMode(AnchorMode::MidLeft);
+    // Setup input field - FullStretch with left margin
+    mInputField->SetAnchorMode(AnchorMode::FullStretch);
 
     // Default dimensions
     SetDimensions(300, 30);
@@ -86,18 +86,15 @@ void LineEdit::PreRender()
 
 void LineEdit::UpdateLayout()
 {
-    // Update title
+    // Update title - FullStretch with right margin to limit width
+    float rightMargin = GetWidth() - mTitleWidth;
+    mTitleWidget->SetMargins(0.0f, 0.0f, rightMargin, 0.0f);
     mTitleWidget->SetText(mTitle);
     mTitleWidget->SetColor(mTitleColor);
-    mTitleWidget->SetPosition(0.0f, 0.0f);
-    mTitleWidget->SetDimensions(mTitleWidth, GetHeight());
 
-    // Update input field - position to the right of title with spacing
-    float inputX = mTitleWidth + mSpacing;
-    float inputWidth = GetWidth() - inputX;
-
-    mInputField->SetPosition(inputX, 0.0f);
-    mInputField->SetDimensions(inputWidth, GetHeight());
+    // Update input field - FullStretch with left margin for title + spacing
+    float leftMargin = mTitleWidth + mSpacing;
+    mInputField->SetMargins(leftMargin, 0.0f, 0.0f, 0.0f);
 }
 
 void LineEdit::SetTitle(const std::string& title)

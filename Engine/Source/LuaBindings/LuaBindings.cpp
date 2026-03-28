@@ -58,6 +58,7 @@
 #include "LuaBindings/Slider_Lua.h"
 #include "LuaBindings/InputField_Lua.h"
 #include "LuaBindings/LineEdit_Lua.h"
+#include "LuaBindings/CheckBox_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
@@ -142,6 +143,7 @@ void BindLuaInterface()
     Slider_Lua::Bind();
     InputField_Lua::Bind();
     LineEdit_Lua::Bind();
+    CheckBox_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();
