@@ -250,6 +250,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(Text);
     FORCE_LINK_CALL(Widget);
     FORCE_LINK_CALL(Button);
+    FORCE_LINK_CALL(Slider);
+    FORCE_LINK_CALL(LineEdit);
 }
 
 Platform StringToPlatform(const char* str)

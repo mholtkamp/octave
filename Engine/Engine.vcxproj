@@ -808,6 +808,8 @@
     <ClCompile Include="Source\Engine\Nodes\Node.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\ArrayWidget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Button.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Slider.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\LineEdit.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
@@ -925,6 +927,8 @@
     <ClCompile Include="Source\LuaBindings\Gizmos_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Box3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Slider_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\LineEdit_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Canvas_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
@@ -1173,6 +1177,8 @@
     <ClInclude Include="Source\Engine\Nodes\Node.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\ArrayWidget.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Button.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Slider.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\LineEdit.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
@@ -1296,6 +1302,8 @@
     <ClInclude Include="Source\LuaBindings\Gizmos_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Box3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Button_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Slider_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\LineEdit_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />
