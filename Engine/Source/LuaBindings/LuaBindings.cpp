@@ -62,6 +62,7 @@
 #include "LuaBindings/ProgressBar_Lua.h"
 #include "LuaBindings/SpinBox_Lua.h"
 #include "LuaBindings/ComboBox_Lua.h"
+#include "LuaBindings/ScrollContainer_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
@@ -150,6 +151,7 @@ void BindLuaInterface()
     ProgressBar_Lua::Bind();
     SpinBox_Lua::Bind();
     ComboBox_Lua::Bind();
+    ScrollContainer_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();

@@ -935,6 +935,9 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ScrollContainer.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Button_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -957,6 +960,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LuaBindings\ScrollContainer_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\SystemUtils.cpp">
@@ -2007,6 +2013,9 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ScrollContainer.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\LuaBindings\Button_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
@@ -2029,6 +2038,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\ScrollContainer_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\System\SystemUtils.h">
