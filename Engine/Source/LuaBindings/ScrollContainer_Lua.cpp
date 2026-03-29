@@ -1,9 +1,14 @@
 #include "LuaBindings/ScrollContainer_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
+#include "LuaBindings/Button_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Node_Lua.h"
 
 #include "LuaBindings/Vector_Lua.h"
+#include "LuaBindings/Asset_Lua.h"
+#include "LuaBindings/Texture_Lua.h"
+
+#include "Assets/Texture.h"
 
 #if LUA_ENABLED
 
@@ -357,6 +362,210 @@ int ScrollContainer_Lua::GetScrollbarTrackColor(lua_State* L)
     return 1;
 }
 
+int ScrollContainer_Lua::SetScrollbarTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetScrollbarTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetScrollbarTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetScrollbarTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetTrackTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetTrackTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetTrackTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetTrackTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetShowScrollButtons(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    bool show = CHECK_BOOLEAN(L, 2);
+
+    scrollContainer->SetShowScrollButtons(show);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetShowScrollButtons(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    bool ret = scrollContainer->GetShowScrollButtons();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetButtonSize(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    float size = CHECK_NUMBER(L, 2);
+
+    scrollContainer->SetButtonSize(size);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetButtonSize(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    float ret = scrollContainer->GetButtonSize();
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetUpButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetUpButtonTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetUpButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetUpButtonTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetDownButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetDownButtonTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetDownButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetDownButtonTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetLeftButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetLeftButtonTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetLeftButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetLeftButtonTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetRightButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    scrollContainer->SetRightButtonTexture(texture);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetRightButtonTexture(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Texture* ret = scrollContainer->GetRightButtonTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::SetButtonColor(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    glm::vec4 color = CHECK_VECTOR(L, 2);
+
+    scrollContainer->SetButtonColor(color);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetButtonColor(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    glm::vec4 ret = scrollContainer->GetButtonColor();
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
 int ScrollContainer_Lua::GetHScrollbar(lua_State* L)
 {
     ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
@@ -377,6 +586,66 @@ int ScrollContainer_Lua::GetVScrollbar(lua_State* L)
     return 1;
 }
 
+int ScrollContainer_Lua::GetHTrack(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Quad* ret = scrollContainer->GetHTrack();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::GetVTrack(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Quad* ret = scrollContainer->GetVTrack();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::GetUpButton(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Button* ret = scrollContainer->GetUpButton();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::GetDownButton(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Button* ret = scrollContainer->GetDownButton();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::GetLeftButton(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Button* ret = scrollContainer->GetLeftButton();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
+int ScrollContainer_Lua::GetRightButton(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    Button* ret = scrollContainer->GetRightButton();
+
+    Node_Lua::Create(L, ret);
+    return 1;
+}
+
 void ScrollContainer_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -387,6 +656,7 @@ void ScrollContainer_Lua::Bind()
 
     Node_Lua::BindCommon(L, mtIndex);
 
+    // Scroll Position
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollOffset);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollOffset);
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollOffsetX);
@@ -396,9 +666,11 @@ void ScrollContainer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, ScrollToLeft);
     REGISTER_TABLE_FUNC(L, mtIndex, ScrollToRight);
 
+    // Size Mode
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollSizeMode);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollSizeMode);
 
+    // Scrollbar Mode
     REGISTER_TABLE_FUNC(L, mtIndex, SetHorizontalScrollbarMode);
     REGISTER_TABLE_FUNC(L, mtIndex, GetHorizontalScrollbarMode);
     REGISTER_TABLE_FUNC(L, mtIndex, SetVerticalScrollbarMode);
@@ -406,6 +678,7 @@ void ScrollContainer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarWidth);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollbarWidth);
 
+    // Scroll Behavior
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollSpeed);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollSpeed);
     REGISTER_TABLE_FUNC(L, mtIndex, SetMomentumEnabled);
@@ -413,15 +686,16 @@ void ScrollContainer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetMomentumFriction);
     REGISTER_TABLE_FUNC(L, mtIndex, GetMomentumFriction);
 
+    // Query
     REGISTER_TABLE_FUNC(L, mtIndex, CanScrollHorizontally);
     REGISTER_TABLE_FUNC(L, mtIndex, CanScrollVertically);
     REGISTER_TABLE_FUNC(L, mtIndex, GetContentSize);
     REGISTER_TABLE_FUNC(L, mtIndex, GetMaxScrollOffset);
     REGISTER_TABLE_FUNC(L, mtIndex, IsDragging);
     REGISTER_TABLE_FUNC(L, mtIndex, IsScrolling);
-
     REGISTER_TABLE_FUNC(L, mtIndex, GetContentWidget);
 
+    // Colors
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarColor);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollbarColor);
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarHoveredColor);
@@ -429,8 +703,37 @@ void ScrollContainer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarTrackColor);
     REGISTER_TABLE_FUNC(L, mtIndex, GetScrollbarTrackColor);
 
+    // Textures
+    REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetScrollbarTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTrackTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTrackTexture);
+
+    // Scroll Buttons
+    REGISTER_TABLE_FUNC(L, mtIndex, SetShowScrollButtons);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetShowScrollButtons);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetButtonSize);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetButtonSize);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetUpButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUpButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetDownButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDownButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetLeftButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLeftButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetRightButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRightButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetButtonColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetButtonColor);
+
+    // Access internal widgets
     REGISTER_TABLE_FUNC(L, mtIndex, GetHScrollbar);
     REGISTER_TABLE_FUNC(L, mtIndex, GetVScrollbar);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetHTrack);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetVTrack);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetUpButton);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetDownButton);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetLeftButton);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetRightButton);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

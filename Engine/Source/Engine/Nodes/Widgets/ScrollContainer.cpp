@@ -1,6 +1,8 @@
 
 #include "Nodes/Widgets/ScrollContainer.h"
 #include "Nodes/Widgets/Quad.h"
+#include "Nodes/Widgets/Button.h"
+#include "Assets/Texture.h"
 #include "InputDevices.h"
 #include "Engine.h"
 #include "Renderer.h"
@@ -47,17 +49,31 @@ void ScrollContainer::Create()
     mHScrollbarTrack = CreateChild<Quad>("HScrollbarTrack");
     mHScrollbarGrabber = CreateChild<Quad>("HScrollbarGrabber");
 
-    // Mark as transient so they don't serialize
+    // Create scroll buttons
+    mUpButton = CreateChild<Button>("UpButton");
+    mDownButton = CreateChild<Button>("DownButton");
+    mLeftButton = CreateChild<Button>("LeftButton");
+    mRightButton = CreateChild<Button>("RightButton");
+
+    // Mark all as transient so they don't serialize
     mVScrollbarTrack->SetTransient(true);
     mVScrollbarGrabber->SetTransient(true);
     mHScrollbarTrack->SetTransient(true);
     mHScrollbarGrabber->SetTransient(true);
+    mUpButton->SetTransient(true);
+    mDownButton->SetTransient(true);
+    mLeftButton->SetTransient(true);
+    mRightButton->SetTransient(true);
 
 #if EDITOR
     mVScrollbarTrack->mHiddenInTree = true;
     mVScrollbarGrabber->mHiddenInTree = true;
     mHScrollbarTrack->mHiddenInTree = true;
     mHScrollbarGrabber->mHiddenInTree = true;
+    mUpButton->mHiddenInTree = true;
+    mDownButton->mHiddenInTree = true;
+    mLeftButton->mHiddenInTree = true;
+    mRightButton->mHiddenInTree = true;
 #endif
 
     // Configure scrollbar anchor modes
@@ -66,11 +82,23 @@ void ScrollContainer::Create()
     mHScrollbarTrack->SetAnchorMode(AnchorMode::TopLeft);
     mHScrollbarGrabber->SetAnchorMode(AnchorMode::TopLeft);
 
-    // Set initial colors
-    mVScrollbarTrack->SetColor(mScrollbarTrackColor);
-    mVScrollbarGrabber->SetColor(mScrollbarColor);
-    mHScrollbarTrack->SetColor(mScrollbarTrackColor);
-    mHScrollbarGrabber->SetColor(mScrollbarColor);
+    // Configure button anchor modes
+    mUpButton->SetAnchorMode(AnchorMode::TopLeft);
+    mDownButton->SetAnchorMode(AnchorMode::TopLeft);
+    mLeftButton->SetAnchorMode(AnchorMode::TopLeft);
+    mRightButton->SetAnchorMode(AnchorMode::TopLeft);
+
+    // Set button text
+    mUpButton->SetTextString("^");
+    mDownButton->SetTextString("v");
+    mLeftButton->SetTextString("<");
+    mRightButton->SetTextString(">");
+
+    // Hide buttons by default
+    mUpButton->SetVisible(false);
+    mDownButton->SetVisible(false);
+    mLeftButton->SetVisible(false);
+    mRightButton->SetVisible(false);
 
     // Default dimensions
     SetDimensions(200, 150);
@@ -104,11 +132,34 @@ void ScrollContainer::GatherProperties(std::vector<Property>& props)
             HandlePropChange, NULL_DATUM, int32_t(ScrollbarMode::Count), sScrollbarModeStrings));
         props.push_back(Property(DatumType::Float, "Scrollbar Width", this, &mScrollbarWidth, 1,
             HandlePropChange));
+        props.push_back(Property(DatumType::Asset, "Scrollbar Texture", this, &mScrollbarTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
         props.push_back(Property(DatumType::Color, "Scrollbar Color", this, &mScrollbarColor, 1,
             HandlePropChange));
         props.push_back(Property(DatumType::Color, "Scrollbar Hovered Color", this, &mScrollbarHoveredColor, 1,
             HandlePropChange));
+        props.push_back(Property(DatumType::Asset, "Track Texture", this, &mTrackTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
         props.push_back(Property(DatumType::Color, "Track Color", this, &mScrollbarTrackColor, 1,
+            HandlePropChange));
+    }
+
+    {
+        SCOPED_CATEGORY("Scroll Buttons");
+
+        props.push_back(Property(DatumType::Bool, "Show Scroll Buttons", this, &mShowScrollButtons, 1,
+            HandlePropChange));
+        props.push_back(Property(DatumType::Float, "Button Size", this, &mButtonSize, 1,
+            HandlePropChange));
+        props.push_back(Property(DatumType::Asset, "Up Button Texture", this, &mUpButtonTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
+        props.push_back(Property(DatumType::Asset, "Down Button Texture", this, &mDownButtonTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
+        props.push_back(Property(DatumType::Asset, "Left Button Texture", this, &mLeftButtonTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
+        props.push_back(Property(DatumType::Asset, "Right Button Texture", this, &mRightButtonTexture, 1,
+            HandlePropChange, int32_t(Texture::GetStaticType())));
+        props.push_back(Property(DatumType::Color, "Button Color", this, &mButtonColor, 1,
             HandlePropChange));
     }
 }
@@ -129,6 +180,7 @@ void ScrollContainer::Tick(float deltaTime)
     }
 
     HandleInput(deltaTime);
+    HandleButtonInput();
     HandleMomentum(deltaTime);
 }
 
@@ -143,7 +195,12 @@ void ScrollContainer::HandleInput(float deltaTime)
     if (mVScrollbarGrabber->IsVisible())
     {
         Rect vRect = mVScrollbarGrabber->GetRect();
+        bool wasHovered = mVScrollbarHovered;
         mVScrollbarHovered = vRect.ContainsPoint(mousePos.x, mousePos.y);
+        if (wasHovered != mVScrollbarHovered)
+        {
+            MarkDirty();
+        }
     }
     else
     {
@@ -153,30 +210,30 @@ void ScrollContainer::HandleInput(float deltaTime)
     if (mHScrollbarGrabber->IsVisible())
     {
         Rect hRect = mHScrollbarGrabber->GetRect();
+        bool wasHovered = mHScrollbarHovered;
         mHScrollbarHovered = hRect.ContainsPoint(mousePos.x, mousePos.y);
+        if (wasHovered != mHScrollbarHovered)
+        {
+            MarkDirty();
+        }
     }
     else
     {
         mHScrollbarHovered = false;
     }
 
-    // Update scrollbar colors based on hover/drag state
-    if (mVScrollbarHovered || mDraggingVScrollbar)
+    // Check if mouse is over any scroll button
+    bool overButton = false;
+    if (mShowScrollButtons)
     {
-        mVScrollbarGrabber->SetColor(mScrollbarHoveredColor);
-    }
-    else
-    {
-        mVScrollbarGrabber->SetColor(mScrollbarColor);
-    }
-
-    if (mHScrollbarHovered || mDraggingHScrollbar)
-    {
-        mHScrollbarGrabber->SetColor(mScrollbarHoveredColor);
-    }
-    else
-    {
-        mHScrollbarGrabber->SetColor(mScrollbarColor);
+        if (mUpButton->IsVisible() && mUpButton->ContainsMouse())
+            overButton = true;
+        else if (mDownButton->IsVisible() && mDownButton->ContainsMouse())
+            overButton = true;
+        else if (mLeftButton->IsVisible() && mLeftButton->ContainsMouse())
+            overButton = true;
+        else if (mRightButton->IsVisible() && mRightButton->ContainsMouse())
+            overButton = true;
     }
 
     // Handle pointer down
@@ -196,9 +253,9 @@ void ScrollContainer::HandleInput(float deltaTime)
             mDragStartOffset = mScrollOffset;
             mScrollVelocity = glm::vec2(0.0f);
         }
-        else
+        else if (!overButton)
         {
-            // Content drag
+            // Content drag (only if not clicking on a button)
             mDragging = true;
             mDragStartMouse = mousePos;
             mDragStartOffset = mScrollOffset;
@@ -240,14 +297,16 @@ void ScrollContainer::HandleInput(float deltaTime)
         if (IsPointerDown(0))
         {
             float containerHeight = GetHeight();
+            float buttonReserve = mShowScrollButtons ? mButtonSize * 2.0f : 0.0f;
             float scrollbarReserve = ShouldShowHScrollbar() ? mScrollbarWidth : 0.0f;
-            float trackHeight = containerHeight - scrollbarReserve;
+            float trackHeight = containerHeight - scrollbarReserve - buttonReserve;
             float contentHeight = mCachedContentSize.y;
             float viewportHeight = containerHeight - scrollbarReserve;
             float maxScroll = glm::max(0.0f, contentHeight - viewportHeight);
 
             if (trackHeight > 0.0f && maxScroll > 0.0f)
             {
+                float buttonOffset = mShowScrollButtons ? mButtonSize : 0.0f;
                 float scrollRatio = (mousePos.y - mDragStartMouse.y) / trackHeight;
                 float scrollDelta = scrollRatio * maxScroll;
                 SetScrollOffsetY(mDragStartOffset.y + scrollDelta);
@@ -263,8 +322,9 @@ void ScrollContainer::HandleInput(float deltaTime)
         if (IsPointerDown(0))
         {
             float containerWidth = GetWidth();
+            float buttonReserve = mShowScrollButtons ? mButtonSize * 2.0f : 0.0f;
             float scrollbarReserve = ShouldShowVScrollbar() ? mScrollbarWidth : 0.0f;
-            float trackWidth = containerWidth - scrollbarReserve;
+            float trackWidth = containerWidth - scrollbarReserve - buttonReserve;
             float contentWidth = mCachedContentSize.x;
             float viewportWidth = containerWidth - scrollbarReserve;
             float maxScroll = glm::max(0.0f, contentWidth - viewportWidth);
@@ -298,6 +358,36 @@ void ScrollContainer::HandleInput(float deltaTime)
                 SetScrollOffsetX(mScrollOffset.x - scrollDelta * mScrollSpeed);
             }
             mScrollVelocity = glm::vec2(0.0f);  // Stop momentum on wheel
+        }
+    }
+}
+
+void ScrollContainer::HandleButtonInput()
+{
+    if (!mShowScrollButtons)
+    {
+        return;
+    }
+
+    // Check if buttons were activated (pointer released while over pressed button)
+    // Button activation happens when pointer is released while button is in Pressed state
+    if (IsPointerJustUp(0))
+    {
+        if (mUpButton->IsVisible() && mUpButton->GetState() == ButtonState::Pressed && mUpButton->ContainsMouse())
+        {
+            SetScrollOffsetY(mScrollOffset.y - mScrollSpeed);
+        }
+        if (mDownButton->IsVisible() && mDownButton->GetState() == ButtonState::Pressed && mDownButton->ContainsMouse())
+        {
+            SetScrollOffsetY(mScrollOffset.y + mScrollSpeed);
+        }
+        if (mLeftButton->IsVisible() && mLeftButton->GetState() == ButtonState::Pressed && mLeftButton->ContainsMouse())
+        {
+            SetScrollOffsetX(mScrollOffset.x - mScrollSpeed);
+        }
+        if (mRightButton->IsVisible() && mRightButton->GetState() == ButtonState::Pressed && mRightButton->ContainsMouse())
+        {
+            SetScrollOffsetX(mScrollOffset.x + mScrollSpeed);
         }
     }
 }
@@ -376,6 +466,7 @@ void ScrollContainer::PreRender()
 
         // Update scrollbar visuals
         UpdateScrollbars();
+        UpdateScrollButtons();
     }
 }
 
@@ -415,6 +506,10 @@ void ScrollContainer::UpdateScrollbars()
     float hReserve = showVScrollbar ? mScrollbarWidth : 0.0f;
     float vReserve = showHScrollbar ? mScrollbarWidth : 0.0f;
 
+    // Button reserve for scrollbar positioning
+    float vButtonReserve = (mShowScrollButtons && showVScrollbar) ? mButtonSize : 0.0f;
+    float hButtonReserve = (mShowScrollButtons && showHScrollbar) ? mButtonSize : 0.0f;
+
     // Calculate viewport and content sizes
     float viewportWidth = containerWidth - hReserve;
     float viewportHeight = containerHeight - vReserve;
@@ -422,19 +517,26 @@ void ScrollContainer::UpdateScrollbars()
     float contentWidth = mCachedContentSize.x;
     float contentHeight = mCachedContentSize.y;
 
+    // Get textures
+    Texture* scrollbarTex = mScrollbarTexture.Get<Texture>();
+    Texture* trackTex = mTrackTexture.Get<Texture>();
+
     // Update vertical scrollbar
     mVScrollbarTrack->SetVisible(showVScrollbar);
     mVScrollbarGrabber->SetVisible(showVScrollbar);
 
     if (showVScrollbar)
     {
-        // Position track on right side
-        mVScrollbarTrack->SetPosition(containerWidth - mScrollbarWidth, 0.0f);
-        mVScrollbarTrack->SetDimensions(mScrollbarWidth, containerHeight - vReserve);
+        float trackStartY = vButtonReserve;
+        float trackHeight = containerHeight - vReserve - (vButtonReserve * 2.0f);
+
+        // Position and style track
+        mVScrollbarTrack->SetPosition(containerWidth - mScrollbarWidth, trackStartY);
+        mVScrollbarTrack->SetDimensions(mScrollbarWidth, trackHeight);
+        mVScrollbarTrack->SetTexture(trackTex);
         mVScrollbarTrack->SetColor(mScrollbarTrackColor);
 
         // Calculate grabber size and position
-        float trackHeight = containerHeight - vReserve;
         float grabberRatio = glm::clamp(viewportHeight / contentHeight, 0.1f, 1.0f);
         float grabberHeight = trackHeight * grabberRatio;
 
@@ -442,10 +544,21 @@ void ScrollContainer::UpdateScrollbars()
         float scrollRatio = (maxScroll > 0.0f) ? (mScrollOffset.y / maxScroll) : 0.0f;
         scrollRatio = glm::clamp(scrollRatio, 0.0f, 1.0f);
 
-        float grabberY = scrollRatio * (trackHeight - grabberHeight);
+        float grabberY = trackStartY + scrollRatio * (trackHeight - grabberHeight);
 
         mVScrollbarGrabber->SetPosition(containerWidth - mScrollbarWidth, grabberY);
         mVScrollbarGrabber->SetDimensions(mScrollbarWidth, grabberHeight);
+        mVScrollbarGrabber->SetTexture(scrollbarTex);
+
+        // Apply color based on hover state
+        if (mVScrollbarHovered || mDraggingVScrollbar)
+        {
+            mVScrollbarGrabber->SetColor(mScrollbarHoveredColor);
+        }
+        else
+        {
+            mVScrollbarGrabber->SetColor(mScrollbarColor);
+        }
     }
 
     // Update horizontal scrollbar
@@ -454,13 +567,16 @@ void ScrollContainer::UpdateScrollbars()
 
     if (showHScrollbar)
     {
-        // Position track on bottom
-        mHScrollbarTrack->SetPosition(0.0f, containerHeight - mScrollbarWidth);
-        mHScrollbarTrack->SetDimensions(containerWidth - hReserve, mScrollbarWidth);
+        float trackStartX = hButtonReserve;
+        float trackWidth = containerWidth - hReserve - (hButtonReserve * 2.0f);
+
+        // Position and style track
+        mHScrollbarTrack->SetPosition(trackStartX, containerHeight - mScrollbarWidth);
+        mHScrollbarTrack->SetDimensions(trackWidth, mScrollbarWidth);
+        mHScrollbarTrack->SetTexture(trackTex);
         mHScrollbarTrack->SetColor(mScrollbarTrackColor);
 
         // Calculate grabber size and position
-        float trackWidth = containerWidth - hReserve;
         float grabberRatio = glm::clamp(viewportWidth / contentWidth, 0.1f, 1.0f);
         float grabberWidth = trackWidth * grabberRatio;
 
@@ -468,10 +584,145 @@ void ScrollContainer::UpdateScrollbars()
         float scrollRatio = (maxScroll > 0.0f) ? (mScrollOffset.x / maxScroll) : 0.0f;
         scrollRatio = glm::clamp(scrollRatio, 0.0f, 1.0f);
 
-        float grabberX = scrollRatio * (trackWidth - grabberWidth);
+        float grabberX = trackStartX + scrollRatio * (trackWidth - grabberWidth);
 
         mHScrollbarGrabber->SetPosition(grabberX, containerHeight - mScrollbarWidth);
         mHScrollbarGrabber->SetDimensions(grabberWidth, mScrollbarWidth);
+        mHScrollbarGrabber->SetTexture(scrollbarTex);
+
+        // Apply color based on hover state
+        if (mHScrollbarHovered || mDraggingHScrollbar)
+        {
+            mHScrollbarGrabber->SetColor(mScrollbarHoveredColor);
+        }
+        else
+        {
+            mHScrollbarGrabber->SetColor(mScrollbarColor);
+        }
+    }
+}
+
+void ScrollContainer::UpdateScrollButtons()
+{
+    float containerWidth = GetWidth();
+    float containerHeight = GetHeight();
+
+    bool showVScrollbar = ShouldShowVScrollbar();
+    bool showHScrollbar = ShouldShowHScrollbar();
+
+    float vReserve = showHScrollbar ? mScrollbarWidth : 0.0f;
+    float hReserve = showVScrollbar ? mScrollbarWidth : 0.0f;
+
+    // Get textures for each button
+    Texture* upTex = mUpButtonTexture.Get<Texture>();
+    Texture* downTex = mDownButtonTexture.Get<Texture>();
+    Texture* leftTex = mLeftButtonTexture.Get<Texture>();
+    Texture* rightTex = mRightButtonTexture.Get<Texture>();
+
+    // Calculate hovered/pressed colors from button color
+    glm::vec4 hoveredColor = glm::min(mButtonColor * 1.3f, glm::vec4(1.0f));
+    hoveredColor.a = mButtonColor.a;
+    glm::vec4 pressedColor = mButtonColor * 0.8f;
+    pressedColor.a = mButtonColor.a;
+
+    // Vertical scroll buttons (up/down)
+    bool showVButtons = mShowScrollButtons && showVScrollbar;
+    mUpButton->SetVisible(showVButtons);
+    mDownButton->SetVisible(showVButtons);
+
+    if (showVButtons)
+    {
+        // Up button at top-right
+        mUpButton->SetPosition(containerWidth - mScrollbarWidth, 0.0f);
+        mUpButton->SetDimensions(mScrollbarWidth, mButtonSize);
+        mUpButton->SetNormalColor(mButtonColor);
+        mUpButton->SetHoveredColor(hoveredColor);
+        mUpButton->SetPressedColor(pressedColor);
+        if (upTex)
+        {
+            mUpButton->SetNormalTexture(upTex);
+            mUpButton->SetHoveredTexture(upTex);
+            mUpButton->SetPressedTexture(upTex);
+            mUpButton->SetTextString("");  // Clear text when using texture
+        }
+        else
+        {
+            mUpButton->SetNormalTexture(nullptr);
+            mUpButton->SetHoveredTexture(nullptr);
+            mUpButton->SetPressedTexture(nullptr);
+            mUpButton->SetTextString("^");
+        }
+
+        // Down button above horizontal scrollbar
+        mDownButton->SetPosition(containerWidth - mScrollbarWidth, containerHeight - vReserve - mButtonSize);
+        mDownButton->SetDimensions(mScrollbarWidth, mButtonSize);
+        mDownButton->SetNormalColor(mButtonColor);
+        mDownButton->SetHoveredColor(hoveredColor);
+        mDownButton->SetPressedColor(pressedColor);
+        if (downTex)
+        {
+            mDownButton->SetNormalTexture(downTex);
+            mDownButton->SetHoveredTexture(downTex);
+            mDownButton->SetPressedTexture(downTex);
+            mDownButton->SetTextString("");
+        }
+        else
+        {
+            mDownButton->SetNormalTexture(nullptr);
+            mDownButton->SetHoveredTexture(nullptr);
+            mDownButton->SetPressedTexture(nullptr);
+            mDownButton->SetTextString("v");
+        }
+    }
+
+    // Horizontal scroll buttons (left/right)
+    bool showHButtons = mShowScrollButtons && showHScrollbar;
+    mLeftButton->SetVisible(showHButtons);
+    mRightButton->SetVisible(showHButtons);
+
+    if (showHButtons)
+    {
+        // Left button at bottom-left
+        mLeftButton->SetPosition(0.0f, containerHeight - mScrollbarWidth);
+        mLeftButton->SetDimensions(mButtonSize, mScrollbarWidth);
+        mLeftButton->SetNormalColor(mButtonColor);
+        mLeftButton->SetHoveredColor(hoveredColor);
+        mLeftButton->SetPressedColor(pressedColor);
+        if (leftTex)
+        {
+            mLeftButton->SetNormalTexture(leftTex);
+            mLeftButton->SetHoveredTexture(leftTex);
+            mLeftButton->SetPressedTexture(leftTex);
+            mLeftButton->SetTextString("");
+        }
+        else
+        {
+            mLeftButton->SetNormalTexture(nullptr);
+            mLeftButton->SetHoveredTexture(nullptr);
+            mLeftButton->SetPressedTexture(nullptr);
+            mLeftButton->SetTextString("<");
+        }
+
+        // Right button to the left of vertical scrollbar
+        mRightButton->SetPosition(containerWidth - hReserve - mButtonSize, containerHeight - mScrollbarWidth);
+        mRightButton->SetDimensions(mButtonSize, mScrollbarWidth);
+        mRightButton->SetNormalColor(mButtonColor);
+        mRightButton->SetHoveredColor(hoveredColor);
+        mRightButton->SetPressedColor(pressedColor);
+        if (rightTex)
+        {
+            mRightButton->SetNormalTexture(rightTex);
+            mRightButton->SetHoveredTexture(rightTex);
+            mRightButton->SetPressedTexture(rightTex);
+            mRightButton->SetTextString("");
+        }
+        else
+        {
+            mRightButton->SetNormalTexture(nullptr);
+            mRightButton->SetHoveredTexture(nullptr);
+            mRightButton->SetPressedTexture(nullptr);
+            mRightButton->SetTextString(">");
+        }
     }
 }
 
@@ -749,6 +1000,132 @@ glm::vec4 ScrollContainer::GetScrollbarTrackColor() const
     return mScrollbarTrackColor;
 }
 
+void ScrollContainer::SetScrollbarTexture(Texture* texture)
+{
+    if (mScrollbarTexture != texture)
+    {
+        mScrollbarTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetScrollbarTexture()
+{
+    return mScrollbarTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetTrackTexture(Texture* texture)
+{
+    if (mTrackTexture != texture)
+    {
+        mTrackTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetTrackTexture()
+{
+    return mTrackTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetShowScrollButtons(bool show)
+{
+    if (mShowScrollButtons != show)
+    {
+        mShowScrollButtons = show;
+        MarkDirty();
+    }
+}
+
+bool ScrollContainer::GetShowScrollButtons() const
+{
+    return mShowScrollButtons;
+}
+
+void ScrollContainer::SetButtonSize(float size)
+{
+    if (mButtonSize != size)
+    {
+        mButtonSize = size;
+        MarkDirty();
+    }
+}
+
+float ScrollContainer::GetButtonSize() const
+{
+    return mButtonSize;
+}
+
+void ScrollContainer::SetUpButtonTexture(Texture* texture)
+{
+    if (mUpButtonTexture != texture)
+    {
+        mUpButtonTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetUpButtonTexture()
+{
+    return mUpButtonTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetDownButtonTexture(Texture* texture)
+{
+    if (mDownButtonTexture != texture)
+    {
+        mDownButtonTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetDownButtonTexture()
+{
+    return mDownButtonTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetLeftButtonTexture(Texture* texture)
+{
+    if (mLeftButtonTexture != texture)
+    {
+        mLeftButtonTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetLeftButtonTexture()
+{
+    return mLeftButtonTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetRightButtonTexture(Texture* texture)
+{
+    if (mRightButtonTexture != texture)
+    {
+        mRightButtonTexture = texture;
+        MarkDirty();
+    }
+}
+
+Texture* ScrollContainer::GetRightButtonTexture()
+{
+    return mRightButtonTexture.Get<Texture>();
+}
+
+void ScrollContainer::SetButtonColor(glm::vec4 color)
+{
+    if (mButtonColor != color)
+    {
+        mButtonColor = color;
+        MarkDirty();
+    }
+}
+
+glm::vec4 ScrollContainer::GetButtonColor() const
+{
+    return mButtonColor;
+}
+
 Quad* ScrollContainer::GetHScrollbar()
 {
     return mHScrollbarGrabber;
@@ -757,4 +1134,34 @@ Quad* ScrollContainer::GetHScrollbar()
 Quad* ScrollContainer::GetVScrollbar()
 {
     return mVScrollbarGrabber;
+}
+
+Quad* ScrollContainer::GetHTrack()
+{
+    return mHScrollbarTrack;
+}
+
+Quad* ScrollContainer::GetVTrack()
+{
+    return mVScrollbarTrack;
+}
+
+Button* ScrollContainer::GetUpButton()
+{
+    return mUpButton;
+}
+
+Button* ScrollContainer::GetDownButton()
+{
+    return mDownButton;
+}
+
+Button* ScrollContainer::GetLeftButton()
+{
+    return mLeftButton;
+}
+
+Button* ScrollContainer::GetRightButton()
+{
+    return mRightButton;
 }

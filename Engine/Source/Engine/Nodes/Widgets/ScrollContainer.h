@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Nodes/Widgets/Widget.h"
+#include "AssetRef.h"
 
 class Quad;
+class Button;
+class Texture;
 
 enum class ScrollSizeMode : uint8_t
 {
@@ -73,7 +76,7 @@ public:
     // Content Access
     Widget* GetContentWidget();
 
-    // Visual Customization
+    // Visual Customization - Colors
     void SetScrollbarColor(glm::vec4 color);
     glm::vec4 GetScrollbarColor() const;
     void SetScrollbarHoveredColor(glm::vec4 color);
@@ -81,8 +84,37 @@ public:
     void SetScrollbarTrackColor(glm::vec4 color);
     glm::vec4 GetScrollbarTrackColor() const;
 
+    // Visual Customization - Textures
+    void SetScrollbarTexture(Texture* texture);
+    Texture* GetScrollbarTexture();
+    void SetTrackTexture(Texture* texture);
+    Texture* GetTrackTexture();
+
+    // Scroll Buttons
+    void SetShowScrollButtons(bool show);
+    bool GetShowScrollButtons() const;
+    void SetButtonSize(float size);
+    float GetButtonSize() const;
+    void SetUpButtonTexture(Texture* texture);
+    Texture* GetUpButtonTexture();
+    void SetDownButtonTexture(Texture* texture);
+    Texture* GetDownButtonTexture();
+    void SetLeftButtonTexture(Texture* texture);
+    Texture* GetLeftButtonTexture();
+    void SetRightButtonTexture(Texture* texture);
+    Texture* GetRightButtonTexture();
+    void SetButtonColor(glm::vec4 color);
+    glm::vec4 GetButtonColor() const;
+
+    // Access internal widgets
     Quad* GetHScrollbar();
     Quad* GetVScrollbar();
+    Quad* GetHTrack();
+    Quad* GetVTrack();
+    Button* GetUpButton();
+    Button* GetDownButton();
+    Button* GetLeftButton();
+    Button* GetRightButton();
 
 protected:
 
@@ -90,9 +122,11 @@ protected:
 
     void UpdateScrollbars();
     void UpdateContentPosition();
+    void UpdateScrollButtons();
     void ClampScrollOffset();
     void HandleInput(float deltaTime);
     void HandleMomentum(float deltaTime);
+    void HandleButtonInput();
     bool ShouldShowHScrollbar() const;
     bool ShouldShowVScrollbar() const;
 
@@ -113,11 +147,24 @@ protected:
     float mMomentumFriction = 5.0f;      // Deceleration factor
     bool mMomentumEnabled = true;
 
-    // Visual
+    // Visual - Dimensions
     float mScrollbarWidth = 8.0f;
+    float mButtonSize = 16.0f;
+    bool mShowScrollButtons = false;
+
+    // Visual - Colors
     glm::vec4 mScrollbarColor = glm::vec4(0.5f, 0.5f, 0.5f, 0.8f);
     glm::vec4 mScrollbarHoveredColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
     glm::vec4 mScrollbarTrackColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.5f);
+    glm::vec4 mButtonColor = glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
+
+    // Visual - Textures
+    TextureRef mScrollbarTexture;
+    TextureRef mTrackTexture;
+    TextureRef mUpButtonTexture;
+    TextureRef mDownButtonTexture;
+    TextureRef mLeftButtonTexture;
+    TextureRef mRightButtonTexture;
 
     // State
     bool mDragging = false;
@@ -129,9 +176,15 @@ protected:
     // Cached content size (updated during PreRender)
     glm::vec2 mCachedContentSize = glm::vec2(0.0f);
 
-    // Transient child widgets
+    // Transient child widgets - Scrollbars
     Quad* mHScrollbarTrack = nullptr;
     Quad* mHScrollbarGrabber = nullptr;
     Quad* mVScrollbarTrack = nullptr;
     Quad* mVScrollbarGrabber = nullptr;
+
+    // Transient child widgets - Buttons
+    Button* mUpButton = nullptr;
+    Button* mDownButton = nullptr;
+    Button* mLeftButton = nullptr;
+    Button* mRightButton = nullptr;
 };
