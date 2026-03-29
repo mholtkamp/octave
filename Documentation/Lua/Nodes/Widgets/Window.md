@@ -270,6 +270,78 @@ Get the background color.
 Sig: `color = Window:GetBackgroundColor()`
  - Ret: `Vector color` RGBA color
 ---
+### SetBackgroundTexture
+Set the window background texture.
+
+Sig: `Window:SetBackgroundTexture(texture)`
+ - Arg: `Texture texture` Background texture (or nil to clear)
+---
+### GetBackgroundTexture
+Get the background texture.
+
+Sig: `texture = Window:GetBackgroundTexture()`
+ - Ret: `Texture texture` Background texture or nil
+---
+### SetTitleBarTexture
+Set the title bar background texture.
+
+Sig: `Window:SetTitleBarTexture(texture)`
+ - Arg: `Texture texture` Title bar texture (or nil to clear)
+---
+### GetTitleBarTexture
+Get the title bar texture.
+
+Sig: `texture = Window:GetTitleBarTexture()`
+ - Ret: `Texture texture` Title bar texture or nil
+---
+### SetCloseButtonTexture
+Set the close button texture.
+
+Sig: `Window:SetCloseButtonTexture(texture)`
+ - Arg: `Texture texture` Close button texture (or nil to clear)
+---
+### GetCloseButtonTexture
+Get the close button texture.
+
+Sig: `texture = Window:GetCloseButtonTexture()`
+ - Ret: `Texture texture` Close button texture or nil
+---
+### SetCloseButtonNormalColor
+Set the close button normal color.
+
+Sig: `Window:SetCloseButtonNormalColor(color)`
+ - Arg: `Vector color` RGBA color
+---
+### GetCloseButtonNormalColor
+Get the close button normal color.
+
+Sig: `color = Window:GetCloseButtonNormalColor()`
+ - Ret: `Vector color` RGBA color
+---
+### SetCloseButtonHoveredColor
+Set the close button hovered color.
+
+Sig: `Window:SetCloseButtonHoveredColor(color)`
+ - Arg: `Vector color` RGBA color
+---
+### GetCloseButtonHoveredColor
+Get the close button hovered color.
+
+Sig: `color = Window:GetCloseButtonHoveredColor()`
+ - Ret: `Vector color` RGBA color
+---
+### SetCloseButtonPressedColor
+Set the close button pressed color.
+
+Sig: `Window:SetCloseButtonPressedColor(color)`
+ - Arg: `Vector color` RGBA color
+---
+### GetCloseButtonPressedColor
+Get the close button pressed color.
+
+Sig: `color = Window:GetCloseButtonPressedColor()`
+ - Ret: `Vector color` RGBA color
+---
 ### GetTitleBar
 Get the internal title bar Canvas widget.
 

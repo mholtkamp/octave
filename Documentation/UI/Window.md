@@ -38,6 +38,12 @@ The Window widget is a container that provides a standard window UI with title b
 | Resize Handle Size | Float | 12.0 | Size of the resize handle |
 | Title Bar Color | Color | (0.2, 0.2, 0.3, 1.0) | Title bar background color |
 | Background Color | Color | (0.15, 0.15, 0.2, 0.95) | Window background color |
+| Background Texture | Texture | null | Optional window background texture |
+| Title Bar Texture | Texture | null | Optional title bar background texture |
+| Close Button Texture | Texture | null | Optional close button texture |
+| Close Button Normal Color | Color | (0.6, 0.2, 0.2, 1.0) | Close button normal state color |
+| Close Button Hovered Color | Color | (0.8, 0.3, 0.3, 1.0) | Close button hovered state color |
+| Close Button Pressed Color | Color | (0.5, 0.15, 0.15, 1.0) | Close button pressed state color |
 
 ## Content Widgets
 

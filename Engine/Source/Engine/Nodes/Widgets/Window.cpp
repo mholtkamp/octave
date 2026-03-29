@@ -6,6 +6,7 @@
 #include "Nodes/Widgets/ScrollContainer.h"
 #include "WindowManager.h"
 #include "InputDevices.h"
+#include "Assets/Texture.h"
 #include "Log.h"
 
 FORCE_LINK_DEF(Window);
@@ -115,6 +116,36 @@ bool Window::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         window->SetBackgroundColor(*static_cast<const glm::vec4*>(newValue));
         success = true;
     }
+    else if (prop->mName == "Background Texture")
+    {
+        window->SetBackgroundTexture(*(Texture**)newValue);
+        success = true;
+    }
+    else if (prop->mName == "Title Bar Texture")
+    {
+        window->SetTitleBarTexture(*(Texture**)newValue);
+        success = true;
+    }
+    else if (prop->mName == "Close Button Texture")
+    {
+        window->SetCloseButtonTexture(*(Texture**)newValue);
+        success = true;
+    }
+    else if (prop->mName == "Close Button Normal Color")
+    {
+        window->SetCloseButtonNormalColor(*static_cast<const glm::vec4*>(newValue));
+        success = true;
+    }
+    else if (prop->mName == "Close Button Hovered Color")
+    {
+        window->SetCloseButtonHoveredColor(*static_cast<const glm::vec4*>(newValue));
+        success = true;
+    }
+    else if (prop->mName == "Close Button Pressed Color")
+    {
+        window->SetCloseButtonPressedColor(*static_cast<const glm::vec4*>(newValue));
+        success = true;
+    }
 
     return success;
 }
@@ -179,9 +210,9 @@ void Window::Create()
     mCloseButton->SetDimensions(btnSize, btnSize);
     mCloseButton->SetPosition(-btnSize - 2.0f, 2.0f);
     mCloseButton->SetTextString("X");
-    mCloseButton->SetNormalColor(glm::vec4(0.6f, 0.2f, 0.2f, 1.0f));
-    mCloseButton->SetHoveredColor(glm::vec4(0.8f, 0.3f, 0.3f, 1.0f));
-    mCloseButton->SetPressedColor(glm::vec4(0.5f, 0.15f, 0.15f, 1.0f));
+    mCloseButton->SetNormalColor(mCloseButtonNormalColor);
+    mCloseButton->SetHoveredColor(mCloseButtonHoveredColor);
+    mCloseButton->SetPressedColor(mCloseButtonPressedColor);
     mCloseButton->SetVisible(mShowCloseButton);
 #if EDITOR
     mCloseButton->mHiddenInTree = true;
@@ -256,6 +287,12 @@ void Window::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Float, "Resize Handle Size", this, &mResizeHandleSize, 1, HandlePropChange));
     props.push_back(Property(DatumType::Color, "Title Bar Color", this, &mTitleBarColor, 1, HandlePropChange));
     props.push_back(Property(DatumType::Color, "Background Color", this, &mBackgroundColor, 1, HandlePropChange));
+    props.push_back(Property(DatumType::Asset, "Background Texture", this, &mBackgroundTexture, 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    props.push_back(Property(DatumType::Asset, "Title Bar Texture", this, &mTitleBarTexture, 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    props.push_back(Property(DatumType::Asset, "Close Button Texture", this, &mCloseButtonTexture, 1, HandlePropChange, int32_t(Texture::GetStaticType())));
+    props.push_back(Property(DatumType::Color, "Close Button Normal Color", this, &mCloseButtonNormalColor, 1, HandlePropChange));
+    props.push_back(Property(DatumType::Color, "Close Button Hovered Color", this, &mCloseButtonHoveredColor, 1, HandlePropChange));
+    props.push_back(Property(DatumType::Color, "Close Button Pressed Color", this, &mCloseButtonPressedColor, 1, HandlePropChange));
 }
 
 void Window::Tick(float deltaTime)
@@ -461,11 +498,20 @@ void Window::UpdateLayout()
     {
         mCloseButton->SetVisible(mShowCloseButton);
         mCloseButton->SetDimensions(mTitleBarHeight - 4.0f, mTitleBarHeight - 4.0f);
+        mCloseButton->SetNormalColor(mCloseButtonNormalColor);
+        mCloseButton->SetHoveredColor(mCloseButtonHoveredColor);
+        mCloseButton->SetPressedColor(mCloseButtonPressedColor);
+        if (mCloseButtonTexture.Get<Texture>() != nullptr)
+        {
+            mCloseButton->SetNormalTexture(mCloseButtonTexture.Get<Texture>());
+            mCloseButton->SetTextString("");
+        }
     }
 
     if (mBackground != nullptr)
     {
         mBackground->SetColor(mBackgroundColor);
+        mBackground->SetTexture(mBackgroundTexture.Get<Texture>());
     }
 
     // Update title text alignment and size
@@ -494,13 +540,14 @@ void Window::UpdateLayout()
         }
     }
 
-    // Update title bar background color
+    // Update title bar background color and texture
     if (mTitleBar != nullptr && mTitleBar->GetNumChildren() > 0)
     {
         Quad* titleBg = static_cast<Quad*>(mTitleBar->GetChild(0));
         if (titleBg != nullptr)
         {
             titleBg->SetColor(mTitleBarColor);
+            titleBg->SetTexture(mTitleBarTexture.Get<Texture>());
         }
     }
 }
@@ -786,6 +833,72 @@ void Window::SetBackgroundColor(glm::vec4 color)
 glm::vec4 Window::GetBackgroundColor() const
 {
     return mBackgroundColor;
+}
+
+void Window::SetBackgroundTexture(Texture* texture)
+{
+    mBackgroundTexture = texture;
+    MarkDirty();
+}
+
+Texture* Window::GetBackgroundTexture()
+{
+    return mBackgroundTexture.Get<Texture>();
+}
+
+void Window::SetTitleBarTexture(Texture* texture)
+{
+    mTitleBarTexture = texture;
+    MarkDirty();
+}
+
+Texture* Window::GetTitleBarTexture()
+{
+    return mTitleBarTexture.Get<Texture>();
+}
+
+void Window::SetCloseButtonTexture(Texture* texture)
+{
+    mCloseButtonTexture = texture;
+    MarkDirty();
+}
+
+Texture* Window::GetCloseButtonTexture()
+{
+    return mCloseButtonTexture.Get<Texture>();
+}
+
+void Window::SetCloseButtonNormalColor(glm::vec4 color)
+{
+    mCloseButtonNormalColor = color;
+    MarkDirty();
+}
+
+glm::vec4 Window::GetCloseButtonNormalColor() const
+{
+    return mCloseButtonNormalColor;
+}
+
+void Window::SetCloseButtonHoveredColor(glm::vec4 color)
+{
+    mCloseButtonHoveredColor = color;
+    MarkDirty();
+}
+
+glm::vec4 Window::GetCloseButtonHoveredColor() const
+{
+    return mCloseButtonHoveredColor;
+}
+
+void Window::SetCloseButtonPressedColor(glm::vec4 color)
+{
+    mCloseButtonPressedColor = color;
+    MarkDirty();
+}
+
+glm::vec4 Window::GetCloseButtonPressedColor() const
+{
+    return mCloseButtonPressedColor;
 }
 
 Canvas* Window::GetTitleBar()

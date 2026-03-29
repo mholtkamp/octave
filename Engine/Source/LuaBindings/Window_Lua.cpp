@@ -7,6 +7,8 @@
 #include "LuaBindings/Quad_Lua.h"
 #include "LuaBindings/ScrollContainer_Lua.h"
 #include "LuaBindings/Vector_Lua.h"
+#include "LuaBindings/Asset_Lua.h"
+#include "LuaBindings/Texture_Lua.h"
 
 #if LUA_ENABLED
 
@@ -490,6 +492,138 @@ int Window_Lua::GetBackground(lua_State* L)
     return 1;
 }
 
+int Window_Lua::SetBackgroundTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    window->SetBackgroundTexture(texture);
+
+    return 0;
+}
+
+int Window_Lua::GetBackgroundTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    Texture* ret = window->GetBackgroundTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int Window_Lua::SetTitleBarTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    window->SetTitleBarTexture(texture);
+
+    return 0;
+}
+
+int Window_Lua::GetTitleBarTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    Texture* ret = window->GetTitleBarTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int Window_Lua::SetCloseButtonTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    Texture* texture = nullptr;
+    if (!lua_isnil(L, 2))
+    {
+        texture = CHECK_TEXTURE(L, 2);
+    }
+
+    window->SetCloseButtonTexture(texture);
+
+    return 0;
+}
+
+int Window_Lua::GetCloseButtonTexture(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    Texture* ret = window->GetCloseButtonTexture();
+
+    Asset_Lua::Create(L, ret);
+    return 1;
+}
+
+int Window_Lua::SetCloseButtonNormalColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    glm::vec4 color = CHECK_VECTOR(L, 2);
+
+    window->SetCloseButtonNormalColor(color);
+
+    return 0;
+}
+
+int Window_Lua::GetCloseButtonNormalColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    glm::vec4 ret = window->GetCloseButtonNormalColor();
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
+int Window_Lua::SetCloseButtonHoveredColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    glm::vec4 color = CHECK_VECTOR(L, 2);
+
+    window->SetCloseButtonHoveredColor(color);
+
+    return 0;
+}
+
+int Window_Lua::GetCloseButtonHoveredColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    glm::vec4 ret = window->GetCloseButtonHoveredColor();
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
+int Window_Lua::SetCloseButtonPressedColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    glm::vec4 color = CHECK_VECTOR(L, 2);
+
+    window->SetCloseButtonPressedColor(color);
+
+    return 0;
+}
+
+int Window_Lua::GetCloseButtonPressedColor(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    glm::vec4 ret = window->GetCloseButtonPressedColor();
+
+    Vector_Lua::Create(L, ret);
+    return 1;
+}
+
 void Window_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -556,6 +690,22 @@ void Window_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetTitleBarColor);
     REGISTER_TABLE_FUNC(L, mtIndex, SetBackgroundColor);
     REGISTER_TABLE_FUNC(L, mtIndex, GetBackgroundColor);
+
+    // Textures
+    REGISTER_TABLE_FUNC(L, mtIndex, SetBackgroundTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetBackgroundTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTitleBarTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTitleBarTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCloseButtonTexture);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCloseButtonTexture);
+
+    // Close Button Colors
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCloseButtonNormalColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCloseButtonNormalColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCloseButtonHoveredColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCloseButtonHoveredColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetCloseButtonPressedColor);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetCloseButtonPressedColor);
 
     // Internal widget access
     REGISTER_TABLE_FUNC(L, mtIndex, GetTitleBar);

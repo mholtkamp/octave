@@ -72,6 +72,22 @@ struct Window_Lua
     static int SetBackgroundColor(lua_State* L);
     static int GetBackgroundColor(lua_State* L);
 
+    // Textures
+    static int SetBackgroundTexture(lua_State* L);
+    static int GetBackgroundTexture(lua_State* L);
+    static int SetTitleBarTexture(lua_State* L);
+    static int GetTitleBarTexture(lua_State* L);
+    static int SetCloseButtonTexture(lua_State* L);
+    static int GetCloseButtonTexture(lua_State* L);
+
+    // Close Button Colors
+    static int SetCloseButtonNormalColor(lua_State* L);
+    static int GetCloseButtonNormalColor(lua_State* L);
+    static int SetCloseButtonHoveredColor(lua_State* L);
+    static int GetCloseButtonHoveredColor(lua_State* L);
+    static int SetCloseButtonPressedColor(lua_State* L);
+    static int GetCloseButtonPressedColor(lua_State* L);
+
     // Internal widget access
     static int GetTitleBar(lua_State* L);
     static int GetTitleText(lua_State* L);

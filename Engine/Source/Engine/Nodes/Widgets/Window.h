@@ -1,12 +1,14 @@
 #pragma once
 
 #include "Nodes/Widgets/Widget.h"
+#include "AssetRef.h"
 
 class Text;
 class Button;
 class Canvas;
 class ScrollContainer;
 class Quad;
+class Texture;
 
 enum class TitleAlignment : uint8_t
 {
@@ -88,6 +90,22 @@ public:
     void SetBackgroundColor(glm::vec4 color);
     glm::vec4 GetBackgroundColor() const;
 
+    // Textures
+    void SetBackgroundTexture(Texture* texture);
+    Texture* GetBackgroundTexture();
+    void SetTitleBarTexture(Texture* texture);
+    Texture* GetTitleBarTexture();
+    void SetCloseButtonTexture(Texture* texture);
+    Texture* GetCloseButtonTexture();
+
+    // Close Button Colors
+    void SetCloseButtonNormalColor(glm::vec4 color);
+    glm::vec4 GetCloseButtonNormalColor() const;
+    void SetCloseButtonHoveredColor(glm::vec4 color);
+    glm::vec4 GetCloseButtonHoveredColor() const;
+    void SetCloseButtonPressedColor(glm::vec4 color);
+    glm::vec4 GetCloseButtonPressedColor() const;
+
     // Internal widget access
     Canvas* GetTitleBar();
     Text* GetTitleText();
@@ -123,6 +141,16 @@ protected:
     glm::vec2 mMaxSize = glm::vec2(0.0f); // 0 = no max
     glm::vec4 mTitleBarColor = glm::vec4(0.2f, 0.2f, 0.3f, 1.0f);
     glm::vec4 mBackgroundColor = glm::vec4(0.15f, 0.15f, 0.2f, 0.95f);
+
+    // Textures
+    TextureRef mBackgroundTexture;
+    TextureRef mTitleBarTexture;
+    TextureRef mCloseButtonTexture;
+
+    // Close Button Colors
+    glm::vec4 mCloseButtonNormalColor = glm::vec4(0.6f, 0.2f, 0.2f, 1.0f);
+    glm::vec4 mCloseButtonHoveredColor = glm::vec4(0.8f, 0.3f, 0.3f, 1.0f);
+    glm::vec4 mCloseButtonPressedColor = glm::vec4(0.5f, 0.15f, 0.15f, 1.0f);
 
     // Drag/Resize state
     bool mDragging = false;
