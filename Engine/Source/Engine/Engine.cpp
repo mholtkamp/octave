@@ -30,6 +30,7 @@
 #include "Nodes/NodeGraphPlayer.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
+#include "WindowManager.h"
 #include "AudioManager.h"
 #include "Constants.h"
 #include "Utilities.h"
@@ -257,6 +258,9 @@ void ForceLinkage()
     FORCE_LINK_CALL(ProgressBar);
     FORCE_LINK_CALL(SpinBox);
     FORCE_LINK_CALL(ComboBox);
+    FORCE_LINK_CALL(ScrollContainer);
+    FORCE_LINK_CALL(Window);
+    FORCE_LINK_CALL(DialogWindow);
 }
 
 Platform StringToPlatform(const char* str)
@@ -357,6 +361,7 @@ bool Initialize()
     Renderer::Create();
     AssetManager::Create();
     NetworkManager::Create();
+    WindowManager::Create();
     TinyLLMManager::Create();
 
 #if EDITOR
@@ -777,6 +782,7 @@ void Shutdown()
 #endif
 
     TinyLLMManager::Destroy();
+    WindowManager::Destroy();
     NetworkManager::Destroy();
     Renderer::Destroy();
     AssetManager::Destroy();

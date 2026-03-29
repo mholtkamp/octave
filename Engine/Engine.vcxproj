@@ -784,6 +784,7 @@
     <ClCompile Include="Source\Engine\NetFunc.cpp" />
     <ClCompile Include="Source\Engine\NetMsg.cpp" />
     <ClCompile Include="Source\Engine\NetworkManager.cpp" />
+    <ClCompile Include="Source\Engine\WindowManager.cpp" />
     <ClCompile Include="Source\Engine\NodePath.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Audio3d.cpp" />
     <ClCompile Include="Source\Engine\Nodes\3D\Box3d.cpp" />
@@ -815,6 +816,9 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\ProgressBar.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\SpinBox.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\ComboBox.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ScrollContainer.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Window.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\DialogWindow.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
@@ -939,6 +943,10 @@
     <ClCompile Include="Source\LuaBindings\ProgressBar_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\SpinBox_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ComboBox_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\ScrollContainer_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Window_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\DialogWindow_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\WindowManager_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Canvas_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Capsule3d_Lua.cpp" />
@@ -1163,6 +1171,7 @@
     <ClInclude Include="Source\Engine\NetFunc.h" />
     <ClInclude Include="Source\Engine\NetMsg.h" />
     <ClInclude Include="Source\Engine\NetworkManager.h" />
+    <ClInclude Include="Source\Engine\WindowManager.h" />
     <ClInclude Include="Source\Engine\NodePath.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Audio3d.h" />
     <ClInclude Include="Source\Engine\Nodes\3D\Box3d.h" />
@@ -1194,6 +1203,9 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\ProgressBar.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\SpinBox.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\ComboBox.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ScrollContainer.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Window.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\DialogWindow.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
@@ -1324,6 +1336,10 @@
     <ClInclude Include="Source\LuaBindings\ProgressBar_Lua.h" />
     <ClInclude Include="Source\LuaBindings\SpinBox_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ComboBox_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\ScrollContainer_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Window_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\DialogWindow_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\WindowManager_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Canvas_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Capsule3d_Lua.h" />
