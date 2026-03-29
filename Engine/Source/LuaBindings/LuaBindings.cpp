@@ -65,7 +65,9 @@
 #include "LuaBindings/ScrollContainer_Lua.h"
 #include "LuaBindings/Window_Lua.h"
 #include "LuaBindings/DialogWindow_Lua.h"
+#include "LuaBindings/ToolTipWidget_Lua.h"
 #include "LuaBindings/WindowManager_Lua.h"
+#include "LuaBindings/ToolTipManager_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
 #include "LuaBindings/PolyRect_Lua.h"
@@ -157,7 +159,9 @@ void BindLuaInterface()
     ScrollContainer_Lua::Bind();
     Window_Lua::Bind();
     DialogWindow_Lua::Bind();
+    ToolTipWidget_Lua::Bind();
     WindowManager_Lua::Bind();
+    ToolTipManager_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
     PolyRect_Lua::Bind();

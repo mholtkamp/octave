@@ -116,19 +116,27 @@ void Widget::GatherProperties(std::vector<Property>& outProps)
 {
     Node::GatherProperties(outProps);
 
-    SCOPED_CATEGORY("Widget");
+    {
+        SCOPED_CATEGORY("Widget");
 
-    outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, NULL_DATUM, int32_t(AnchorMode::Count), sAnchorModeStrings));
-    outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Byte, "Anchor", this, &mAnchorMode, 1, Widget::HandlePropChange, NULL_DATUM, int32_t(AnchorMode::Count), sAnchorModeStrings));
+        outProps.push_back(Property(DatumType::Bool, "Scissor", this, &mUseScissor, 1, Widget::HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Vector2D, "Offset", this, &mOffset, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Vector2D, "Size", this, &mSize, 1, Widget::HandlePropChange));
 
-    outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Byte, "Opacity", this, &mOpacity, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
-    outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Color, "Color", this, &mColor, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Byte, "Opacity", this, &mOpacity, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Vector2D, "Pivot", this, &mPivot, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Vector2D, "Scale", this, &mScale, 1, Widget::HandlePropChange));
+        outProps.push_back(Property(DatumType::Float, "Rotation", this, &mRotation, 1, Widget::HandlePropChange));
+    }
+
+    {
+        SCOPED_CATEGORY("Tooltip");
+        outProps.push_back(Property(DatumType::String, "Tooltip Name", this, &mTooltipName));
+        outProps.push_back(Property(DatumType::String, "Tooltip Description", this, &mTooltipDescription));
+    }
 }
 
 void Widget::SetVisible(bool visible)
@@ -1028,4 +1036,29 @@ float Widget::RatioToPixelsX(float x) const
 float Widget::RatioToPixelsY(float y) const
 {
     return (GetParentHeight() * y);
+}
+
+void Widget::SetTooltipName(const std::string& name)
+{
+    mTooltipName = name;
+}
+
+const std::string& Widget::GetTooltipName() const
+{
+    return mTooltipName;
+}
+
+void Widget::SetTooltipDescription(const std::string& description)
+{
+    mTooltipDescription = description;
+}
+
+const std::string& Widget::GetTooltipDescription() const
+{
+    return mTooltipDescription;
+}
+
+bool Widget::HasTooltip() const
+{
+    return !mTooltipName.empty() || !mTooltipDescription.empty();
 }
