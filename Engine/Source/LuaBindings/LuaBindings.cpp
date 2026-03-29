@@ -66,6 +66,8 @@
 #include "LuaBindings/Window_Lua.h"
 #include "LuaBindings/DialogWindow_Lua.h"
 #include "LuaBindings/ToolTipWidget_Lua.h"
+#include "LuaBindings/ListViewWidget_Lua.h"
+#include "LuaBindings/ListViewItemWidget_Lua.h"
 #include "LuaBindings/WindowManager_Lua.h"
 #include "LuaBindings/ToolTipManager_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
@@ -160,6 +162,8 @@ void BindLuaInterface()
     Window_Lua::Bind();
     DialogWindow_Lua::Bind();
     ToolTipWidget_Lua::Bind();
+    ListViewWidget_Lua::Bind();
+    ListViewItemWidget_Lua::Bind();
     WindowManager_Lua::Bind();
     ToolTipManager_Lua::Bind();
     Canvas_Lua::Bind();

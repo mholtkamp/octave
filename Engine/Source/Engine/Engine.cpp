@@ -263,6 +263,8 @@ void ForceLinkage()
     FORCE_LINK_CALL(Window);
     FORCE_LINK_CALL(DialogWindow);
     FORCE_LINK_CALL(ToolTipWidget);
+    FORCE_LINK_CALL(ListViewWidget);
+    FORCE_LINK_CALL(ListViewItemWidget);
 }
 
 Platform StringToPlatform(const char* str)

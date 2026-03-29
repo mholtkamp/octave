@@ -821,6 +821,8 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Window.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\DialogWindow.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\ToolTipWidget.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ListViewWidget.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\ListViewItemWidget.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Canvas.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Console.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
@@ -949,6 +951,8 @@
     <ClCompile Include="Source\LuaBindings\Window_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\DialogWindow_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ToolTipWidget_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\ListViewWidget_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\ListViewItemWidget_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\WindowManager_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\ToolTipManager_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Camera3d_Lua.cpp" />
@@ -1212,6 +1216,8 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Window.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\DialogWindow.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\ToolTipWidget.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ListViewWidget.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\ListViewItemWidget.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Canvas.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Console.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
@@ -1346,6 +1352,8 @@
     <ClInclude Include="Source\LuaBindings\Window_Lua.h" />
     <ClInclude Include="Source\LuaBindings\DialogWindow_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ToolTipWidget_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\ListViewWidget_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\ListViewItemWidget_Lua.h" />
     <ClInclude Include="Source\LuaBindings\WindowManager_Lua.h" />
     <ClInclude Include="Source\LuaBindings\ToolTipManager_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Camera3d_Lua.h" />
