@@ -30,6 +30,7 @@
 #include "Nodes/NodeGraphPlayer.h"
 #include "AssetManager.h"
 #include "NetworkManager.h"
+#include "WindowManager.h"
 #include "AudioManager.h"
 #include "Constants.h"
 #include "Utilities.h"
@@ -357,6 +358,7 @@ bool Initialize()
     Renderer::Create();
     AssetManager::Create();
     NetworkManager::Create();
+    WindowManager::Create();
     TinyLLMManager::Create();
 
 #if EDITOR
@@ -777,6 +779,7 @@ void Shutdown()
 #endif
 
     TinyLLMManager::Destroy();
+    WindowManager::Destroy();
     NetworkManager::Destroy();
     Renderer::Destroy();
     AssetManager::Destroy();
