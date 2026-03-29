@@ -192,6 +192,18 @@ Check if close button is shown.
 Sig: `show = Window:GetShowCloseButton()`
  - Ret: `boolean show` Close button visible
 ---
+### SetShowTitleBar
+Show or hide the title bar.
+
+Sig: `Window:SetShowTitleBar(show)`
+ - Arg: `boolean show` Show title bar
+---
+### GetShowTitleBar
+Check if title bar is shown.
+
+Sig: `show = Window:GetShowTitleBar()`
+ - Ret: `boolean show` Title bar visible
+---
 ### SetTitleBarHeight
 Set the height of the title bar.
 

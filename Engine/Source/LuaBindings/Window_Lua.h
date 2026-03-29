@@ -54,6 +54,8 @@ struct Window_Lua
     static int IsResizable(lua_State* L);
     static int SetShowCloseButton(lua_State* L);
     static int GetShowCloseButton(lua_State* L);
+    static int SetShowTitleBar(lua_State* L);
+    static int GetShowTitleBar(lua_State* L);
     static int SetTitleBarHeight(lua_State* L);
     static int GetTitleBarHeight(lua_State* L);
     static int SetMinSize(lua_State* L);

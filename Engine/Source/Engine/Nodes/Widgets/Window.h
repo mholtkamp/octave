@@ -70,6 +70,8 @@ public:
     bool IsResizable() const;
     void SetShowCloseButton(bool show);
     bool GetShowCloseButton() const;
+    void SetShowTitleBar(bool show);
+    bool GetShowTitleBar() const;
     void SetTitleBarHeight(float height);
     float GetTitleBarHeight() const;
     void SetMinSize(glm::vec2 minSize);
@@ -138,6 +140,7 @@ protected:
     bool mDraggable = true;
     bool mResizable = true;
     bool mShowCloseButton = true;
+    bool mShowTitleBar = true;
     bool mStartHidden = false;
     float mResizeHandleSize = 12.0f;
     glm::vec2 mMinSize = glm::vec2(100.0f, 80.0f);

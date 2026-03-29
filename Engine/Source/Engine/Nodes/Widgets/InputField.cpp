@@ -78,7 +78,11 @@ void InputField::Create()
 void InputField::GatherProperties(std::vector<Property>& props)
 {
     Super::GatherProperties(props);
+    GatherInputFieldProperties(props);
+}
 
+void InputField::GatherInputFieldProperties(std::vector<Property>& props)
+{
     {
         SCOPED_CATEGORY("InputField");
 

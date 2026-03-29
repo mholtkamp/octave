@@ -312,6 +312,26 @@ int Window_Lua::GetShowCloseButton(lua_State* L)
     return 1;
 }
 
+int Window_Lua::SetShowTitleBar(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    bool show = CHECK_BOOLEAN(L, 2);
+
+    window->SetShowTitleBar(show);
+
+    return 0;
+}
+
+int Window_Lua::GetShowTitleBar(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    bool ret = window->GetShowTitleBar();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Window_Lua::SetTitleBarHeight(lua_State* L)
 {
     Window* window = CHECK_WINDOW(L, 1);
@@ -693,6 +713,8 @@ void Window_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsResizable);
     REGISTER_TABLE_FUNC(L, mtIndex, SetShowCloseButton);
     REGISTER_TABLE_FUNC(L, mtIndex, GetShowCloseButton);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetShowTitleBar);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetShowTitleBar);
     REGISTER_TABLE_FUNC(L, mtIndex, SetTitleBarHeight);
     REGISTER_TABLE_FUNC(L, mtIndex, GetTitleBarHeight);
     REGISTER_TABLE_FUNC(L, mtIndex, SetMinSize);

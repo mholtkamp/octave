@@ -67,10 +67,10 @@ void LineEdit::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Color, "Title Color", this, &mTitleColor, 1, HandlePropChange));
     }
 
-    // Gather InputField properties
+    // Gather InputField-specific properties (not Widget/Node base)
     if (mInputField != nullptr)
     {
-        mInputField->GatherProperties(props);
+        mInputField->GatherInputFieldProperties(props);
     }
 }
 

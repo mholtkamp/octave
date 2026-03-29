@@ -91,6 +91,11 @@ bool Window::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         window->SetShowCloseButton(*static_cast<const bool*>(newValue));
         success = true;
     }
+    else if (prop->mName == "Show Title Bar")
+    {
+        window->SetShowTitleBar(*static_cast<const bool*>(newValue));
+        success = true;
+    }
     else if (prop->mName == "Start Hidden")
     {
         window->SetStartHidden(*static_cast<const bool*>(newValue));
@@ -262,10 +267,14 @@ void Window::Start()
         WindowManager::Get()->RegisterWindow(mWindowId, this);
     }
 
-    // Hide on start if configured
+    // Set initial visibility based on Start Hidden property
     if (mStartHidden)
     {
         Hide();
+    }
+    else
+    {
+        Show();
     }
 }
 
@@ -300,6 +309,7 @@ void Window::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Bool, "Draggable", this, &mDraggable, 1, HandlePropChange));
     props.push_back(Property(DatumType::Bool, "Resizable", this, &mResizable, 1, HandlePropChange));
     props.push_back(Property(DatumType::Bool, "Show Close Button", this, &mShowCloseButton, 1, HandlePropChange));
+    props.push_back(Property(DatumType::Bool, "Show Title Bar", this, &mShowTitleBar, 1, HandlePropChange));
     props.push_back(Property(DatumType::Bool, "Start Hidden", this, &mStartHidden, 1, HandlePropChange));
 #if EDITOR
     static bool sFakeToggle = false;
@@ -492,17 +502,20 @@ void Window::PreRender()
 
 void Window::UpdateLayout()
 {
+    float effectiveTitleBarHeight = mShowTitleBar ? mTitleBarHeight : 0.0f;
+
     if (mTitleBar != nullptr)
     {
         mTitleBar->SetHeight(mTitleBarHeight);
+        mTitleBar->SetVisible(mShowTitleBar);
     }
 
     if (mContentContainer != nullptr)
     {
         float contentX = mContentPaddingLeft;
-        float contentY = mTitleBarHeight + mContentPaddingTop;
+        float contentY = effectiveTitleBarHeight + mContentPaddingTop;
         float contentW = glm::max(1.0f, GetWidth() - mContentPaddingLeft - mContentPaddingRight);
-        float contentH = glm::max(1.0f, GetHeight() - mTitleBarHeight - mContentPaddingTop - mContentPaddingBottom);
+        float contentH = glm::max(1.0f, GetHeight() - effectiveTitleBarHeight - mContentPaddingTop - mContentPaddingBottom);
 
         // Ensure anchor mode is TopLeft for explicit positioning
         mContentContainer->SetAnchorMode(AnchorMode::TopLeft);
@@ -784,6 +797,21 @@ void Window::SetShowCloseButton(bool show)
 bool Window::GetShowCloseButton() const
 {
     return mShowCloseButton;
+}
+
+void Window::SetShowTitleBar(bool show)
+{
+    mShowTitleBar = show;
+    if (mTitleBar != nullptr)
+    {
+        mTitleBar->SetVisible(mShowTitleBar);
+    }
+    MarkDirty();
+}
+
+bool Window::GetShowTitleBar() const
+{
+    return mShowTitleBar;
 }
 
 void Window::SetTitleBarHeight(float height)
