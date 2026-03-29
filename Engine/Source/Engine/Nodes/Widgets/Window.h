@@ -60,6 +60,8 @@ public:
     void Show();
     void Hide();
     void Close(); // Emits OnClose signal, hides window
+    void SetStartHidden(bool hidden);
+    bool GetStartHidden() const;
 
     // Window properties
     void SetDraggable(bool draggable);
@@ -136,6 +138,7 @@ protected:
     bool mDraggable = true;
     bool mResizable = true;
     bool mShowCloseButton = true;
+    bool mStartHidden = false;
     float mResizeHandleSize = 12.0f;
     glm::vec2 mMinSize = glm::vec2(100.0f, 80.0f);
     glm::vec2 mMaxSize = glm::vec2(0.0f); // 0 = no max

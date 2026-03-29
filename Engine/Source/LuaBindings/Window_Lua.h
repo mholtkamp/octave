@@ -44,6 +44,8 @@ struct Window_Lua
     static int Show(lua_State* L);
     static int Hide(lua_State* L);
     static int Close(lua_State* L);
+    static int SetStartHidden(lua_State* L);
+    static int GetStartHidden(lua_State* L);
 
     // Properties
     static int SetDraggable(lua_State* L);

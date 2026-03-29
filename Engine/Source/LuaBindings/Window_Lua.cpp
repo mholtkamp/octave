@@ -232,6 +232,26 @@ int Window_Lua::Close(lua_State* L)
     return 0;
 }
 
+int Window_Lua::SetStartHidden(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+    bool hidden = CHECK_BOOLEAN(L, 2);
+
+    window->SetStartHidden(hidden);
+
+    return 0;
+}
+
+int Window_Lua::GetStartHidden(lua_State* L)
+{
+    Window* window = CHECK_WINDOW(L, 1);
+
+    bool ret = window->GetStartHidden();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int Window_Lua::SetDraggable(lua_State* L)
 {
     Window* window = CHECK_WINDOW(L, 1);
@@ -663,6 +683,8 @@ void Window_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, Show);
     REGISTER_TABLE_FUNC(L, mtIndex, Hide);
     REGISTER_TABLE_FUNC(L, mtIndex, Close);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetStartHidden);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetStartHidden);
 
     // Properties
     REGISTER_TABLE_FUNC(L, mtIndex, SetDraggable);

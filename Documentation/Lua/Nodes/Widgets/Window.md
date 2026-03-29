@@ -144,6 +144,18 @@ Close the window (emits Close signal then hides).
 
 Sig: `Window:Close()`
 ---
+### SetStartHidden
+Set whether the window should be hidden when play mode starts.
+
+Sig: `Window:SetStartHidden(hidden)`
+ - Arg: `boolean hidden` Hide on start
+---
+### GetStartHidden
+Check if window will be hidden on start.
+
+Sig: `hidden = Window:GetStartHidden()`
+ - Ret: `boolean hidden` Start hidden state
+---
 ### SetDraggable
 Enable or disable dragging by title bar.
 

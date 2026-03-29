@@ -91,6 +91,18 @@ bool Window::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         window->SetShowCloseButton(*static_cast<const bool*>(newValue));
         success = true;
     }
+    else if (prop->mName == "Start Hidden")
+    {
+        window->SetStartHidden(*static_cast<const bool*>(newValue));
+        success = true;
+    }
+#if EDITOR
+    else if (prop->mName == "Toggle Visibility")
+    {
+        window->SetVisible(!window->IsVisible());
+        success = true;
+    }
+#endif
     else if (prop->mName == "Min Size")
     {
         window->SetMinSize(*static_cast<const glm::vec2*>(newValue));
@@ -249,6 +261,12 @@ void Window::Start()
     {
         WindowManager::Get()->RegisterWindow(mWindowId, this);
     }
+
+    // Hide on start if configured
+    if (mStartHidden)
+    {
+        Hide();
+    }
 }
 
 void Window::Stop()
@@ -282,6 +300,11 @@ void Window::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Bool, "Draggable", this, &mDraggable, 1, HandlePropChange));
     props.push_back(Property(DatumType::Bool, "Resizable", this, &mResizable, 1, HandlePropChange));
     props.push_back(Property(DatumType::Bool, "Show Close Button", this, &mShowCloseButton, 1, HandlePropChange));
+    props.push_back(Property(DatumType::Bool, "Start Hidden", this, &mStartHidden, 1, HandlePropChange));
+#if EDITOR
+    static bool sFakeToggle = false;
+    props.push_back(Property(DatumType::Bool, "Toggle Visibility", this, &sFakeToggle, 1, HandlePropChange));
+#endif
     props.push_back(Property(DatumType::Vector2D, "Min Size", this, &mMinSize, 1, HandlePropChange));
     props.push_back(Property(DatumType::Vector2D, "Max Size", this, &mMaxSize, 1, HandlePropChange));
     props.push_back(Property(DatumType::Float, "Resize Handle Size", this, &mResizeHandleSize, 1, HandlePropChange));
@@ -711,6 +734,16 @@ void Window::Close()
     EmitSignal("Close", { this });
     CallFunction("OnClose", { this });
     Hide();
+}
+
+void Window::SetStartHidden(bool hidden)
+{
+    mStartHidden = hidden;
+}
+
+bool Window::GetStartHidden() const
+{
+    return mStartHidden;
 }
 
 void Window::SetDraggable(bool draggable)

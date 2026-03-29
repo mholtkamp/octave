@@ -33,6 +33,7 @@ The Window widget is a container that provides a standard window UI with title b
 | Draggable | Bool | true | Allow dragging by title bar |
 | Resizable | Bool | true | Show resize handle in bottom-right corner |
 | Show Close Button | Bool | true | Show close button in title bar |
+| Start Hidden | Bool | false | Hide window when play mode starts |
 | Min Size | Vector2 | (100, 80) | Minimum window dimensions |
 | Max Size | Vector2 | (0, 0) | Maximum dimensions (0 = unlimited) |
 | Resize Handle Size | Float | 12.0 | Size of the resize handle |

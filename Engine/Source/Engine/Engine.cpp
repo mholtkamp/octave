@@ -258,6 +258,9 @@ void ForceLinkage()
     FORCE_LINK_CALL(ProgressBar);
     FORCE_LINK_CALL(SpinBox);
     FORCE_LINK_CALL(ComboBox);
+    FORCE_LINK_CALL(ScrollContainer);
+    FORCE_LINK_CALL(Window);
+    FORCE_LINK_CALL(DialogWindow);
 }
 
 Platform StringToPlatform(const char* str)

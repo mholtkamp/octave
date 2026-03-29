@@ -64,6 +64,7 @@
 #include "LuaBindings/ComboBox_Lua.h"
 #include "LuaBindings/ScrollContainer_Lua.h"
 #include "LuaBindings/Window_Lua.h"
+#include "LuaBindings/DialogWindow_Lua.h"
 #include "LuaBindings/WindowManager_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
 #include "LuaBindings/Poly_Lua.h"
@@ -155,6 +156,7 @@ void BindLuaInterface()
     ComboBox_Lua::Bind();
     ScrollContainer_Lua::Bind();
     Window_Lua::Bind();
+    DialogWindow_Lua::Bind();
     WindowManager_Lua::Bind();
     Canvas_Lua::Bind();
     Poly_Lua::Bind();
