@@ -2358,7 +2358,10 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
 
     ImGui::SameLine();
 
-    static std::string sTempString;
+    // Each asset property gets its own string buffer keyed by a unique ID
+    static std::unordered_map<std::string, std::string> sTempStrings;
+    std::string propKey = prop.mName + "_" + std::to_string(index) + "_" + std::to_string((uintptr_t)owner);
+    std::string& sTempString = sTempStrings[propKey];
 
     // Create a unique ID for this input
     ImGui::PushID((prop.mName + std::to_string(index)).c_str());
