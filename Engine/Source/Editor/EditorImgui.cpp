@@ -576,10 +576,8 @@ static void DrawDockspace()
 
     // --- Properties dock ---
     {
-        bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
         ImVec4 propsPanelBg;
-        ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f)
-            : (CssThemeParser::GetPanelPropertiesBg(propsPanelBg) ? propsPanelBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+        ImVec4 propsBg = CssThemeParser::GetPanelPropertiesBg(propsPanelBg) ? propsPanelBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
         ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
     }
     if (ImGui::BeginDock(ICON_INFO "  Properties", &propsOpen))
@@ -7123,7 +7121,14 @@ static void DrawPropertiesPanel()
                 Node* objNode = obj->As<Node>();
                 if (objNode)
                     objName = std::string(GetNodeIcon(objNode)) + " " + objName;
-                ImVec2 sz = ImVec2(-FLT_MIN, 0.0f);
+
+                // Calculate width: leave room for lock button on the right
+                const char* lockIcon = inspectLocked
+                    ? ICON_MATERIAL_SYMBOLS_LOCK_SHARP
+                    : ICON_MATERIAL_SYMBOLS_LOCK_OPEN_SHARP;
+                float lockButtonWidth = ImGui::CalcTextSize(lockIcon).x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
+                ImVec2 sz = ImVec2(ImGui::GetContentRegionAvail().x - lockButtonWidth, 0.0f);
+
                 ImVec4 headerColor = kSelectedColor;
                 headerColor.w = 0.0f;
                 ImVec4 headerTextColor = ImVec4(0.18f, 0.75f, 0.70f, 1.00f);
@@ -7133,6 +7138,17 @@ static void DrawPropertiesPanel()
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, headerColor);
                 ImGui::Button(objName.c_str(), sz);
                 ImGui::PopStyleColor(4);
+
+                // Lock/Unlock inspector button (right side)
+                ImGui::SameLine();
+                if (ImGui::Button(lockIcon))
+                {
+                    GetEditorState()->LockInspect(!inspectLocked);
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(inspectLocked ? "Unlock Inspector (L)" : "Lock Inspector (L)");
+                }
 
                 Texture* texObj = obj->As<Texture>();
                 if (texObj != nullptr &&
