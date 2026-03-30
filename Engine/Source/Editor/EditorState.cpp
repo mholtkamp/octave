@@ -4,6 +4,8 @@
 #include <ctime>
 #include "EditorState.h"
 #include "EditorConstants.h"
+#include "EditorIcons.h"
+#include "Imgui/imgui_dock.h"
 #include "Timeline/TimelineInstance.h"
 #include "ActionManager.h"
 #include "Nodes/Node.h"
@@ -1769,6 +1771,17 @@ void EditorState::BrowseToAsset(const std::string& name)
         SetSelectedAssetStub(stub);
 
         mTrackSelectedAsset = true;
+    }
+}
+
+void EditorState::BrowseToScript(const std::string& scriptName)
+{
+    if (!scriptName.empty())
+    {
+        mRevealScriptName = scriptName;
+
+        // Activate the Scripts panel
+        ImGui::SetDockActive("EditorDock", ICON_IX_CODE "  Scripts");
     }
 }
 

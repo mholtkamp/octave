@@ -144,6 +144,7 @@ struct EditorState
     bool mRequestSaveSceneAs = false;
     bool mTrackSelectedAsset = false;
     bool mTrackSelectedNode = false;
+    std::string mRevealScriptName = "";
     uint32_t mViewportX = 0;
     uint32_t mViewportY = 0;
     uint32_t mViewportWidth = 100;
@@ -298,6 +299,7 @@ struct EditorState
     void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
     void BrowseToAsset(const std::string& name);
+    void BrowseToScript(const std::string& scriptName);
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
     void DuplicateAsset(AssetStub* srcStub, const char* overrideName = nullptr);

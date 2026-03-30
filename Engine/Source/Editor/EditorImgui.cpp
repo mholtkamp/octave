@@ -81,6 +81,7 @@
 #include <functional>
 #include <algorithm>
 #include <map>
+#include <set>
 #include <unordered_map>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
@@ -2370,16 +2371,26 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         }
     }
 
-    // Inspect button - view asset properties
+    // Inspect and Reveal buttons - only show when asset is assigned
     if (asset != nullptr)
     {
+        // Inspect button - view asset properties
         ImGui::SameLine(0.0f, 2.0f);
-        if (ImGui::Button(ICON_INFO "##AssetInspect"))
+        if (ImGui::Button(ICON_INFO "##Inspect"))
         {
             GetEditorState()->InspectObject(asset);
         }
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Inspect asset properties");
+
+        // Reveal button - navigate to asset in Asset Panel
+        ImGui::SameLine(0.0f, 2.0f);
+        if (ImGui::Button(ICON_MDI_TARGET "##Reveal"))
+        {
+            GetEditorState()->BrowseToAsset(asset->GetName());
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Reveal in Asset Panel");
     }
 
     // Per-element delete button for vector properties
@@ -2911,6 +2922,18 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                     {
                         std::string emptyStr;
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, emptyStr);
+                    }
+
+                    // Reveal button - navigate to script in Scripts Panel
+                    if (!sTempString.empty())
+                    {
+                        ImGui::SameLine(0.0f, 2.0f);
+                        if (ImGui::Button(ICON_MDI_TARGET "##ScriptReveal"))
+                        {
+                            GetEditorState()->BrowseToScript(sTempString);
+                        }
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip("Reveal in Scripts Panel");
                     }
 
                     // Then draw the autocomplete dropdown with the correct state
@@ -6998,7 +7021,20 @@ static void DrawScriptsPanel()
     // --- Search filter ---
     static char sSearchBuffer[256] = "";
 
+    // --- Script reveal state ---
+    static std::set<std::string> sRevealExpandPaths;
+    static std::string sSelectedScript = "";
+
     double currentTime = ImGui::GetTime();
+
+    // Check for pending script reveal and build expand paths
+    EditorState* es = GetEditorState();
+    if (!es->mRevealScriptName.empty())
+    {
+        sRevealExpandPaths.clear();
+        sSelectedScript = es->mRevealScriptName;  // Set selection to revealed script
+        // Will be populated when we find the script in the tree build loop below
+    }
 
     // Search bar at top
     ImGui::SetNextItemWidth(-1);
@@ -7191,6 +7227,30 @@ static void DrawScriptsPanel()
                         continue;
                 }
 
+                // Build reveal expand paths if this is the target script
+                bool isRevealTarget = (!es->mRevealScriptName.empty() && entry.mDisplayName == es->mRevealScriptName);
+                if (isRevealTarget)
+                {
+                    // Add origin as first path to expand
+                    sRevealExpandPaths.insert(entry.mOrigin);
+
+                    // Add each directory level to expand
+                    std::string expandPath = entry.mOrigin;
+                    std::string displayPath = entry.mDisplayName;
+                    size_t p = 0;
+                    size_t s;
+                    while ((s = displayPath.find('/', p)) != std::string::npos)
+                    {
+                        std::string d = displayPath.substr(p, s - p);
+                        if (!d.empty())
+                        {
+                            expandPath += "/" + d;
+                            sRevealExpandPaths.insert(expandPath);
+                        }
+                        p = s + 1;
+                    }
+                }
+
                 // Group by origin (Engine, Project, package name) at the top level
                 TreeNode* current = &root.children[entry.mOrigin];
                 current->name = entry.mOrigin;
@@ -7214,15 +7274,23 @@ static void DrawScriptsPanel()
             }
 
             // Recursive draw function
-            std::function<void(const TreeNode&)> drawTree;
-            drawTree = [&](const TreeNode& node)
+            std::function<void(const TreeNode&, const std::string&)> drawTree;
+            drawTree = [&](const TreeNode& node, const std::string& currentPath)
             {
                 // Draw subdirectories
                 for (auto& pair : node.children)
                 {
+                    std::string childPath = currentPath.empty() ? pair.first : (currentPath + "/" + pair.first);
+
                     ImGuiTreeNodeFlags dirFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
                     if (hasFilter)
                         dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+                    // Force open if this directory is in the reveal path
+                    if (sRevealExpandPaths.count(childPath) > 0)
+                    {
+                        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+                    }
 
                     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + pair.first;
                     bool dirOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
@@ -7287,7 +7355,7 @@ static void DrawScriptsPanel()
 
                     if (dirOpen)
                     {
-                        drawTree(pair.second);
+                        drawTree(pair.second, childPath);
                         ImGui::TreePop();
                     }
                 }
@@ -7301,10 +7369,31 @@ static void DrawScriptsPanel()
                     if (lastSlash != std::string::npos)
                         fileName = fileName.substr(lastSlash + 1);
 
+                    // Check if this script is selected
+                    bool isSelected = (entry->mDisplayName == sSelectedScript);
+                    bool isRevealTarget = (!es->mRevealScriptName.empty() && entry->mDisplayName == es->mRevealScriptName);
+
                     ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (isSelected)
+                        leafFlags |= ImGuiTreeNodeFlags_Selected;
+
                     std::string labelWithIcon = std::string(ICON_LUA) + " " + fileName;
                     ImGui::TreeNodeEx(labelWithIcon.c_str(), leafFlags);
                     AlternatingRowBackground();
+
+                    // Handle click to select
+                    if (ImGui::IsItemClicked(0))
+                    {
+                        sSelectedScript = entry->mDisplayName;
+                    }
+
+                    // Scroll to revealed script and clear reveal state
+                    if (isRevealTarget)
+                    {
+                        ImGui::SetScrollHereY(0.5f);
+                        es->mRevealScriptName.clear();
+                        sRevealExpandPaths.clear();
+                    }
 
                     // Drag source for script files
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
@@ -7355,7 +7444,7 @@ static void DrawScriptsPanel()
 
             ImGui::BeginChild("##LuaScriptsList", ImVec2(0, 0), false);
             BeginAlternatingRows();
-            drawTree(root);
+            drawTree(root, "");
             ImGui::EndChild();
 
             ImGui::EndTabItem();
