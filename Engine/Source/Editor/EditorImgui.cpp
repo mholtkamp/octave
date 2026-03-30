@@ -2070,18 +2070,45 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         dropdownActive = true; // Set to true to ensure dropdown shows
         selectedIndex = 0;
     }
-    // Hide dropdown when input loses focus
+    // Hide dropdown when input loses focus (but not if mouse is over dropdown)
     else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
     {
-        dropdownActive = false;
+        // Calculate dropdown bounds to check if mouse is hovering over it
+        ImVec2 inputSize = ImVec2(inputRectMax.x - inputRectMin.x, inputRectMax.y - inputRectMin.y);
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxDropdownHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+        ImVec2 dropdownMin = ImVec2(inputRectMin.x, inputRectMin.y + inputSize.y);
+        ImVec2 dropdownMax = ImVec2(inputRectMax.x, inputRectMin.y + inputSize.y + maxDropdownHeight);
+
+        ImVec2 mousePos = ImGui::GetIO().MousePos;
+        bool mouseOverDropdown = mousePos.x >= dropdownMin.x && mousePos.x <= dropdownMax.x &&
+                                 mousePos.y >= dropdownMin.y && mousePos.y <= dropdownMax.y;
+
+        // Only close if mouse is not over dropdown (allows click selection)
+        if (!mouseOverDropdown)
+        {
+            dropdownActive = false;
+        }
     }
 
-    // Close dropdown when user clicks outside the input field
+    // Close dropdown when user clicks outside BOTH the input field AND dropdown
     if (dropdownActive && activeDropdownId == inputId && ImGui::IsMouseClicked(0))
     {
+        // Calculate dropdown bounds (same calculation as later in the function)
+        ImVec2 inputSize = ImVec2(inputRectMax.x - inputRectMin.x, inputRectMax.y - inputRectMin.y);
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxDropdownHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+
+        // Dropdown rect is below the input
+        ImVec2 dropdownMin = ImVec2(inputRectMin.x, inputRectMin.y + inputSize.y);
+        ImVec2 dropdownMax = ImVec2(inputRectMax.x, inputRectMin.y + inputSize.y + maxDropdownHeight);
+
         ImVec2 mousePos = ImGui::GetIO().MousePos;
-        if (mousePos.x < inputRectMin.x || mousePos.x > inputRectMax.x ||
-            mousePos.y < inputRectMin.y || mousePos.y > inputRectMax.y)
+        bool outsideInput = mousePos.x < inputRectMin.x || mousePos.x > inputRectMax.x ||
+                            mousePos.y < inputRectMin.y || mousePos.y > inputRectMax.y;
+        bool outsideDropdown = mousePos.x < dropdownMin.x || mousePos.x > dropdownMax.x ||
+                               mousePos.y < dropdownMin.y || mousePos.y > dropdownMax.y;
+        if (outsideInput && outsideDropdown)
         {
             dropdownActive = false;
         }
@@ -2124,7 +2151,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_Tooltip | // Use tooltip flag to ensure it draws on top
-            ImGuiWindowFlags_NoMouseInputs |
             ImGuiWindowFlags_NoScrollbar;
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
@@ -2136,7 +2162,8 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
             bool downArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow));
             bool tabPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab));
-            bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter));
+            bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)) ||
+                                  ImGui::IsKeyPressed(ImGuiKey_KeypadEnter);
             bool escapePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape));
             bool backspacePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace));
             
@@ -2234,16 +2261,29 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                 if (isSelected)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
 
-                // Only make selection on click, don't autofill
                 bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
 
+                // Mouse hover - update selection
+                if (ImGui::IsItemHovered())
+                {
+                    selectedIndex = i;
+                    hasSelection = true;
+                }
+
+                // Mouse click - make selection
+                if (clicked)
+                {
+                    inputText = filteredItems[i];
+                    selectionMade = true;
+                    dropdownActive = false;
+                    selectionJustMade = true;
+                }
 
                 if (isSelected)
                 {
                     ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
                     ImGui::PopStyleColor();
                 }
-
             }
         }
         ImGui::End();
@@ -2319,11 +2359,10 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     ImGui::SameLine();
 
     static std::string sTempString;
-    sTempString = asset ? asset->GetName() : "";
 
     // Create a unique ID for this input
     ImGui::PushID((prop.mName + std::to_string(index)).c_str());
-    
+
     // Use ImGui::InputText and get the active status for the dropdown
     // Capture keys to prevent input field from intercepting arrow keys
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
@@ -2331,10 +2370,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         // If dropdown is about to be shown, don't allow up/down keys to affect the input
         flags |= ImGuiInputTextFlags_CharsNoBlank;
     }
-    
-    // Check if input will be activated this frame
-    bool willBeActivated = ImGui::IsItemHovered() && ImGui::IsMouseClicked(0);
-    
+
     bool textActive = ImGui::InputText("##AssetNameStr", &sTempString, flags);
     bool isInputFocused = ImGui::IsItemFocused();
     bool isInputActivated = ImGui::IsItemActivated();
@@ -2343,6 +2379,30 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     ImGuiID inputTextId = ImGui::GetItemID();
     ImVec2 inputTextRectMin = ImGui::GetItemRectMin();
     ImVec2 inputTextRectMax = ImGui::GetItemRectMax();
+
+    // Calculate dropdown bounds to check if mouse is hovering over it
+    ImVec2 inputSize = ImVec2(inputTextRectMax.x - inputTextRectMin.x, inputTextRectMax.y - inputTextRectMin.y);
+    const float dropdownItemHeight = ImGui::GetTextLineHeightWithSpacing();
+    const float maxDropdownHeight = dropdownItemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+    ImVec2 dropdownMin = ImVec2(inputTextRectMin.x, inputTextRectMin.y + inputSize.y);
+    ImVec2 dropdownMax = ImVec2(inputTextRectMax.x, inputTextRectMin.y + inputSize.y + maxDropdownHeight);
+
+    ImVec2 mousePos = ImGui::GetIO().MousePos;
+    bool mouseOverDropdown = mousePos.x >= dropdownMin.x && mousePos.x <= dropdownMax.x &&
+                             mousePos.y >= dropdownMin.y && mousePos.y <= dropdownMax.y;
+
+    // Only reset temp string when NOT focused and NOT hovering over dropdown
+    // This preserves the filter text when clicking on dropdown items
+    if (isInputActivated)
+    {
+        // Reset when first activating the input
+        sTempString = asset ? asset->GetName() : "";
+    }
+    else if (!isInputFocused && !mouseOverDropdown)
+    {
+        // Reset when not interacting
+        sTempString = asset ? asset->GetName() : "";
+    }
 
     // Drag-and-drop target on the input text field
     if (ImGui::BeginDragDropTarget())
@@ -2496,7 +2556,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     // Force the dropdown to be active when the input is activated or text changes
     // Use saved InputText rect so the dropdown positions below the input field, not the clear button
     bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter,
-                                                isInputActivated || textActive || willBeActivated,
+                                                isInputActivated || textActive || isInputFocused,
                                                 inputTextId, inputTextRectMin, inputTextRectMax);
     
     // Pop the ID we pushed earlier
