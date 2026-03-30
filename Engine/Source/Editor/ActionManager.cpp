@@ -6008,6 +6008,129 @@ void ActionReplaceWithStaticMesh::Reverse()
 }
 
 // ---------------------------------------------------------------------------
+// ActionParentSelectedWith
+// ---------------------------------------------------------------------------
+
+ActionParentSelectedWith::ActionParentSelectedWith(
+    const std::vector<Node*>& nodes,
+    TypeId newParentType,
+    ArrayOrientation arrayOrientation)
+    : mNewParentType(newParentType)
+    , mArrayOrientation(arrayOrientation)
+{
+    for (Node* node : nodes)
+    {
+        mNodes.push_back(ResolvePtr(node));
+        mPrevParents.push_back(ResolvePtr(node->GetParent()));
+        mPrevChildIndices.push_back(
+            node->GetParent() ? node->GetParent()->FindChildIndex(node) : -1);
+        mPrevBoneIndices.push_back(
+            node->IsNode3D() ? node->As<Node3D>()->GetParentBoneIndex() : -1);
+    }
+}
+
+void ActionParentSelectedWith::Execute()
+{
+    Action::Execute();
+
+    if (mNodes.empty())
+        return;
+
+    if (mFirstExecute)
+    {
+        mFirstExecute = false;
+
+        // Find insertion point: use first selected node's parent and position
+        Node* firstNode = mNodes[0].Get();
+        Node* insertionParent = firstNode->GetParent();
+        int32_t insertionIndex = insertionParent ?
+            insertionParent->FindChildIndex(firstNode) : -1;
+
+        // Create the new parent node
+        mCreatedParent = Node::Construct(mNewParentType);
+        mCreatedParent->SetName("Parent");
+
+        // Configure ArrayWidget if needed
+        if (ArrayWidget* arrayWidget = mCreatedParent->As<ArrayWidget>())
+        {
+            arrayWidget->SetOrientation(mArrayOrientation);
+        }
+
+        // Store where we're inserting
+        mCreatedParentParent = ResolvePtr(insertionParent);
+        mCreatedParentChildIndex = insertionIndex;
+
+        // Insert new parent at the first node's position
+        if (insertionParent)
+        {
+            insertionParent->AddChild(mCreatedParent.Get(), insertionIndex);
+        }
+
+        // Reparent all selected nodes under the new parent
+        for (uint32_t i = 0; i < mNodes.size(); ++i)
+        {
+            mNodes[i]->Attach(mCreatedParent.Get(), true, -1);
+        }
+    }
+    else
+    {
+        // Re-execute: restore from exile
+        ActionManager::Get()->RestoreExiledNode(mCreatedParent);
+
+        if (mCreatedParentParent)
+        {
+            mCreatedParentParent->AddChild(
+                mCreatedParent.Get(),
+                mCreatedParentChildIndex);
+        }
+
+        // Reparent nodes again
+        for (uint32_t i = 0; i < mNodes.size(); ++i)
+        {
+            mNodes[i]->Attach(mCreatedParent.Get(), true, -1);
+        }
+    }
+
+    // Select the new parent
+    GetEditorState()->SetSelectedNode(mCreatedParent.Get());
+}
+
+void ActionParentSelectedWith::Reverse()
+{
+    Action::Reverse();
+
+    // Restore each node to its original parent
+    for (uint32_t i = 0; i < mNodes.size(); ++i)
+    {
+        if (mPrevBoneIndices[i] >= 0 &&
+            mPrevParents[i] &&
+            mPrevParents[i]->As<SkeletalMesh3D>() &&
+            mNodes[i]->As<Node3D>())
+        {
+            mNodes[i]->As<Node3D>()->AttachToBone(
+                mPrevParents[i]->As<SkeletalMesh3D>(),
+                mPrevBoneIndices[i],
+                true,
+                mPrevChildIndices[i]);
+        }
+        else if (mPrevParents[i])
+        {
+            mPrevParents[i]->AddChild(mNodes[i].Get(), mPrevChildIndices[i]);
+        }
+    }
+
+    // Remove and exile the created parent
+    mCreatedParent->Detach();
+    ActionManager::Get()->ExileNode(mCreatedParent);
+
+    // Restore selection to first original node
+    if (!mNodes.empty())
+    {
+        GetEditorState()->SetSelectedNode(mNodes[0].Get());
+    }
+}
+
+// ---------------------------------------------------------------------------
 // EXE_ methods for replace actions
 // ---------------------------------------------------------------------------
 
@@ -6038,6 +6161,32 @@ void ActionManager::EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes)
         return;
 
     ActionReplaceWithStaticMesh* action = new ActionReplaceWithStaticMesh(nodes);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_ParentSelectedWith(
+    const std::vector<Node*>& nodes,
+    TypeId parentType,
+    ArrayOrientation arrayOrientation)
+{
+    if (nodes.size() < 1)
+    {
+        LogWarning("Parent Selected With requires at least 1 selected node.");
+        return;
+    }
+
+    // Check for scene-linked nodes
+    for (Node* node : nodes)
+    {
+        if (node->IsSceneLinkedChild())
+        {
+            LogError("Cannot reparent scene-linked nodes. Unlink the scene first.");
+            return;
+        }
+    }
+
+    ActionParentSelectedWith* action = new ActionParentSelectedWith(
+        nodes, parentType, arrayOrientation);
     ActionManager::Get()->ExecuteAction(action);
 }
 

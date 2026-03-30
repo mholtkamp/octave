@@ -13,6 +13,10 @@
 FORCE_LINK_DEF(ComboBox);
 DEFINE_NODE(ComboBox, Widget);
 
+bool ComboBox::sHandleMouseInput = true;
+bool ComboBox::sHandleKeyboardInput = true;
+bool ComboBox::sHandleGamepadInput = true;
+
 bool ComboBox::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
     Property* prop = static_cast<Property*>(datum);
@@ -132,59 +136,183 @@ void ComboBox::Tick(float deltaTime)
 
     bool containsMouse = ContainsMouse();
 
-    // Handle click to toggle dropdown
-    if (IsPointerJustDown(0))
+    // ===== MOUSE INPUT =====
+    if (sHandleMouseInput)
     {
-        if (containsMouse && !mIsOpen)
+        // Handle click to toggle dropdown
+        if (IsPointerJustDown(0))
         {
-            Open();
-        }
-        else if (mIsOpen)
-        {
-            // Check if clicked on dropdown item
-            bool clickedOnDropdown = false;
-            if (mDropdownCanvas != nullptr)
+            if (containsMouse && !mIsOpen)
             {
-                int32_t mouseX, mouseY;
-                GetMousePosition(mouseX, mouseY);
-
-                for (int32_t i = 0; i < (int32_t)mDropdownItems.size(); i++)
+                Open();
+            }
+            else if (mIsOpen)
+            {
+                // Check if clicked on dropdown item
+                bool clickedOnDropdown = false;
+                if (mDropdownCanvas != nullptr)
                 {
-                    Rect itemRect = mDropdownItems[i]->GetRect();
-                    if (itemRect.ContainsPoint((float)mouseX, (float)mouseY))
+                    int32_t mouseX, mouseY;
+                    GetMousePosition(mouseX, mouseY);
+
+                    for (int32_t i = 0; i < (int32_t)mDropdownItems.size(); i++)
                     {
-                        SetSelectedIndex(i);
-                        clickedOnDropdown = true;
-                        break;
+                        Rect itemRect = mDropdownItems[i]->GetRect();
+                        if (itemRect.ContainsPoint((float)mouseX, (float)mouseY))
+                        {
+                            SetSelectedIndex(mScrollOffset + i);
+                            clickedOnDropdown = true;
+                            break;
+                        }
                     }
+                }
+
+                Close();
+            }
+        }
+
+        // Update hover state for dropdown items (mouse tracking)
+        if (mIsOpen && mDropdownCanvas != nullptr)
+        {
+            int32_t mouseX, mouseY;
+            GetMousePosition(mouseX, mouseY);
+
+            int32_t newHoveredIndex = -1;
+            for (int32_t i = 0; i < (int32_t)mDropdownItems.size(); i++)
+            {
+                Rect itemRect = mDropdownItems[i]->GetRect();
+                if (itemRect.ContainsPoint((float)mouseX, (float)mouseY))
+                {
+                    newHoveredIndex = mScrollOffset + i;
+                    break;
                 }
             }
 
-            Close();
-        }
-    }
-
-    // Update hover state for dropdown items
-    if (mIsOpen && mDropdownCanvas != nullptr)
-    {
-        int32_t mouseX, mouseY;
-        GetMousePosition(mouseX, mouseY);
-
-        int32_t newHoveredIndex = -1;
-        for (int32_t i = 0; i < (int32_t)mDropdownItems.size(); i++)
-        {
-            Rect itemRect = mDropdownItems[i]->GetRect();
-            if (itemRect.ContainsPoint((float)mouseX, (float)mouseY))
+            if (newHoveredIndex != mHoveredIndex && newHoveredIndex >= 0)
             {
-                newHoveredIndex = i;
-                break;
+                mHoveredIndex = newHoveredIndex;
+                UpdateDropdown();
             }
         }
 
-        if (newHoveredIndex != mHoveredIndex)
+        // ===== SCROLL WHEEL INPUT =====
+        int32_t scrollDelta = GetScrollWheelDelta();
+        if (scrollDelta != 0)
         {
-            mHoveredIndex = newHoveredIndex;
-            UpdateDropdown();
+            if (mIsOpen)
+            {
+                // Scroll moves hovered index in dropdown
+                CycleHoveredIndex(scrollDelta > 0 ? -1 : 1);
+            }
+            else if (containsMouse)
+            {
+                // Scroll cycles selection without opening
+                CycleSelectedIndex(scrollDelta > 0 ? -1 : 1);
+            }
+        }
+    }
+
+    // ===== KEYBOARD INPUT =====
+    if (sHandleKeyboardInput && (containsMouse || mIsOpen))
+    {
+        if (mIsOpen)
+        {
+            // Dropdown is open - navigate and select
+            if (IsKeyJustDownRepeat(OCTAVE_KEY_UP))
+            {
+                CycleHoveredIndex(-1);
+            }
+
+            if (IsKeyJustDownRepeat(OCTAVE_KEY_DOWN))
+            {
+                CycleHoveredIndex(1);
+            }
+
+            if (IsKeyJustDown(OCTAVE_KEY_ENTER) || IsKeyJustDown(OCTAVE_KEY_SPACE))
+            {
+                if (mHoveredIndex >= 0)
+                {
+                    SetSelectedIndex(mHoveredIndex);
+                }
+                Close();
+            }
+
+            if (IsKeyJustDown(OCTAVE_KEY_ESCAPE))
+            {
+                Close();
+            }
+        }
+        else if (containsMouse)
+        {
+            // Dropdown closed - open or cycle selection
+            if (IsKeyJustDown(OCTAVE_KEY_ENTER) || IsKeyJustDown(OCTAVE_KEY_SPACE))
+            {
+                Open();
+            }
+
+            if (IsKeyJustDownRepeat(OCTAVE_KEY_UP))
+            {
+                CycleSelectedIndex(-1);
+            }
+
+            if (IsKeyJustDownRepeat(OCTAVE_KEY_DOWN))
+            {
+                CycleSelectedIndex(1);
+            }
+        }
+    }
+
+    // ===== GAMEPAD INPUT =====
+    if (sHandleGamepadInput && (containsMouse || mIsOpen))
+    {
+        if (mIsOpen)
+        {
+            // Dropdown is open - navigate and select
+            if (IsGamepadButtonJustDown(GAMEPAD_UP, 0) ||
+                IsGamepadButtonJustDown(GAMEPAD_L_UP, 0))
+            {
+                CycleHoveredIndex(-1);
+            }
+
+            if (IsGamepadButtonJustDown(GAMEPAD_DOWN, 0) ||
+                IsGamepadButtonJustDown(GAMEPAD_L_DOWN, 0))
+            {
+                CycleHoveredIndex(1);
+            }
+
+            if (IsGamepadButtonJustDown(GAMEPAD_A, 0))
+            {
+                if (mHoveredIndex >= 0)
+                {
+                    SetSelectedIndex(mHoveredIndex);
+                }
+                Close();
+            }
+
+            if (IsGamepadButtonJustDown(GAMEPAD_B, 0))
+            {
+                Close();
+            }
+        }
+        else if (containsMouse)
+        {
+            // Dropdown closed - open or cycle selection
+            if (IsGamepadButtonJustDown(GAMEPAD_A, 0))
+            {
+                Open();
+            }
+
+            if (IsGamepadButtonJustDown(GAMEPAD_UP, 0) ||
+                IsGamepadButtonJustDown(GAMEPAD_L_UP, 0))
+            {
+                CycleSelectedIndex(-1);
+            }
+
+            if (IsGamepadButtonJustDown(GAMEPAD_DOWN, 0) ||
+                IsGamepadButtonJustDown(GAMEPAD_L_DOWN, 0))
+            {
+                CycleSelectedIndex(1);
+            }
         }
     }
 }
@@ -258,14 +386,27 @@ void ComboBox::UpdateDropdown()
         return;
     }
 
-    // Update item colors based on hover/selection
+    // Update position in case ComboBox moved (dropdown is attached to root)
+    Rect myRect = GetRect();
+    mDropdownCanvas->SetPosition(myRect.mX, myRect.mY + myRect.mHeight);
+
+    // Update item text and colors based on scroll offset
     for (int32_t i = 0; i < (int32_t)mDropdownItems.size(); i++)
     {
-        if (i == mHoveredIndex)
+        int32_t optionIndex = mScrollOffset + i;
+
+        // Update text to show correct option
+        if (optionIndex < (int32_t)mOptions.size() && i < (int32_t)mDropdownTexts.size())
+        {
+            mDropdownTexts[i]->SetText(mOptions[optionIndex]);
+        }
+
+        // Update colors based on actual option index
+        if (optionIndex == mHoveredIndex)
         {
             mDropdownItems[i]->SetColor(mHoveredColor);
         }
-        else if (i == mSelectedIndex)
+        else if (optionIndex == mSelectedIndex)
         {
             mDropdownItems[i]->SetColor(glm::vec4(mHoveredColor.r * 0.8f, mHoveredColor.g * 0.8f, mHoveredColor.b * 0.8f, 1.0f));
         }
@@ -283,8 +424,15 @@ void ComboBox::CreateDropdownItems()
         return;
     }
 
-    // Create dropdown canvas
-    mDropdownCanvas = CreateChild<Canvas>("DropdownCanvas");
+    // Find root widget to attach dropdown (renders on top of siblings)
+    Widget* rootWidget = this;
+    while (rootWidget->GetParentWidget() != nullptr)
+    {
+        rootWidget = rootWidget->GetParentWidget();
+    }
+
+    // Create dropdown canvas at root level for proper z-order
+    mDropdownCanvas = rootWidget->CreateChild<Canvas>("DropdownCanvas");
     mDropdownCanvas->SetTransient(true);
     mDropdownCanvas->SetAnchorMode(AnchorMode::TopLeft);
 
@@ -292,13 +440,13 @@ void ComboBox::CreateDropdownItems()
     int32_t visibleItems = glm::min((int32_t)mOptions.size(), mMaxVisibleItems);
     float dropdownHeight = visibleItems * mItemHeight;
 
-    // Position below the main widget
+    // Position using absolute screen coordinates (below the ComboBox)
     Rect myRect = GetRect();
-    mDropdownCanvas->SetPosition(0.0f, GetHeight());
+    mDropdownCanvas->SetPosition(myRect.mX, myRect.mY + myRect.mHeight);
     mDropdownCanvas->SetDimensions(width, dropdownHeight);
 
-    // Create items
-    for (int32_t i = 0; i < (int32_t)mOptions.size() && i < mMaxVisibleItems; i++)
+    // Create items (visual slots, text set in UpdateDropdown)
+    for (int32_t i = 0; i < visibleItems; i++)
     {
         Quad* itemBg = mDropdownCanvas->CreateChild<Quad>(("Item" + std::to_string(i)).c_str());
         itemBg->SetTransient(true);
@@ -315,12 +463,12 @@ void ComboBox::CreateDropdownItems()
         itemText->SetDimensions(width - 8.0f, mItemHeight);
         itemText->SetHorizontalJustification(Justification::Left);
         itemText->SetVerticalJustification(Justification::Center);
-        itemText->SetText(mOptions[i]);
         itemText->SetColor(mTextColor);
         mDropdownTexts.push_back(itemText);
     }
 
-    mHoveredIndex = -1;
+    // Initialize text and colors based on scroll offset
+    UpdateDropdown();
 }
 
 void ComboBox::DestroyDropdownItems()
@@ -442,6 +590,25 @@ void ComboBox::Open()
     if (!mIsOpen && !mOptions.empty())
     {
         mIsOpen = true;
+
+        // Initialize hovered index to current selection
+        mHoveredIndex = (mSelectedIndex >= 0) ? mSelectedIndex : 0;
+
+        // Reset scroll offset to show selection centered (if possible)
+        int32_t visibleCount = glm::min((int32_t)mOptions.size(), mMaxVisibleItems);
+        if (mSelectedIndex >= 0)
+        {
+            // Try to center the selected item
+            mScrollOffset = glm::max(0, mSelectedIndex - visibleCount / 2);
+            // Clamp to valid range
+            int32_t maxOffset = glm::max(0, (int32_t)mOptions.size() - visibleCount);
+            mScrollOffset = glm::min(mScrollOffset, maxOffset);
+        }
+        else
+        {
+            mScrollOffset = 0;
+        }
+
         CreateDropdownItems();
         MarkDirty();
     }
@@ -452,6 +619,7 @@ void ComboBox::Close()
     if (mIsOpen)
     {
         mIsOpen = false;
+        mScrollOffset = 0;
         DestroyDropdownItems();
         MarkDirty();
     }
@@ -547,4 +715,73 @@ Quad* ComboBox::GetBackground()
 Text* ComboBox::GetTextWidget()
 {
     return mText;
+}
+
+void ComboBox::CycleSelectedIndex(int32_t delta)
+{
+    if (mOptions.empty())
+    {
+        return;
+    }
+
+    int32_t newIndex = mSelectedIndex + delta;
+
+    // Wrap around
+    if (newIndex < 0)
+    {
+        newIndex = (int32_t)mOptions.size() - 1;
+    }
+    else if (newIndex >= (int32_t)mOptions.size())
+    {
+        newIndex = 0;
+    }
+
+    SetSelectedIndex(newIndex);
+}
+
+void ComboBox::CycleHoveredIndex(int32_t delta)
+{
+    if (mOptions.empty() || mDropdownItems.empty())
+    {
+        return;
+    }
+
+    int32_t newIndex = mHoveredIndex + delta;
+
+    // Clamp to valid range across ALL options (not just visible)
+    int32_t maxIndex = (int32_t)mOptions.size() - 1;
+    newIndex = glm::clamp(newIndex, 0, maxIndex);
+
+    if (mHoveredIndex != newIndex)
+    {
+        mHoveredIndex = newIndex;
+
+        // Scroll to keep hovered item visible
+        int32_t visibleCount = glm::min((int32_t)mOptions.size(), mMaxVisibleItems);
+        if (mHoveredIndex < mScrollOffset)
+        {
+            mScrollOffset = mHoveredIndex;
+        }
+        else if (mHoveredIndex >= mScrollOffset + visibleCount)
+        {
+            mScrollOffset = mHoveredIndex - visibleCount + 1;
+        }
+
+        UpdateDropdown();
+    }
+}
+
+void ComboBox::SetHandleMouse(bool inHandle)
+{
+    sHandleMouseInput = inHandle;
+}
+
+void ComboBox::SetHandleKeyboard(bool inHandle)
+{
+    sHandleKeyboardInput = inHandle;
+}
+
+void ComboBox::SetHandleGamepad(bool inHandle)
+{
+    sHandleGamepadInput = inHandle;
 }

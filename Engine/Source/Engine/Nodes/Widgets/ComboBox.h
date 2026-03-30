@@ -55,7 +55,15 @@ public:
     Quad* GetBackground();
     Text* GetTextWidget();
 
+    // Input handling
+    static void SetHandleMouse(bool inHandle);
+    static void SetHandleKeyboard(bool inHandle);
+    static void SetHandleGamepad(bool inHandle);
+
 protected:
+
+    void CycleSelectedIndex(int32_t delta);
+    void CycleHoveredIndex(int32_t delta);
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
@@ -73,6 +81,7 @@ protected:
     // State
     bool mIsOpen = false;
     int32_t mHoveredIndex = -1;
+    int32_t mScrollOffset = 0;  // First visible item index in dropdown
 
     // Visual
     TextureRef mBackgroundTexture;
@@ -94,4 +103,9 @@ protected:
     Canvas* mDropdownCanvas = nullptr;
     std::vector<Quad*> mDropdownItems;
     std::vector<Text*> mDropdownTexts;
+
+    // Static input flags
+    static bool sHandleMouseInput;
+    static bool sHandleKeyboardInput;
+    static bool sHandleGamepadInput;
 };

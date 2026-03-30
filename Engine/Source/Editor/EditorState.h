@@ -3,6 +3,7 @@
 #if EDITOR
 
 #include <string>
+#include <set>
 #include "Maths.h"
 #include "AssetRef.h"
 #include "SmartPointer.h"
@@ -19,6 +20,7 @@ class Widget;
 class Text;
 class Asset;
 struct AssetStub;
+class AssetDir;
 class ActionList;
 class Canvas;
 class Camera3D;
@@ -144,6 +146,8 @@ struct EditorState
     bool mRequestSaveSceneAs = false;
     bool mTrackSelectedAsset = false;
     bool mTrackSelectedNode = false;
+    std::string mRevealScriptName = "";
+    std::set<AssetDir*> mRevealAssetExpandDirs;
     uint32_t mViewportX = 0;
     uint32_t mViewportY = 0;
     uint32_t mViewportWidth = 100;
@@ -298,6 +302,7 @@ struct EditorState
     void SetAssetDirectory(AssetDir* assetDir, bool recordHistory);
     AssetDir* GetAssetDirectory();
     void BrowseToAsset(const std::string& name);
+    void BrowseToScript(const std::string& scriptName);
 
     void CaptureAndSaveScene(AssetStub* stub, Node* rootNode);
     void DuplicateAsset(AssetStub* srcStub, const char* overrideName = nullptr);

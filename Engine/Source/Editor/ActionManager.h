@@ -16,6 +16,7 @@
 #include "AssetRef.h"
 #include "Nodes/Node.h"
 #include "Nodes/3D/StaticMesh3d.h"
+#include "Nodes/Widgets/ArrayWidget.h"
 
 class Node3D;
 class Mesh3D;
@@ -181,6 +182,15 @@ public:
      * @param nodes The selected nodes to split.
      */
     void EXE_ReplaceWithStaticMesh(const std::vector<Node*>& nodes);
+
+    /**
+     * @brief Create a new parent node of the specified type and reparent all selected nodes under it.
+     * @param nodes The selected nodes to reparent.
+     * @param parentType The type of parent node to create.
+     * @param arrayOrientation For ArrayWidget parents, the orientation (Horizontal/Vertical).
+     */
+    void EXE_ParentSelectedWith(const std::vector<Node*>& nodes, TypeId parentType,
+        ArrayOrientation arrayOrientation = ArrayOrientation::Vertical);
 
     // Timeline actions
     void EXE_TimelineAddTrack(Timeline* timeline, TypeId trackType);
@@ -562,5 +572,30 @@ protected:
     };
 
     std::vector<SplitEntry> mEntries;
+    bool mFirstExecute = true;
+};
+
+/**
+ * @brief Action to create a new parent node and reparent selected nodes under it.
+ */
+class ActionParentSelectedWith : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(ParentSelectedWith);
+    ActionParentSelectedWith(
+        const std::vector<Node*>& nodes,
+        TypeId newParentType,
+        ArrayOrientation arrayOrientation = ArrayOrientation::Vertical);
+
+protected:
+    std::vector<NodePtr> mNodes;
+    std::vector<NodePtr> mPrevParents;
+    std::vector<int32_t> mPrevChildIndices;
+    std::vector<int32_t> mPrevBoneIndices;
+    NodePtr mCreatedParent;
+    NodePtr mCreatedParentParent;
+    int32_t mCreatedParentChildIndex = -1;
+    TypeId mNewParentType;
+    ArrayOrientation mArrayOrientation = ArrayOrientation::Vertical;
     bool mFirstExecute = true;
 };

@@ -81,6 +81,7 @@
 #include <functional>
 #include <algorithm>
 #include <map>
+#include <set>
 #include <unordered_map>
 
 // TODO: If we ever support an OpenGL backend, gotta change this.
@@ -104,11 +105,14 @@
 #define strcasecmp _stricmp
 #endif
 #include <Nodes/TimelinePlayer.h>
+#include <Nodes/Widgets/Widget.h>
 #include <Nodes/Widgets/Button.h>
 #include <Nodes/Widgets/Quad.h>
 #include <Nodes/Widgets/Canvas.h>
 #include <Nodes/Widgets/Console.h>
 #include <Nodes/Widgets/ArrayWidget.h>
+#include <Nodes/Widgets/Window.h>
+#include <Nodes/Widgets/DialogWindow.h>
 
 #include "SecondScreenPreview/SecondScreenPreview.h"
 #include "GamePreview/GamePreview.h"
@@ -572,10 +576,8 @@ static void DrawDockspace()
 
     // --- Properties dock ---
     {
-        bool lockedProperties = sObjectTabOpen && GetEditorState()->IsInspectLocked();
         ImVec4 propsPanelBg;
-        ImVec4 propsBg = lockedProperties ? ImVec4(0.4f, 0.0f, 0.0f, 1.0f)
-            : (CssThemeParser::GetPanelPropertiesBg(propsPanelBg) ? propsPanelBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+        ImVec4 propsBg = CssThemeParser::GetPanelPropertiesBg(propsPanelBg) ? propsPanelBg : ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
         ImGui::PushStyleColor(ImGuiCol_ChildBg, propsBg);
     }
     if (ImGui::BeginDock(ICON_INFO "  Properties", &propsOpen))
@@ -2066,18 +2068,45 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
         dropdownActive = true; // Set to true to ensure dropdown shows
         selectedIndex = 0;
     }
-    // Hide dropdown when input loses focus
+    // Hide dropdown when input loses focus (but not if mouse is over dropdown)
     else if (!isInputActive && !isInputFocused && activeDropdownId == inputId)
     {
-        dropdownActive = false;
+        // Calculate dropdown bounds to check if mouse is hovering over it
+        ImVec2 inputSize = ImVec2(inputRectMax.x - inputRectMin.x, inputRectMax.y - inputRectMin.y);
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxDropdownHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+        ImVec2 dropdownMin = ImVec2(inputRectMin.x, inputRectMin.y + inputSize.y);
+        ImVec2 dropdownMax = ImVec2(inputRectMax.x, inputRectMin.y + inputSize.y + maxDropdownHeight);
+
+        ImVec2 mousePos = ImGui::GetIO().MousePos;
+        bool mouseOverDropdown = mousePos.x >= dropdownMin.x && mousePos.x <= dropdownMax.x &&
+                                 mousePos.y >= dropdownMin.y && mousePos.y <= dropdownMax.y;
+
+        // Only close if mouse is not over dropdown (allows click selection)
+        if (!mouseOverDropdown)
+        {
+            dropdownActive = false;
+        }
     }
 
-    // Close dropdown when user clicks outside the input field
+    // Close dropdown when user clicks outside BOTH the input field AND dropdown
     if (dropdownActive && activeDropdownId == inputId && ImGui::IsMouseClicked(0))
     {
+        // Calculate dropdown bounds (same calculation as later in the function)
+        ImVec2 inputSize = ImVec2(inputRectMax.x - inputRectMin.x, inputRectMax.y - inputRectMin.y);
+        const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+        const float maxDropdownHeight = itemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+
+        // Dropdown rect is below the input
+        ImVec2 dropdownMin = ImVec2(inputRectMin.x, inputRectMin.y + inputSize.y);
+        ImVec2 dropdownMax = ImVec2(inputRectMax.x, inputRectMin.y + inputSize.y + maxDropdownHeight);
+
         ImVec2 mousePos = ImGui::GetIO().MousePos;
-        if (mousePos.x < inputRectMin.x || mousePos.x > inputRectMax.x ||
-            mousePos.y < inputRectMin.y || mousePos.y > inputRectMax.y)
+        bool outsideInput = mousePos.x < inputRectMin.x || mousePos.x > inputRectMax.x ||
+                            mousePos.y < inputRectMin.y || mousePos.y > inputRectMax.y;
+        bool outsideDropdown = mousePos.x < dropdownMin.x || mousePos.x > dropdownMax.x ||
+                               mousePos.y < dropdownMin.y || mousePos.y > dropdownMax.y;
+        if (outsideInput && outsideDropdown)
         {
             dropdownActive = false;
         }
@@ -2120,7 +2149,6 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_Tooltip | // Use tooltip flag to ensure it draws on top
-            ImGuiWindowFlags_NoMouseInputs |
             ImGuiWindowFlags_NoScrollbar;
         
         if (ImGui::Begin(dropdownId, nullptr, flags))
@@ -2132,7 +2160,8 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
             bool upArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow));
             bool downArrowPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow));
             bool tabPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab));
-            bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter));
+            bool enterPressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)) ||
+                                  ImGui::IsKeyPressed(ImGuiKey_KeypadEnter);
             bool escapePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape));
             bool backspacePressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace));
             
@@ -2230,16 +2259,29 @@ static bool DrawAutocompleteDropdown(const char* dropdownId,
                 if (isSelected)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
 
-                // Only make selection on click, don't autofill
                 bool clicked = ImGui::Selectable(filteredItems[i].c_str(), isSelected);
 
+                // Mouse hover - update selection
+                if (ImGui::IsItemHovered())
+                {
+                    selectedIndex = i;
+                    hasSelection = true;
+                }
+
+                // Mouse click - make selection
+                if (clicked)
+                {
+                    inputText = filteredItems[i];
+                    selectionMade = true;
+                    dropdownActive = false;
+                    selectionJustMade = true;
+                }
 
                 if (isSelected)
                 {
                     ImGui::SetItemDefaultFocus(); // This also scrolls to make the item visible
                     ImGui::PopStyleColor();
                 }
-
             }
         }
         ImGui::End();
@@ -2314,12 +2356,14 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
 
     ImGui::SameLine();
 
-    static std::string sTempString;
-    sTempString = asset ? asset->GetName() : "";
+    // Each asset property gets its own string buffer keyed by a unique ID
+    static std::unordered_map<std::string, std::string> sTempStrings;
+    std::string propKey = prop.mName + "_" + std::to_string(index) + "_" + std::to_string((uintptr_t)owner);
+    std::string& sTempString = sTempStrings[propKey];
 
     // Create a unique ID for this input
     ImGui::PushID((prop.mName + std::to_string(index)).c_str());
-    
+
     // Use ImGui::InputText and get the active status for the dropdown
     // Capture keys to prevent input field from intercepting arrow keys
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
@@ -2327,10 +2371,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         // If dropdown is about to be shown, don't allow up/down keys to affect the input
         flags |= ImGuiInputTextFlags_CharsNoBlank;
     }
-    
-    // Check if input will be activated this frame
-    bool willBeActivated = ImGui::IsItemHovered() && ImGui::IsMouseClicked(0);
-    
+
     bool textActive = ImGui::InputText("##AssetNameStr", &sTempString, flags);
     bool isInputFocused = ImGui::IsItemFocused();
     bool isInputActivated = ImGui::IsItemActivated();
@@ -2339,6 +2380,30 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     ImGuiID inputTextId = ImGui::GetItemID();
     ImVec2 inputTextRectMin = ImGui::GetItemRectMin();
     ImVec2 inputTextRectMax = ImGui::GetItemRectMax();
+
+    // Calculate dropdown bounds to check if mouse is hovering over it
+    ImVec2 inputSize = ImVec2(inputTextRectMax.x - inputTextRectMin.x, inputTextRectMax.y - inputTextRectMin.y);
+    const float dropdownItemHeight = ImGui::GetTextLineHeightWithSpacing();
+    const float maxDropdownHeight = dropdownItemHeight * 4 + ImGui::GetStyle().WindowPadding.y * 2;
+    ImVec2 dropdownMin = ImVec2(inputTextRectMin.x, inputTextRectMin.y + inputSize.y);
+    ImVec2 dropdownMax = ImVec2(inputTextRectMax.x, inputTextRectMin.y + inputSize.y + maxDropdownHeight);
+
+    ImVec2 mousePos = ImGui::GetIO().MousePos;
+    bool mouseOverDropdown = mousePos.x >= dropdownMin.x && mousePos.x <= dropdownMax.x &&
+                             mousePos.y >= dropdownMin.y && mousePos.y <= dropdownMax.y;
+
+    // Only reset temp string when NOT focused and NOT hovering over dropdown
+    // This preserves the filter text when clicking on dropdown items
+    if (isInputActivated)
+    {
+        // Reset when first activating the input
+        sTempString = asset ? asset->GetName() : "";
+    }
+    else if (!isInputFocused && !mouseOverDropdown)
+    {
+        // Reset when not interacting
+        sTempString = asset ? asset->GetName() : "";
+    }
 
     // Drag-and-drop target on the input text field
     if (ImGui::BeginDragDropTarget())
@@ -2370,16 +2435,26 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
         }
     }
 
-    // Inspect button - view asset properties
+    // Inspect and Reveal buttons - only show when asset is assigned
     if (asset != nullptr)
     {
+        // Inspect button - view asset properties
         ImGui::SameLine(0.0f, 2.0f);
-        if (ImGui::Button(ICON_INFO "##AssetInspect"))
+        if (ImGui::Button(ICON_INFO "##Inspect"))
         {
             GetEditorState()->InspectObject(asset);
         }
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Inspect asset properties");
+
+        // Reveal button - navigate to asset in Asset Panel
+        ImGui::SameLine(0.0f, 2.0f);
+        if (ImGui::Button(ICON_MDI_TARGET "##Reveal"))
+        {
+            GetEditorState()->BrowseToAsset(asset->GetName());
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Reveal in Asset Panel");
     }
 
     // Per-element delete button for vector properties
@@ -2482,7 +2557,7 @@ void DrawAssetProperty(Property& prop, uint32_t index, Object* owner, PropertyOw
     // Force the dropdown to be active when the input is activated or text changes
     // Use saved InputText rect so the dropdown positions below the input field, not the clear button
     bool selectionMade = DrawAutocompleteDropdown("AssetAutocomplete", sTempString, assetSuggestions, assetFilter,
-                                                isInputActivated || textActive || willBeActivated,
+                                                isInputActivated || textActive || isInputFocused,
                                                 inputTextId, inputTextRectMin, inputTextRectMax);
     
     // Pop the ID we pushed earlier
@@ -2911,6 +2986,18 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                     {
                         std::string emptyStr;
                         am->EXE_EditProperty(owner, ownerType, prop.mName, i, emptyStr);
+                    }
+
+                    // Reveal button - navigate to script in Scripts Panel
+                    if (!sTempString.empty())
+                    {
+                        ImGui::SameLine(0.0f, 2.0f);
+                        if (ImGui::Button(ICON_MDI_TARGET "##ScriptReveal"))
+                        {
+                            GetEditorState()->BrowseToScript(sTempString);
+                        }
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip("Reveal in Scripts Panel");
                     }
 
                     // Then draw the autocomplete dropdown with the correct state
@@ -3940,6 +4027,7 @@ static void DrawScenePanel()
 
             const char* nodeIcon = GetNodeIcon(node);
             std::string nodeLabel = std::string(nodeIcon) + " " + node->GetName();
+            ImGui::SetNextItemAllowOverlap();
             bool nodeOpen = ImGui::TreeNodeEx(nodeLabel.c_str(), nodeFlags);
             AlternatingRowBackground();
             bool nodeClicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();
@@ -3947,24 +4035,11 @@ static void DrawScenePanel()
             bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
             bool collapseChildren = !expandChildren && nodeMiddleClicked;
 
-            // Hierarchy item GUI overlay (Batch 7)
-            {
-                ImVec2 rowMin = ImGui::GetItemRectMin();
-                ImVec2 rowMax = ImGui::GetItemRectMax();
-                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-                if (hookMgr != nullptr)
-                {
-                    hookMgr->DrawHierarchyItemGUI(node, rowMin.x, rowMin.y,
-                        rowMax.x - rowMin.x, rowMax.y - rowMin.y);
-                }
-            }
+            // Save TreeNode rect for toggle buttons (before drag/drop changes last item)
+            ImVec2 treeNodeRectMin = ImGui::GetItemRectMin();
+            ImVec2 treeNodeRectMax = ImGui::GetItemRectMax();
 
-            if (inSubScene || nodeHasScene)
-            {
-                ImGui::PopStyleColor();
-            }
-
-            // Drag source for node references (e.g. timeline track targets)
+            // Drag source for node references - must be right after TreeNodeEx while it's the "last item"
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 Node* dragNode = node;
@@ -4042,8 +4117,8 @@ static void DrawScenePanel()
                                 // If dragging within the same parent, account for removal shift
                                 if (droppedNode->GetParent() == targetParent)
                                 {
-                                    int32_t dragIndex = targetParent->FindChildIndex(droppedNode);
-                                    if (dragIndex < insertIndex)
+                                    int32_t draggedIndex = targetParent->FindChildIndex(droppedNode);
+                                    if (draggedIndex < insertIndex)
                                         insertIndex--;
                                 }
 
@@ -4079,7 +4154,99 @@ static void DrawScenePanel()
                         }
                     }
                 }
+
                 ImGui::EndDragDropTarget();
+            }
+
+            // Draw visibility and active toggle buttons on the right side of the row
+            {
+                const float kToggleButtonSize = 16.0f;
+                const float kToggleButtonSpacing = 2.0f;
+
+                // Use saved TreeNode rect (not current last item which may have changed)
+                ImVec2 rowMin = treeNodeRectMin;
+                ImVec2 rowMax = treeNodeRectMax;
+                float rowHeight = rowMax.y - rowMin.y;
+
+                // Calculate button positions (right-aligned)
+                float buttonY = rowMin.y + (rowHeight - kToggleButtonSize) * 0.5f;
+                float visibilityBtnX = rowMax.x - kToggleButtonSpacing - kToggleButtonSize;
+                float activeBtnX = visibilityBtnX - kToggleButtonSpacing - kToggleButtonSize;
+
+                ImGui::PushID((void*)node);
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+                // --- Active Toggle Button ---
+                ImGui::SetCursorScreenPos(ImVec2(activeBtnX, buttonY));
+                bool isActive = node->IsActive();
+
+                if (!isActive)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.9f, 0.3f, 1.0f));
+                }
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
+
+                if (ImGui::Button(isActive ? ICON_MATERIAL_SYMBOLS_CHECK_CIRCLE "##active" : ICON_MATERIAL_SYMBOLS_CHECK "##active", ImVec2(kToggleButtonSize, kToggleButtonSize)))
+                {
+                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Active", 0, !isActive);
+                    nodeClicked = false;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(isActive ? "Active (click to deactivate)" : "Inactive (click to activate)");
+                }
+                ImGui::PopStyleColor(4);
+
+                // --- Visibility Toggle Button ---
+                ImGui::SetCursorScreenPos(ImVec2(visibilityBtnX, buttonY));
+                bool isVisible = node->IsVisible();
+
+                if (!isVisible)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
+                }
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
+
+                if (ImGui::Button(isVisible ? ICON_MDI_EYE "##visible" : ICON_BASIL_EYE_CLOSED_SOLID "##visible", ImVec2(kToggleButtonSize, kToggleButtonSize)))
+                {
+                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Visible", 0, !isVisible);
+                    nodeClicked = false;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(isVisible ? "Visible (click to hide)" : "Hidden (click to show)");
+                }
+                ImGui::PopStyleColor(4);
+
+                ImGui::PopStyleVar();
+                ImGui::PopID();
+            }
+
+            // Hierarchy item GUI overlay (Batch 7)
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr)
+                {
+                    hookMgr->DrawHierarchyItemGUI(node, treeNodeRectMin.x, treeNodeRectMin.y,
+                        treeNodeRectMax.x - treeNodeRectMin.x, treeNodeRectMax.y - treeNodeRectMin.y);
+                }
+            }
+
+            if (inSubScene || nodeHasScene)
+            {
+                ImGui::PopStyleColor();
             }
 
             if (nodeSelected && GetEditorState()->mTrackSelectedNode)
@@ -4136,6 +4303,126 @@ static void DrawScenePanel()
                 {
                     am->AttachSelectedNodes(node, -1);
                 }
+
+                // Parent Selected With submenu
+                {
+                    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+                    bool canParentSelected = (selNodes.size() >= 1) && !inSubScene;
+
+                    // Check if any nodes are scene-linked
+                    for (Node* n : selNodes)
+                    {
+                        if (n->IsSceneLinkedChild())
+                        {
+                            canParentSelected = false;
+                            break;
+                        }
+                    }
+
+                    if (canParentSelected && ImGui::BeginMenu("Parent Selected With"))
+                    {
+                        // Determine what types to show based on selection
+                        bool allWidgets = true;
+                        bool allNode3D = true;
+
+                        for (Node* n : selNodes)
+                        {
+                            if (n->IsWidget())
+                            {
+                                allNode3D = false;
+                            }
+                            else if (n->IsNode3D())
+                            {
+                                allWidgets = false;
+                            }
+                            else
+                            {
+                                allWidgets = false;
+                                allNode3D = false;
+                            }
+                        }
+
+                        // Widget parent options (only if all selected are widgets)
+                        if (allWidgets)
+                        {
+                            if (ImGui::Selectable("Array Widget (Horizontal)"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    ArrayWidget::GetStaticType(),
+                                    ArrayOrientation::Horizontal);
+                            }
+                            if (ImGui::Selectable("Array Widget (Vertical)"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    ArrayWidget::GetStaticType(),
+                                    ArrayOrientation::Vertical);
+                            }
+                            if (ImGui::Selectable("Canvas"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Canvas::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Quad"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Quad::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Widget"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Widget::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Window"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Window::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Dialog Window"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    DialogWindow::GetStaticType());
+                            }
+                        }
+
+                        // Node3D parent options (only if all selected are Node3D)
+                        if (allNode3D)
+                        {
+                            if (ImGui::Selectable("Node 3D"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node3D::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Node"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node::GetStaticType());
+                            }
+                        }
+
+                        // Mixed or base Node selection - only Node as common base
+                        if (!allWidgets && !allNode3D)
+                        {
+                            if (ImGui::Selectable("Node"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node::GetStaticType());
+                            }
+                        }
+
+                        ImGui::EndMenu();
+                    }
+                }
+
                 if (!nodeSceneLinked && !inSubScene && node->As<SkeletalMesh3D>())
                 {
                     if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
@@ -4803,6 +5090,126 @@ static void DrawScenePanel()
         {
             DrawSpawnBasicWidgetMenu(nullptr);
             ImGui::EndMenu();
+        }
+
+        // Parent Selected With submenu (for multi-selection)
+        {
+            ActionManager* am = ActionManager::Get();
+            const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+            bool canParentSelected = (selNodes.size() >= 1);
+
+            // Check if any nodes are scene-linked
+            for (Node* n : selNodes)
+            {
+                if (n->IsSceneLinkedChild())
+                {
+                    canParentSelected = false;
+                    break;
+                }
+            }
+
+            if (canParentSelected && ImGui::BeginMenu("Parent Selected With"))
+            {
+                // Determine what types to show based on selection
+                bool allWidgets = true;
+                bool allNode3D = true;
+
+                for (Node* n : selNodes)
+                {
+                    if (n->IsWidget())
+                    {
+                        allNode3D = false;
+                    }
+                    else if (n->IsNode3D())
+                    {
+                        allWidgets = false;
+                    }
+                    else
+                    {
+                        allWidgets = false;
+                        allNode3D = false;
+                    }
+                }
+
+                // Widget parent options (only if all selected are widgets)
+                if (allWidgets)
+                {
+                    if (ImGui::Selectable("Array Widget (Horizontal)"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            ArrayWidget::GetStaticType(),
+                            ArrayOrientation::Horizontal);
+                    }
+                    if (ImGui::Selectable("Array Widget (Vertical)"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            ArrayWidget::GetStaticType(),
+                            ArrayOrientation::Vertical);
+                    }
+                    if (ImGui::Selectable("Canvas"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Canvas::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Quad"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Quad::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Widget"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Widget::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Window"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Window::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Dialog Window"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            DialogWindow::GetStaticType());
+                    }
+                }
+
+                // Node3D parent options (only if all selected are Node3D)
+                if (allNode3D)
+                {
+                    if (ImGui::Selectable("Node 3D"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node3D::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Node"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node::GetStaticType());
+                    }
+                }
+
+                // Mixed or base Node selection - only Node as common base
+                if (!allWidgets && !allNode3D)
+                {
+                    if (ImGui::Selectable("Node"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node::GetStaticType());
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
         }
 
         ImGui::EndPopup();
@@ -5896,6 +6303,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         {
             ImGui::SetScrollHereY(0.5f);
             GetEditorState()->mTrackSelectedAsset = false;
+            GetEditorState()->mRevealAssetExpandDirs.clear();
         }
 
         ImGui::PopStyleColor(); // Pop asset color
@@ -6116,6 +6524,13 @@ static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool
     bool hasChildren = !dir->mChildDirs.empty() || !dir->mAssetStubs.empty() || !dir->mLooseFiles.empty();
     if (!hasChildren)
         dirFlags |= ImGuiTreeNodeFlags_Leaf;
+
+    // Force open if this directory is in the reveal path
+    EditorState* es = GetEditorState();
+    if (es->mRevealAssetExpandDirs.count(dir) > 0)
+    {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+    }
 
     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + dir->mName;
     ImGui::PushID(dir);
@@ -6706,7 +7121,14 @@ static void DrawPropertiesPanel()
                 Node* objNode = obj->As<Node>();
                 if (objNode)
                     objName = std::string(GetNodeIcon(objNode)) + " " + objName;
-                ImVec2 sz = ImVec2(-FLT_MIN, 0.0f);
+
+                // Calculate width: leave room for lock button on the right
+                const char* lockIcon = inspectLocked
+                    ? ICON_MATERIAL_SYMBOLS_LOCK_SHARP
+                    : ICON_MATERIAL_SYMBOLS_LOCK_OPEN_SHARP;
+                float lockButtonWidth = ImGui::CalcTextSize(lockIcon).x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
+                ImVec2 sz = ImVec2(ImGui::GetContentRegionAvail().x - lockButtonWidth, 0.0f);
+
                 ImVec4 headerColor = kSelectedColor;
                 headerColor.w = 0.0f;
                 ImVec4 headerTextColor = ImVec4(0.18f, 0.75f, 0.70f, 1.00f);
@@ -6716,6 +7138,17 @@ static void DrawPropertiesPanel()
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, headerColor);
                 ImGui::Button(objName.c_str(), sz);
                 ImGui::PopStyleColor(4);
+
+                // Lock/Unlock inspector button (right side)
+                ImGui::SameLine();
+                if (ImGui::Button(lockIcon))
+                {
+                    GetEditorState()->LockInspect(!inspectLocked);
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(inspectLocked ? "Unlock Inspector (L)" : "Lock Inspector (L)");
+                }
 
                 Texture* texObj = obj->As<Texture>();
                 if (texObj != nullptr &&
@@ -6918,7 +7351,20 @@ static void DrawScriptsPanel()
     // --- Search filter ---
     static char sSearchBuffer[256] = "";
 
+    // --- Script reveal state ---
+    static std::set<std::string> sRevealExpandPaths;
+    static std::string sSelectedScript = "";
+
     double currentTime = ImGui::GetTime();
+
+    // Check for pending script reveal and build expand paths
+    EditorState* es = GetEditorState();
+    if (!es->mRevealScriptName.empty())
+    {
+        sRevealExpandPaths.clear();
+        sSelectedScript = es->mRevealScriptName;  // Set selection to revealed script
+        // Will be populated when we find the script in the tree build loop below
+    }
 
     // Search bar at top
     ImGui::SetNextItemWidth(-1);
@@ -7111,6 +7557,30 @@ static void DrawScriptsPanel()
                         continue;
                 }
 
+                // Build reveal expand paths if this is the target script
+                bool isRevealTarget = (!es->mRevealScriptName.empty() && entry.mDisplayName == es->mRevealScriptName);
+                if (isRevealTarget)
+                {
+                    // Add origin as first path to expand
+                    sRevealExpandPaths.insert(entry.mOrigin);
+
+                    // Add each directory level to expand
+                    std::string expandPath = entry.mOrigin;
+                    std::string displayPath = entry.mDisplayName;
+                    size_t p = 0;
+                    size_t s;
+                    while ((s = displayPath.find('/', p)) != std::string::npos)
+                    {
+                        std::string d = displayPath.substr(p, s - p);
+                        if (!d.empty())
+                        {
+                            expandPath += "/" + d;
+                            sRevealExpandPaths.insert(expandPath);
+                        }
+                        p = s + 1;
+                    }
+                }
+
                 // Group by origin (Engine, Project, package name) at the top level
                 TreeNode* current = &root.children[entry.mOrigin];
                 current->name = entry.mOrigin;
@@ -7134,15 +7604,23 @@ static void DrawScriptsPanel()
             }
 
             // Recursive draw function
-            std::function<void(const TreeNode&)> drawTree;
-            drawTree = [&](const TreeNode& node)
+            std::function<void(const TreeNode&, const std::string&)> drawTree;
+            drawTree = [&](const TreeNode& node, const std::string& currentPath)
             {
                 // Draw subdirectories
                 for (auto& pair : node.children)
                 {
+                    std::string childPath = currentPath.empty() ? pair.first : (currentPath + "/" + pair.first);
+
                     ImGuiTreeNodeFlags dirFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
                     if (hasFilter)
                         dirFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+                    // Force open if this directory is in the reveal path
+                    if (sRevealExpandPaths.count(childPath) > 0)
+                    {
+                        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+                    }
 
                     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + pair.first;
                     bool dirOpen = ImGui::TreeNodeEx(dirLabel.c_str(), dirFlags);
@@ -7207,7 +7685,7 @@ static void DrawScriptsPanel()
 
                     if (dirOpen)
                     {
-                        drawTree(pair.second);
+                        drawTree(pair.second, childPath);
                         ImGui::TreePop();
                     }
                 }
@@ -7221,10 +7699,31 @@ static void DrawScriptsPanel()
                     if (lastSlash != std::string::npos)
                         fileName = fileName.substr(lastSlash + 1);
 
+                    // Check if this script is selected
+                    bool isSelected = (entry->mDisplayName == sSelectedScript);
+                    bool isRevealTarget = (!es->mRevealScriptName.empty() && entry->mDisplayName == es->mRevealScriptName);
+
                     ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (isSelected)
+                        leafFlags |= ImGuiTreeNodeFlags_Selected;
+
                     std::string labelWithIcon = std::string(ICON_LUA) + " " + fileName;
                     ImGui::TreeNodeEx(labelWithIcon.c_str(), leafFlags);
                     AlternatingRowBackground();
+
+                    // Handle click to select
+                    if (ImGui::IsItemClicked(0))
+                    {
+                        sSelectedScript = entry->mDisplayName;
+                    }
+
+                    // Scroll to revealed script and clear reveal state
+                    if (isRevealTarget)
+                    {
+                        ImGui::SetScrollHereY(0.5f);
+                        es->mRevealScriptName.clear();
+                        sRevealExpandPaths.clear();
+                    }
 
                     // Drag source for script files
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
@@ -7275,7 +7774,7 @@ static void DrawScriptsPanel()
 
             ImGui::BeginChild("##LuaScriptsList", ImVec2(0, 0), false);
             BeginAlternatingRows();
-            drawTree(root);
+            drawTree(root, "");
             ImGui::EndChild();
 
             ImGui::EndTabItem();
