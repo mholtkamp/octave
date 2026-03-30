@@ -2,9 +2,11 @@
 
 #include "Nodes/Widgets/Window.h"
 #include "AssetRef.h"
+#include "Datum.h"
 
 class Button;
 class Canvas;
+class Node;
 class Quad;
 class Texture;
 
@@ -24,9 +26,14 @@ public:
     DECLARE_NODE(DialogWindow, Window);
 
     virtual void Create() override;
+    virtual void Start() override;
     virtual void Tick(float deltaTime) override;
     virtual void PreRender() override;
     virtual void GatherProperties(std::vector<Property>& props) override;
+
+#if EDITOR
+    virtual bool DrawCustomProperty(Property& prop) override;
+#endif
 
     // Confirm Button
     void SetConfirmText(const std::string& text);
@@ -73,6 +80,7 @@ public:
     // Dialog Actions
     void Confirm();
     void Reject();
+    void RefreshButtonBar();
 
     // Internal widget access
     Canvas* GetButtonBar();
@@ -82,6 +90,8 @@ public:
 protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
+    static void OnConfirmButtonActivated(Node* listener, const std::vector<Datum>& args);
+    static void OnRejectButtonActivated(Node* listener, const std::vector<Datum>& args);
     void EnsureButtonBar();
     void UpdateButtonBar();
 
@@ -114,4 +124,5 @@ protected:
     Quad* mButtonBarBackground = nullptr;
     Button* mConfirmButton = nullptr;
     Button* mRejectButton = nullptr;
+    bool mButtonSignalsConnected = false;
 };

@@ -7,8 +7,16 @@
 #include "InputDevices.h"
 #include "Log.h"
 
+#if EDITOR
+#include "imgui.h"
+#endif
+
 FORCE_LINK_DEF(DialogWindow);
 DEFINE_NODE(DialogWindow, Window);
+
+#if EDITOR
+static bool sRefreshButtonBar = false;
+#endif
 
 static const char* sButtonBarAlignmentStrings[] = {
     "Left",
@@ -138,10 +146,45 @@ void DialogWindow::Create()
     MarkDirty();
 }
 
+void DialogWindow::Start()
+{
+    Window::Start();
+
+    // Ensure button bar exists and signals are connected when play begins
+    EnsureButtonBar();
+
+    // Force reconnect signals at Start (in case they were connected in editor)
+    mButtonSignalsConnected = false;
+    if (mConfirmButton != nullptr)
+    {
+        mConfirmButton->DisconnectSignal("Activated", this);
+        mConfirmButton->ConnectSignal("Activated", this, &DialogWindow::OnConfirmButtonActivated);
+    }
+    if (mRejectButton != nullptr)
+    {
+        mRejectButton->DisconnectSignal("Activated", this);
+        mRejectButton->ConnectSignal("Activated", this, &DialogWindow::OnRejectButtonActivated);
+    }
+    mButtonSignalsConnected = true;
+}
+
 void DialogWindow::EnsureButtonBar()
 {
     if (mButtonBar != nullptr)
     {
+        // Ensure signals are connected (may be missing if created before code change)
+        if (!mButtonSignalsConnected)
+        {
+            if (mConfirmButton != nullptr)
+            {
+                mConfirmButton->ConnectSignal("Activated", this, &DialogWindow::OnConfirmButtonActivated);
+            }
+            if (mRejectButton != nullptr)
+            {
+                mRejectButton->ConnectSignal("Activated", this, &DialogWindow::OnRejectButtonActivated);
+            }
+            mButtonSignalsConnected = true;
+        }
         return;
     }
 
@@ -169,6 +212,7 @@ void DialogWindow::EnsureButtonBar()
     mConfirmButton->SetHoveredColor(mConfirmHoveredColor);
     mConfirmButton->SetPressedColor(mConfirmPressedColor);
     mConfirmButton->SetVisible(mShowConfirmButton);
+    mConfirmButton->ConnectSignal("Activated", this, &DialogWindow::OnConfirmButtonActivated);
 
     // Create reject button
     mRejectButton = mButtonBar->CreateChild<Button>("RejectButton");
@@ -180,35 +224,27 @@ void DialogWindow::EnsureButtonBar()
     mRejectButton->SetHoveredColor(mRejectHoveredColor);
     mRejectButton->SetPressedColor(mRejectPressedColor);
     mRejectButton->SetVisible(mShowRejectButton);
+    mRejectButton->ConnectSignal("Activated", this, &DialogWindow::OnRejectButtonActivated);
+
+    mButtonSignalsConnected = true;
 }
 
 void DialogWindow::Tick(float deltaTime)
 {
     Window::Tick(deltaTime);
+}
 
-    // Check for confirm button click
-    if (mConfirmButton != nullptr && mConfirmButton->IsVisible())
-    {
-        if (IsPointerJustUp(0) &&
-            mConfirmButton->GetState() == ButtonState::Pressed &&
-            mConfirmButton->ContainsMouse())
-        {
-            Confirm();
-            return;
-        }
-    }
+void DialogWindow::OnConfirmButtonActivated(Node* listener, const std::vector<Datum>& args)
+{
+    LogDebug("Confirm Clicked");
+    DialogWindow* dialog = static_cast<DialogWindow*>(listener);
+    dialog->Confirm();
+}
 
-    // Check for reject button click
-    if (mRejectButton != nullptr && mRejectButton->IsVisible())
-    {
-        if (IsPointerJustUp(0) &&
-            mRejectButton->GetState() == ButtonState::Pressed &&
-            mRejectButton->ContainsMouse())
-        {
-            Reject();
-            return;
-        }
-    }
+void DialogWindow::OnRejectButtonActivated(Node* listener, const std::vector<Datum>& args)
+{
+    DialogWindow* dialog = static_cast<DialogWindow*>(listener);
+    dialog->Reject();
 }
 
 void DialogWindow::PreRender()
@@ -252,7 +288,12 @@ void DialogWindow::GatherProperties(std::vector<Property>& props)
     props.push_back(Property(DatumType::Byte, "Button Bar Alignment", this, &mButtonBarAlignment, 1,
         HandlePropChange, NULL_DATUM, int32_t(ButtonBarAlignment::Count), sButtonBarAlignmentStrings));
     props.push_back(Property(DatumType::Color, "Button Bar Color", this, &mButtonBarColor, 1, HandlePropChange));
+
+#if EDITOR
+    props.push_back(Property(DatumType::Bool, "Refresh Button Bar", this, &sRefreshButtonBar));
+#endif
 }
+
 
 void DialogWindow::UpdateButtonBar()
 {
@@ -382,6 +423,48 @@ void DialogWindow::Reject()
     EmitSignal("Reject", { this });
     CallFunction("OnReject", { this });
 }
+
+void DialogWindow::RefreshButtonBar()
+{
+    // Destroy existing button bar
+    if (mButtonBar != nullptr)
+    {
+        if (mConfirmButton != nullptr)
+        {
+            mConfirmButton->DisconnectSignal("Activated", this);
+        }
+        if (mRejectButton != nullptr)
+        {
+            mRejectButton->DisconnectSignal("Activated", this);
+        }
+
+        mButtonBar->Destroy();
+        mButtonBar = nullptr;
+        mButtonBarBackground = nullptr;
+        mConfirmButton = nullptr;
+        mRejectButton = nullptr;
+        mButtonSignalsConnected = false;
+    }
+
+    // EnsureButtonBar will recreate on next PreRender
+    LogDebug("DialogWindow '%s': Button bar refreshed", GetName().c_str());
+}
+
+#if EDITOR
+bool DialogWindow::DrawCustomProperty(Property& prop)
+{
+    if (prop.mName == "Refresh Button Bar")
+    {
+        if (ImGui::Button("Refresh Button Bar"))
+        {
+            RefreshButtonBar();
+        }
+        return true;
+    }
+
+    return false;
+}
+#endif
 
 // Confirm Button Getters/Setters
 
