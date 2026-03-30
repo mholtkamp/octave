@@ -3948,99 +3948,11 @@ static void DrawScenePanel()
             bool expandChildren = trackingNode || (nodeMiddleClicked && IsControlDown());
             bool collapseChildren = !expandChildren && nodeMiddleClicked;
 
-            // Draw visibility and active toggle buttons on the right side of the row
-            {
-                const float kToggleButtonSize = 16.0f;
-                const float kToggleButtonSpacing = 2.0f;
+            // Save TreeNode rect for toggle buttons (before drag/drop changes last item)
+            ImVec2 treeNodeRectMin = ImGui::GetItemRectMin();
+            ImVec2 treeNodeRectMax = ImGui::GetItemRectMax();
 
-                ImVec2 rowMin = ImGui::GetItemRectMin();
-                ImVec2 rowMax = ImGui::GetItemRectMax();
-                float rowHeight = rowMax.y - rowMin.y;
-
-                // Calculate button positions (right-aligned)
-                float buttonY = rowMin.y + (rowHeight - kToggleButtonSize) * 0.5f;
-                float visibilityBtnX = rowMax.x - kToggleButtonSpacing - kToggleButtonSize;
-                float activeBtnX = visibilityBtnX - kToggleButtonSpacing - kToggleButtonSize;
-
-                ImGui::PushID((void*)node);
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-
-                // --- Active Toggle Button ---
-                ImGui::SetCursorScreenPos(ImVec2(activeBtnX, buttonY));
-                bool isActive = node->IsActive();
-
-                if (!isActive)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.9f, 0.3f, 1.0f));
-                }
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
-
-                if (ImGui::Button(isActive ? ICON_MATERIAL_SYMBOLS_CHECK_CIRCLE "##active" : ICON_MATERIAL_SYMBOLS_CHECK "##active", ImVec2(kToggleButtonSize, kToggleButtonSize)))
-                {
-                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Active", 0, !isActive);
-                    nodeClicked = false;
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::SetTooltip(isActive ? "Active (click to deactivate)" : "Inactive (click to activate)");
-                }
-                ImGui::PopStyleColor(4);
-
-                // --- Visibility Toggle Button ---
-                ImGui::SetCursorScreenPos(ImVec2(visibilityBtnX, buttonY));
-                bool isVisible = node->IsVisible();
-
-                if (!isVisible)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-                }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-                }
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
-
-                if (ImGui::Button(isVisible ? ICON_MDI_EYE "##visible" : ICON_BASIL_EYE_CLOSED_SOLID "##visible", ImVec2(kToggleButtonSize, kToggleButtonSize)))
-                {
-                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Visible", 0, !isVisible);
-                    nodeClicked = false;
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    ImGui::SetTooltip(isVisible ? "Visible (click to hide)" : "Hidden (click to show)");
-                }
-                ImGui::PopStyleColor(4);
-
-                ImGui::PopStyleVar();
-                ImGui::PopID();
-            }
-
-            // Hierarchy item GUI overlay (Batch 7)
-            {
-                ImVec2 rowMin = ImGui::GetItemRectMin();
-                ImVec2 rowMax = ImGui::GetItemRectMax();
-                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
-                if (hookMgr != nullptr)
-                {
-                    hookMgr->DrawHierarchyItemGUI(node, rowMin.x, rowMin.y,
-                        rowMax.x - rowMin.x, rowMax.y - rowMin.y);
-                }
-            }
-
-            if (inSubScene || nodeHasScene)
-            {
-                ImGui::PopStyleColor();
-            }
-
-            // Drag source for node references (e.g. timeline track targets)
+            // Drag source for node references - must be right after TreeNodeEx while it's the "last item"
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 Node* dragNode = node;
@@ -4118,8 +4030,8 @@ static void DrawScenePanel()
                                 // If dragging within the same parent, account for removal shift
                                 if (droppedNode->GetParent() == targetParent)
                                 {
-                                    int32_t dragIndex = targetParent->FindChildIndex(droppedNode);
-                                    if (dragIndex < insertIndex)
+                                    int32_t draggedIndex = targetParent->FindChildIndex(droppedNode);
+                                    if (draggedIndex < insertIndex)
                                         insertIndex--;
                                 }
 
@@ -4155,7 +4067,99 @@ static void DrawScenePanel()
                         }
                     }
                 }
+
                 ImGui::EndDragDropTarget();
+            }
+
+            // Draw visibility and active toggle buttons on the right side of the row
+            {
+                const float kToggleButtonSize = 16.0f;
+                const float kToggleButtonSpacing = 2.0f;
+
+                // Use saved TreeNode rect (not current last item which may have changed)
+                ImVec2 rowMin = treeNodeRectMin;
+                ImVec2 rowMax = treeNodeRectMax;
+                float rowHeight = rowMax.y - rowMin.y;
+
+                // Calculate button positions (right-aligned)
+                float buttonY = rowMin.y + (rowHeight - kToggleButtonSize) * 0.5f;
+                float visibilityBtnX = rowMax.x - kToggleButtonSpacing - kToggleButtonSize;
+                float activeBtnX = visibilityBtnX - kToggleButtonSpacing - kToggleButtonSize;
+
+                ImGui::PushID((void*)node);
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+                // --- Active Toggle Button ---
+                ImGui::SetCursorScreenPos(ImVec2(activeBtnX, buttonY));
+                bool isActive = node->IsActive();
+
+                if (!isActive)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.9f, 0.3f, 1.0f));
+                }
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
+
+                if (ImGui::Button(isActive ? ICON_MATERIAL_SYMBOLS_CHECK_CIRCLE "##active" : ICON_MATERIAL_SYMBOLS_CHECK "##active", ImVec2(kToggleButtonSize, kToggleButtonSize)))
+                {
+                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Active", 0, !isActive);
+                    nodeClicked = false;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(isActive ? "Active (click to deactivate)" : "Inactive (click to activate)");
+                }
+                ImGui::PopStyleColor(4);
+
+                // --- Visibility Toggle Button ---
+                ImGui::SetCursorScreenPos(ImVec2(visibilityBtnX, buttonY));
+                bool isVisible = node->IsVisible();
+
+                if (!isVisible)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+                }
+                else
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
+                }
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.5f));
+
+                if (ImGui::Button(isVisible ? ICON_MDI_EYE "##visible" : ICON_BASIL_EYE_CLOSED_SOLID "##visible", ImVec2(kToggleButtonSize, kToggleButtonSize)))
+                {
+                    am->EXE_EditProperty(node, PropertyOwnerType::Node, "Visible", 0, !isVisible);
+                    nodeClicked = false;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(isVisible ? "Visible (click to hide)" : "Hidden (click to show)");
+                }
+                ImGui::PopStyleColor(4);
+
+                ImGui::PopStyleVar();
+                ImGui::PopID();
+            }
+
+            // Hierarchy item GUI overlay (Batch 7)
+            {
+                EditorUIHookManager* hookMgr = EditorUIHookManager::Get();
+                if (hookMgr != nullptr)
+                {
+                    hookMgr->DrawHierarchyItemGUI(node, treeNodeRectMin.x, treeNodeRectMin.y,
+                        treeNodeRectMax.x - treeNodeRectMin.x, treeNodeRectMax.y - treeNodeRectMin.y);
+                }
+            }
+
+            if (inSubScene || nodeHasScene)
+            {
+                ImGui::PopStyleColor();
             }
 
             if (nodeSelected && GetEditorState()->mTrackSelectedNode)
