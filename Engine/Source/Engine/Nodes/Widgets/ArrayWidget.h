@@ -29,6 +29,12 @@ public:
     void SetCentered(bool center);
     bool IsCentered() const;
 
+    void SetSpacing(float spacing);
+    float GetSpacing() const;
+
+    void SetOrientation(ArrayOrientation orientation);
+    ArrayOrientation GetOrientation() const;
+
 protected:
 
     void TickCommon(float deltaTime);

@@ -67,6 +67,13 @@ struct Widget_Lua
     static int GetOpacity(lua_State* L);
     static int GetOpacityFloat(lua_State* L);
 
+    // Tooltip
+    static int SetTooltipName(lua_State* L);
+    static int GetTooltipName(lua_State* L);
+    static int SetTooltipDescription(lua_State* L);
+    static int GetTooltipDescription(lua_State* L);
+    static int HasTooltip(lua_State* L);
+
     static void Bind();
 };
 

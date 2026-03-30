@@ -177,6 +177,13 @@ public:
     void SetUseGameResolution(bool use);
     bool GetUseGameResolution() const;
 
+    // Tooltip
+    void SetTooltipName(const std::string& name);
+    const std::string& GetTooltipName() const;
+    void SetTooltipDescription(const std::string& description);
+    const std::string& GetTooltipDescription() const;
+    bool HasTooltip() const;
+
 protected:
 
     static WeakPtr<Widget> sWidgetToClean;
@@ -210,6 +217,10 @@ protected:
     bool mUseScissor;
     bool mUseGameResolution = false;
     uint8_t mOpacity;
+
+    // Tooltip
+    std::string mTooltipName;
+    std::string mTooltipDescription;
 
 private:
     bool mDirty[MAX_FRAMES] = {};

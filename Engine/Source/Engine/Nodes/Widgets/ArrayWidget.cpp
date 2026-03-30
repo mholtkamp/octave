@@ -50,6 +50,26 @@ bool ArrayWidget::IsCentered() const
     return mCenter;
 }
 
+void ArrayWidget::SetSpacing(float spacing)
+{
+    mSpacing = spacing;
+}
+
+float ArrayWidget::GetSpacing() const
+{
+    return mSpacing;
+}
+
+void ArrayWidget::SetOrientation(ArrayOrientation orientation)
+{
+    mOrientation = orientation;
+}
+
+ArrayOrientation ArrayWidget::GetOrientation() const
+{
+    return mOrientation;
+}
+
 void ArrayWidget::TickCommon(float deltaTime)
 {
     float offset = 0.0f;

@@ -608,6 +608,56 @@ int Widget_Lua::GetOpacityFloat(lua_State* L)
     return 1;
 }
 
+int Widget_Lua::SetTooltipName(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    const char* value = CHECK_STRING(L, 2);
+
+    widget->SetTooltipName(value);
+
+    return 0;
+}
+
+int Widget_Lua::GetTooltipName(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    const std::string& ret = widget->GetTooltipName();
+
+    lua_pushstring(L, ret.c_str());
+    return 1;
+}
+
+int Widget_Lua::SetTooltipDescription(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+    const char* value = CHECK_STRING(L, 2);
+
+    widget->SetTooltipDescription(value);
+
+    return 0;
+}
+
+int Widget_Lua::GetTooltipDescription(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    const std::string& ret = widget->GetTooltipDescription();
+
+    lua_pushstring(L, ret.c_str());
+    return 1;
+}
+
+int Widget_Lua::HasTooltip(lua_State* L)
+{
+    Widget* widget = CHECK_WIDGET(L, 1);
+
+    bool ret = widget->HasTooltip();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 void Widget_Lua::Bind()
 {
     lua_State* L = GetLua();
@@ -723,6 +773,13 @@ void Widget_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, GetOpacity);
 
     REGISTER_TABLE_FUNC(L, mtIndex, GetOpacityFloat);
+
+    // Tooltip
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTooltipName);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTooltipName);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetTooltipDescription);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetTooltipDescription);
+    REGISTER_TABLE_FUNC(L, mtIndex, HasTooltip);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);

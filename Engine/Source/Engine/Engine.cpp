@@ -31,6 +31,7 @@
 #include "AssetManager.h"
 #include "NetworkManager.h"
 #include "WindowManager.h"
+#include "ToolTipManager.h"
 #include "AudioManager.h"
 #include "Constants.h"
 #include "Utilities.h"
@@ -261,6 +262,9 @@ void ForceLinkage()
     FORCE_LINK_CALL(ScrollContainer);
     FORCE_LINK_CALL(Window);
     FORCE_LINK_CALL(DialogWindow);
+    FORCE_LINK_CALL(ToolTipWidget);
+    FORCE_LINK_CALL(ListViewWidget);
+    FORCE_LINK_CALL(ListViewItemWidget);
 }
 
 Platform StringToPlatform(const char* str)
@@ -362,6 +366,7 @@ bool Initialize()
     AssetManager::Create();
     NetworkManager::Create();
     WindowManager::Create();
+    ToolTipManager::Create();
     TinyLLMManager::Create();
 
 #if EDITOR
@@ -705,6 +710,12 @@ bool Update()
         sWorlds[i]->Update(gameDeltaTime);
     }
 
+    // Update tooltip system after widgets
+    if (ToolTipManager::Get() != nullptr)
+    {
+        ToolTipManager::Get()->Tick(realDeltaTime);
+    }
+
 #if EDITOR
     GetSecondScreenPreview()->EndInputRemap();
     GetGamePreview()->EndInputRemap();
@@ -782,6 +793,7 @@ void Shutdown()
 #endif
 
     TinyLLMManager::Destroy();
+    ToolTipManager::Destroy();
     WindowManager::Destroy();
     NetworkManager::Destroy();
     Renderer::Destroy();
