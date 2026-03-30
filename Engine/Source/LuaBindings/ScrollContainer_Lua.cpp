@@ -302,6 +302,26 @@ int ScrollContainer_Lua::GetContentWidget(lua_State* L)
     return 1;
 }
 
+int ScrollContainer_Lua::SetChildInputPriority(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+    bool priority = CHECK_BOOLEAN(L, 2);
+
+    scrollContainer->SetChildInputPriority(priority);
+
+    return 0;
+}
+
+int ScrollContainer_Lua::GetChildInputPriority(lua_State* L)
+{
+    ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
+
+    bool ret = scrollContainer->GetChildInputPriority();
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 int ScrollContainer_Lua::SetScrollbarColor(lua_State* L)
 {
     ScrollContainer* scrollContainer = CHECK_SCROLL_CONTAINER(L, 1);
@@ -694,6 +714,10 @@ void ScrollContainer_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsDragging);
     REGISTER_TABLE_FUNC(L, mtIndex, IsScrolling);
     REGISTER_TABLE_FUNC(L, mtIndex, GetContentWidget);
+
+    // Child Input Priority
+    REGISTER_TABLE_FUNC(L, mtIndex, SetChildInputPriority);
+    REGISTER_TABLE_FUNC(L, mtIndex, GetChildInputPriority);
 
     // Colors
     REGISTER_TABLE_FUNC(L, mtIndex, SetScrollbarColor);

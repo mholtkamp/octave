@@ -483,6 +483,7 @@ void Window::EnsureContentContainer()
     {
         mContentContainer = CreateChild<ScrollContainer>("ContentContainer");
         mContentContainer->SetScrollSizeMode(ScrollSizeMode::FitWidth);
+        mContentContainer->SetChildInputPriority(true);
     }
 }
 

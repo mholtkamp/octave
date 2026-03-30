@@ -4,6 +4,7 @@
 #include "Nodes/Widgets/ArrayWidget.h"
 #include "Assets/Scene.h"
 #include "Log.h"
+#include "InputDevices.h"
 
 FORCE_LINK_DEF(ListViewWidget);
 DEFINE_NODE(ListViewWidget, Widget);
@@ -108,6 +109,7 @@ void ListViewWidget::EnsureContainers()
     mScrollContainer->SetAnchorMode(AnchorMode::FullStretch);
     mScrollContainer->SetMargins(0.0f, 0.0f, 0.0f, 0.0f);
     mScrollContainer->SetScrollSizeMode(ScrollSizeMode::FitWidth);
+    mScrollContainer->SetChildInputPriority(true);
 #if EDITOR
     mScrollContainer->mHiddenInTree = true;
 #endif

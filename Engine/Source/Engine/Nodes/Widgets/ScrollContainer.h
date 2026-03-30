@@ -73,6 +73,10 @@ public:
     bool IsDragging() const;
     bool IsScrolling() const;
 
+    // Child Input Priority
+    void SetChildInputPriority(bool priority);
+    bool GetChildInputPriority() const;
+
     // Content Access
     Widget* GetContentWidget();
 
@@ -129,6 +133,7 @@ protected:
     void HandleButtonInput();
     bool ShouldShowHScrollbar() const;
     bool ShouldShowVScrollbar() const;
+    bool IsPointerOverChildWidget(float x, float y) const;
 
     // Scroll State
     glm::vec2 mScrollOffset = glm::vec2(0.0f);
@@ -172,6 +177,9 @@ protected:
     bool mDraggingVScrollbar = false;
     bool mHScrollbarHovered = false;
     bool mVScrollbarHovered = false;
+
+    // Input Behavior
+    bool mChildInputPriority = false;  // If true, children receive input before scroll drag starts
 
     // Cached content size (updated during PreRender)
     glm::vec2 mCachedContentSize = glm::vec2(0.0f);

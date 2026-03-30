@@ -54,6 +54,10 @@ struct ScrollContainer_Lua
     static int IsScrolling(lua_State* L);
     static int GetContentWidget(lua_State* L);
 
+    // Child Input Priority
+    static int SetChildInputPriority(lua_State* L);
+    static int GetChildInputPriority(lua_State* L);
+
     // Colors
     static int SetScrollbarColor(lua_State* L);
     static int GetScrollbarColor(lua_State* L);

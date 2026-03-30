@@ -121,6 +121,8 @@ void ScrollContainer::GatherProperties(std::vector<Property>& props)
             HandlePropChange));
         props.push_back(Property(DatumType::Float, "Momentum Friction", this, &mMomentumFriction, 1,
             HandlePropChange));
+        props.push_back(Property(DatumType::Bool, "Child Input Priority", this, &mChildInputPriority, 1,
+            HandlePropChange));
     }
 
     {
@@ -191,6 +193,7 @@ void ScrollContainer::HandleInput(float deltaTime)
     GetMousePosition(mouseX, mouseY);
     glm::vec2 mousePos((float)mouseX, (float)mouseY);
 
+
     // Check scrollbar hover states
     if (mVScrollbarGrabber->IsVisible())
     {
@@ -255,14 +258,20 @@ void ScrollContainer::HandleInput(float deltaTime)
         }
         else if (!overButton)
         {
-            // Content drag (only if not clicking on a button)
-            mDragging = true;
-            mDragStartMouse = mousePos;
-            mDragStartOffset = mScrollOffset;
-            mScrollVelocity = glm::vec2(0.0f);
+            // Check if child widget should receive input first
+            bool overChild = mChildInputPriority && IsPointerOverChildWidget(mousePos.x, mousePos.y);
 
-            EmitSignal("ScrollDragStarted", { this });
-            CallFunction("OnScrollDragStarted", { this });
+            if (!overChild)
+            {
+                // Content drag (only if not clicking on a button or prioritized child)
+                mDragging = true;
+                mDragStartMouse = mousePos;
+                mDragStartOffset = mScrollOffset;
+                mScrollVelocity = glm::vec2(0.0f);
+
+                EmitSignal("ScrollDragStarted", { this });
+                CallFunction("OnScrollDragStarted", { this });
+            }
         }
         mLastMousePos = mousePos;
     }
@@ -956,6 +965,43 @@ bool ScrollContainer::IsScrolling() const
 {
     return mDragging || mDraggingVScrollbar || mDraggingHScrollbar ||
            glm::length(mScrollVelocity) > 1.0f;
+}
+
+void ScrollContainer::SetChildInputPriority(bool priority)
+{
+    mChildInputPriority = priority;
+}
+
+bool ScrollContainer::GetChildInputPriority() const
+{
+    return mChildInputPriority;
+}
+
+bool ScrollContainer::IsPointerOverChildWidget(float x, float y) const
+{
+    // Check if pointer is over any non-transient child widget (excluding scrollbar widgets)
+    const std::vector<NodePtr>& children = GetChildren();
+
+    for (const NodePtr& child : children)
+    {
+        if (child == nullptr || !child->IsWidget())
+            continue;
+
+        Widget* childWidget = static_cast<Widget*>(child.Get());
+
+        // Skip transient widgets (scrollbars, buttons created by ScrollContainer)
+        if (childWidget->IsTransient())
+            continue;
+
+        // Skip invisible widgets
+        if (!childWidget->IsVisible())
+            continue;
+
+        // Check if point is inside this child
+        if (childWidget->ContainsPoint(static_cast<int32_t>(x), static_cast<int32_t>(y)))
+            return true;
+    }
+    return false;
 }
 
 void ScrollContainer::SetScrollbarColor(glm::vec4 color)
