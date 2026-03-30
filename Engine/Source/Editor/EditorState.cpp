@@ -1874,7 +1874,10 @@ void EditorState::DuplicateAsset(AssetStub* srcStub, const char* overrideName)
 
             if (stub != nullptr)
             {
+                // Preserve the new UUID since Copy() will overwrite it with the source's UUID
+                uint64_t newUuid = stub->mUuid;
                 stub->mAsset->Copy(srcAsset);
+                stub->mAsset->SetUuid(newUuid);
                 stub->mAsset->SetName(stub->mName);
                 stub->mAsset->Create();
                 AssetManager::Get()->SaveAsset(*stub);
