@@ -105,11 +105,14 @@
 #define strcasecmp _stricmp
 #endif
 #include <Nodes/TimelinePlayer.h>
+#include <Nodes/Widgets/Widget.h>
 #include <Nodes/Widgets/Button.h>
 #include <Nodes/Widgets/Quad.h>
 #include <Nodes/Widgets/Canvas.h>
 #include <Nodes/Widgets/Console.h>
 #include <Nodes/Widgets/ArrayWidget.h>
+#include <Nodes/Widgets/Window.h>
+#include <Nodes/Widgets/DialogWindow.h>
 
 #include "SecondScreenPreview/SecondScreenPreview.h"
 #include "GamePreview/GamePreview.h"
@@ -4239,6 +4242,126 @@ static void DrawScenePanel()
                 {
                     am->AttachSelectedNodes(node, -1);
                 }
+
+                // Parent Selected With submenu
+                {
+                    const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+                    bool canParentSelected = (selNodes.size() >= 1) && !inSubScene;
+
+                    // Check if any nodes are scene-linked
+                    for (Node* n : selNodes)
+                    {
+                        if (n->IsSceneLinkedChild())
+                        {
+                            canParentSelected = false;
+                            break;
+                        }
+                    }
+
+                    if (canParentSelected && ImGui::BeginMenu("Parent Selected With"))
+                    {
+                        // Determine what types to show based on selection
+                        bool allWidgets = true;
+                        bool allNode3D = true;
+
+                        for (Node* n : selNodes)
+                        {
+                            if (n->IsWidget())
+                            {
+                                allNode3D = false;
+                            }
+                            else if (n->IsNode3D())
+                            {
+                                allWidgets = false;
+                            }
+                            else
+                            {
+                                allWidgets = false;
+                                allNode3D = false;
+                            }
+                        }
+
+                        // Widget parent options (only if all selected are widgets)
+                        if (allWidgets)
+                        {
+                            if (ImGui::Selectable("Array Widget (Horizontal)"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    ArrayWidget::GetStaticType(),
+                                    ArrayOrientation::Horizontal);
+                            }
+                            if (ImGui::Selectable("Array Widget (Vertical)"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    ArrayWidget::GetStaticType(),
+                                    ArrayOrientation::Vertical);
+                            }
+                            if (ImGui::Selectable("Canvas"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Canvas::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Quad"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Quad::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Widget"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Widget::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Window"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Window::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Dialog Window"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    DialogWindow::GetStaticType());
+                            }
+                        }
+
+                        // Node3D parent options (only if all selected are Node3D)
+                        if (allNode3D)
+                        {
+                            if (ImGui::Selectable("Node 3D"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node3D::GetStaticType());
+                            }
+                            if (ImGui::Selectable("Node"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node::GetStaticType());
+                            }
+                        }
+
+                        // Mixed or base Node selection - only Node as common base
+                        if (!allWidgets && !allNode3D)
+                        {
+                            if (ImGui::Selectable("Node"))
+                            {
+                                am->EXE_ParentSelectedWith(
+                                    selNodes,
+                                    Node::GetStaticType());
+                            }
+                        }
+
+                        ImGui::EndMenu();
+                    }
+                }
+
                 if (!nodeSceneLinked && !inSubScene && node->As<SkeletalMesh3D>())
                 {
                     if (ImGui::Selectable("Attach Selected To Bone", false, ImGuiSelectableFlags_DontClosePopups))
@@ -4906,6 +5029,126 @@ static void DrawScenePanel()
         {
             DrawSpawnBasicWidgetMenu(nullptr);
             ImGui::EndMenu();
+        }
+
+        // Parent Selected With submenu (for multi-selection)
+        {
+            ActionManager* am = ActionManager::Get();
+            const std::vector<Node*>& selNodes = GetEditorState()->GetSelectedNodes();
+            bool canParentSelected = (selNodes.size() >= 1);
+
+            // Check if any nodes are scene-linked
+            for (Node* n : selNodes)
+            {
+                if (n->IsSceneLinkedChild())
+                {
+                    canParentSelected = false;
+                    break;
+                }
+            }
+
+            if (canParentSelected && ImGui::BeginMenu("Parent Selected With"))
+            {
+                // Determine what types to show based on selection
+                bool allWidgets = true;
+                bool allNode3D = true;
+
+                for (Node* n : selNodes)
+                {
+                    if (n->IsWidget())
+                    {
+                        allNode3D = false;
+                    }
+                    else if (n->IsNode3D())
+                    {
+                        allWidgets = false;
+                    }
+                    else
+                    {
+                        allWidgets = false;
+                        allNode3D = false;
+                    }
+                }
+
+                // Widget parent options (only if all selected are widgets)
+                if (allWidgets)
+                {
+                    if (ImGui::Selectable("Array Widget (Horizontal)"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            ArrayWidget::GetStaticType(),
+                            ArrayOrientation::Horizontal);
+                    }
+                    if (ImGui::Selectable("Array Widget (Vertical)"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            ArrayWidget::GetStaticType(),
+                            ArrayOrientation::Vertical);
+                    }
+                    if (ImGui::Selectable("Canvas"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Canvas::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Quad"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Quad::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Widget"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Widget::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Window"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Window::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Dialog Window"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            DialogWindow::GetStaticType());
+                    }
+                }
+
+                // Node3D parent options (only if all selected are Node3D)
+                if (allNode3D)
+                {
+                    if (ImGui::Selectable("Node 3D"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node3D::GetStaticType());
+                    }
+                    if (ImGui::Selectable("Node"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node::GetStaticType());
+                    }
+                }
+
+                // Mixed or base Node selection - only Node as common base
+                if (!allWidgets && !allNode3D)
+                {
+                    if (ImGui::Selectable("Node"))
+                    {
+                        am->EXE_ParentSelectedWith(
+                            selNodes,
+                            Node::GetStaticType());
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
         }
 
         ImGui::EndPopup();
