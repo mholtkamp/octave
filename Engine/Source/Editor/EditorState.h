@@ -103,6 +103,7 @@ struct EditorState
     // Data
     EditorMode mMode;
     std::vector<Node*> mSelectedNodes;
+    Node* mShiftSelectAnchor = nullptr;
     int32_t mSelectedInstance = -1;
     std::vector<EditScene> mEditScenes;
     AssetStub* mSelectedAssetStub = nullptr;
@@ -236,6 +237,7 @@ struct EditorState
 
     void SetSelectedNode(Node* newNode);
     void AddSelectedNode(Node* node, bool addAllChildren);
+    void SelectNodesInRange(Node* rootNode, Node* endNode);
     void RemoveSelectedNode(Node* node);
     void SetSelectedAssetStub(AssetStub* newStub);
     void AddSelectedAssetStub(AssetStub* stub);

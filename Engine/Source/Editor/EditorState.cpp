@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <ctime>
+#include <functional>
 #include "EditorState.h"
 #include "EditorConstants.h"
 #include "EditorIcons.h"
@@ -445,6 +446,7 @@ void EditorState::SetSelectedNode(Node* newNode)
         if (newNode != nullptr)
         {
             mSelectedNodes.push_back(newNode);
+            mShiftSelectAnchor = newNode;
 
             if (!IsPlayingInEditor())
             {
@@ -488,7 +490,7 @@ void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
 
         if (it != nodes.end())
         {
-            // Move the node to the back of the vector so that 
+            // Move the node to the back of the vector so that
             // it is considered the primary selected node.
             nodes.erase(it);
         }
@@ -497,6 +499,80 @@ void EditorState::AddSelectedNode(Node* node, bool addAllChildren)
         InspectObject(node);
 
         mSelectedInstance = -1;
+
+        // Update anchor for shift-select (only for the explicitly clicked node)
+        if (!addAllChildren)
+        {
+            mShiftSelectAnchor = node;
+        }
+    }
+}
+
+void EditorState::SelectNodesInRange(Node* rootNode, Node* endNode)
+{
+    if (mShiftSelectAnchor == nullptr || endNode == nullptr || rootNode == nullptr)
+    {
+        SetSelectedNode(endNode);
+        return;
+    }
+
+    // Build a flat list of visible nodes in tree traversal order
+    std::vector<Node*> flatNodes;
+    std::function<void(Node*)> collectNodes = [&](Node* node)
+    {
+        if (node == nullptr || node->mHiddenInTree)
+            return;
+
+        flatNodes.push_back(node);
+
+        for (uint32_t i = 0; i < node->GetNumChildren(); ++i)
+        {
+            collectNodes(node->GetChild(i));
+        }
+    };
+    collectNodes(rootNode);
+
+    // Find indices of anchor and end node
+    int32_t anchorIdx = -1;
+    int32_t endIdx = -1;
+    for (int32_t i = 0; i < (int32_t)flatNodes.size(); ++i)
+    {
+        if (flatNodes[i] == mShiftSelectAnchor)
+            anchorIdx = i;
+        if (flatNodes[i] == endNode)
+            endIdx = i;
+    }
+
+    if (anchorIdx == -1 || endIdx == -1)
+    {
+        SetSelectedNode(endNode);
+        return;
+    }
+
+    // Determine range
+    int32_t startIdx = std::min(anchorIdx, endIdx);
+    int32_t stopIdx = std::max(anchorIdx, endIdx);
+
+    // Clear current selection and select all nodes in range
+    mSelectedNodes.clear();
+    mSelectedInstance = -1;
+    mGizmoBlockedBySelection = true;
+
+    for (int32_t i = startIdx; i <= stopIdx; ++i)
+    {
+        Node* node = flatNodes[i];
+        if (!node->IsForeign())
+        {
+            mSelectedNodes.push_back(node);
+        }
+    }
+
+    // Inspect the end node (the one that was clicked)
+    InspectObject(endNode);
+
+    if (!IsShuttingDown())
+    {
+        ActionManager::Get()->OnSelectedNodeChanged();
     }
 }
 

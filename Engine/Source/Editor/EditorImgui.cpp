@@ -4854,20 +4854,27 @@ static void DrawScenePanel()
                 }
                 else
                 {
-                    if (nodeSelected)
+                    if (ImGui::GetIO().KeyShift)
                     {
-                        GetEditorState()->DeselectNode(node);
+                        // Shift+click: select range from anchor to clicked node
+                        GetEditorState()->SelectNodesInRange(rootNode, node);
                     }
-                    else
+                    else if (ImGui::GetIO().KeyCtrl)
                     {
-                        if (ImGui::GetIO().KeyCtrl)
+                        // Ctrl+click: toggle selection / add to selection
+                        if (nodeSelected)
                         {
-                            GetEditorState()->AddSelectedNode(node, false);
+                            GetEditorState()->DeselectNode(node);
                         }
                         else
                         {
-                            GetEditorState()->SetSelectedNode(node);
+                            GetEditorState()->AddSelectedNode(node, false);
                         }
+                    }
+                    else
+                    {
+                        // Regular click: single select
+                        GetEditorState()->SetSelectedNode(node);
                     }
                 }
             }
