@@ -22,8 +22,16 @@ class Node3D;
 class Mesh3D;
 class InstancedMesh3D;
 class Timeline;
+class Widget;
 struct ActionSetInstanceColorsData;
 struct MeshInstanceData;
+
+struct WidgetTransformData
+{
+    glm::vec2 mOffset;
+    glm::vec2 mSize;
+    float mRotation;
+};
 
 /**
  * @brief State for async local build operations.
@@ -146,6 +154,7 @@ public:
     void EXE_EditProperty(void* owner, PropertyOwnerType ownerType, const std::string& name, uint32_t index, Datum newValue);
     void EXE_EditTransform(Node3D* node, const glm::mat4& transform);
     void EXE_EditTransforms(const std::vector<Node3D*>& nodes, const std::vector<glm::mat4>& newTransforms);
+    void EXE_EditWidgetTransforms(const std::vector<Widget*>& widgets, const std::vector<WidgetTransformData>& newTransforms);
     Node* EXE_SpawnNode(TypeId srcType);
     Node* EXE_SpawnNode(const char* srcTypeName);
     Node* EXE_SpawnNode(Scene* srcScene);
@@ -327,6 +336,21 @@ protected:
     std::vector<Node3D*> mNodes;
     std::vector<glm::mat4> mNewTransforms;
     std::vector<glm::mat4> mPrevTransforms;
+};
+
+class ActionEditWidgetTransforms : public Action
+{
+public:
+    DECLARE_ACTION_INTERFACE(EditWidgetTransforms)
+
+    ActionEditWidgetTransforms(
+        const std::vector<Widget*>& widgets,
+        const std::vector<WidgetTransformData>& newTransforms);
+
+protected:
+    std::vector<Widget*> mWidgets;
+    std::vector<WidgetTransformData> mNewTransforms;
+    std::vector<WidgetTransformData> mPrevTransforms;
 };
 
 class ActionSpawnNodes : public Action

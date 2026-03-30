@@ -9926,18 +9926,32 @@ static void DrawImGuizmo()
     // Set orthographic mode if needed
     ImGuizmo::SetOrthographic(camera->GetProjectionMode() == ProjectionMode::ORTHOGRAPHIC);
 
-    // Track undo state: cache the original transform when manipulation starts
+    // Gather all selected Node3D nodes
+    const std::vector<Node*>& selectedNodes = edState->GetSelectedNodes();
+    std::vector<Node3D*> selectedNode3Ds;
+    for (Node* n : selectedNodes)
+    {
+        if (n->IsNode3D())
+            selectedNode3Ds.push_back(static_cast<Node3D*>(n));
+    }
+
+    // Track undo state: cache the original transforms when manipulation starts
     static bool wasUsing = false;
-    static glm::mat4 originalMatrix;
-    static Node3D* lastManipulatedNode = nullptr;
+    static std::vector<glm::mat4> originalMatrices;
+    static std::vector<Node3D*> lastManipulatedNodes;
 
     bool isUsing = ImGuizmo::IsUsing();
 
-    // Gizmo manipulation started - cache the original transform
+    // Gizmo manipulation started - cache the original transforms for all selected nodes
     if (isUsing && !wasUsing)
     {
-        originalMatrix = node3d->GetTransform();
-        lastManipulatedNode = node3d;
+        originalMatrices.clear();
+        lastManipulatedNodes.clear();
+        for (Node3D* n : selectedNode3Ds)
+        {
+            originalMatrices.push_back(n->GetTransform());
+            lastManipulatedNodes.push_back(n);
+        }
     }
 
     // Store the delta matrix so we can apply incremental changes
@@ -9954,30 +9968,60 @@ static void DrawImGuizmo()
         nullptr   // snap
     );
 
-    // If the gizmo was manipulated, apply the new transform using SetTransform
-    // which uses the engine's own decomposition logic
+    // If the gizmo was manipulated, apply the delta to all selected nodes
     if (manipulated)
     {
+        // Apply the primary node's new transform
         node3d->SetTransform(modelMatrix);
+
+        // Apply the delta to all other selected nodes
+        for (Node3D* n : selectedNode3Ds)
+        {
+            if (n != node3d)
+            {
+                glm::mat4 currentTransform = n->GetTransform();
+                glm::mat4 newTransform = deltaMatrix * currentTransform;
+                n->SetTransform(newTransform);
+            }
+        }
     }
 
     // Gizmo manipulation ended - commit to undo system
-    if (!isUsing && wasUsing && lastManipulatedNode != nullptr)
+    if (!isUsing && wasUsing && !lastManipulatedNodes.empty())
     {
-        glm::mat4 newMatrix = lastManipulatedNode->GetTransform();
-        
-        // Only commit if the transform actually changed
-        if (originalMatrix != newMatrix)
+        // Collect new transforms
+        std::vector<glm::mat4> newMatrices;
+        for (Node3D* n : lastManipulatedNodes)
         {
-            // Temporarily restore original transform
-            lastManipulatedNode->SetTransform(originalMatrix);
-            lastManipulatedNode->UpdateTransform(false);
-            
-            // Commit the change through ActionManager for undo support
-            ActionManager::Get()->EXE_EditTransform(lastManipulatedNode, newMatrix);
+            newMatrices.push_back(n->GetTransform());
         }
-        
-        lastManipulatedNode = nullptr;
+
+        // Check if any transform changed
+        bool anyChanged = false;
+        for (size_t i = 0; i < lastManipulatedNodes.size(); ++i)
+        {
+            if (originalMatrices[i] != newMatrices[i])
+            {
+                anyChanged = true;
+                break;
+            }
+        }
+
+        if (anyChanged)
+        {
+            // Restore original transforms
+            for (size_t i = 0; i < lastManipulatedNodes.size(); ++i)
+            {
+                lastManipulatedNodes[i]->SetTransform(originalMatrices[i]);
+                lastManipulatedNodes[i]->UpdateTransform(false);
+            }
+
+            // Commit all changes through ActionManager for undo support
+            ActionManager::Get()->EXE_EditTransforms(lastManipulatedNodes, newMatrices);
+        }
+
+        lastManipulatedNodes.clear();
+        originalMatrices.clear();
     }
 
     wasUsing = isUsing;
@@ -10072,24 +10116,41 @@ static void DrawImGuizmo2D()
     // Set orthographic mode
     ImGuizmo::SetOrthographic(true);
 
-    // Track undo state: cache the original transform when manipulation starts
+    // Gather all selected widgets
+    const std::vector<Node*>& selectedNodes = edState->GetSelectedNodes();
+    std::vector<Widget*> selectedWidgets;
+    for (Node* n : selectedNodes)
+    {
+        if (n->IsWidget())
+            selectedWidgets.push_back(static_cast<Widget*>(n));
+    }
+
+    // Track undo state: cache the original transforms when manipulation starts
+    struct WidgetTransformState
+    {
+        Widget* widget;
+        glm::vec2 offset;
+        glm::vec2 size;
+        float rotation;
+    };
     static bool wasUsing2D = false;
-    static glm::vec2 originalOffset;
-    static glm::vec2 originalSize;
-    static float originalRotation;
-    static glm::vec2 startSize;  // Size when gizmo manipulation started (for scale)
-    static Widget* lastManipulatedWidget = nullptr;
+    static std::vector<WidgetTransformState> originalStates;
 
     bool isUsing = ImGuizmo::IsUsing();
 
-    // Gizmo manipulation started - cache the original transform
+    // Gizmo manipulation started - cache the original transforms for all selected widgets
     if (isUsing && !wasUsing2D)
     {
-        originalOffset = widget->GetOffset();
-        originalSize = widget->GetSize();
-        originalRotation = widget->GetRotation();
-        startSize = widget->GetSize();
-        lastManipulatedWidget = widget;
+        originalStates.clear();
+        for (Widget* w : selectedWidgets)
+        {
+            WidgetTransformState state;
+            state.widget = w;
+            state.offset = w->GetOffset();
+            state.size = w->GetSize();
+            state.rotation = w->GetRotation();
+            originalStates.push_back(state);
+        }
     }
 
     // Store the delta matrix
@@ -10106,7 +10167,7 @@ static void DrawImGuizmo2D()
         nullptr   // snap
     );
 
-    // Apply transform changes
+    // Apply transform changes to all selected widgets
     if (manipulated)
     {
         if (edState->mGizmoOperation == ImGuizmo::TRANSLATE)
@@ -10118,18 +10179,23 @@ static void DrawImGuizmo2D()
             // then to widget offset units (account for zoom)
             glm::vec2 offsetDelta = glm::vec2(deltaTrans.x, deltaTrans.y) * interfaceScale / zoom;
 
-            // Handle stretch mode - convert to ratio if needed
-            if (widget->StretchX())
+            for (Widget* w : selectedWidgets)
             {
-                offsetDelta.x *= 0.002f;
-            }
-            if (widget->StretchY())
-            {
-                offsetDelta.y *= 0.002f;
-            }
+                glm::vec2 adjustedDelta = offsetDelta;
 
-            glm::vec2 newOffset = widget->GetOffset() + offsetDelta;
-            widget->SetOffset(newOffset.x, newOffset.y);
+                // Handle stretch mode - convert to ratio if needed
+                if (w->StretchX())
+                {
+                    adjustedDelta.x *= 0.002f;
+                }
+                if (w->StretchY())
+                {
+                    adjustedDelta.y *= 0.002f;
+                }
+
+                glm::vec2 newOffset = w->GetOffset() + adjustedDelta;
+                w->SetOffset(newOffset.x, newOffset.y);
+            }
         }
         else if (edState->mGizmoOperation == ImGuizmo::ROTATE)
         {
@@ -10145,76 +10211,99 @@ static void DrawImGuizmo2D()
             glm::vec3 eulerDelta = glm::eulerAngles(deltaRot);
             float deltaRotDeg = -glm::degrees(eulerDelta.z);
 
-            float newRotation = widget->GetRotation() + deltaRotDeg;
-            widget->SetRotation(newRotation);
+            for (Widget* w : selectedWidgets)
+            {
+                float newRotation = w->GetRotation() + deltaRotDeg;
+                w->SetRotation(newRotation);
+            }
         }
         else if (edState->mGizmoOperation == ImGuizmo::SCALE)
         {
-            // Extract the new scale from the modified modelMatrix (in scaled coordinates)
-            glm::vec3 newScale, trans, skew;
-            glm::vec4 perspective;
-            glm::quat rot;
-            glm::decompose(modelMatrix, newScale, rot, trans, skew, perspective);
+            // Extract the scale delta from deltaMatrix
+            glm::vec3 deltaScale, deltaTrans, deltaSkew;
+            glm::vec4 deltaPerspective;
+            glm::quat deltaRot;
+            glm::decompose(deltaMatrix, deltaScale, deltaRot, deltaTrans, deltaSkew, deltaPerspective);
 
-            // The modelMatrix was initialized with (rect.mWidth, rect.mHeight, 1) in scaled coordinates
-            // After manipulation, newScale contains the scaled dimensions
-            // Convert from scaled coordinates back to render target pixels, then to widget size units
-            glm::vec2 newScreenSize(newScale.x * interfaceScale, newScale.y * interfaceScale);
-            glm::vec2 newSize = newScreenSize / zoom;
-
-            // Handle stretch mode
-            // Note: rect is in scaled coordinates, so convert newScale for comparison
-            if (widget->StretchX())
+            // Apply scale delta to all selected widgets
+            for (Widget* w : selectedWidgets)
             {
-                // For stretch, convert pixel change to ratio (in scaled coordinates)
-                float pixelChange = newScale.x - rect.mWidth;
-                newSize.x = widget->GetSize().x + pixelChange * interfaceScale * 0.00002f;
-            }
-            if (widget->StretchY())
-            {
-                float pixelChange = newScale.y - rect.mHeight;
-                newSize.y = widget->GetSize().y + pixelChange * interfaceScale * 0.00002f;
-            }
+                glm::vec2 currentSize = w->GetSize();
+                glm::vec2 scaledSize = currentSize * glm::vec2(deltaScale.x, deltaScale.y);
 
-            widget->SetSize(newSize.x, newSize.y);
+                // Handle stretch mode
+                if (w->StretchX())
+                {
+                    float pixelChange = (deltaScale.x - 1.0f) * currentSize.x;
+                    scaledSize.x = currentSize.x + pixelChange * 0.00002f;
+                }
+                if (w->StretchY())
+                {
+                    float pixelChange = (deltaScale.y - 1.0f) * currentSize.y;
+                    scaledSize.y = currentSize.y + pixelChange * 0.00002f;
+                }
+
+                w->SetSize(scaledSize.x, scaledSize.y);
+            }
         }
     }
 
     // Gizmo manipulation ended - commit to undo system
-    if (!isUsing && wasUsing2D && lastManipulatedWidget != nullptr)
+    if (!isUsing && wasUsing2D && !originalStates.empty())
     {
-        glm::vec2 newOffset = lastManipulatedWidget->GetOffset();
-        glm::vec2 newSize = lastManipulatedWidget->GetSize();
-        float newRotation = lastManipulatedWidget->GetRotation();
-
-        // Only commit if the transform actually changed
-        bool offsetChanged = (originalOffset != newOffset);
-        bool sizeChanged = (originalSize != newSize);
-        bool rotationChanged = (originalRotation != newRotation);
-
-        if (offsetChanged || sizeChanged || rotationChanged)
+        // Collect new transforms
+        std::vector<WidgetTransformState> newStates;
+        for (const WidgetTransformState& orig : originalStates)
         {
-            // Temporarily restore original transform
-            lastManipulatedWidget->SetOffset(originalOffset.x, originalOffset.y);
-            lastManipulatedWidget->SetSize(originalSize.x, originalSize.y);
-            lastManipulatedWidget->SetRotation(originalRotation);
+            WidgetTransformState state;
+            state.widget = orig.widget;
+            state.offset = orig.widget->GetOffset();
+            state.size = orig.widget->GetSize();
+            state.rotation = orig.widget->GetRotation();
+            newStates.push_back(state);
+        }
 
-            // Commit changes through ActionManager for undo support
-            if (offsetChanged)
+        // Check if any transform actually changed
+        bool anyChanged = false;
+        for (size_t i = 0; i < originalStates.size(); ++i)
+        {
+            if (originalStates[i].offset != newStates[i].offset ||
+                originalStates[i].size != newStates[i].size ||
+                originalStates[i].rotation != newStates[i].rotation)
             {
-                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Offset", 0, newOffset);
-            }
-            if (sizeChanged)
-            {
-                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Size", 0, newSize);
-            }
-            if (rotationChanged)
-            {
-                ActionManager::Get()->EXE_EditProperty(lastManipulatedWidget, PropertyOwnerType::Node, "Rotation", 0, newRotation);
+                anyChanged = true;
+                break;
             }
         }
 
-        lastManipulatedWidget = nullptr;
+        if (anyChanged)
+        {
+            // Restore original transforms
+            for (const WidgetTransformState& orig : originalStates)
+            {
+                orig.widget->SetOffset(orig.offset.x, orig.offset.y);
+                orig.widget->SetSize(orig.size.x, orig.size.y);
+                orig.widget->SetRotation(orig.rotation);
+            }
+
+            // Build widget and transform lists for batched undo
+            std::vector<Widget*> widgets;
+            std::vector<WidgetTransformData> transforms;
+            for (const WidgetTransformState& newState : newStates)
+            {
+                widgets.push_back(newState.widget);
+                WidgetTransformData data;
+                data.mOffset = newState.offset;
+                data.mSize = newState.size;
+                data.mRotation = newState.rotation;
+                transforms.push_back(data);
+            }
+
+            // Commit all changes as a single undo action
+            ActionManager::Get()->EXE_EditWidgetTransforms(widgets, transforms);
+        }
+
+        originalStates.clear();
     }
 
     wasUsing2D = isUsing;

@@ -69,6 +69,7 @@
 #include "Nodes/3D/InstancedMesh3d.h"
 #include "Nodes/3D/TextMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
+#include "Nodes/Widgets/Widget.h"
 #include "Script.h"
 #include "Datum.h"
 
@@ -1986,6 +1987,12 @@ void ActionManager::EXE_EditTransform(Node3D* transComp, const glm::mat4& transf
 void ActionManager::EXE_EditTransforms(const std::vector<Node3D*>& transComps, const std::vector<glm::mat4>& newTransforms)
 {
     ActionEditTransforms* action = new ActionEditTransforms(transComps, newTransforms);
+    ActionManager::Get()->ExecuteAction(action);
+}
+
+void ActionManager::EXE_EditWidgetTransforms(const std::vector<Widget*>& widgets, const std::vector<WidgetTransformData>& newTransforms)
+{
+    ActionEditWidgetTransforms* action = new ActionEditWidgetTransforms(widgets, newTransforms);
     ActionManager::Get()->ExecuteAction(action);
 }
 
@@ -4955,6 +4962,50 @@ void ActionEditTransforms::Reverse()
     for (uint32_t i = 0; i < mNodes.size(); ++i)
     {
         mNodes[i]->SetTransform(mPrevTransforms[i]);
+    }
+}
+
+ActionEditWidgetTransforms::ActionEditWidgetTransforms(
+    const std::vector<Widget*>& widgets,
+    const std::vector<WidgetTransformData>& newTransforms)
+{
+    mWidgets = widgets;
+    mNewTransforms = newTransforms;
+
+    OCT_ASSERT(mWidgets.size() == mNewTransforms.size());
+}
+
+void ActionEditWidgetTransforms::Execute()
+{
+    Action::Execute();
+
+    mPrevTransforms.clear();
+
+    for (uint32_t i = 0; i < mWidgets.size(); ++i)
+    {
+        WidgetTransformData prev;
+        prev.mOffset = mWidgets[i]->GetOffset();
+        prev.mSize = mWidgets[i]->GetSize();
+        prev.mRotation = mWidgets[i]->GetRotation();
+        mPrevTransforms.push_back(prev);
+
+        mWidgets[i]->SetOffset(mNewTransforms[i].mOffset.x, mNewTransforms[i].mOffset.y);
+        mWidgets[i]->SetSize(mNewTransforms[i].mSize.x, mNewTransforms[i].mSize.y);
+        mWidgets[i]->SetRotation(mNewTransforms[i].mRotation);
+    }
+}
+
+void ActionEditWidgetTransforms::Reverse()
+{
+    Action::Reverse();
+
+    OCT_ASSERT(mPrevTransforms.size() == mWidgets.size());
+
+    for (uint32_t i = 0; i < mWidgets.size(); ++i)
+    {
+        mWidgets[i]->SetOffset(mPrevTransforms[i].mOffset.x, mPrevTransforms[i].mOffset.y);
+        mWidgets[i]->SetSize(mPrevTransforms[i].mSize.x, mPrevTransforms[i].mSize.y);
+        mWidgets[i]->SetRotation(mPrevTransforms[i].mRotation);
     }
 }
 
