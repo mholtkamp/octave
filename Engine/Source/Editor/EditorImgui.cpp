@@ -5999,6 +5999,7 @@ static void DrawAssetItems(AssetDir* dir, const std::string& filterLower)
         {
             ImGui::SetScrollHereY(0.5f);
             GetEditorState()->mTrackSelectedAsset = false;
+            GetEditorState()->mRevealAssetExpandDirs.clear();
         }
 
         ImGui::PopStyleColor(); // Pop asset color
@@ -6219,6 +6220,13 @@ static void DrawAssetDirTree(AssetDir* dir, const std::string& filterLower, bool
     bool hasChildren = !dir->mChildDirs.empty() || !dir->mAssetStubs.empty() || !dir->mLooseFiles.empty();
     if (!hasChildren)
         dirFlags |= ImGuiTreeNodeFlags_Leaf;
+
+    // Force open if this directory is in the reveal path
+    EditorState* es = GetEditorState();
+    if (es->mRevealAssetExpandDirs.count(dir) > 0)
+    {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+    }
 
     std::string dirLabel = std::string(ICON_MATERIAL_SYMBOLS_FOLDER_SHARP) + " " + dir->mName;
     ImGui::PushID(dir);
