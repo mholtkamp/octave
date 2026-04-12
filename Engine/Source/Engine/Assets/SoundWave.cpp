@@ -81,9 +81,11 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
 #if EDITOR
         // In Editor, we want to keep the compressed data around so in case we save the file again,
         // we won't be recompressing the sound a second time (adding more artifacts / distortion).
-        mCompressedData = new uint8_t[compressedSize];
-        mCompressedSize = compressedSize;
-        memcpy(mCompressedData, stream.GetData() + stream.GetPos(), compressedSize);
+        if (mCompressedData == nullptr) {
+            mCompressedData = new uint8_t[compressedSize];
+            mCompressedSize = compressedSize;
+            memcpy(mCompressedData, stream.GetData() + stream.GetPos(), compressedSize);
+        }
 #endif
         Stream outStream;
         PcmFormat format;
@@ -490,8 +492,9 @@ bool SoundWave::Import(const std::string& path, ImportOptions* options)
                 success = ImportOgg(f);
                 // Do not need to call fclose(f) here, this is handled by ov_clear.
 
-                mCompressedData = fileData;
                 mCompressedSize = fileStream.GetSize();
+                mCompressedData = new uint8_t[mCompressedSize];
+                memcpy(mCompressedData, fileData + fileStream.GetPos(), mCompressedSize);
             }
         }
     }
