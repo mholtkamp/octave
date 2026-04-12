@@ -486,7 +486,7 @@ bool SoundWave::Import(const std::string& path, ImportOptions* options)
             }
             else {
                 success = ImportOgg(f);
-                fclose(f);
+                // Do not need to call fclose(f) here, this is handled by ov_clear.
             }
         }
     }
