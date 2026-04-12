@@ -85,7 +85,6 @@ void SoundWave::LoadStream(Stream& stream, Platform platform)
         mCompressedSize = compressedSize;
         memcpy(mCompressedData, stream.GetData() + stream.GetPos(), compressedSize);
 #endif
-
         Stream outStream;
         PcmFormat format;
         format.mBytesPerSample = (mBitsPerSample / 8);
@@ -251,7 +250,7 @@ void SoundWave::SaveStream(Stream& stream, Platform platform)
     {
         if (mCompressedData != nullptr && !lqConvert)
         {
-            // Writeout the already-computed compressed OGG data
+            // Writeout the already-computed compressed OGG data.
             stream.WriteUint32(mCompressedSize);
             stream.WriteBytes(mCompressedData, mCompressedSize);
         }
@@ -490,6 +489,9 @@ bool SoundWave::Import(const std::string& path, ImportOptions* options)
             else {
                 success = ImportOgg(f);
                 // Do not need to call fclose(f) here, this is handled by ov_clear.
+
+                mCompressedData = fileData;
+                mCompressedSize = fileStream.GetSize();
             }
         }
     }
