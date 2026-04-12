@@ -8,6 +8,9 @@
 #include "Audio/Audio.h"
 #include "System/System.h"
 
+#include <ogg/ogg.h>
+#include <vorbis/vorbisfile.h>
+
 FORCE_LINK_DEF(SoundWave);
 DEFINE_ASSET(SoundWave);
 
@@ -313,24 +316,11 @@ void SoundWave::Destroy()
     }
 }
 
+bool SoundWave::ImportWav(Stream& fileStream) {
+    bool success = true;
 
-bool SoundWave::Import(const std::string& path, ImportOptions* options)
-{
-    bool success = Asset::Import(path, options);
-    if (!success)
-    {
-        return false;
-    }
-
-#if EDITOR
-    Stream wavStream;
-    wavStream.ReadFile(path.c_str(), false);
-    uint8_t* wavData = (uint8_t*) wavStream.GetData();
-
-    char fileFormat[5] = {};
-    memcpy(fileFormat, wavData + 8, 4);
-    OCT_ASSERT(strncmp(fileFormat, "WAVE", 4) == 0);
-
+    uint8_t* wavData = (uint8_t*)fileStream.GetData();
+    
     uint16_t audioFormat = *((uint16_t*)(wavData + 20));
     OCT_ASSERT(audioFormat == 1);
 
@@ -371,6 +361,135 @@ bool SoundWave::Import(const std::string& path, ImportOptions* options)
     mNumSamples = numSamples;
     mBlockAlign = blockAlign;
     mByteRate = byteRate;
+
+    return success;
+}
+
+bool SoundWave::ImportOgg(FILE* file)
+{
+    if (file == nullptr) return false;
+
+    OggVorbis_File vf;
+
+    int ovRet = ov_open(file, &vf, nullptr, 0);
+    if (ovRet < 0)
+    {
+        LogError("ov_open failed to initialize OggVorbis_File and returned %d.", ovRet);
+        return false;
+    }
+
+    vorbis_info* vi = ov_info(&vf, -1);
+    if (vi == nullptr)
+    {
+        LogError("ov_info failed to extract vorbus_info");
+        ov_clear(&vf);
+        return false;
+    }
+
+    mNumChannels = (uint32_t)vi->channels;
+    mBitsPerSample = 16; // 16-bit PCM
+    mSampleRate = (uint32_t)vi->rate;
+
+    ogg_int64_t totalFrames = ov_pcm_total(&vf, -1);
+    if (totalFrames == OV_EINVAL)
+    {
+        LogError("ov_pcm_total was passed an invalid bitstream and returned OV_EINVAL");
+        ov_clear(&vf);
+        return false;
+    }
+
+    uint64_t totalSamplesAllChannels = (uint64_t)totalFrames * (uint64_t)mNumChannels;
+    mNumSamples = (uint32_t)totalSamplesAllChannels;
+
+    std::vector<uint8_t> decoded;
+
+    const int readChunkSize = 4096;
+    char readBuffer[readChunkSize];
+    int currentChunk = 0;
+
+    while (true)
+    {
+        long bytesRead = ov_read(
+            &vf, 
+            readBuffer, 
+            4096, 
+            0, // little endian
+            2, // 16-bit word size
+            1, // signed
+            &currentChunk);
+
+        if (bytesRead > 0)
+        {
+            decoded.insert(decoded.end(), (uint8_t*)readBuffer, (uint8_t*)readBuffer + bytesRead);
+        }
+        else if (bytesRead == 0) break; // EOF
+        else
+        {
+            LogError("ov_read failed while decoding and returned %ld.", bytesRead);
+            ov_clear(&vf);
+            return false;
+        }
+    }
+
+    // We are now done reading OggVorbis_File.
+    ov_clear(&vf);
+
+    mWaveDataSize = (uint32_t)decoded.size();
+    if (mWaveDataSize > 0)
+    {
+        mWaveData = (uint8_t*)SYS_AlignedMalloc(mWaveDataSize, 32);
+        memcpy(mWaveData, decoded.data(), mWaveDataSize);
+    }
+    else
+    {
+        LogError("ov_read did not decode any data");
+        return false;
+    }
+
+    mBlockAlign = (mNumChannels * mBitsPerSample) / 8;
+    mByteRate = (mSampleRate * mNumChannels * mBitsPerSample) / 8;
+
+    return true;
+}
+
+bool SoundWave::Import(const std::string& path, ImportOptions* options)
+{
+    bool success = Asset::Import(path, options);
+    if (!success)
+    {
+        return false;
+    }
+
+#if EDITOR
+    Stream fileStream;
+    fileStream.ReadFile(path.c_str(), false);
+
+    char fileFormat[5] = {};
+    uint8_t* fileData = (uint8_t*)fileStream.GetData();
+
+    // Assume .wav by default but fallback to .ogg.
+    memcpy(fileFormat, fileData + 8, 4);
+
+    if (strncmp(fileFormat, "WAVE", 4) == 0) {
+        success = ImportWav(fileStream);
+    }
+    else {
+        memcpy(fileFormat, fileData, 4);
+
+        if (strncmp(fileFormat, "OggS", 4) == 0) {
+            // Create a FILE* so we can use ov_open rather than ov_open_callbacks 
+            // which would require defining read_func, seek_func, close_func, and tell_func.
+            FILE* f = fopen(path.c_str(), "rb");
+            if (f == nullptr) {
+                LogError("Failed to fopen %s", path.c_str());
+                success = false;
+            }
+            else {
+                success = ImportOgg(f);
+                fclose(f);
+            }
+        }
+    }
 
     if (success)
     {
