@@ -449,6 +449,9 @@ bool SoundWave::ImportOgg(FILE* file)
     mBlockAlign = (mNumChannels * mBitsPerSample) / 8;
     mByteRate = (mSampleRate * mNumChannels * mBitsPerSample) / 8;
 
+    mCompress = true;
+    mCompressInternal = true;
+
     return true;
 }
 
