@@ -35,6 +35,7 @@ struct Spline3D_Lua
     static int IsLinkDirectionForward(lua_State* L);
     static int TriggerLink(lua_State* L);
     static int CancelActiveLink(lua_State* L);
+    static int SetAttachment(lua_State* L);
 
     static void Bind();
 };
