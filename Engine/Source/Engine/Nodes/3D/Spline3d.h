@@ -23,6 +23,7 @@ public:
     uint32_t GetPointCount() const;
     glm::vec3 GetPoint(uint32_t index) const;
     void SetPoint(uint32_t index, const glm::vec3& p);
+    void SetAttachment(uint32_t index, Node* node);
 
     glm::vec3 GetPositionAt(float t) const;  // t in [0,1]
     glm::vec3 GetTangentAt(float t) const;   // normalized tangent
@@ -54,19 +55,16 @@ public:
 protected:
     struct SplineLink;
     void GeneratePoint();
+    bool HasAttachment(); 
     SplineLink* GetLinkByIndex(uint32_t index);
     const SplineLink* GetLinkByIndex(uint32_t index) const;
     void EnsureLinkSlots(uint32_t count);
+    void EnsureAttachmentSlots(uint32_t count);
 
 protected:
     std::vector<glm::vec3> mPoints;
-    NodePtrWeak mAttachmentCamera;
-    NodePtrWeak mAttachmentStaticMesh;
-    NodePtrWeak mAttachmentSkeletalMesh;
-    NodePtrWeak mAttachmentParticle3D;
-    NodePtrWeak mAttachmentPointLight;
-    NodePtrWeak mAttachmentAudio3D;
-    NodePtrWeak mAttachmentNode3D;
+    std::vector<NodePtrWeak> mAttachments;
+    int32_t mGeneratedAttachmentCount = 1;
 
     struct SplineLink
     {
