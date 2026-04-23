@@ -28,6 +28,7 @@ DEFINE_NODE(Spline3D, Node3D);
 
 static bool sGeneratePoint = false;
 static bool sGenerateLink11 = false;
+static bool sGenerateAttachment = false;
 static bool sSplineLinesVisible = true;
 
 struct SplinePointNode
@@ -70,6 +71,7 @@ void Spline3D::Create()
     SetName("Spline");
 
     EnsureLinkSlots((uint32_t)glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64));
+    EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
 
     // Create initial point
     Box3D* p1 = CreateChild<Box3D>("point1");
@@ -88,6 +90,7 @@ void Spline3D::Start()
 
     mGeneratedLinkCount = glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64);
     EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
+    EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
 
     Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
 
@@ -108,14 +111,11 @@ void Spline3D::Start()
             }
         }
     };
+    for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        resolveAttachment(Attachment);
+    }
 
-    resolveAttachment(mAttachmentCamera);
-    resolveAttachment(mAttachmentStaticMesh);
-    resolveAttachment(mAttachmentSkeletalMesh);
-    resolveAttachment(mAttachmentParticle3D);
-    resolveAttachment(mAttachmentPointLight);
-    resolveAttachment(mAttachmentAudio3D);
-    resolveAttachment(mAttachmentNode3D);
     for (uint32_t li = 0; li < mLinks.size(); ++li)
     {
         resolveAttachment(mLinks[li].mLinkFrom);
@@ -128,54 +128,16 @@ void Spline3D::Start()
     {
         glm::vec3 startPos = points[0].node->GetWorldPosition();
 
-        Node* camNode = mAttachmentCamera.Get();
-        if (camNode && camNode->As<Camera3D>())
+        for (WeakPtr<Node> Attachment : mAttachments)
         {
-            mOrigCamTransform = camNode->As<Node3D>()->GetTransform();
-            camNode->As<Node3D>()->SetWorldPosition(startPos);
+            Node* attachNode = Attachment.Get();
+            if (attachNode && attachNode->As<Node3D>())
+            {
+                //the transform in the original didnt do anything, so I will be omitting it
+                attachNode->As<Node3D>()->SetWorldPosition(startPos);
+            }
         }
 
-        Node* meshNode = mAttachmentStaticMesh.Get();
-        if (meshNode && meshNode->As<StaticMesh3D>())
-        {
-            mOrigStaticTransform = meshNode->As<Node3D>()->GetTransform();
-            meshNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
-
-        Node* skelNode = mAttachmentSkeletalMesh.Get();
-        if (skelNode && skelNode->As<SkeletalMesh3D>())
-        {
-            mOrigSkeletalTransform = skelNode->As<Node3D>()->GetTransform();
-            skelNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
-
-        Node* partNode = mAttachmentParticle3D.Get();
-        if (partNode && partNode->As<Particle3D>())
-        {
-            mOrigParticleTransform = partNode->As<Node3D>()->GetTransform();
-            partNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
-
-        Node* lightNode = mAttachmentPointLight.Get();
-        if (lightNode && lightNode->As<PointLight3D>())
-        {
-            mOrigPointLightTransform = lightNode->As<Node3D>()->GetTransform();
-            lightNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
-
-        Node* audioNode = mAttachmentAudio3D.Get();
-        if (audioNode && audioNode->As<Audio3D>())
-        {
-            mOrigAudioTransform = audioNode->As<Node3D>()->GetTransform();
-            audioNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
-
-        Node* genericNode = mAttachmentNode3D.Get();
-        if (genericNode && genericNode->As<Node3D>())
-        {
-            mOrigNodeTransform = genericNode->As<Node3D>()->GetTransform();
-            genericNode->As<Node3D>()->SetWorldPosition(startPos);
-        }
     }
 }
 
@@ -224,6 +186,12 @@ void Spline3D::EnsureLinkSlots(uint32_t count)
     mGeneratedLinkCount = (int32_t)count;
 }
 
+void Spline3D::EnsureAttachmentSlots(uint32_t count)
+{
+    mAttachments.resize(count);
+    mGeneratedAttachmentCount = (int32_t)count;
+}
+
 Spline3D::SplineLink* Spline3D::GetLinkByIndex(uint32_t index)
 {
     if (index == 0 || index > mLinks.size())
@@ -265,13 +233,13 @@ bool Spline3D::IsNearLinkFrom(uint32_t index, float epsilon) const
     if (!from3d)
         return false;
 
-    Node* trackedNode = mAttachmentCamera.Get();
-    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
-    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+    Node* trackedNode = mAttachments[0].Get();
+    if (!trackedNode) for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        if (!trackedNode) trackedNode = Attachment.Get();
+    }
+
+
 
     Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
     if (!tracked3d)
@@ -293,13 +261,11 @@ bool Spline3D::IsNearLinkTo(uint32_t index, float epsilon) const
     if (!to3d)
         return false;
 
-    Node* trackedNode = mAttachmentCamera.Get();
-    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
-    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+    Node* trackedNode = mAttachments[0].Get();
+    if (!trackedNode) for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        if (!trackedNode) trackedNode = Attachment.Get();
+    }
 
     Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
     if (!tracked3d)
@@ -544,13 +510,11 @@ void Spline3D::Tick(float deltaTime)
 {
     Node3D::Tick(deltaTime);
 
-    Node* trackedNode = mAttachmentCamera.Get();
-    if (!trackedNode) trackedNode = mAttachmentStaticMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentSkeletalMesh.Get();
-    if (!trackedNode) trackedNode = mAttachmentParticle3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentPointLight.Get();
-    if (!trackedNode) trackedNode = mAttachmentAudio3D.Get();
-    if (!trackedNode) trackedNode = mAttachmentNode3D.Get();
+    Node* trackedNode = mAttachments[0].Get();
+    if (!trackedNode) for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        if (!trackedNode) trackedNode = Attachment.Get();
+    }
 
     Node3D* tracked3d = trackedNode ? trackedNode->As<Node3D>() : nullptr;
     if (tracked3d)
@@ -575,24 +539,8 @@ void Spline3D::Tick(float deltaTime)
 
     if (mLinkActive)
     {
-        Node* camNode = mAttachmentCamera.Get();
-        Node* meshNode = mAttachmentStaticMesh.Get();
-        Node* skelNode = mAttachmentSkeletalMesh.Get();
-        Node* partNode = mAttachmentParticle3D.Get();
-        Node* lightNode = mAttachmentPointLight.Get();
-        Node* audioNode = mAttachmentAudio3D.Get();
-        Node* genericNode = mAttachmentNode3D.Get();
 
-        bool hasCam = (camNode && camNode->As<Camera3D>());
-        bool hasMesh = (meshNode && meshNode->As<StaticMesh3D>());
-        bool hasSkel = (skelNode && skelNode->As<SkeletalMesh3D>());
-        bool hasPart = (partNode && partNode->As<Particle3D>());
-        bool hasLight = (lightNode && lightNode->As<PointLight3D>());
-        bool hasAudio = (audioNode && audioNode->As<Audio3D>());
-        bool hasNode = (genericNode && genericNode->As<Node3D>());
-
-        if (!hasCam && !hasMesh && !hasSkel && !hasPart && !hasLight && !hasAudio && !hasNode)
-            return;
+        if (!HasAttachment()) return;
 
         mLinkTravel += (mLinkSpeedModifier * mActiveLinkSpeedModifier) * deltaTime;
         float t = (mLinkLen > 0.0001f) ? (mLinkTravel / mLinkLen) : 1.0f;
@@ -626,13 +574,17 @@ void Spline3D::Tick(float deltaTime)
             }
         };
 
-        if (hasCam) applyMove(camNode, true);
-        if (hasMesh) applyMove(meshNode, true);
-        if (hasSkel) applyMove(skelNode, true);
-        if (hasPart) applyMove(partNode, false);
-        if (hasLight) applyMove(lightNode, false);
-        if (hasAudio) applyMove(audioNode, false);
-        if (hasNode) applyMove(genericNode, true);
+        for (WeakPtr<Node> Attachment : mAttachments)
+        {
+            bool faceFlag = true;
+            Node* attachNode = Attachment.Get();
+            if (attachNode)
+            {
+                if (attachNode->As<PointLight3D>() || attachNode->As<Audio3D>()) faceFlag = false;//omitting particle, because although they can be radially symetric, they do not have to be
+                applyMove(attachNode, faceFlag);
+            }
+        }
+
 
         if (t >= 1.0f)
         {
@@ -644,14 +596,8 @@ void Spline3D::Tick(float deltaTime)
                 const bool targetClose = targetSpline->mCloseLoop;
                 const bool targetPingPong = targetSpline->mPingPong;
 
-                // Transfer attachments
-                targetSpline->mAttachmentCamera = mAttachmentCamera;
-                targetSpline->mAttachmentStaticMesh = mAttachmentStaticMesh;
-                targetSpline->mAttachmentSkeletalMesh = mAttachmentSkeletalMesh;
-                targetSpline->mAttachmentParticle3D = mAttachmentParticle3D;
-                targetSpline->mAttachmentPointLight = mAttachmentPointLight;
-                targetSpline->mAttachmentAudio3D = mAttachmentAudio3D;
-                targetSpline->mAttachmentNode3D = mAttachmentNode3D;
+                //transfer attachments
+                targetSpline->mAttachments = mAttachments;
 
                 // Transfer facing options only
                 targetSpline->mFaceTangent = mFaceTangent;
@@ -665,13 +611,10 @@ void Spline3D::Tick(float deltaTime)
                 targetSpline->mSmoothRotate = mSmoothRotate;
 
                 // Clear attachments on source
-                mAttachmentCamera = WeakPtr<Node>();
-                mAttachmentStaticMesh = WeakPtr<Node>();
-                mAttachmentSkeletalMesh = WeakPtr<Node>();
-                mAttachmentParticle3D = WeakPtr<Node>();
-                mAttachmentPointLight = WeakPtr<Node>();
-                mAttachmentAudio3D = WeakPtr<Node>();
-                mAttachmentNode3D = WeakPtr<Node>();
+                for (WeakPtr<Node> Attachment : mAttachments)
+                {
+                    Attachment = WeakPtr<Node>();
+                }
 
                 targetSpline->mTravel = mLinkTargetStartDist;
                 if (targetSpline->mPingPong)
@@ -702,24 +645,8 @@ void Spline3D::Tick(float deltaTime)
         return;
     }
 
-    Node* camNode = mAttachmentCamera.Get();
-    Node* meshNode = mAttachmentStaticMesh.Get();
-    Node* skelNode = mAttachmentSkeletalMesh.Get();
-    Node* partNode = mAttachmentParticle3D.Get();
-    Node* lightNode = mAttachmentPointLight.Get();
-    Node* audioNode = mAttachmentAudio3D.Get();
-    Node* genericNode = mAttachmentNode3D.Get();
 
-    bool hasCam = (camNode && camNode->As<Camera3D>());
-    bool hasMesh = (meshNode && meshNode->As<StaticMesh3D>());
-    bool hasSkel = (skelNode && skelNode->As<SkeletalMesh3D>());
-    bool hasPart = (partNode && partNode->As<Particle3D>());
-    bool hasLight = (lightNode && lightNode->As<PointLight3D>());
-    bool hasAudio = (audioNode && audioNode->As<Audio3D>());
-    bool hasNode = (genericNode && genericNode->As<Node3D>());
-
-    if (!hasCam && !hasMesh && !hasSkel && !hasPart && !hasLight && !hasAudio && !hasNode)
-        return;
+    if (!HasAttachment()) return;
 
     std::vector<SplinePointNode> points;
     GatherSplinePointNodes(this, points);
@@ -940,13 +867,16 @@ void Spline3D::Tick(float deltaTime)
         }
     };
 
-    if (hasCam) applyMove(camNode, true);
-    if (hasMesh) applyMove(meshNode, true);
-    if (hasSkel) applyMove(skelNode, true);
-    if (hasPart) applyMove(partNode, false);
-    if (hasLight) applyMove(lightNode, false);
-    if (hasAudio) applyMove(audioNode, false);
-    if (hasNode) applyMove(genericNode, true);
+    for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        bool faceFlag = true;
+        Node* attachNode = Attachment.Get();
+        if (attachNode)
+        {
+            if (attachNode->As<PointLight3D>() || attachNode->As<Audio3D>()) faceFlag = false;//omitting particle, because although they can be radially symetric, they do not have to be
+            applyMove(attachNode, faceFlag);
+        }
+    }
 
     if (!mLinks.empty())
     {
@@ -1170,6 +1100,16 @@ void Spline3D::SaveStream(Stream& stream, Platform platform)
         stream.WriteFloat(mLinks[i].mSpeed);
     }
 
+    //Attachment data (copying above soooo maybe clean break?)
+    stream.WriteUint32((uint32_t)mAttachments.size()); //no need to get root, its already here dawg
+    for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        std::string attachmentPath;
+        Node* attachmentNode = Attachment.Get();
+        if (attachmentNode) attachmentPath = FindRelativeNodePath(root, attachmentNode);
+        stream.WriteString(attachmentPath);
+    }
+
     // Optional extension block for per-point smooth settings.
     const uint32_t kPointSmoothMarker = 0x50534D54; // "PSMT"
     stream.WriteUint32(kPointSmoothMarker);
@@ -1240,6 +1180,30 @@ void Spline3D::LoadStream(Stream& stream, Platform platform, uint32_t version)
     else
     {
         EnsureLinkSlots((uint32_t)glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64));
+
+        EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
+    }
+
+    if (stream.GetPos() < stream.GetSize())
+    {
+        uint32_t attachmentCount = stream.ReadUint32();
+        mAttachments.clear();
+        mAttachments.resize(attachmentCount);
+        mGeneratedAttachmentCount = attachmentCount;
+
+        Node* root = GetWorld() ? GetWorld()->GetRootNode() : this;
+        for (uint32_t i = 0; i < attachmentCount; ++i)
+        {
+            std::string attachmentPath;
+            stream.ReadString(attachmentPath);
+            if (!attachmentPath.empty() && root)
+            {
+                Node* n = ResolveNodePath(root, attachmentPath);
+                if (n) mAttachments[i] = ResolveWeakPtr(n);
+            }
+
+        }
+
     }
 
     // Optional extension block for per-point smooth settings.
@@ -1279,6 +1243,7 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
 
     mGeneratedLinkCount = glm::clamp<int32_t>(mGeneratedLinkCount, 1, 64);
     EnsureLinkSlots((uint32_t)mGeneratedLinkCount);
+    EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
 
     {
         SCOPED_CATEGORY("Spline");
@@ -1299,15 +1264,23 @@ void Spline3D::GatherProperties(std::vector<Property>& props)
         props.push_back(Property(DatumType::Bool, "Reverse Face Tangent", this, &mReverseFaceTangent));
     }
 
+
     {
-        SCOPED_CATEGORY("Attachments");
-        props.push_back(Property(DatumType::Node, "Camera", this, &mAttachmentCamera, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Static Mesh", this, &mAttachmentStaticMesh, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Skeletal Mesh", this, &mAttachmentSkeletalMesh, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Particle", this, &mAttachmentParticle3D, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Point Light", this, &mAttachmentPointLight, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Audio", this, &mAttachmentAudio3D, 1, HandlePropChange));
-        props.push_back(Property(DatumType::Node, "Node3D", this, &mAttachmentNode3D, 1, HandlePropChange));
+        SCOPED_CATEGORY("Attachments But Cooler");
+        EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
+
+
+        //and then going through the generator B)
+        for (uint32_t i = 0; i < mAttachments.size(); ++i)
+        {
+            std::string attachmentName = std::string("Attachment ") + std::to_string(i + 1);
+            props.push_back(Property(DatumType::Node, attachmentName.c_str(), this, &mAttachments[i], 1, HandlePropChange));
+        }
+         if (mAttachments[mAttachments.size()-1])
+         { //this is to save space instead of generating a bunch to begin with. expand as you go.
+             props.push_back(Property(DatumType::Bool,"Generate Attachment", this, &sGenerateAttachment));
+         }
+
     }
 
     {
@@ -1471,182 +1444,20 @@ bool Spline3D::HandlePropChange(Datum* datum, uint32_t index, const void* newVal
         return spline->mPointSpeedEntries.back();
     };
 
-    if (prop->mName == "Camera")
+    if (prop->mName.rfind("Attachment ", 0) == 0)
     {
+        int attachmentIndex = atoi(prop->mName.substr(11).c_str()) -1;
         const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
         Node* node = newNode.Get();
 
         if (node == nullptr)
         {
-            spline->mAttachmentCamera = WeakPtr<Node>();
-            success = false; // allow datum to store null
-        }
-        else if (node->As<Camera3D>())
-        {
-            spline->mAttachmentCamera = newNode;
-
-            // Do not re-parent; just keep reference
-
-            // Snap to spline origin in local space
-            Camera3D* cam = node->As<Camera3D>();
-            if (cam)
-            {
-                cam->SetPosition(glm::vec3(0.0f));
-            }
-
-            success = false; // allow datum to store value for PIE cloning
-        }
-        else
-        {
-            // Ignore non-camera assignments
-            success = true;
-        }
-    }
-    else if (prop->mName == "Static Mesh")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentStaticMesh = WeakPtr<Node>();
-            success = false; // allow datum to store null
-        }
-        else if (node->As<StaticMesh3D>())
-        {
-            spline->mAttachmentStaticMesh = newNode;
-
-            std::vector<SplinePointNode> points;
-            GatherSplinePointNodes(spline, points);
-            if (!points.empty())
-            {
-                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
-            }
-
-            success = false; // allow datum to store value for PIE cloning
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "Skeletal Mesh")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentSkeletalMesh = WeakPtr<Node>();
-            success = false;
-        }
-        else if (node->As<SkeletalMesh3D>())
-        {
-            spline->mAttachmentSkeletalMesh = newNode;
-            std::vector<SplinePointNode> points;
-            GatherSplinePointNodes(spline, points);
-            if (!points.empty())
-            {
-                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
-            }
-            success = false;
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "Particle")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentParticle3D = WeakPtr<Node>();
-            success = false;
-        }
-        else if (node->As<Particle3D>())
-        {
-            spline->mAttachmentParticle3D = newNode;
-            std::vector<SplinePointNode> points;
-            GatherSplinePointNodes(spline, points);
-            if (!points.empty())
-            {
-                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
-            }
-            success = false;
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "Point Light")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentPointLight = WeakPtr<Node>();
-            success = false;
-        }
-        else if (node->As<PointLight3D>())
-        {
-            spline->mAttachmentPointLight = newNode;
-            std::vector<SplinePointNode> points;
-            GatherSplinePointNodes(spline, points);
-            if (!points.empty())
-            {
-                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
-            }
-            success = false;
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "Audio")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentAudio3D = WeakPtr<Node>();
-            success = false;
-        }
-        else if (node->As<Audio3D>())
-        {
-            spline->mAttachmentAudio3D = newNode;
-            std::vector<SplinePointNode> points;
-            GatherSplinePointNodes(spline, points);
-            if (!points.empty())
-            {
-                node->As<Node3D>()->SetWorldPosition(points[0].node->GetWorldPosition());
-            }
-            success = false;
-        }
-        else
-        {
-            success = true;
-        }
-    }
-    else if (prop->mName == "Node3D")
-    {
-        const WeakPtr<Node>& newNode = *(const WeakPtr<Node>*)newValue;
-        Node* node = newNode.Get();
-
-        if (node == nullptr)
-        {
-            spline->mAttachmentNode3D = WeakPtr<Node>();
+            spline->mAttachments[attachmentIndex] = WeakPtr<Node>();
             success = false;
         }
         else if (node->As<Node3D>())
         {
-            spline->mAttachmentNode3D = newNode;
+            spline->mAttachments[attachmentIndex] = newNode;
             std::vector<SplinePointNode> points;
             GatherSplinePointNodes(spline, points);
             if (!points.empty())
@@ -1816,6 +1627,16 @@ bool Spline3D::DrawCustomProperty(Property& prop)
         }
         return true;
     }
+    if (prop.mName == "Generate Attachment")
+    {
+        if (ImGui::Button("Generate Next Attachment"))
+        {
+            ++mGeneratedAttachmentCount;
+            EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
+        }
+        return true;
+
+    }
 
     return false;
 }
@@ -1944,6 +1765,64 @@ glm::vec3 Spline3D::GetTangentAt(float t) const
     if (glm::length(tan) > 0.0f)
         tan = glm::normalize(tan);
     return tan;
+}
+
+void Spline3D::SetAttachment(uint32_t index, Node* node)
+{
+    Node* root = GetWorld() ? GetWorld()->GetRootNode() : nullptr;
+    auto resolveAttachment = [&](NodePtrWeak& ptr)
+    {
+        Node* nde = ptr.Get();
+        if (!nde || !root)
+            return;
+
+        // Build path from the root so we can resolve into the PIE world.
+        std::string path = FindRelativeNodePath(root, nde);
+        if (!path.empty())
+        {
+            Node* resolved = ResolveNodePath(root, path);
+            if (resolved)
+            {
+                ptr = ResolveWeakPtr(resolved);
+            }
+        }
+    };
+
+    --index;
+    if (index < 0 || index > mAttachments.size()-1) //find an empty, or failing that throw it at the end of the pile
+    {
+        index = -1;
+        bool flag = true;
+        for (WeakPtr<Node> Attachment : mAttachments)
+        {
+            if (flag)
+            {
+                ++index;
+                Node* tryNode = Attachment.Get();
+                if (!tryNode) flag = false; //space candidate found
+            }
+        }
+        if (flag)
+        {
+            ++mGeneratedAttachmentCount;
+            EnsureAttachmentSlots((uint32_t)mGeneratedAttachmentCount);
+            index = mGeneratedAttachmentCount -1;
+        }
+    }
+    mAttachments[index] = ResolveWeakPtr(node);
+    resolveAttachment(mAttachments[index]);
+
+}
+
+bool Spline3D::HasAttachment()
+{
+    Node* node = mAttachments[0].Get();
+    for (WeakPtr<Node> Attachment : mAttachments)
+    {
+        if (node) return true;
+        node = Attachment.Get();
+    }
+    return false;
 }
 
 
