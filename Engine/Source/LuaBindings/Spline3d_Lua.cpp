@@ -199,6 +199,25 @@ int Spline3D_Lua::CancelActiveLink(lua_State* L)
     spline->CancelActiveLink();
     return 0;
 }
+int Spline3D_Lua::SetAttachment(lua_State* L)
+{
+    int32_t index = 0;
+    Spline3D* spline = CHECK_SPLINE_3D(L, 1);
+    Node* node = nullptr;
+    if (lua_isnone(L, 3)) //just a node no index
+    {
+        node = CHECK_NODE(L,2); //it feels... weird letting the first input be optional... but its in line with the Link attachment system...
+    }
+    else
+    {
+        index = CHECK_NUMBER(L,2);
+        //I thought about throwing a range error here, but i think if its outside of bounds ill just toss it on the end. seems less painful to the dev experience and a non-harmful solution on the backend, compared to like. allowing a 4000 element vector where elements 4-3999 are empty.
+        node = CHECK_NODE(L,3);
+    }
+
+    spline->SetAttachment(index, node);
+    return 0;
+}
 
 void Spline3D_Lua::Bind()
 {
@@ -228,6 +247,7 @@ void Spline3D_Lua::Bind()
     REGISTER_TABLE_FUNC(L, mtIndex, IsLinkDirectionForward);
     REGISTER_TABLE_FUNC(L, mtIndex, TriggerLink);
     REGISTER_TABLE_FUNC(L, mtIndex, CancelActiveLink);
+    REGISTER_TABLE_FUNC(L, mtIndex, SetAttachment);
 
     lua_pop(L, 1);
     OCT_ASSERT(lua_gettop(L) == 0);
