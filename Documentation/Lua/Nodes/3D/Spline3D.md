@@ -39,6 +39,13 @@ Sig: `Spline3D:SetPoint(index, point)`
  - Arg: `integer index` 1-based point index
  - Arg: `Vector point` Point in local space
 ---
+### SetAttachment
+Set an attachment node by index.
+
+Sig: `Spline3D:SetAttachment(index = 0, node)`
+ - Arg: `integer index` 1-based point index. Default finds first available position along vector
+ - Arg: `Node3D node` Node to attach to spline
+---
 ### GetPositionAt
 Sample spline position.
 

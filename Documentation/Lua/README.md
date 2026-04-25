@@ -20,6 +20,7 @@
                 * [TextMesh3D](Nodes/3D/TextMesh3D.md)
             * [Particle3D](Nodes/3D/Particle3D.md)
             * [Sphere3D](Nodes/3D/Sphere3D.md)
+        * [Spline3D](Nodes/3D/Spline3D.md)
     * [Widget](Nodes/Widgets/Widget.md)
         * [Poly](Nodes/Widgets/Poly.md)
             * [PolyRect](Nodes/Widgets/PolyRect.md)
