@@ -1891,7 +1891,7 @@ Asset* ActionManager::ImportAsset(const std::string& path)
     {
         GatherMeshImportTypes(path.c_str(), importTypes, meshIndices);
     }
-    else if (extension == ".wav")
+    else if (extension == ".wav" || extension == ".ogg")
     {
         importTypes.push_back(SoundWave::GetStaticType());
     }
