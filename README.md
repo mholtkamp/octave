@@ -22,15 +22,14 @@ A 3D Game Engine for GameCube, Wii, 3DS, Windows, Linux, and Android
 
 Development of Octave is currently paused. Pull requests are welcomed, but they may not be merged any time soon.
 
-For a more modern, greatly improved version of Octave, please check out the VLT Media fork of Octave:
-https://github.com/vltmedia/octave
+For a more modern, greatly improved version of Octave, please check out Polyphase Engine:
+https://github.com/Polyphase-Labs/Polyphase-Engine
 
-The VLT Media fork adds TONS of new features, such as:
+Polyphase adds TONS of new features, such as:
  - Visual scripting
  - Timeline animation system
  - Internal Lua editor
  - Lua IntelliSense / Auto-completion with VsCode
- - Game preview window
  - Editor themes
  - Window docking
  - 3DS and Game preview
