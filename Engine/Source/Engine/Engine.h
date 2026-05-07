@@ -23,6 +23,7 @@ void Quit();
 
 class World* GetWorld(int32_t index);
 int32_t GetNumWorlds();
+uint32_t GetNumScreens();
 
 struct EngineState* GetEngineState();
 const struct EngineConfig* GetEngineConfig();
