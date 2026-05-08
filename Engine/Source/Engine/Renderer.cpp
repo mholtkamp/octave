@@ -1185,6 +1185,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
 
     mCurrentWorld = world;
     mScreenIndex = screenIndex;
+    mCurrentCamera = mCurrentWorld->GetActiveCamera(mScreenIndex);
 
     bool inGame = IsGameTickEnabled();
     float gameDeltaTime = GetEngineState()->mGameDeltaTime;
@@ -1419,6 +1420,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
     UpdateDebugDraws();
 
     mCurrentWorld = nullptr;
+    mCurrentCamera = nullptr;
 }
 
 void Renderer::RenderShadowCasters(World* world)
@@ -1753,4 +1755,9 @@ glm::uvec4 Renderer::GetSceneViewport(int32_t screenIdx)
     vh = uint32_t(vh * resScale + 0.5f);
 
     return glm::uvec4(vx, vy, vw, vh);
+}
+
+Camera3D* Renderer::GetCurrentCamera()
+{
+    return mCurrentCamera;
 }

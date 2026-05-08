@@ -60,6 +60,7 @@ public:
     bool IsRenderingFirstScreen() const;
     bool IsRenderingLastScreen() const;
     World* GetCurrentWorld();
+    Camera3D* GetCurrentCamera();
 
     glm::vec2 GetScreenResolution(int32_t screen = -1);
     glm::vec2 GetActiveScreenResolution();
@@ -219,6 +220,7 @@ private:
     World* mCurrentWorld = nullptr;
     uint32_t mFrameIndex = 0;
     uint32_t mScreenIndex = 0;
+    Camera3D* mCurrentCamera = nullptr;
     uint32_t mFrameNumber = 0;
     float mGlobalUiScale = 1.0f;
     DebugMode mDebugMode = DEBUG_NONE;
