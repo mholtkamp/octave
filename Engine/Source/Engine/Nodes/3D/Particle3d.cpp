@@ -679,7 +679,7 @@ void Particle3D::UpdateVertexBuffer()
 
     case ParticleOrientation::Billboard:
     {
-        const glm::mat4& view = GetWorld()->GetActiveCamera()->GetViewMatrix();
+        const glm::mat4& view = GetWorld()->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix();
         right = { view[0][0], view[1][0], view[2][0] };
         up = { view[0][1], view[1][1], view[2][1] };
         forward = { view[0][2], view[1][2], view[2][2] };

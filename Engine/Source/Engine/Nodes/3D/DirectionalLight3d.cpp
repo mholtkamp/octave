@@ -117,7 +117,7 @@ const glm::mat4& DirectionalLight3D::GetViewProjectionMatrix() const
 
 void DirectionalLight3D::GenerateViewProjectionMatrix()
 {
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     if (camera != nullptr)
     {

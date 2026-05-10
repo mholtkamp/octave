@@ -4,6 +4,7 @@
 #include "Assets/MaterialInstance.h"
 #include "Assets/MaterialLite.h"
 #include "Engine.h"
+#include "Renderer.h"
 #include "World.h"
 
 DEFINE_OBJECT(Mesh3D);
@@ -108,7 +109,7 @@ void Mesh3D::SetBillboard(bool billboard)
 
 glm::mat4 Mesh3D::ComputeBillboardTransform()
 {
-    Camera3D* camera = GetWorld()->GetActiveCamera();
+    Camera3D* camera = GetWorld()->GetActiveCamera(Renderer::Get()->GetScreenIndex());
     glm::quat camQuat = camera->GetWorldRotationQuat();
 
     glm::mat4 transform = glm::mat4(1);

@@ -611,7 +611,6 @@ bool Update()
     // {
     //     Renderer::Get()->Render(sWorlds[i], i);
     // }
-    LogDebug(std::to_string(sWorlds.size()).c_str());
     for (int32_t i = 0; i < sScreens; ++i)
     {
         Renderer::Get()->Render(sWorlds[i],i);
