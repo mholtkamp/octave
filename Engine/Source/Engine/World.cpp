@@ -1576,6 +1576,9 @@ Camera3D* World::GetActiveCamera(uint32_t screenIndex)
     }
 #endif
 
+    World* renWorld = Renderer::Get()->GetCurrentWorld();
+    if (renWorld == this) return mActiveCamera[Renderer::Get()->GetScreenIndex()];
+
     return mActiveCamera[screenIndex];
 }
 
