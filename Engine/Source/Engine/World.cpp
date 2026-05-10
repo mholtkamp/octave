@@ -1858,11 +1858,9 @@ bool World::WorldSeen()
     {
         if ((camera != nullptr) && !(camera->IsEditorCamera()))
         {
-            LogDebug("World %i is seen", GetIndex());
             return true;
         }
     }
-    LogDebug("World %i is unseen", GetIndex());
     return false;
 }
 

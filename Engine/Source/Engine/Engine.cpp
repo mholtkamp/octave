@@ -613,14 +613,14 @@ bool Update()
     // {
     //     Renderer::Get()->Render(sWorlds[i], i);
     // }
-    for (int32_t i = 0; i < sScreens; ++i)
-    {
-        Renderer::Get()->Render(sWorlds[i],i);
-    }
     // for (int32_t i = 0; i < sScreens; ++i)
     // {
-    //     Renderer::Get()->Render(sWorlds[sScreenWorlds[i]],i);
+    //     Renderer::Get()->Render(sWorlds[i],i);
     // }
+    for (int32_t i = 0; i < sScreens; ++i)
+    {
+        Renderer::Get()->Render(sWorlds[sScreenWorlds[i]],i);
+    }
 
     AssetManager::Get()->Update(realDeltaTime);
 
