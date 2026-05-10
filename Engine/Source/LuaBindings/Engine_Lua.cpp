@@ -50,6 +50,12 @@ int Engine_Lua::GetWorld(lua_State* L)
     return 1;
 }
 
+int Engine_Lua::AddWorld(lua_State* L)
+{
+    ::AddWorld();
+    return 0;
+}
+
 int Engine_Lua::GetTime(lua_State* L)
 {
     float ret = GetAppClock()->GetTime();
@@ -219,6 +225,8 @@ void Engine_Lua::Bind()
     REGISTER_TABLE_FUNC(L, tableIdx, IsShuttingDown);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetWorld);
+
+    REGISTER_TABLE_FUNC(L, tableIdx, AddWorld);
 
     REGISTER_TABLE_FUNC(L, tableIdx, GetTime);
 

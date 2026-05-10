@@ -607,9 +607,14 @@ bool Update()
     EditorImguiDraw();
 #endif
 
-    for (int32_t i = 0; i < int32_t(sWorlds.size()); ++i)
+    // for (int32_t i = 0; i < int32_t(sWorlds.size()); ++i)
+    // {
+    //     Renderer::Get()->Render(sWorlds[i], i);
+    // }
+    LogDebug(std::to_string(sWorlds.size()).c_str());
+    for (int32_t i = 0; i < sScreens; ++i)
     {
-        Renderer::Get()->Render(sWorlds[i], i);
+        Renderer::Get()->Render(sWorlds[i],i);
     }
 
     AssetManager::Get()->Update(realDeltaTime);
@@ -1278,4 +1283,10 @@ int main(int argc, char** argv)
 #else
     return 0;
 #endif
+}
+
+
+void AddWorld()
+{
+    sWorlds.push_back(new World());
 }
