@@ -413,14 +413,14 @@ bool Initialize()
 #endif
 
     sClock.Start();
-
-    sWorlds.push_back(new World());
-
 #if PLATFORM_3DS
     // So far only 3DS can support a second screen and we have a one-world-per-screen setup.
-    sWorlds.push_back(new World());
     ++sScreens;
+    sWorlds.push_back(new World());
 #endif
+    sWorlds.push_back(new World());
+
+
 
 
     Maths::SeedRand((uint32_t)SYS_GetTimeMicroseconds());

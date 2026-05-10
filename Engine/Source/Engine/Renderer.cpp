@@ -504,7 +504,7 @@ void Renderer::GatherDrawData(World* world)
     mCollisionDraws.clear();
     mWidgetDraws.clear();
 
-    Camera3D* camera = world ? world->GetActiveCamera() : nullptr;
+    Camera3D* camera = world ? world->GetActiveCamera(mScreenIndex) : nullptr;
 
     if (world != nullptr)
     {
@@ -752,7 +752,7 @@ void Renderer::GatherLightData(World* world)
     {
         float deltaTime = GetEngineState()->mGameDeltaTime;
         uint32_t lightLimit = glm::min<uint32_t>(mLightFadeLimit, MAX_LIGHTS_PER_DRAW);
-        Camera3D* camera = world->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera(mScreenIndex);
         glm::vec3 camPos = camera ? camera->GetWorldPosition() : glm::vec3(0.0f, 0.0f, 0.0f);
 
         // Step 1 - Determine the closest N lights
@@ -1228,7 +1228,7 @@ void Renderer::Render(World* world, int32_t screenIndex)
         }
     }
 
-    Camera3D* activeCamera = world->GetActiveCamera();
+    Camera3D* activeCamera = world->GetActiveCamera(mScreenIndex);
 
     // On 3DS especially, we want to cull before syncing with the GPU
     // otherwise it increases GPU idle time.

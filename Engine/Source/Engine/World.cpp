@@ -1207,8 +1207,8 @@ void World::RegisterNode(Node* node, bool subRoot)
                 {
                     for (uint32_t i = 0; i < ::GetNumScreens(); ++i)
                     {
-                        SetActiveCamera(node->As<Camera3D>(), i);
-                        //mActiveCamera[i] = node->As<Camera3D>();
+                        //SetActiveCamera(node->As<Camera3D>(), i);
+                        mActiveCamera[i] = node->As<Camera3D>();
                     }
                 }
             }
