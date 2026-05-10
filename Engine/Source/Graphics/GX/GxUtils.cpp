@@ -22,7 +22,7 @@ extern GxContext gGxContext;
 
 void SetupLights()
 {
-    Camera3D* cameraComp = gGxContext.mWorld->GetActiveCamera();
+    Camera3D* cameraComp = gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex());
     if (cameraComp == nullptr)
     {
         return;

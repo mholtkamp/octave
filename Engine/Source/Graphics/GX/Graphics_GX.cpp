@@ -108,7 +108,7 @@ void GFX_BeginFrame()
     GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
 
     Mtx44 projection;
-    Camera3D* camera = gGxContext.mWorld->GetActiveCamera();
+    Camera3D* camera = gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     if (camera != nullptr)
     {
@@ -230,7 +230,7 @@ glm::mat4 GFX_MakeOrthographicMatrix(float left, float right, float bottom, floa
 
 void GFX_SetFog(const FogSettings& fogSettings)
 {
-    Camera3D* camera = gGxContext.mWorld->GetActiveCamera();
+    Camera3D* camera = gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     float cameraNear = 0.0f;
     float cameraFar = 100.0f;
@@ -544,7 +544,7 @@ void GFX_DrawStaticMeshComp(StaticMesh3D* staticMeshComp, StaticMesh* meshOverri
         Mtx modelView;
 
         glm::mat4 modelSrc = glm::transpose(staticMeshComp->GetRenderTransform());
-        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera()->GetViewMatrix());
+        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix());
 
         memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
         memcpy(view, &viewSrc, sizeof(float) * 4 * 3);
@@ -659,7 +659,7 @@ void GFX_DrawSkeletalMeshComp(SkeletalMesh3D* skeletalMeshComp)
         Mtx modelView;
 
         glm::mat4 modelSrc = glm::transpose(skeletalMeshComp->GetRenderTransform());
-        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera()->GetViewMatrix());
+        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix());
 
         memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
         memcpy(view, &viewSrc, sizeof(float) * 4 * 3);
@@ -794,7 +794,7 @@ void GFX_DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
         Mtx modelView;
 
         glm::mat4 modelSrc = glm::transpose(shadowMeshComp->GetRenderTransform());
-        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera()->GetViewMatrix());
+        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix());
 
         memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
         memcpy(view, &viewSrc, sizeof(float) * 4 * 3);
@@ -899,7 +899,7 @@ void GFX_DrawTextMeshComp(TextMesh3D* textMeshComp)
     Mtx modelView;
 
     glm::mat4 modelSrc = glm::transpose(textMeshComp->GetRenderTransform());
-    glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera()->GetViewMatrix());
+    glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix());
 
     memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
     memcpy(view, &viewSrc, sizeof(float) * 4 * 3);
@@ -990,7 +990,7 @@ void GFX_DrawParticleComp(Particle3D* particleComp)
         Mtx modelView;
 
         glm::mat4 modelSrc = particleComp->GetUseLocalSpace() ? glm::transpose(particleComp->GetTransform()) : glm::mat4(1);
-        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera()->GetViewMatrix());
+        glm::mat4 viewSrc = glm::transpose(gGxContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex())->GetViewMatrix());
 
         memcpy(model, &modelSrc, sizeof(float) * 4 * 3);
         memcpy(view, &viewSrc, sizeof(float) * 4 * 3);

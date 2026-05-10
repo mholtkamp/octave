@@ -1651,7 +1651,7 @@ void VulkanContext::UpdateGlobalUniformData()
 
     if (world != nullptr)
     {
-        Camera3D* camera = world->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera(Renderer::Get()->GetScreenIndex());
         EngineState* engineState = GetEngineState();
 
         if (camera != nullptr)

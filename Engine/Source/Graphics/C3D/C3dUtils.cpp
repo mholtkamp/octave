@@ -433,7 +433,7 @@ void SetupLightEnv(LightEnv& lightEnv, uint8_t lightingChannels, bool bakedLight
     C3D_LightEnvBind(&lightEnv.mLightEnv);
     C3D_LightEnvLut(&lightEnv.mLightEnv, GPU_LUT_D0, GPU_LUTINPUT_NH, false, &gC3dContext.mLightLut[Shininess32]);
 
-    Camera3D* cameraComp = gC3dContext.mWorld->GetActiveCamera();
+    Camera3D* cameraComp = gC3dContext.mWorld->GetActiveCamera(Renderer::Get()->GetScreenIndex());
     if (cameraComp == nullptr)
     {
         return;
