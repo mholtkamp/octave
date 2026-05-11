@@ -1295,3 +1295,11 @@ void AddWorld()
 {
     sWorlds.push_back(new World());
 }
+
+void SetScreenWorld(int32_t worldIdx, int32_t screen)
+{
+    if (screen < sScreens)
+    {
+        sScreenWorlds[screen] = worldIdx;
+    }
+}
