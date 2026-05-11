@@ -351,9 +351,9 @@ NodePtr Scene::Instantiate()
         for (uint32_t i = 0; i < mNodeDefs.size(); ++i)
         {
             NodePtr nodePtr;
-            NodePtr parent = (i > 0 && int32_t(nodeList.size()) > mNodeDefs[i].mParentIndex) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
+            NodePtr parent = (i > 0 && mNodeDefs[i].mParentIndex >= 0 && mNodeDefs[i].mParentIndex < static_cast<int32_t>(nodeList.size())) ? nodeList[mNodeDefs[i].mParentIndex] : nullptr;
 
-            if (i > 0 && int32_t(nodeList.size()) <= mNodeDefs[i].mParentIndex)
+            if (i > 0 && (mNodeDefs[i].mParentIndex < 0 || mNodeDefs[i].mParentIndex >= static_cast<int32_t>(nodeList.size())))
             {
                 LogError("Out-of-order parent for node: %s", mNodeDefs[i].mName.c_str());
                 parent = nodeList[0];
