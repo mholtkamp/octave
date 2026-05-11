@@ -140,3 +140,9 @@ Garbage collect scripts AND reference sweep assets. This is a slow process and m
 Sig: `Engine.GarbageCollect()`
 
 ---
+### AddWorld
+Adds an additional, empty world.
+
+Sig: `Engine.AddWorld()`
+
+---
