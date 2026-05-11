@@ -22,7 +22,10 @@ void Shutdown();
 void Quit();
 
 class World* GetWorld(int32_t index);
+void AddWorld();
+void SetScreenWorld(int32_t worldIdx, int32_t screen);
 int32_t GetNumWorlds();
+uint32_t GetNumScreens();
 
 struct EngineState* GetEngineState();
 const struct EngineConfig* GetEngineConfig();

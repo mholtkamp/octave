@@ -60,6 +60,7 @@ public:
     bool IsRenderingFirstScreen() const;
     bool IsRenderingLastScreen() const;
     World* GetCurrentWorld();
+    Camera3D* GetCurrentCamera();
 
     glm::vec2 GetScreenResolution(int32_t screen = -1);
     glm::vec2 GetActiveScreenResolution();

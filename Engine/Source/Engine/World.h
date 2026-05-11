@@ -33,10 +33,10 @@ public:
 
     Camera3D* GetMainCamera();
 
-    Camera3D* GetActiveCamera();
+    Camera3D* GetActiveCamera(uint32_t screenIndex = 0);
     Node3D* GetAudioReceiver();
 
-    void SetActiveCamera(Camera3D* activeCamera);
+    void SetActiveCamera(Camera3D* activeCamera, uint32_t screenIndex = 0);
     void SetAudioReceiver(Node3D* newReceiver);
 
     Node* SpawnNode(TypeId actorType, glm::vec3 position = {});
@@ -215,7 +215,7 @@ private:
     glm::vec4 mAmbientLightColor;
     glm::vec4 mShadowColor;
     FogSettings mFogSettings;
-    Camera3D* mActiveCamera;
+    std::vector<Camera3D*> mActiveCamera;
     Node3D* mAudioReceiver;
     bool mPendingClear = false;
     bool mAutoNavRebuild = false;

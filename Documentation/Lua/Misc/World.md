@@ -6,7 +6,8 @@ A table that references a world and allows interacting with it.
 ### GetActiveCamera
 Get the active camera. A world can only have one active camera at a time.
 
-Sig: `camera = World:GetActiveCamera()`
+Sig: `camera = World:GetActiveCamera(screen = 1)`
+ - Arg: `int screen` Screen index
  - Ret: `Camera3D camera` Active camera
 ---
 ### GetAudioReceiver
@@ -18,8 +19,9 @@ Sig: `receiver = World:GetAudioReceiver()`
 ### SetActiveCamera
 Set the active camera. A world can only have one active camera at a time.
 
-Sig: `World:SetActiveCamera(camera)`
+Sig: `World:SetActiveCamera(camera, screen = 1)`
  - Arg: `Camera3D camera` Active camera
+ - Arg: `int screen` Screen index
 ---
 ### SetAudioReceiver
 Set the active audio receiver. A world can only have one active audio receiver at a time. If no audio receiver is assigned, the active camera will be used as the audio receiver.

@@ -837,7 +837,7 @@ void EndDebugLabel()
 
 void WriteGeometryUniformData(GeometryData& outData, World* world, Node3D* comp, const glm::mat4& transform)
 {
-    Camera3D* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     outData.mWVPMatrix = camera->GetViewProjectionMatrix() * transform;
     outData.mWorldMatrix = transform;
@@ -1716,7 +1716,7 @@ void BindGeometryDescriptorSet(SkeletalMesh3D* skeletalMeshComp)
     OCT_UNUSED(renderer);
 
     World* world = skeletalMeshComp->GetWorld();
-    Camera3D* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera(Renderer::Get()->GetScreenIndex());
     uint32_t numBoneInfluences = 1;
 
     switch (skeletalMeshComp->GetBoneInfluenceMode())
@@ -1861,7 +1861,7 @@ void DrawShadowMeshComp(ShadowMesh3D* shadowMeshComp)
 
 static void UpdateInstancedMeshResource(InstancedMesh3D* instancedMeshComp)
 {
-    Camera3D* camera = instancedMeshComp->GetWorld()->GetActiveCamera();
+    Camera3D* camera = instancedMeshComp->GetWorld()->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     InstancedMeshCompResource* instResource = instancedMeshComp->GetInstancedMeshResource();
     uint32_t numInstances = instancedMeshComp->GetNumInstances();
@@ -2110,7 +2110,7 @@ void BindGeometryDescriptorSet(Particle3D* particleComp)
     OCT_UNUSED(renderer);
 
     World* world = particleComp->GetWorld();
-    Camera3D* camera = world->GetActiveCamera();
+    Camera3D* camera = world->GetActiveCamera(Renderer::Get()->GetScreenIndex());
 
     const glm::mat4 transform = particleComp->GetUseLocalSpace() ? particleComp->GetTransform() : glm::mat4(1);
 

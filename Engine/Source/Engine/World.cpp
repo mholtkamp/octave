@@ -499,7 +499,6 @@ bool ContactAddedHandler(btManifoldPoint& cp,
 World::World() :
     mAmbientLightColor(DEFAULT_AMBIENT_LIGHT_COLOR),
     mShadowColor(DEFAULT_SHADOW_COLOR),
-    mActiveCamera(nullptr),
     mAudioReceiver(nullptr)
 {
     SCOPED_STAT("World()")
@@ -511,6 +510,8 @@ World::World() :
     mSolver = new btSequentialImpulseConstraintSolver();
     mDynamicsWorld = new btDiscreteDynamicsWorld(mCollisionDispatcher, mBroadphase, mSolver, mCollisionConfig);
     mDynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+    for (uint32_t i = 0; i < ::GetNumScreens(); ++i) mActiveCamera.push_back(nullptr);
 
     mDefaultDynamicsWorld = mDynamicsWorld;
 }
@@ -526,7 +527,7 @@ void World::Destroy()
     DestroyRootNode();
 
     OCT_ASSERT(mRootNode == nullptr);
-    mActiveCamera = nullptr;
+    for (uint32_t i = 0; i < ::GetNumScreens(); ++i) mActiveCamera[i] = nullptr;
 
     mDefaultDynamicsWorld = nullptr;
 
@@ -1193,11 +1194,16 @@ void World::RegisterNode(Node* node, bool subRoot)
     }
     else if (nodeType == Camera3D::GetStaticType())
     {
-        if (mActiveCamera == nullptr ||
-            mActiveCamera->IsEditorCamera())
+        for (int32_t i = 0; i < ::GetNumScreens(); ++i)
         {
-            mActiveCamera = node->As<Camera3D>();
+            if (mActiveCamera[i] == nullptr ||
+                mActiveCamera[i]->IsEditorCamera())
+            {//staying as close to the original as possible to maintain prior works
+                mActiveCamera[i] = node->As<Camera3D>();
+            }
         }
+
+
     }
 
     if (subRoot)
@@ -1232,11 +1238,14 @@ void World::UnregisterNode(Node* node, bool subRoot)
     {
         SetAudioReceiver(nullptr);
     }
-
-    if (node == mActiveCamera)
+    for (uint32_t i = 0; i < ::GetNumScreens(); ++i)
     {
-        SetActiveCamera(nullptr);
+        if (node == mActiveCamera[i])
+        {
+            SetActiveCamera(nullptr, i);
+        }
     }
+
 
     if (subRoot)
     {
@@ -1537,7 +1546,7 @@ Camera3D* World::GetMainCamera()
 	return highestPriority;
 }
 
-Camera3D* World::GetActiveCamera()
+Camera3D* World::GetActiveCamera(uint32_t screenIndex)
 {
 #if EDITOR
     // When in editor, the active camera is the EditorCamera unless
@@ -1556,7 +1565,10 @@ Camera3D* World::GetActiveCamera()
     }
 #endif
 
-    return mActiveCamera;
+    World* renWorld = Renderer::Get()->GetCurrentWorld();
+    if (renWorld == this) return mActiveCamera[Renderer::Get()->GetScreenIndex()];
+
+    return mActiveCamera[screenIndex];
 }
 
 Node3D* World::GetAudioReceiver()
@@ -1575,15 +1587,17 @@ Node3D* World::GetAudioReceiver()
     return nullptr;
 }
 
-void World::SetActiveCamera(Camera3D* activeCamera)
+void World::SetActiveCamera(Camera3D* activeCamera, uint32_t screenIndex)
 {
 #if EDITOR
     if (GetEditorState()->mEditorCamera != activeCamera)
     {
-        mActiveCamera = activeCamera;
+        mActiveCamera[screenIndex] = activeCamera;
+        if (activeCamera != nullptr) ::SetScreenWorld(GetIndex(), screenIndex);
     }
 #else
-    mActiveCamera = activeCamera;
+    mActiveCamera[screenIndex] = activeCamera;
+    if (activeCamera != nullptr) ::SetScreenWorld(GetIndex(), screenIndex);
 #endif
 }
 
@@ -1826,7 +1840,6 @@ Node* World::SpawnDefaultRoot()
 
     return mRootNode.Get();
 }
-
 
 
 

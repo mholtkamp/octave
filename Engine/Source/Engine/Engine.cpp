@@ -50,6 +50,8 @@ static EngineConfig sEngineConfig;
 
 static std::vector<World*> sWorlds;
 static Clock sClock;
+static uint32_t sScreens = 1;
+static std::vector<int32_t> sScreenWorlds;
 
 // Default scene names to try when no explicit scene is specified
 static std::vector<std::string> sDefaultSceneNames = {
@@ -410,15 +412,17 @@ bool Initialize()
         GetFileWatcher()->SetEnabled(GetEngineConfig()->mScriptHotReload);
     }
 #endif
-
+    sScreenWorlds.push_back(0);
     sClock.Start();
-
-    sWorlds.push_back(new World());
-
 #if PLATFORM_3DS
     // So far only 3DS can support a second screen and we have a one-world-per-screen setup.
+    ++sScreens; //this happens before worlds are added so they know how many screens to account for
     sWorlds.push_back(new World());
+    sScreenWorlds.push_back(1);
 #endif
+    sWorlds.push_back(new World());
+
+
 
 
     Maths::SeedRand((uint32_t)SYS_GetTimeMicroseconds());
@@ -605,9 +609,9 @@ bool Update()
     EditorImguiDraw();
 #endif
 
-    for (int32_t i = 0; i < int32_t(sWorlds.size()); ++i)
+    for (int32_t i = 0; i < sScreens; ++i)
     {
-        Renderer::Get()->Render(sWorlds[i], i);
+        Renderer::Get()->Render(sWorlds[sScreenWorlds[i]],i);
     }
 
     AssetManager::Get()->Update(realDeltaTime);
@@ -691,6 +695,10 @@ World* GetWorld(int32_t index)
 int32_t GetNumWorlds()
 {
     return int32_t(sWorlds.size());
+}
+uint32_t GetNumScreens()
+{
+    return sScreens;
 }
 
 EngineState* GetEngineState()
@@ -1272,4 +1280,18 @@ int main(int argc, char** argv)
 #else
     return 0;
 #endif
+}
+
+
+void AddWorld()
+{
+    sWorlds.push_back(new World());
+}
+
+void SetScreenWorld(int32_t worldIdx, int32_t screen)
+{
+    if (screen < sScreens)
+    {
+        sScreenWorlds[screen] = worldIdx;
+    }
 }

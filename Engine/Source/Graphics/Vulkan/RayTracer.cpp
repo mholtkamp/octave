@@ -404,7 +404,7 @@ void RayTracer::PathTraceWorld()
     {
         // Check to see if camera moved. If so we need to reset our accumulated image data.
 
-        Camera3D* camera = world->GetActiveCamera();
+        Camera3D* camera = world->GetActiveCamera(Renderer::Get()->GetScreenIndex());
         if (camera != nullptr)
         {
             glm::vec3 camPos = camera->GetWorldPosition();
