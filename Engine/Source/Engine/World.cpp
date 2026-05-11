@@ -1597,9 +1597,11 @@ void World::SetActiveCamera(Camera3D* activeCamera, uint32_t screenIndex)
     if (GetEditorState()->mEditorCamera != activeCamera)
     {
         mActiveCamera[screenIndex] = activeCamera;
+        if (activeCamera != nullptr) ::SetScreenWorld(GetIndex(), screenIndex);
     }
 #else
     mActiveCamera[screenIndex] = activeCamera;
+    if (activeCamera != nullptr) ::SetScreenWorld(GetIndex(), screenIndex);
 #endif
 }
 

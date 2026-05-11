@@ -37,6 +37,9 @@ int World_Lua::Create(lua_State* L, World* world)
 int World_Lua::GetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
+    int32_t screen = 0;
+
+    if (!lua_isnone(L, 2)) { screen = CHECK_INDEX(L, 2); }
     
     Camera3D* cameraComp = world->GetActiveCamera();
 
@@ -58,8 +61,10 @@ int World_Lua::SetActiveCamera(lua_State* L)
 {
     World* world = CHECK_WORLD(L, 1);
     Camera3D* cameraComp = CHECK_CAMERA_3D(L, 2);
+    int32_t screen = 0;
+    if (!lua_isnone(L, 3)) { screen = CHECK_INDEX(L, 3); }
 
-    world->SetActiveCamera(cameraComp);
+    world->SetActiveCamera(cameraComp, screen);
 
     return 0;
 }
