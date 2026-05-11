@@ -200,8 +200,6 @@ private:
 
     void UpdateLines(float deltaTime);
     void ExtractPersistingNodes();
-    bool ScreenUsed(uint32_t screenIndex);
-    bool WorldSeen();
 
 private:
 

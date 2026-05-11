@@ -416,7 +416,7 @@ bool Initialize()
     sClock.Start();
 #if PLATFORM_3DS
     // So far only 3DS can support a second screen and we have a one-world-per-screen setup.
-    ++sScreens;
+    ++sScreens; //this happens before worlds are added so they know how many screens to account for
     sWorlds.push_back(new World());
     sScreenWorlds.push_back(1);
 #endif
@@ -609,14 +609,6 @@ bool Update()
     EditorImguiDraw();
 #endif
 
-    // for (int32_t i = 0; i < int32_t(sWorlds.size()); ++i)
-    // {
-    //     Renderer::Get()->Render(sWorlds[i], i);
-    // }
-    // for (int32_t i = 0; i < sScreens; ++i)
-    // {
-    //     Renderer::Get()->Render(sWorlds[i],i);
-    // }
     for (int32_t i = 0; i < sScreens; ++i)
     {
         Renderer::Get()->Render(sWorlds[sScreenWorlds[i]],i);

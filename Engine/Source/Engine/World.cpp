@@ -1194,15 +1194,11 @@ void World::RegisterNode(Node* node, bool subRoot)
     }
     else if (nodeType == Camera3D::GetStaticType())
     {
-        //TODO: this has got to be updated later down the line. Currently im just getting around the whole rendering on 3ds issue by maintaining the world/screen seperation
-        //and giving every available camera slot in the unseen world the first camera it sees
-        //my thinking is, im gonna change over everything to reference a specific camera slot depending on screen next
-        //and once I can do that, i will pare this down.
         for (int32_t i = 0; i < ::GetNumScreens(); ++i)
         {
             if (mActiveCamera[i] == nullptr ||
                 mActiveCamera[i]->IsEditorCamera())
-            {
+            {//staying as close to the original as possible to maintain prior works
                 mActiveCamera[i] = node->As<Camera3D>();
             }
         }
@@ -1847,17 +1843,6 @@ Node* World::SpawnDefaultRoot()
 
 
 
-bool World::WorldSeen()
-{
-    for (Camera3D* camera : mActiveCamera)
-    {
-        if ((camera != nullptr) && !(camera->IsEditorCamera()))
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 
 
