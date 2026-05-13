@@ -46,20 +46,11 @@ void Sprite::TickCommon(float deltaTime)
     }
 }
 
-void Sprite::SetFPS(float fps)
-{
-    mFPS = fps;
-}
-
-bool Sprite::IsPlaying()
-{
-    return mPlaying;
-}
 
 void Sprite::AdvanceFrame()
 {
     ++mFrame;
-    if (mFrame >= mCurrentAnimation.mFrame.size())
+    if (mFrame >= mCurrentAnimation->mFrame.size())
     {
         mFrame = 0;
         if (!GetLoop())
@@ -68,75 +59,138 @@ void Sprite::AdvanceFrame()
             return;
         }
     }
-    SetTexture(mCurrentAnimation.mFrame[mFrame]);
+    SetTexture(mCurrentAnimation->mFrame[mFrame].Get<Texture>());
 
 }
 
-void AddAnimation(std::string animationName)
+void Sprite::AddAnimation(std::string animationName)
 {
     if (animationName == "")
     {
         LogDebug("Animation name cannot be empty");
         return;
     }
-    for (Animation animation : mAnimation)
+    for (Animation* animation : mAnimation)
     {
-        if (animationName == animation.mName)
+        if (animationName == animation->mName)
         {
             LogDebug("Animations cannot share names");
             return;
         }
     }
-    Animation animation;
-    animation.mName = animationName;
-    animation.loop = true;
-    mAnimation.push_back(Animation animation);
+    Animation* animation;
+    animation->mName = animationName;
+    animation->loop = true;
+    mAnimation.push_back(animation);
     if (mCurrentAnimation == nullptr) SetAnimation(animationName);
 
 }
-void AddFrame(class Texture* texture, int32_t frameIndex, bool insert) //-1 frame means add to back, insert will take frame at index and push it back
+void Sprite::AddFrame(class Texture* texture, int32_t frameIndex, bool insert) //-1 frame means add to back, insert will take frame at index and push it back
 {
-    if (frameIndex == -1) mCurrentAnimation.mFrame.push_back(texture);
-    else if (frameIndex >= mCurrentAnimation.mFrame.size()) mCurrentAnimation.mFrame.push_back(texture);
+    if (frameIndex == -1) mCurrentAnimation->mFrame.push_back(texture);
+    else if (frameIndex >= mCurrentAnimation->mFrame.size()) mCurrentAnimation->mFrame.push_back(texture);
     else
     {
 
         if (!insert)
         {
-            mCurrentAnimation.mFrame[frameIndex] = texture;
+            mCurrentAnimation->mFrame[frameIndex] = texture;
         }
         else
         {
-            mCurrentAnimation.mFrame.push_back(nullptr);
-            for (uint32_t i = mCurrentAnimation.mFrame.size() - 1; i > frameIndex; --i)
+            mCurrentAnimation->mFrame.push_back(nullptr);
+            for (uint32_t i = mCurrentAnimation->mFrame.size() - 1; i > frameIndex; --i)
             {
-                mCurrentAnimation.mFrame[i] = mCurrentAnimation.mFrame[i - 1];
+                mCurrentAnimation->mFrame[i] = mCurrentAnimation->mFrame[i - 1];
             }
-            mCurrentAnimation.mFrame[frameIndex] = texture;
+            mCurrentAnimation->mFrame[frameIndex] = texture;
         }
 
-        if (mFrame == frameIndex) SetTexture(mCurrentAnimation.mFrame[mFrame]);
+        if (mFrame == frameIndex) SetTexture(mCurrentAnimation->mFrame[mFrame].Get<Texture>());
     }
 }
-void AddEmptyFrame(int32_t frameIndex, bool insert)
+void Sprite::AddEmptyFrame(int32_t frameIndex, bool insert)
 {
     AddFrame(nullptr, frameIndex, insert);
 }
 
-void RemoveAnimation(std::string animationName)
+void Sprite::RemoveAnimation(std::string animationName)
 {
 
 }
-void RemoveFrame(uint32_t frameIndex)
+void Sprite::RemoveFrame(uint32_t frameIndex)
 {
 
 }
 
-void SetAnimation(std::string animationName)
+void Sprite::SetAnimation(std::string animationName)
 {
-
+    for (Animation* animation : mAnimation)
+    {
+        if (animation->mName == animationName)
+        {
+            mCurrentAnimation = animation;
+            mFrame = mCurrentAnimation->mFrame.size(); //makes it so animations start on their first frame;
+            AdvanceFrame();
+            return;
+        }
+    }
+    LogDebug("No animation '%s' found", animationName);
 }
-void SetAnimation(uint32_t animationIndex)
+void Sprite::SetAnimation(uint32_t animationIndex)
 {
+    if (animationIndex < mAnimation.size())
+    {
+        mCurrentAnimation = mAnimation[animationIndex];
+        mFrame = mCurrentAnimation->mFrame.size(); //makes it so animations start on their first frame;
+        AdvanceFrame();
+        return;
+    }
+}
+void Sprite::SetFrame(uint32_t frameIndex)
+{
+    mFrame = frameIndex - 1;
+    AdvanceFrame();
+}
+void Sprite::SetFPS(float fps)
+{
+    mFPS = fps;
+}
+void Sprite::SetPlay(bool play)
+{
+    mPlaying = play;
+}
+void Sprite::SetLoop(bool loop)
+{
+    mCurrentAnimation->loop = loop;
+}
 
+Texture* Sprite::GetFrame(uint32_t frameIndex)
+{
+    if (frameIndex < mCurrentAnimation->mFrame.size()) return mCurrentAnimation->mFrame[frameIndex].Get<Texture>();
+}
+uint32_t Sprite::GetAnimationLength(std::string animationName)
+{
+    if (animationName == "") return mCurrentAnimation->mFrame.size();
+    for (Animation* animation : mAnimation)
+    {
+        if (animationName == animation->mName) return animation->mFrame.size();
+    }
+    LogDebug("No animation '%s' found", animationName);
+}
+std::string Sprite::GetAnimationName()
+{
+    return mCurrentAnimation->mName;
+}
+bool Sprite::IsPlaying()
+{
+    return mPlaying;
+}
+bool Sprite::GetLoop()
+{
+    return mCurrentAnimation->loop;
+}
+uint32_t Sprite::GetFrameIndex()
+{
+    return mFrame;
 }

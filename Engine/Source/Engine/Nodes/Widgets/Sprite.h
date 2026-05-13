@@ -44,6 +44,7 @@ public:
     std::string GetAnimationName();
     bool IsPlaying();
     bool GetLoop();
+    uint32_t GetFrameIndex();
 
 
 
@@ -60,7 +61,7 @@ protected:
         bool loop;
     };
 
-    std::vector<Animation> mAnimation;
+    std::vector<Animation*> mAnimation;
     Animation* mCurrentAnimation;
     bool mPlaying;
     uint32_t mFrame;
