@@ -16,9 +16,35 @@ public:
     virtual void Create() override;
     virtual void Destroy() override;
 
+    virtual void Tick(float deltaTime) override;
+    virtual void EditorTick(float deltaTime) override;
+
+    void TickCommon(float deltaTime);
+
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     void GatherSpriteProperties(std::vector<Property>& outProps);
+
+    void AddAnimation(std::string animationName);
+    void AddFrame(class Texture* texture, int32_t frameIndex = -1, bool insert = false); //-1 frame means add to back, insert will take frame at index and push it back
+    void AddEmptyFrame(int32_t frameIndex = -1, bool insert = false);
+
+    void RemoveAnimation(std::string animationName);
+    void RemoveFrame(uint32_t frameIndex);
+
+    void SetAnimation(std::string animationName);
+    void SetAnimation(uint32_t animationIndex);
+    void SetFrame(uint32_t frameIndex = 0);
+    void SetFPS(float fps);
+    void SetPlay(bool play = true);
+    void SetLoop(bool loop = true);
+
+    Texture* GetFrame(uint32_t frameIndex);
+    uint32_t GetAnimationLength(std::string animationName = "");
+    std::string GetAnimationName();
+    bool IsPlaying();
+    bool GetLoop();
+
 
 
 
@@ -26,11 +52,19 @@ protected:
 
     static bool HandlePropChange(Datum* datum, uint32_t index, const void* newValue);
 
+    void AdvanceFrame();
+
     struct Animation {
         std::string mName;
-        std::vector<TextureRef> mTexture;
+        std::vector<TextureRef> mFrame;
+        bool loop;
     };
 
     std::vector<Animation> mAnimation;
+    Animation* mCurrentAnimation;
+    bool mPlaying;
+    uint32_t mFrame;
+    float mFPS;
+    float mFrameTime;
 
 };
