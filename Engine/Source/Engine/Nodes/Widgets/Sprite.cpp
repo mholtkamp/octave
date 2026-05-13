@@ -2,6 +2,9 @@
 
 #include "AssetManager.h"
 
+FORCE_LINK_DEF(Sprite);
+DEFINE_NODE(Sprite, Quad);
+
 Sprite::Sprite() :
     mFrame(0),
     mCurrentAnimation(nullptr)

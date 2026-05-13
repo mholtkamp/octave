@@ -14,7 +14,7 @@ public:
     virtual ~Sprite();
 
     virtual void Create() override;
-    virtual void Destroy() override;
+    //virtual void Destroy() override;
 
     virtual void Tick(float deltaTime) override;
     virtual void EditorTick(float deltaTime) override;
@@ -22,8 +22,8 @@ public:
     void TickCommon(float deltaTime);
 
 
-    virtual void GatherProperties(std::vector<Property>& outProps) override;
-    void GatherSpriteProperties(std::vector<Property>& outProps);
+    //virtual void GatherProperties(std::vector<Property>& outProps) override;
+    //void GatherSpriteProperties(std::vector<Property>& outProps);
 
     void AddAnimation(std::string animationName);
     void AddFrame(class Texture* texture, int32_t frameIndex = -1, bool insert = false); //-1 frame means add to back, insert will take frame at index and push it back
