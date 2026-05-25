@@ -53,7 +53,7 @@ public:
     bool GetLoop();
     uint32_t GetFrameIndex();
     uint32_t GetNumAnimations();
-    std::vector<SpriteAnimation*> GetAnimations();
+    std::vector<SpriteAnimation> GetAnimations();
 
 
 
@@ -66,8 +66,8 @@ protected:
 
 
 
-    std::vector<SpriteAnimation*> mAnimation;
-    SpriteAnimation* mCurrentAnimation;
+    std::vector<SpriteAnimation> mAnimation;
+    SpriteAnimation mCurrentAnimation;
     bool mPlaying;
     uint32_t mFrame;
     float mFPS;
