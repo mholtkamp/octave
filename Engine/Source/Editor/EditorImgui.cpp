@@ -20,6 +20,7 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/Spline3d.h"
+#include "Nodes/Widgets/Sprite.h"
 #include "World.h"
 
 #include "Assets/Scene.h"
@@ -3562,6 +3563,45 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
     }
 }
 
+static void DrawSpriteExtra(Sprite* sprite)
+{
+    static int sActiveAnimation = 0;
+    int32_t SelAnimation = GetEditorState()->GetSelectedInstance();
+    if (SelAnimation != -1)
+    {
+        sActiveAnimation = SelAnimation;
+    }
+
+    if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::PushID(0);
+
+        int32_t numAnimations = (int32_t)sprite->GetNumAnimations();
+        char animCountStr[32];
+        snprintf(animCountStr, 32, "Animations: %d", numAnimations);
+        ImGui::Text(animCountStr);
+
+        if (ImGui::Button("-"))
+        {
+            if (sprite->GetNumAnimations() > 0)
+            {
+                sActiveAnimation = glm::clamp<int32_t>(sActiveAnimation, 0, numAnimations - 1);
+                sprite->RemoveAnimation(sActiveAnimation);
+                if (sActiveAnimation > 0) --sActiveAnimation;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("+"))
+        {
+            sprite->AddAnimation();
+            sActiveAnimation == numAnimations;
+            ++numAnimations;
+        }
+
+        ImGui::PopID();
+    }
+}
+
 
 static void DrawPropertiesPanel()
 {
@@ -3701,6 +3741,11 @@ static void DrawPropertiesPanel()
                     ImGui::Text("Num Channels: %d", soundWave->GetNumChannels());
                     ImGui::Text("Bits Per Sample: %d", soundWave->GetBitsPerSample());
                     ImGui::Text("Sample Rate: %d", soundWave->GetSampleRate());
+                }
+                else if (obj->As<Sprite>())
+                {
+                    Sprite* sprite = obj->As<Sprite>();
+                    DrawSpriteExtra(sprite);
                 }
             }
 

@@ -68,12 +68,30 @@ void Sprite::AdvanceFrame()
 
 void Sprite::AddAnimation(std::string animationName)
 {
+    LogDebug("test");
     if (animationName == "")
     {
-        LogDebug("Animation name cannot be empty");
-        return;
+        int32_t i = 1;
+        bool flag = false;
+        while (!flag)
+        {
+            std::string checkName = "Animation ";
+            checkName = checkName +  std::to_string(i);
+            bool bflag = false;
+            for (SpriteAnimation* animation : mAnimation)
+            {
+                if (animation->mName == checkName) bflag = true;
+            }
+            if (!bflag)
+            {
+                animationName = checkName;
+                flag = true;
+            }
+            ++i;
+        }
     }
-    for (Animation* animation : mAnimation)
+    LogDebug("testa");
+    for (SpriteAnimation* animation : mAnimation)
     {
         if (animationName == animation->mName)
         {
@@ -81,11 +99,18 @@ void Sprite::AddAnimation(std::string animationName)
             return;
         }
     }
-    Animation* animation;
+    LogDebug("testb");
+    SpriteAnimation* animation;
+    LogDebug("testc");
+    LogDebug(animationName.c_str());
     animation->mName = animationName;
+    LogDebug("testd");
     animation->loop = true;
+    LogDebug("teste");
     mAnimation.push_back(animation);
+    LogDebug("testf");
     if (mCurrentAnimation == nullptr) SetAnimation(animationName);
+    LogDebug("testg");
 
 }
 void Sprite::AddFrame(class Texture* texture, int32_t frameIndex, bool insert) //-1 frame means add to back, insert will take frame at index and push it back
@@ -117,18 +142,18 @@ void Sprite::AddEmptyFrame(int32_t frameIndex, bool insert)
     AddFrame(nullptr, frameIndex, insert);
 }
 
-void Sprite::RemoveAnimation(std::string animationName)
+void Sprite::RemoveAnimation(uint32_t animationIndex)
 {
-
+    mAnimation.erase(mAnimation.begin() + animationIndex);
 }
 void Sprite::RemoveFrame(uint32_t frameIndex)
 {
-
+    mCurrentAnimation->mFrame.erase(mCurrentAnimation->mFrame.begin() + frameIndex);
 }
 
 void Sprite::SetAnimation(std::string animationName)
 {
-    for (Animation* animation : mAnimation)
+    for (SpriteAnimation* animation : mAnimation)
     {
         if (animation->mName == animationName)
         {
@@ -167,6 +192,10 @@ void Sprite::SetLoop(bool loop)
 {
     mCurrentAnimation->loop = loop;
 }
+void Sprite::SetAnimationName(std::string name)
+{
+    mCurrentAnimation->mName = name;
+}
 
 Texture* Sprite::GetFrame(uint32_t frameIndex)
 {
@@ -175,7 +204,7 @@ Texture* Sprite::GetFrame(uint32_t frameIndex)
 uint32_t Sprite::GetAnimationLength(std::string animationName)
 {
     if (animationName == "") return mCurrentAnimation->mFrame.size();
-    for (Animation* animation : mAnimation)
+    for (SpriteAnimation* animation : mAnimation)
     {
         if (animationName == animation->mName) return animation->mFrame.size();
     }
@@ -196,4 +225,12 @@ bool Sprite::GetLoop()
 uint32_t Sprite::GetFrameIndex()
 {
     return mFrame;
+}
+uint32_t Sprite::GetNumAnimations()
+{
+    return mAnimation.size();
+}
+std::vector<SpriteAnimation*> Sprite::GetAnimations()
+{
+    return mAnimation;
 }
