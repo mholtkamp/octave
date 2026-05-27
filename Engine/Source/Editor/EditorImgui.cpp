@@ -3566,13 +3566,13 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
 static void DrawSpriteExtra(Sprite* sprite)
 {
     static int sActiveAnimation = 0;
-    int32_t SelAnimation = GetEditorState()->GetSelectedInstance();
+    int32_t SelAnimation = sprite->GetAnimationIndex();
     if (SelAnimation != -1)
     {
         sActiveAnimation = SelAnimation;
     }
 
-    if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Animation", ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::PushID(0);
 
@@ -3588,6 +3588,11 @@ static void DrawSpriteExtra(Sprite* sprite)
                 sActiveAnimation = glm::clamp<int32_t>(sActiveAnimation, 0, numAnimations - 1);
                 sprite->RemoveAnimation(sActiveAnimation);
                 if (sActiveAnimation > 0) --sActiveAnimation;
+                --numAnimations;
+                if (numAnimations > 0)
+                {
+                    sprite->SetAnimation(sActiveAnimation);
+                }
             }
         }
         ImGui::SameLine();
@@ -3595,7 +3600,95 @@ static void DrawSpriteExtra(Sprite* sprite)
         {
             sprite->AddAnimation();
             sActiveAnimation == numAnimations;
+            sprite->SetAnimation(sActiveAnimation);
             ++numAnimations;
+        }
+
+        numAnimations = (int32_t)sprite->GetNumAnimations();
+
+        if (numAnimations > 0)
+        {
+            sActiveAnimation = glm::clamp<int32_t>(sActiveAnimation, 0, numAnimations - 1);
+            char activAnimstr[32];
+            snprintf(activAnimstr, 32, "Active Animation: %d", sActiveAnimation);
+            ImGui::Text(activAnimstr);
+
+            if (ImGui::SliderInt("", &sActiveAnimation, 0, numAnimations - 1))//named above so this can be empty
+            {
+                if (SelAnimation != -1)
+                {
+                    sprite->SetAnimation(sActiveAnimation);
+                }
+            }
+        }
+
+
+        if (sActiveAnimation >= 0 && sActiveAnimation < numAnimations)
+        {
+            SpriteAnimation animation = sprite->GetAnimation(sActiveAnimation);
+            bool nameChanged = false;
+            bool loopChanged = false;
+
+
+            static SpriteAnimation origAnim;
+            SpriteAnimation prevAnim = animation;
+            bool itemActivated = false;
+            bool itemDeactivated = false;
+
+            ImGui::Text("Animation Name");
+            nameChanged = ImGui::InputText("###AnimationInput", &animation.mName);
+            itemActivated = itemActivated || ImGui::IsItemActivated();
+            itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+
+            loopChanged = ImGui::Checkbox("Loop Animation", &animation.loop);
+            itemActivated = itemActivated || ImGui::IsItemActivated();
+            itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+
+            if (itemActivated) origAnim = prevAnim;
+            if (nameChanged || loopChanged)
+            {
+                sprite->SetAnimationData(sActiveAnimation, animation);
+            }
+            if (ImGui::CollapsingHeader("Frames", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::PushID(1);
+
+                static int sActiveFrame = 0;
+                int32_t SelFrame = sprite->GetFrameIndex(sActiveAnimation);
+                if (SelAnimation != -1)
+                {
+                    sActiveAnimation = SelAnimation;
+                }
+
+                uint32_t numFrames = (uint32_t)sprite->GetNumFrames(sActiveAnimation);
+                char frameCountStr[32];
+                snprintf(frameCountStr, 32, "Frames: %d", numFrames);
+                ImGui::Text(frameCountStr);
+
+                if (ImGui::Button("-"))
+                {
+                    if (sprite->GetNumFrames(sActiveAnimation) > 0)
+                    {
+                        sActiveFrame = glm::clamp<int32_t>(sActiveFrame, 0, numFrames - 1);
+                        sprite->RemoveFrame(sActiveFrame, sActiveAnimation);
+                        if (sActiveFrame > 0) --sActiveFrame;
+                        --numFrames;
+                        if (numFrames > 0)
+                        {
+                            sprite->SetFrame(sActiveFrame);
+                        }
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("+"))
+                {
+                    sprite->AddEmptyFrame(-1, false, sActiveAnimation);
+                    sActiveFrame == numFrames;
+                    sprite->SetFrame(sActiveFrame);
+                    ++numFrames;
+                }
+                ImGui::PopID();
+            }
         }
 
         ImGui::PopID();
