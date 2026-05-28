@@ -32,7 +32,7 @@ public:
 
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
-    //void GatherSpriteProperties(std::vector<Property>& outProps);
+    void GatherFrameProperties(std::vector<Property>& outProps);
 
     void AddAnimation(std::string animationName = "");
     void AddFrame(class Texture* texture, int32_t frameIndex = -1, bool insert = false, int32_t animationIndex = -1); //-1 frame means add to back, insert will take frame at index and push it back
@@ -50,7 +50,7 @@ public:
     void SetAnimationName(std::string name, uint32_t animationIndex = -1);
     void SetAnimationData(int32_t index, const SpriteAnimation& data);
 
-    Texture* GetFrame(uint32_t frameIndex);
+    Texture* GetFrame(uint32_t frameIndex, int32_t animationIndex = -1);
     uint32_t GetAnimationLength(std::string animationName = "");
     std::string GetAnimationName();
     bool IsPlaying();
@@ -75,7 +75,7 @@ protected:
 
 
     std::vector<SpriteAnimation> mAnimation;
-    SpriteAnimation mCurrentAnimation;
+    int32_t mCurrentAnimation;
     bool mPlaying;
     int32_t mFrame;
     float mFPS;

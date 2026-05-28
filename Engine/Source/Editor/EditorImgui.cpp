@@ -3563,7 +3563,7 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
     }
 }
 
-static void DrawSpriteExtra(Sprite* sprite)
+static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
 {
     static int sActiveAnimation = 0;
     int32_t SelAnimation = sprite->GetAnimationIndex();
@@ -3609,15 +3609,16 @@ static void DrawSpriteExtra(Sprite* sprite)
         if (numAnimations > 0)
         {
             sActiveAnimation = glm::clamp<int32_t>(sActiveAnimation, 0, numAnimations - 1);
-            char activAnimstr[32];
-            snprintf(activAnimstr, 32, "Active Animation: %d", sActiveAnimation);
-            ImGui::Text(activAnimstr);
+            // char activAnimstr[32];
+            // snprintf(activAnimstr, 32, "Active Animation: %d", sActiveAnimation);
+            ImGui::Text("Active Animation");
 
             if (ImGui::SliderInt("", &sActiveAnimation, 0, numAnimations - 1))//named above so this can be empty
             {
                 if (SelAnimation != -1)
                 {
                     sprite->SetAnimation(sActiveAnimation);
+
                 }
             }
         }
@@ -3687,6 +3688,70 @@ static void DrawSpriteExtra(Sprite* sprite)
                     sprite->SetFrame(sActiveFrame);
                     ++numFrames;
                 }
+
+                numFrames = (int32_t)sprite->GetNumFrames(sActiveAnimation);
+
+                if (numFrames > 0)
+                {
+                    sActiveFrame = glm::clamp<int32_t>(sActiveFrame, 0, numFrames -1);
+                    ImGui::Text("Active Frame");
+
+                    if (ImGui::SliderInt("", &sActiveFrame, 0, numFrames -1))
+                    {
+                        if (SelFrame != -1)
+                        {
+                            sprite->SetFrame(sActiveFrame);
+                        }
+                    }
+                }
+
+
+                if (sActiveFrame >= 0 && sActiveFrame < numFrames)
+                {
+                    //show an image of the frame, same as a materia property would?
+                    //drawpropertiespanel is the guy for me
+                    Texture* texObj = sprite->GetFrame(sActiveFrame, sActiveAnimation);
+                    if (texObj != nullptr &&
+                        texObj->GetResource()->mImage != nullptr)
+                    {
+                        // Dealloc prev tex descriptor
+                        if (sPrevInspectTexture != texObj)
+                        {
+                            DeviceWaitIdle();
+
+                            if (sInspectTexId != 0)
+                            {
+                                ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)sInspectTexId);
+                                sInspectTexId = 0;
+                            }
+
+                            sInspectTexId = (VkDescriptorSet)ImGui_ImplVulkan_AddTexture(
+                                texObj->GetResource()->mImage->GetSampler(),
+                                                                                         texObj->GetResource()->mImage->GetView(),
+                                                                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+                            sPrevInspectTexture = texObj;
+                        }
+
+                        if (sInspectTexId != 0)
+                        {
+                            ImGui::Image(sInspectTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
+                        }
+
+                        ImGui::Text("%d x %d", texObj->GetWidth(), texObj->GetHeight());
+                        ImGui::NewLine();
+                    }
+                }
+
+
+                //list all the frames regourdless
+
+                std::vector<Property> props;
+                sprite->GatherFrameProperties(props);
+
+                DrawPropertyList(sprite, props);
+
+
                 ImGui::PopID();
             }
         }
@@ -3838,7 +3903,7 @@ static void DrawPropertiesPanel()
                 else if (obj->As<Sprite>())
                 {
                     Sprite* sprite = obj->As<Sprite>();
-                    DrawSpriteExtra(sprite);
+                    DrawSpriteExtra(sprite, props);
                 }
             }
 
