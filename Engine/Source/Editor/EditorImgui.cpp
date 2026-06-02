@@ -1687,10 +1687,33 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (prop.mEnumCount > 0)
                 {
-                    if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                    if (prop.mEnumStrings != nullptr)
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
                     }
+                    else
+                    {
+                        ImGui::SliderInt("", &propVal, 0, prop.mEnumCount);
+
+                        if (ImGui::IsItemActivated())
+                        {
+                            sOrigVal = preVal;
+                        }
+
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        {
+                            prop.SetInteger(sOrigVal, i);
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
+                        else if (propVal != preVal)
+                        {
+                            prop.SetInteger(propVal, i);
+                        }
+                    }
+
                 }
                 else
                 {
@@ -3577,6 +3600,12 @@ static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
         ImGui::PushID(0);
 
         int32_t numAnimations = (int32_t)sprite->GetNumAnimations();
+        if (numAnimations > 0 && SelAnimation == -1)
+        {
+            sprite->SetAnimation(0);
+            SelAnimation = 0;
+
+        }
         char animCountStr[32];
         snprintf(animCountStr, 32, "Animations: %d", numAnimations);
         ImGui::Text(animCountStr);
@@ -3677,6 +3706,7 @@ static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
                         if (numFrames > 0)
                         {
                             sprite->SetFrame(sActiveFrame);
+
                         }
                     }
                 }
@@ -3710,6 +3740,7 @@ static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
                 {
                     //show an image of the frame, same as a materia property would?
                     //drawpropertiespanel is the guy for me
+
                     Texture* texObj = sprite->GetFrame(sActiveFrame, sActiveAnimation);
                     if (texObj != nullptr &&
                         texObj->GetResource()->mImage != nullptr)
@@ -3727,12 +3758,11 @@ static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
 
                             sInspectTexId = (VkDescriptorSet)ImGui_ImplVulkan_AddTexture(
                                 texObj->GetResource()->mImage->GetSampler(),
-                                                                                         texObj->GetResource()->mImage->GetView(),
-                                                                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                                texObj->GetResource()->mImage->GetView(),
+                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                             sPrevInspectTexture = texObj;
                         }
-
                         if (sInspectTexId != 0)
                         {
                             ImGui::Image(sInspectTexId, ImVec2(128, 128), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1,1,1,1), ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
@@ -3743,13 +3773,129 @@ static void DrawSpriteExtra(Sprite* sprite, std::vector<Property>& outProps)
                     }
                 }
 
+                if (sActiveFrame >= 0 && sActiveFrame < numFrames)
+                {
+                    //list all the frames regourdless of active frame
 
-                //list all the frames regourdless
+                    //alright so I cant get this part to work how I want it to
+                    //So Im gonna try a VERY pared down version of what drawassetproperty does
+                    //just a dropdown of textures and a text field
+                    //leave the whole "being a real texture field" to the QUADS, man!
+                    //sorry for the clutter this causes but i straight up cant get any other method to work
 
-                std::vector<Property> props;
-                sprite->GatherFrameProperties(props);
+                    //first, get the dropdown list. all textures are gonna use the same list
 
-                DrawPropertyList(sprite, props);
+                    // Get asset suggestions based on type
+                    static std::vector<std::string> textureSuggestions;
+                    static TypeId assetTypeFilter = int32_t(Texture::GetStaticType());
+                    static double lastUpdateTime = 0.0;
+                    double currentTime = ImGui::GetTime();
+
+                    // Only refresh the suggestions list occasionally to avoid performance issues
+                    if (currentTime - lastUpdateTime > 2.0)
+                    {
+                        textureSuggestions.clear();
+                        const auto& assetMap = AssetManager::Get()->GetAssetMap();
+
+                        for (const auto& pair : assetMap)
+                        {
+                            AssetStub* stub = pair.second;
+                            // If assetTypeFilter is 0 or matches the asset type, add it to suggestions
+                            bool typeMatches = false;
+
+                            if (assetTypeFilter == 0)
+                            {
+                                typeMatches = true; // Accept all types when no filter
+                            }
+                            else if (stub)
+                            {
+                                // Check for exact type match
+                                if (stub->mType == assetTypeFilter)
+                                {
+                                    typeMatches = true;
+                                }
+                                // Special handling for Material types
+                                else if (assetTypeFilter == Material::GetStaticType() &&
+                                    (stub->mType == MaterialBase::GetStaticType() ||
+                                    stub->mType == MaterialInstance::GetStaticType() ||
+                                    stub->mType == MaterialLite::GetStaticType()))
+                                {
+                                    typeMatches = true;
+                                }
+                            }
+
+                            if (stub && typeMatches)
+                            {
+                                textureSuggestions.push_back(stub->mName);
+                            }
+                        }
+                        lastUpdateTime = currentTime;
+                    }
+
+                    // Define a filter function for our assets
+                    auto assetFilter = [](const std::string& suggestion, const std::string& input) {
+                        if (input.empty()) return true;
+                        // Case-insensitive substring search
+                        std::string lowerSuggestion = suggestion;
+                        std::string lowerInput = input;
+                        std::transform(lowerSuggestion.begin(), lowerSuggestion.end(), lowerSuggestion.begin(), ::tolower);
+                        std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+                        return lowerSuggestion.find(lowerInput) != std::string::npos;
+                    };
+
+
+
+                    // for (uint32_t i = 0; i < numFrames; ++i)
+                    // {
+                    //
+                    //     std::vector<Property> spriteProps;
+                    //     std::string frameName = std::string("Frame ") + std::to_string(i + 1);
+                    //     PropertyOwnerType ownerType = PropertyOwnerType::Global;
+                    //     Property prop = Property(DatumType::Asset, frameName, sprite, &animation.mFrame[i], 1, Sprite::HandleFramePropChange, (int32_t)Texture::GetStaticType());
+                    //     spriteProps.push_back(prop);
+                    //     DrawPropertyList(sprite, spriteProps);
+                    //     LogDebug("teste");
+                    //     //DrawAssetProperty(prop, 0, sprite, PropertyOwnerType::Node);
+                    //     //LogDebug("testf");
+                    //
+                    //
+                    //         // bool frameChanged = false;
+                    //         // bool loopChanged = false;
+                    //         //
+                    //         //
+                    //         // static SpriteAnimation origAnim;
+                    //         // SpriteAnimation prevAnim = animation;
+                    //         // bool itemActivated = false;
+                    //         // bool itemDeactivated = false;
+                    //         //
+                    //         // ImGui::Text("Animation Name");
+                    //         // nameChanged = ImGui::InputText("###AnimationInput", &animation.mName);
+                    //         // itemActivated = itemActivated || ImGui::IsItemActivated();
+                    //         // itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+                    //         //
+                    //         // loopChanged = ImGui::Checkbox("Loop Animation", &animation.loop);
+                    //         // itemActivated = itemActivated || ImGui::IsItemActivated();
+                    //         // itemDeactivated = itemDeactivated || ImGui::IsItemDeactivatedAfterEdit();
+                    //         //
+                    //         // if (itemActivated) origAnim = prevAnim;
+                    //         // if (nameChanged || loopChanged)
+                    //         // {
+                    //         //     sprite->SetAnimationData(sActiveAnimation, animation);
+                    //         // }
+                    // }
+
+                    std::vector<Property> spriteProps;
+                    sprite->GatherFrameProperties(spriteProps);
+
+                    DrawPropertyList(sprite, spriteProps);
+
+
+                    ImGui::NewLine();
+                    ImGui::NewLine();
+                    ImGui::NewLine();
+                    ImGui::NewLine();
+                }
+
 
 
                 ImGui::PopID();
@@ -3903,7 +4049,7 @@ static void DrawPropertiesPanel()
                 else if (obj->As<Sprite>())
                 {
                     Sprite* sprite = obj->As<Sprite>();
-                    DrawSpriteExtra(sprite, props);
+                    //DrawSpriteExtra(sprite, props);
                 }
             }
 

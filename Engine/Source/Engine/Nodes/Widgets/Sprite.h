@@ -4,7 +4,7 @@
 
 struct SpriteAnimation {
     std::string mName;
-    std::vector<TextureRef> mFrame;
+    std::vector<TextureRef> mFrame = {nullptr};
     bool loop;
 };
 
@@ -33,6 +33,8 @@ public:
 
     virtual void GatherProperties(std::vector<Property>& outProps) override;
     void GatherFrameProperties(std::vector<Property>& outProps);
+
+    static bool HandleFramePropChange(Datum* datum, uint32_t index, const void* newValue);
 
     void AddAnimation(std::string animationName = "");
     void AddFrame(class Texture* texture, int32_t frameIndex = -1, bool insert = false, int32_t animationIndex = -1); //-1 frame means add to back, insert will take frame at index and push it back
@@ -76,9 +78,12 @@ protected:
 
     std::vector<SpriteAnimation> mAnimation;
     int32_t mCurrentAnimation;
-    bool mPlaying;
+    bool mPlaying = false;
     int32_t mFrame;
     float mFPS;
-    float mFrameTime;
+    float mFrameTime = 0;
+
+    std::string animName = "";
+    std::vector<TextureRef> frameRef = {nullptr};
 
 };
