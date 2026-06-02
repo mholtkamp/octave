@@ -5,10 +5,6 @@
 FORCE_LINK_DEF(Sprite);
 DEFINE_NODE(Sprite, Quad);
 
-bool Sprite::HandleFramePropChange(Datum* datum, uint32_t index, const void* newValue)
-{
-    return HandlePropChange(datum, index, newValue);
-}
 
 bool Sprite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue)
 {
@@ -72,7 +68,7 @@ bool Sprite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
     }
     else if (prop->mName == "")
     {
-        //just throwing space for textures
+        //just throwing space for textures dropdown to show up on lower frames
         success = true;
     }
 
@@ -81,9 +77,7 @@ bool Sprite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
     return success;
 }
 
-Sprite::Sprite() :
-    mFrame(0),
-    mCurrentAnimation(-1)
+Sprite::Sprite()
 {
     SetName("Sprite");
     SetFPS(5.0f);
@@ -129,7 +123,6 @@ void Sprite::TickCommon(float deltaTime)
 void Sprite::SaveStream(Stream& stream, Platform platorm)
 {
     stream.WriteUint32(mAnimation.size());
-    stream.WriteInt32(mCurrentAnimation);
     // For serializing extra data besides properties
     for (SpriteAnimation animation : mAnimation)
     {
@@ -147,7 +140,6 @@ void Sprite::LoadStream(Stream& stream, Platform platorm, uint32_t version)
 {
     // For serializing extra data besides properties
     uint32_t numAnimations = stream.ReadUint32();
-    int32_t mCurrentAnimation = stream.ReadInt32();
     mAnimation.resize(numAnimations);
     for (uint32_t i = 0; i < numAnimations; ++i)
     {
@@ -175,7 +167,6 @@ void Sprite::AdvanceFrame()
             return;
         }
     }
-    //this is where it crashes rn
     if (mAnimation[mCurrentAnimation].mFrame[mFrame] == nullptr)
         SetTexture(nullptr);
     else
@@ -321,7 +312,7 @@ void Sprite::SetLoop(bool loop)
     mAnimation[mCurrentAnimation].loop = loop;
     MarkDirty();
 }
-void Sprite::SetAnimationName(std::string name, uint32_t animationIndex)
+void Sprite::SetAnimationName(std::string name, int32_t animationIndex)
 {
     for (SpriteAnimation animation : mAnimation)
     {
@@ -337,7 +328,6 @@ void Sprite::SetAnimationName(std::string name, uint32_t animationIndex)
         animation.mName = name;
         SetAnimation(name);
         MarkDirty();
-        /*mCurrentAnimation.mName = name;*/
         return;
     }
     if (animationIndex >= mAnimation.size()) return;
@@ -380,6 +370,7 @@ uint32_t Sprite::GetAnimationLength(std::string animationName)
         if (animationName == animation.mName) return animation.mFrame.size();
     }
     LogDebug("No animation '%s' found", animationName);
+    return 0;
 }
 std::string Sprite::GetAnimationName()
 {
@@ -444,11 +435,8 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
         {
             if (mCurrentAnimation < 0) mCurrentAnimation = 0;
             outProps.push_back(Property(DatumType::Integer, "Active Animation", this, &mCurrentAnimation, 1, HandlePropChange, NULL_DATUM, int32_t(mAnimation.size() - 1)));
-            //std::string animName = "";//mAnimation[mCurrentAnimation].mName;
             animName = mAnimation[mCurrentAnimation].mName;
             outProps.push_back(Property(DatumType::String, "Animation Name", this, &animName, 1, HandlePropChange));
-
-            //LogDebug("%d   %d", mCurrentAnimation, mAnimation.size());
         }
     }
     if (mCurrentAnimation >= 0 && mCurrentAnimation < mAnimation.size())
@@ -473,32 +461,7 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
 
     }
 
-    // {
-    //     SCOPED_CATEGORY("Animations");
-    //     // static std::vector<std::string> anims; //really just a dummy value i think?
-    //     // // for (SpriteAnimation animation : mAnimation)
-    //     // // {
-    //     // //     anims.push_back(animation.mName);
-    //     // // }
-    //     // outProps.push_back(Property(DatumType::String, "", this, &anims, 1, HandlePropChange).MakeVector());
-    //
-    //     if (mCurrentAnimation == -1) return;
-    //     for (uint32_t i = 0; i < mAnimation[mCurrentAnimation].mFrame.size(); ++i)
-    //     {
-    //         std::string frameName = std::string("Frame ") + std::to_string(i + 1);
-    //         outProps.push_back(Property(DatumType::Asset, frameName, this, &mAnimation[mCurrentAnimation].mFrame[i], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    //     }
-    // }
 
 
 }
 
-void Sprite::GatherFrameProperties(std::vector<Property>& outProps)
-{
-    if (mCurrentAnimation == -1) return;
-    for (uint32_t i = 0; i < mAnimation[mCurrentAnimation].mFrame.size(); ++i)
-    {
-        std::string frameName = std::string("Frame ") + std::to_string(i + 1);
-        outProps.push_back(Property(DatumType::Asset, frameName, this, &mAnimation[mCurrentAnimation].mFrame[i], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
-    }
-}
