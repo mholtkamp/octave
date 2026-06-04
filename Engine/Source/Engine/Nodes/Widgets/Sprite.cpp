@@ -40,30 +40,14 @@ bool Sprite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         sprite->SetAnimationName(*((std::string*) newValue), sprite->mCurrentAnimation);
         success = true;
     }
-    else if (prop->mName == "Add Animation")
+    else if (prop->mName.rfind("Animations: ", 0) == 0)
     {
-        sprite->AddAnimation();
+        sprite->AddRemAnim(*static_cast<const bool*>(newValue));
         success = true;
     }
-    else if (prop->mName == "Remove Animation")
+    else if (prop->mName.rfind("Frames: ", 0) == 0)
     {
-        if (sprite->mAnimation.size() > 0 && sprite->mCurrentAnimation >= 0)
-        {
-            sprite->RemoveAnimation(sprite->mCurrentAnimation);
-        }
-        success = true;
-    }
-    else if (prop->mName == "Add Frame")
-    {
-        sprite->AddEmptyFrame();
-        success = true;
-    }
-    else if (prop->mName == "Remove Frame")
-    {
-        if (sprite->GetNumFrames(sprite->mCurrentAnimation) > 0 && sprite->mCurrentAnimation >= 0 && sprite->mFrame >= 0)
-        {
-            sprite->RemoveFrame(sprite->mFrame);
-        }
+        sprite->AddRemFrame(*static_cast<const bool*>(newValue));
         success = true;
     }
     else if (prop->mName == "")
@@ -109,7 +93,14 @@ void Sprite::TickCommon(float deltaTime)
 {
     bool GTE = IsGameTickEnabled();
 
-    if (GTE && IsPlaying() && (mCurrentAnimation >= 0))
+    if (mAnimation.size() > 0)
+    {
+
+        if (mCurrentAnimation < 0 || mCurrentAnimation >= mAnimation.size())
+            mCurrentAnimation = 0;
+    }
+
+    if (GTE && IsPlaying())
     {
         mFrameTime += deltaTime;
         if (mFrameTime >= (1 / mFPS))
@@ -172,6 +163,30 @@ void Sprite::AdvanceFrame()
     else
         SetTexture(mAnimation[mCurrentAnimation].mFrame[mFrame].Get<Texture>());
 
+}
+
+void Sprite::AddRemAnim(bool AdRem)
+{
+    if (AdRem) AddAnimation();
+    else
+    {
+        if (mAnimation.size() > 0 && mCurrentAnimation >= 0)
+        {
+            RemoveAnimation(mCurrentAnimation);
+        }
+    }
+}
+
+void Sprite::AddRemFrame(bool AdRem)
+{
+    if (AdRem) AddEmptyFrame();
+    else
+    {
+        if (GetNumFrames(mCurrentAnimation) > 0 && mCurrentAnimation >= 0 && mFrame >= 0)
+        {
+            RemoveFrame(mFrame);
+        }
+    }
 }
 
 void Sprite::AddAnimation(std::string animationName)
@@ -362,31 +377,28 @@ Texture* Sprite::GetFrame(uint32_t frameIndex, int32_t animationIndex)
     }
     return nullptr;
 }
-uint32_t Sprite::GetAnimationLength(std::string animationName)
+uint32_t Sprite::GetAnimationLength(int32_t animationIndex)
 {
-    if (animationName == "") return mAnimation[mCurrentAnimation].mFrame.size();
-    for (SpriteAnimation animation : mAnimation)
-    {
-        if (animationName == animation.mName) return animation.mFrame.size();
-    }
-    LogDebug("No animation '%s' found", animationName);
-    return 0;
+    if (animationIndex == -1) animationIndex = mCurrentAnimation;
+    if (animationIndex < 0 || animationIndex >= mAnimation.size()) return 0;
+    return mAnimation[animationIndex].mFrame.size();
 }
-std::string Sprite::GetAnimationName()
+std::string Sprite::GetAnimationName(int32_t animationIndex)
 {
-    return mAnimation[mCurrentAnimation].mName;
+    if (animationIndex == -1) animationIndex = mCurrentAnimation;
+    return mAnimation[animationIndex].mName;
 }
 bool Sprite::IsPlaying()
 {
     return mPlaying;
 }
-bool Sprite::GetLoop()
+bool Sprite::GetLoop(int32_t animationIndex)
 {
-    return mAnimation[mCurrentAnimation].loop;
+    if (animationIndex == -1) animationIndex = mCurrentAnimation;
+    return mAnimation[animationIndex].loop;
 }
-int32_t Sprite::GetFrameIndex(uint32_t animationIndex)
+int32_t Sprite::GetFrameIndex()
 {
-    if (mAnimation[animationIndex].mFrame.size() == 0) return -1;
     return mFrame;
 }
 uint32_t Sprite::GetNumAnimations()
@@ -414,9 +426,14 @@ SpriteAnimation Sprite::GetAnimation(uint32_t animationIndex)
 {
     return mAnimation[animationIndex];
 }
-uint32_t Sprite::GetNumFrames(uint32_t animationIndex)
+uint32_t Sprite::GetNumFrames(int32_t animationIndex)
 {
+    if (animationIndex == -1) animationIndex = mCurrentAnimation;
     return mAnimation[animationIndex].mFrame.size();
+}
+float Sprite::GetFPS()
+{
+    return mFPS;
 }
 
 void Sprite::GatherProperties(std::vector<Property>& outProps)
@@ -428,9 +445,10 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
 
         outProps.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
         outProps.push_back(Property(DatumType::Float, "FPS", this, &mFPS));
+
         static bool adremAnim = false;
-        outProps.push_back(Property(DatumType::Bool, "Add Animation", this, &adremAnim, 1, HandlePropChange));
-        outProps.push_back(Property(DatumType::Bool, "Remove Animation", this, &adremAnim, 1, HandlePropChange));
+        std::string adremName = "Animations: " + std::to_string(mAnimation.size());
+        outProps.push_back(Property(DatumType::Bool, adremName, this, &adremAnim, 1, HandlePropChange, NULL_DATUM, int32_t(2)));
         if (mAnimation.size() > 0)
         {
             if (mCurrentAnimation < 0) mCurrentAnimation = 0;
@@ -443,10 +461,11 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
     {
         SCOPED_CATEGORY("Frames")
         static bool adremFrame = false;
-        outProps.push_back(Property(DatumType::Bool, "Add Frame", this, &adremFrame, 1, HandlePropChange));
-        outProps.push_back(Property(DatumType::Bool, "Remove Frame", this, &adremFrame, 1, HandlePropChange));
+        std::string adremName = "Frames: " + std::to_string(mAnimation[mCurrentAnimation].mFrame.size());
+        outProps.push_back(Property(DatumType::Bool, adremName, this, &adremFrame, 1, HandlePropChange, NULL_DATUM, int32_t(2)));
         if (mAnimation[mCurrentAnimation].mFrame.size() > 0)
         {
+            if (mFrame < 0) mFrame = 0;
             outProps.push_back(Property(DatumType::Integer, "Active Frame", this, &mFrame, 1, HandlePropChange, NULL_DATUM, int32_t(mAnimation[mCurrentAnimation].mFrame.size() - 1)));
         }
         for (uint32_t i = 0; i < mAnimation[mCurrentAnimation].mFrame.size(); ++i)
@@ -455,9 +474,12 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
             std::string frameName = std::string("Frame ") + std::to_string(i + 1);
             outProps.push_back(Property(DatumType::Asset, frameName, this, &frameRef[i], 1, HandlePropChange, int32_t(Texture::GetStaticType())));
         }
-        outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
-        outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
-        outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
+        if (mAnimation[mCurrentAnimation].mFrame.size() > 0)
+        {
+            outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
+            outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
+            outProps.push_back(Property(DatumType::Bool, "", this, &adremFrame, 1, HandlePropChange));
+        }
 
     }
 

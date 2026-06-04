@@ -20,7 +20,6 @@
 #include "Nodes/3D/SkeletalMesh3d.h"
 #include "Nodes/3D/Camera3d.h"
 #include "Nodes/3D/Spline3d.h"
-#include "Nodes/Widgets/Sprite.h"
 #include "World.h"
 
 #include "Assets/Scene.h"
@@ -1713,7 +1712,6 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
                             prop.SetInteger(propVal, i);
                         }
                     }
-
                 }
                 else
                 {
@@ -1762,15 +1760,32 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
             }
             case DatumType::Bool:
             {
-                bool propVal = prop.GetBool(i);
-                if (ImGui::Checkbox("", &propVal))
+                if (prop.mEnumCount > 0)
+                { //allows vectors to be controlled easier, true for extending vecs, false to ensmallen
+                    ImGui::Text(prop.mName.c_str());
+                    if (ImGui::Button("+"))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, true);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("-"))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, false);
+                    }
+                }
+                else
                 {
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    bool propVal = prop.GetBool(i);
+                    if (ImGui::Checkbox("", &propVal))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+
+                    ImGui::SameLine();
+                    const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
+                    ImGui::Text(displayText);
                 }
 
-                ImGui::SameLine();
-                const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
-                ImGui::Text(displayText);
                 break;
             }
             case DatumType::String:
@@ -3585,8 +3600,6 @@ static void DrawInstancedMeshExtra(InstancedMesh3D* instMesh)
         ImGui::PopID();
     }
 }
-
-
 
 
 static void DrawPropertiesPanel()

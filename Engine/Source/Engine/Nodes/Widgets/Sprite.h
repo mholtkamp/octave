@@ -40,6 +40,9 @@ public:
     void RemoveAnimation(uint32_t animationIndex);
     void RemoveFrame(uint32_t frameIndex, int32_t animationIndex = -1);
 
+    void AddRemAnim(bool AdRem);
+    void AddRemFrame(bool AdRem);
+
     void SetAnimation(std::string animationName);
     void SetAnimation(uint32_t animationIndex);
     void SetFrame(uint32_t frameIndex = 0);
@@ -50,17 +53,18 @@ public:
     void SetAnimationData(int32_t index, const SpriteAnimation& data);
 
     Texture* GetFrame(uint32_t frameIndex, int32_t animationIndex = -1);
-    uint32_t GetAnimationLength(std::string animationName = "");
-    std::string GetAnimationName();
+    uint32_t GetAnimationLength(int32_t animationIndex = -1);
+    std::string GetAnimationName(int32_t animationIndex = -1);
     bool IsPlaying();
-    bool GetLoop();
-    int32_t GetFrameIndex(uint32_t animationIndex);
+    bool GetLoop(int32_t animationIndex = -1);
+    int32_t GetFrameIndex();
     uint32_t GetNumAnimations();
     std::vector<SpriteAnimation> GetAnimations();
     int32_t GetAnimationIndex();
     SpriteAnimation GetCurrentAnimation();
     SpriteAnimation GetAnimation(uint32_t animationIndex);
-    uint32_t GetNumFrames(uint32_t animationIndex);
+    uint32_t GetNumFrames(int32_t animationIndex = -1);
+    float GetFPS();
 
 
 
