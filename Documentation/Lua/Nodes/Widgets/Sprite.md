@@ -17,7 +17,7 @@ Sig: `Sprite:AddAnimation(animationName = "")`
 ### AddFrame
 Add a frame to the end of the animation, or overwrites or inserts at a given frame.
 
-Sig: `Sprite:AddFrame(texture, frameIndex = -1, insert = false, animationIndex = -1)`
+Sig: `Sprite:AddFrame(texture, frameIndex = 0, insert = false, animationIndex = 0)`
  - Arg: `Texture texture` Texture asset
  - Arg: `number frameIndex` Frame to add texture to. Default is current frame
  - Arg: `boolean insert` Whether to insert or overwrite an existing frame
@@ -26,7 +26,7 @@ Sig: `Sprite:AddFrame(texture, frameIndex = -1, insert = false, animationIndex =
 ### AddEmptyFrame
 Add an empty frame to the end of the animation, or overwrite or insert at a given frame.
 
-Sig: `Sprite:AddEmptyFrame(frameIndex = -1, insert = false, animationIndex = -1)`
+Sig: `Sprite:AddEmptyFrame(frameIndex = 0, insert = false, animationIndex = 0)`
  - Arg: `number frameIndex` Frame to add texture to. Default is current frame
  - Arg: `boolean insert` Whether to insert or overwrite an existing frame. Default is to overwrite
  - Arg: `number animationIndex` The animation to apply this frame to. Default is current animation
@@ -40,7 +40,7 @@ Sig: `Sprite:RemoveAnimation(animationIndex)`
 ### RemoveFrame
 Remove a frame.
 
-Sig: `Sprite:RemoveFrame(frameIndex, animationIndex = -1)`
+Sig: `Sprite:RemoveFrame(frameIndex, animationIndex = 0)`
  - Arg: `number frameIndex` Frame to remove
  - Arg: `number animationIndex` Animation to remove frame from. Default is current animation
 ---
@@ -80,14 +80,14 @@ Sig: `Sprite:SetLoop(enableLoop)`
 ### SetAnimationName
 Set the name of an animation.
 
-Sig: `Sprite:SetAnimationName(animationName, animationIndex = -1)`
+Sig: `Sprite:SetAnimationName(animationName, animationIndex = 0)`
  - Arg: `string animationName` The animation's new name
  - Arg: `number animationIndex` The animation to rename. Defualt is current animation
 ---
 ### GetFrame
 Get a given frame texture.
 
-Sig: `texture = Sprite:GetFrame(frameIndex, animationIndex = -1)`
+Sig: `texture = Sprite:GetFrame(frameIndex, animationIndex = 0)`
  - Arg: `number frameIndex` Frame to retrieve
  - Arg: `number animationIndex` Animation to retrieve frame from. Default is current animation
  - Ret: `Texture texture` Texture asset
@@ -95,14 +95,14 @@ Sig: `texture = Sprite:GetFrame(frameIndex, animationIndex = -1)`
 ### GetAnimationLength
 Get the length of an animation.
 
-Sig: `animationLength = Sprite:GetAnimationLength(animationIndex = -1)`
+Sig: `animationLength = Sprite:GetAnimationLength(animationIndex = 0)`
  - Arg: `number animationIndex` Animation to retrieve frame count from. Default is current animation
  - Ret: `number animationLength` Number of frames in animation
 ---
 ### GetAnimationName
 Get the name of an animation.
 
-Sig: `animationName = Sprite:GetAnimationName(animationIndex = -1)`
+Sig: `animationName = Sprite:GetAnimationName(animationIndex = 0)`
  - Arg: `number animationIndex` Animation to retrieve name from. Default is current animation
  - Ret: `number animationName` Name of indexed animation
 ---
@@ -139,7 +139,7 @@ Sig: `animationIndex = Sprite:GetAnimationIndex()`
 ### GetNumFrames
 Get the number of frames in a given animation.
 
-Sig: `numFrames = Sprite:GetNumFrames(animationIndex = -1)`
+Sig: `numFrames = Sprite:GetNumFrames(animationIndex = 0)`
  - Arg: `number animationIndex` Animation to retrieve frame count from. Default is current animation
  - Ret: `number numFrames` Number of frames
 ---
