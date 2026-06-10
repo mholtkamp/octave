@@ -56,7 +56,7 @@ public:
     uint32_t GetAnimationLength(int32_t animationIndex = -1);
     std::string GetAnimationName(int32_t animationIndex = -1);
     bool IsPlaying();
-    bool GetLoop(int32_t animationIndex = -1);
+    bool GetLoop();
     int32_t GetFrameIndex();
     uint32_t GetNumAnimations();
     std::vector<SpriteAnimation> GetAnimations();
@@ -80,11 +80,14 @@ protected:
     std::vector<SpriteAnimation> mAnimation;
     int32_t mCurrentAnimation = -1;
     bool mPlaying = false;
+    bool mLoop = false;
     int32_t mFrame = -1;
     float mFPS = 5.0f;
     float mFrameTime = 0;
 
     std::string animName = "";
     std::vector<TextureRef> frameRef = {nullptr};
+
+
 
 };

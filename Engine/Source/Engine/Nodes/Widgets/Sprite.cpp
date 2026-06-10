@@ -25,6 +25,11 @@ bool Sprite::HandlePropChange(Datum* datum, uint32_t index, const void* newValue
         sprite->SetPlay(*static_cast<const bool*>(newValue));
         success = true;
     }
+    else if (prop->mName == "Play")
+    {
+        sprite->SetLoop(*static_cast<const bool*>(newValue));
+        success = true;
+    }
     else if (prop->mName == "Active Animation")
     {
         sprite->SetAnimation(*static_cast<const int32_t*>(newValue));
@@ -118,7 +123,6 @@ void Sprite::SaveStream(Stream& stream, Platform platorm)
     for (SpriteAnimation animation : mAnimation)
     {
         stream.WriteString(animation.mName);
-        stream.WriteBool(animation.loop);
         stream.WriteUint32(animation.mFrame.size());
         for (TextureRef frame : animation.mFrame)
         {
@@ -135,7 +139,6 @@ void Sprite::LoadStream(Stream& stream, Platform platorm, uint32_t version)
     for (uint32_t i = 0; i < numAnimations; ++i)
     {
         stream.ReadString(mAnimation[i].mName);
-        mAnimation[i].loop = stream.ReadBool();
         uint32_t numFrames = stream.ReadUint32();
         mAnimation[i].mFrame.resize(numFrames);
         for (uint32_t j = 0; j < numFrames; ++j)
@@ -152,7 +155,7 @@ void Sprite::AdvanceFrame()
     if (mFrame >= mAnimation[mCurrentAnimation].mFrame.size())
     {
         mFrame = 0;
-        if (!GetLoop())
+        if (!mLoop)
         {
             SetPlay(false);
             return;
@@ -222,7 +225,6 @@ void Sprite::AddAnimation(std::string animationName)
     }
     SpriteAnimation animation;
     animation.mName = animationName;
-    animation.loop = true;
     mAnimation.push_back(animation);
     if (mCurrentAnimation == -1) SetAnimation(animationName);
     MarkDirty();
@@ -324,7 +326,7 @@ void Sprite::SetPlay(bool play)
 }
 void Sprite::SetLoop(bool loop)
 {
-    mAnimation[mCurrentAnimation].loop = loop;
+    mLoop = loop;
     MarkDirty();
 }
 void Sprite::SetAnimationName(std::string name, int32_t animationIndex)
@@ -392,10 +394,9 @@ bool Sprite::IsPlaying()
 {
     return mPlaying;
 }
-bool Sprite::GetLoop(int32_t animationIndex)
+bool Sprite::GetLoop()
 {
-    if (animationIndex == -1) animationIndex = mCurrentAnimation;
-    return mAnimation[animationIndex].loop;
+    return mLoop;
 }
 int32_t Sprite::GetFrameIndex()
 {
@@ -444,7 +445,9 @@ void Sprite::GatherProperties(std::vector<Property>& outProps)
         SCOPED_CATEGORY("Sprite");
 
         outProps.push_back(Property(DatumType::Bool, "Play", this, &mPlaying, 1, HandlePropChange));
+        outProps.push_back(Property(DatumType::Bool, "Loop", this, &mLoop, 1, HandlePropChange));
         outProps.push_back(Property(DatumType::Float, "FPS", this, &mFPS));
+
 
         static bool adremAnim = false;
         std::string adremName = "Animations: " + std::to_string(mAnimation.size());
