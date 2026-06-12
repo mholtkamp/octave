@@ -16,7 +16,7 @@ int Sprite_Lua::AddAnimation(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     std::string animationName = "";
-    if (!lua_isnil(L, 2)) animationName = CHECK_STRING(L, 2);
+    if (!lua_isnone(L, 2)) { animationName = CHECK_STRING(L, 2); };
 
     sprite->AddAnimation(animationName);
 
@@ -27,13 +27,13 @@ int Sprite_Lua::AddFrame(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     Texture* texture = nullptr;
-    if (!lua_isnil(L, 2)) { texture = CHECK_TEXTURE(L, 2); };
+    if (!lua_isnone(L, 2)) { texture = CHECK_TEXTURE(L, 2); };
     int32_t frameIndex = -1;
-    if (!lua_isnil(L, 3)) frameIndex = CHECK_INDEX(L, 3);
+    if (!lua_isnone(L, 3)) { frameIndex = CHECK_INDEX(L, 3); };
     bool insert = false;
-    if (!lua_isnil(L, 4)) frameIndex = CHECK_BOOLEAN(L, 4);
+    if (!lua_isnone(L, 4)) { insert = CHECK_BOOLEAN(L, 4); };
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 5)) frameIndex = CHECK_INDEX(L, 5);
+    if (!lua_isnone(L, 5)) { animationIndex = CHECK_INDEX(L, 5); };
 
     sprite->AddFrame(texture, frameIndex, insert, animationIndex);
 
@@ -44,11 +44,11 @@ int Sprite_Lua::AddEmptyFrame(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     int32_t frameIndex = -1;
-    if (!lua_isnil(L, 2)) frameIndex = CHECK_INDEX(L, 2);
+    if (!lua_isnone(L, 2)) { frameIndex = CHECK_INDEX(L, 2); };
     bool insert = false;
-    if (!lua_isnil(L, 3)) frameIndex = CHECK_BOOLEAN(L, 3);
+    if (!lua_isnone(L, 3)) { insert = CHECK_BOOLEAN(L, 3); };
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 4)) frameIndex = CHECK_INDEX(L, 4);
+    if (!lua_isnone(L, 4)) { animationIndex = CHECK_INDEX(L, 4); };
 
     sprite->AddEmptyFrame(frameIndex, insert, animationIndex);
 
@@ -70,7 +70,7 @@ int Sprite_Lua::RemoveFrame(lua_State* L)
     Sprite* sprite = CHECK_SPRITE(L, 1);
     uint32_t frameIndex = CHECK_INDEX(L, 2);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 3)) animationIndex = CHECK_INDEX(L, 3);
+    if (!lua_isnone(L, 3)) { animationIndex = CHECK_INDEX(L, 3); };
 
     sprite->RemoveFrame(frameIndex, animationIndex);
 
@@ -80,7 +80,7 @@ int Sprite_Lua::RemoveFrame(lua_State* L)
 int Sprite_Lua::SetAnimation(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
-    if (lua_isinteger(L, 2))
+    if (lua_isnumber(L, 2))
     {
         uint32_t animationIndex = CHECK_INDEX(L, 2);
         sprite->SetAnimation(animationIndex);
@@ -107,7 +107,7 @@ int Sprite_Lua::SetFrame(lua_State* L)
 int Sprite_Lua::SetFPS(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
-    float fps = CHECK_INDEX(L, 2);
+    float fps = CHECK_NUMBER(L, 2);
 
     sprite->SetFPS(fps);
 
@@ -139,7 +139,7 @@ int Sprite_Lua::SetAnimationName(lua_State* L)
     Sprite* sprite = CHECK_SPRITE(L, 1);
     std::string animationName = CHECK_STRING(L, 2);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 3)) animationIndex = CHECK_INDEX(L, 3);
+    if (!lua_isnone(L, 3)) { animationIndex = CHECK_INDEX(L, 3); };
 
     sprite->SetAnimationName(animationName, animationIndex);
 
@@ -151,7 +151,7 @@ int Sprite_Lua::GetFrame(lua_State* L)
     Sprite* sprite = CHECK_SPRITE(L, 1);
     uint32_t frameIndex = CHECK_INDEX(L, 2);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 3)) animationIndex = CHECK_INDEX(L, 3);
+    if (!lua_isnone(L, 3)) { animationIndex = CHECK_INDEX(L, 3); };
 
     Texture* ret = sprite->GetFrame(frameIndex, animationIndex);
 
@@ -163,7 +163,7 @@ int Sprite_Lua::GetAnimationLength(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 2)) animationIndex = CHECK_INDEX(L, 2);
+    if (!lua_isnone(L, 2)) { animationIndex = CHECK_INDEX(L, 2); };
 
     uint32_t ret = sprite->GetAnimationLength(animationIndex);
 
@@ -177,7 +177,7 @@ int Sprite_Lua::GetAnimationName(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 2)) animationIndex = CHECK_INDEX(L, 2);
+    if (!lua_isnone(L, 2)) { animationIndex = CHECK_INDEX(L, 2); };
 
     std::string ret = sprite->GetAnimationName(animationIndex);
 
@@ -247,7 +247,7 @@ int Sprite_Lua::GetNumFrames(lua_State* L)
 {
     Sprite* sprite = CHECK_SPRITE(L, 1);
     int32_t animationIndex = -1;
-    if (!lua_isnil(L, 2)) animationIndex = CHECK_INDEX(L, 2);
+    if (!lua_isnone(L, 2)) { animationIndex = CHECK_INDEX(L, 2); };
 
     uint32_t ret = sprite->GetNumFrames(animationIndex);
 

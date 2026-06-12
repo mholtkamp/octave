@@ -103,17 +103,19 @@ void Sprite::TickCommon(float deltaTime)
 
         if (mCurrentAnimation < 0 || mCurrentAnimation >= mAnimation.size())
             mCurrentAnimation = 0;
+        if (GTE && IsPlaying())
+        {
+            mFrameTime += deltaTime;
+            if (mFrameTime >= (1 / mFPS))
+            {
+                AdvanceFrame();
+                mFrameTime = 0.0f;
+            }
+        }
+
     }
 
-    if (GTE && IsPlaying())
-    {
-        mFrameTime += deltaTime;
-        if (mFrameTime >= (1 / mFPS))
-        {
-            AdvanceFrame();
-            mFrameTime = 0.0f;
-        }
-    }
+
 }
 
 void Sprite::SaveStream(Stream& stream, Platform platorm)

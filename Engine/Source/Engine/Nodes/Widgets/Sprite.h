@@ -85,6 +85,7 @@ protected:
     float mFPS = 5.0f;
     float mFrameTime = 0;
 
+
     std::string animName = "";
     std::vector<TextureRef> frameRef = {nullptr};
 
