@@ -139,6 +139,7 @@ void AssetManager::Update(float deltaTime)
 
 AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset, uint64_t uuid)
 {
+    LogDebug("filename is: %s", filename.c_str());
     std::string fixedFilename = filename;
 
     if (filename.size() < 4 ||
@@ -1119,13 +1120,29 @@ void AssetManager::SaveAsset(AssetStub& stub)
             newPath += stub.mAsset->GetName();
             newPath += ".oct";
 
+            //scrub old path for searching assetpathmap
+            std::string relativePath = "";
+            std::string relativeNewPath = newPath;
+            // Get path relative to project/engine Assets folder
+            // e.g., "ProjectName/Assets/Models/SM_Plane.oct" -> "Models/SM_Plane"
+            size_t assetsPos = oldPath.find("/Assets/");
+            if (assetsPos != std::string::npos)
+            {
+                relativePath = oldPath.substr(assetsPos + 8);  // +8 to skip "/Assets/"
+                relativePath = relativePath.substr(0,relativePath.size()-4); //remove .oct
+
+                //they should be in the same place yeah?
+                relativeNewPath = oldPath.substr(assetsPos + 8);  // +8 to skip "/Assets/"
+                relativeNewPath = relativeNewPath.substr(0,relativeNewPath.size()-4); //remove .oct
+            }
+
             // Update path map (remove old, add new)
-            auto oldPathItr = mAssetPathMap.find(oldPath);
+            auto oldPathItr = mAssetPathMap.find(relativePath);
             if (oldPathItr != mAssetPathMap.end() && oldPathItr->second == &stub)
             {
-                mAssetPathMap.erase(oldPath);
+                mAssetPathMap.erase(relativePath);
             }
-            mAssetPathMap[newPath] = &stub;
+            mAssetMap.insert(std::pair<std::string, AssetStub*>(relativeNewPath, &stub));
 
             stub.mPath = newPath;
         }
@@ -1260,7 +1277,6 @@ bool AssetManager::RenameAsset(Asset* asset, const std::string& newName)
             success = true;
         }
     }
-
     return success;
 }
 std::string AssetManager::GetParentDirectory(const std::string& path)
