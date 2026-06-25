@@ -139,7 +139,6 @@ void AssetManager::Update(float deltaTime)
 
 AssetStub* AssetManager::RegisterAsset(const std::string& filename, TypeId type, AssetDir* directory, EmbeddedFile* embeddedAsset, bool engineAsset, uint64_t uuid)
 {
-    LogDebug("filename is: %s", filename.c_str());
     std::string fixedFilename = filename;
 
     if (filename.size() < 4 ||
