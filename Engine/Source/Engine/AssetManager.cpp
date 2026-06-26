@@ -492,7 +492,6 @@ void AssetManager::Purge(bool purgeEngineAssets)
 {
     // Destroy all assets in the map and empty the map.
     // Caller needs to ensure that no assets are being referenced.
-
     mPurging = true;
 
     if (purgeEngineAssets)
@@ -502,7 +501,6 @@ void AssetManager::Purge(bool purgeEngineAssets)
             UnloadAsset(*it->second);
             delete it->second;
         }
-
         mAssetMap.clear();
         mUuidMap.clear();
         mAssetPathMap.clear();
@@ -1141,7 +1139,7 @@ void AssetManager::SaveAsset(AssetStub& stub)
             {
                 mAssetPathMap.erase(relativePath);
             }
-            mAssetMap.insert(std::pair<std::string, AssetStub*>(relativeNewPath, &stub));
+            mAssetPathMap[relativeNewPath] = &stub;
 
             stub.mPath = newPath;
         }
