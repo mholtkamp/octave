@@ -178,6 +178,7 @@ void ForceLinkage()
     FORCE_LINK_CALL(Canvas);
     FORCE_LINK_CALL(Console);
     FORCE_LINK_CALL(Quad);
+    FORCE_LINK_CALL(Sprite);
     FORCE_LINK_CALL(PolyRect);
     FORCE_LINK_CALL(Poly);
     FORCE_LINK_CALL(StatsOverlay);

@@ -48,6 +48,7 @@
 #include "LuaBindings/AssetManager_Lua.h"
 #include "LuaBindings/Widget_Lua.h"
 #include "LuaBindings/Quad_Lua.h"
+#include "LuaBindings/Sprite_Lua.h"
 #include "LuaBindings/Text_Lua.h"
 #include "LuaBindings/Button_Lua.h"
 #include "LuaBindings/Canvas_Lua.h"
@@ -121,6 +122,7 @@ void BindLuaInterface()
     // Widgets need to be bound in hierarchy order
     Widget_Lua::Bind();
     Quad_Lua::Bind();
+    Sprite_Lua::Bind();
     Text_Lua::Bind();
     Button_Lua::Bind();
     Canvas_Lua::Bind();

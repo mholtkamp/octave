@@ -723,6 +723,7 @@
     <ClCompile Include="Source\Engine\Nodes\Widgets\Poly.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\PolyRect.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp" />
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Sprite.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Text.cpp" />
     <ClCompile Include="Source\Engine\Nodes\Widgets\Widget.cpp" />
@@ -815,6 +816,7 @@
     <ClCompile Include="Source\LuaBindings\Primitive3d_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Property_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Quad_Lua.cpp" />
+    <ClCompile Include="Source\LuaBindings\Sprite_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Rect_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Renderer_Lua.cpp" />
     <ClCompile Include="Source\LuaBindings\Scene_Lua.cpp" />
@@ -979,6 +981,7 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Poly.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\PolyRect.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h" />
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Sprite.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Text.h" />
     <ClInclude Include="Source\Engine\Nodes\Widgets\Widget.h" />
@@ -1072,6 +1075,7 @@
     <ClInclude Include="Source\LuaBindings\Primitive3d_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Property_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Quad_Lua.h" />
+    <ClInclude Include="Source\LuaBindings\Sprite_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Rect_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Renderer_Lua.h" />
     <ClInclude Include="Source\LuaBindings\Scene_Lua.h" />

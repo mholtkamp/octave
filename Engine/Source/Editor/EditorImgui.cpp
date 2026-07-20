@@ -1686,9 +1686,31 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
 
                 if (prop.mEnumCount > 0)
                 {
-                    if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                    if (prop.mEnumStrings != nullptr)
                     {
-                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        if (ImGui::Combo("", &propVal, prop.mEnumStrings, prop.mEnumCount))
+                        {
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
+                    }
+                    else
+                    {
+                        ImGui::SliderInt("", &propVal, 0, prop.mEnumCount);
+
+                        if (ImGui::IsItemActivated())
+                        {
+                            sOrigVal = preVal;
+                        }
+
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        {
+                            prop.SetInteger(sOrigVal, i);
+                            am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                        }
+                        else if (propVal != preVal)
+                        {
+                            prop.SetInteger(propVal, i);
+                        }
                     }
                 }
                 else
@@ -1738,15 +1760,32 @@ static void DrawPropertyList(Object* owner, std::vector<Property>& props)
             }
             case DatumType::Bool:
             {
-                bool propVal = prop.GetBool(i);
-                if (ImGui::Checkbox("", &propVal))
+                if (prop.mEnumCount > 0)
+                { //allows vectors to be controlled easier, true for extending vecs, false to ensmallen
+                    ImGui::Text(prop.mName.c_str());
+                    if (ImGui::Button("+"))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, true);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("-"))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, false);
+                    }
+                }
+                else
                 {
-                    am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    bool propVal = prop.GetBool(i);
+                    if (ImGui::Checkbox("", &propVal))
+                    {
+                        am->EXE_EditProperty(owner, ownerType, prop.mName, i, propVal);
+                    }
+
+                    ImGui::SameLine();
+                    const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
+                    ImGui::Text(displayText);
                 }
 
-                ImGui::SameLine();
-                const char* displayText = prop.mDisplayName.empty() ? prop.mName.c_str() : prop.mDisplayName.c_str();
-                ImGui::Text(displayText);
                 break;
             }
             case DatumType::String:

@@ -326,6 +326,9 @@
     <ClCompile Include="Source\LuaBindings\Quad_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LuaBindings\Sprite_Lua.cpp">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClCompile>
     <ClCompile Include="Source\LuaBindings\Text_Lua.cpp">
       <Filter>Source Files\LuaBindings</Filter>
     </ClCompile>
@@ -459,6 +462,9 @@
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\Quad.cpp">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Nodes\Widgets\Sprite.cpp">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Nodes\Widgets\StatsOverlay.cpp">
@@ -918,6 +924,9 @@
     <ClInclude Include="Source\Engine\Nodes\Widgets\Quad.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Nodes\Widgets\Sprite.h">
+      <Filter>Source Files\Engine\Nodes\Widgets</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Engine\Nodes\Widgets\StatsOverlay.h">
       <Filter>Source Files\Engine\Nodes\Widgets</Filter>
     </ClInclude>
@@ -1168,6 +1177,9 @@
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Quad_Lua.h">
+      <Filter>Source Files\LuaBindings</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LuaBindings\Sprite_Lua.h">
       <Filter>Source Files\LuaBindings</Filter>
     </ClInclude>
     <ClInclude Include="Source\LuaBindings\Rect_Lua.h">
