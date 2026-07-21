@@ -157,6 +157,11 @@ char INP_ConvertKeyCodeToChar(int32_t key)
     case KEY_NUMPAD7: retChar = '7'; break;
     case KEY_NUMPAD8: retChar = '8'; break;
     case KEY_NUMPAD9: retChar = '9'; break;
+    case KEY_NUMPADENTER: retChar = '\n'; break;
+    case KEY_NUMPADPLUS: retChar = '+'; break;
+    case KEY_NUMPADMINUS: retChar = '-'; break;
+    case KEY_NUMPADMULT: retChar = '*'; break;
+    case KEY_NUMPADDIV: retChar = '/'; break;
 
     case KEY_PERIOD: retChar = '.'; break;
     case KEY_COMMA: retChar = ','; break;
@@ -170,6 +175,13 @@ char INP_ConvertKeyCodeToChar(int32_t key)
     case KEY_RIGHT_BRACKET: retChar = ']'; break;
     case KEY_QUOTE: retChar = '\''; break;
     case KEY_DECIMAL: retChar = '.'; break;
+
+
+    case KEY_CAPS:{
+        InputState& input = GetEngineState()->mInput;
+        input.mCapsLocked = !input.mCapsLocked;
+        break;
+    }
 
     default: break;
     }

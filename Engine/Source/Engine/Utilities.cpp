@@ -491,13 +491,14 @@ uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown)
 {
     uint8_t retChar = 0;
     retChar = INP_ConvertKeyCodeToChar(keyCode);
+    InputState& input = GetEngineState()->mInput;
+    bool capsLocked = input.mCapsLocked;
 
     if (retChar >= 'A' &&
         retChar <= 'Z' &&
-        !shiftDown)
+        !shiftDown &&
+        !capsLocked)
     {
-        // If not shifted, make the character lower-case.
-        // TODO: handle caps lock state.
         retChar += 32;
     }
     else if (shiftDown)
@@ -525,6 +526,12 @@ uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown)
         case ',': retChar = '<'; break;
         case '.': retChar = '>'; break;
         case '/': retChar = '?'; break;
+        }
+        if (retChar >= 'A' &&
+            retChar <= 'Z' &&
+            capsLocked)
+        {
+            retChar += 32;
         }
     }
 
