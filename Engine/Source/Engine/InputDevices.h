@@ -12,7 +12,6 @@ bool IsKeyJustUp(int32_t key);
 
 bool IsControlDown();
 bool IsShiftDown();
-bool IsCapsOn();
 bool IsAltDown();
 void ClearControlDown();
 void ClearShiftDown();

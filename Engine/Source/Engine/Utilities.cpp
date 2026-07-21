@@ -500,7 +500,6 @@ uint8_t ConvertKeyCodeToChar(uint8_t keyCode, bool shiftDown)
         !capsLocked)
     {
         retChar += 32;
-
     }
     else if (shiftDown)
     {
