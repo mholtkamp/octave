@@ -152,6 +152,7 @@ static ImGuiKey ImGui_ImplXcb_VirtualKeyToImGuiKey(xcb_keycode_t keyCode)
         case KEY_NUMPAD7: return ImGuiKey_Keypad7;
         case KEY_NUMPAD8: return ImGuiKey_Keypad8;
         case KEY_NUMPAD9: return ImGuiKey_Keypad9;
+        case KEY_NUMPADENTER: return ImGuiKey_Enter;
         case KEY_DECIMAL: return ImGuiKey_KeypadDecimal;
         //case VK_DIVIDE: return ImGuiKey_KeypadDivide;
         //case VK_MULTIPLY: return ImGuiKey_KeypadMultiply;

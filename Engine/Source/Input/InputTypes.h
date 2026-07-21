@@ -120,6 +120,7 @@ struct InputState
     bool mCursorLocked = false;
     bool mCursorTrapped = false;
     bool mCursorShown = true;
+    bool mCapsLocked = false;
 
 #if PLATFORM_WINDOWS
     XINPUT_STATE mXinputStates[INPUT_MAX_GAMEPADS] = { };
@@ -207,6 +208,11 @@ enum KeyCode
     KEY_NUMPAD7 = 103,
     KEY_NUMPAD8 = 104,
     KEY_NUMPAD9 = 105,
+    KEY_NUMPADENTER = 108,
+    KEY_NUMPADPLUS = 107,
+    KEY_NUMPADMINUS = 109,
+    KEY_NUMPADMULT = 106,
+    KEY_NUMPADDIV = 111,
 
     KEY_F1 = 112,
     KEY_F2 = 113,
@@ -234,7 +240,9 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 0xDD,
     KEY_QUOTE = 0xDE,
 
-    KEY_DECIMAL = 0x6E
+    KEY_DECIMAL = 0x6E,
+
+    KEY_CAPS = 20
 };
 
 #elif PLATFORM_ANDROID
@@ -573,6 +581,11 @@ enum KeyCode
     KEY_NUMPAD7 = 79,
     KEY_NUMPAD8 = 80,
     KEY_NUMPAD9 = 81,
+    KEY_NUMPADENTER = 104,
+    KEY_NUMPADPLUS = 86,
+    KEY_NUMPADMINUS = 82,
+    KEY_NUMPADMULT = 63,
+    KEY_NUMPADDIV = 106,
 
     KEY_F1 = 67,
     KEY_F2 = 68,
@@ -600,7 +613,9 @@ enum KeyCode
     KEY_RIGHT_BRACKET = 35,
     KEY_QUOTE = 48,
 
-    KEY_DECIMAL = 91
+    KEY_DECIMAL = 91,
+
+    KEY_CAPS = 66
 };
 
 #else // All other platforms
